@@ -2,6 +2,30 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F007 — API foundation
+
+Status: COMPLETE
+
+Implemented:
+- Global `ValidationPipe` (`apps/api/src/common/validation.ts`): whitelist + reject-unknown + transform, wired in `main.ts`.
+- Global `AllExceptionsFilter` (`apps/api/src/common/http-exception.filter.ts`): every thrown error becomes `{ error: { code, message, details? } }`; unknown errors collapse to a generic 500 with no stack trace or internal detail reaching the client (logged server-side only).
+- `/health` enhanced to check Postgres connectivity via `PrismaService.$queryRaw` (`apps/api/src/health/health.service.ts`); reports `ok`/`degraded` plus `checks.database`.
+- `apps/api/src/app.e2e.spec.ts`: a real HTTP-level integration suite (`@nestjs/testing` + `supertest`) exercising the actual app — health, a 404's error envelope, and a throwaway DTO-validated route (not a permanent endpoint; domain CRUD lands in F003/F004) proving the ValidationPipe rejects/accepts through the real pipeline, not just in isolation.
+- `apps/api/vitest.config.ts` + `unplugin-swc`: needed because Vitest's default esbuild transform doesn't emit `design:paramtypes` metadata, which silently broke NestJS DI and DTO-metatype detection — caught by the new integration test, not by the unit tests of each class in isolation.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` green across all workspace projects)
+- Lint: PASS (`pnpm lint` green, 0 errors/warnings)
+- Tests: PASS (31 tests: 15 domain, 16 api — up from 6; +10 for F007)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` green)
+- Live smoke test: real compiled server against the running Postgres container — `GET /health` -> 200 `{"status":"ok",...,"checks":{"database":"up"}}`; `GET /does-not-exist` -> 404 `{"error":{"code":"NOT_FOUND",...}}`.
+- Evaluator Rubric Score: 5.0 / 5.0 -> PASS. Log: `.harness/reviews/F007-review.md`.
+
+Notes: implementation was recovered from a concurrent (Antigravity/Cowork) session's uncommitted WIP, stashed mid-session and popped onto a fresh `feat/F007-api-foundation` branch (created from `main` after F006/harness-docs/agent-relay-cleanup all merged) rather than lost or discarded.
+
+---
+
 ## 2026-09-26 — Agent relay keep-awake + runtime notes (harness tooling)
 
 Status: COMPLETE (tooling; not a product feature)
@@ -37,7 +61,7 @@ Verification:
 - Database: PASS (migration applied to PostgreSQL 16 container, seed script executed successfully)
 - Evaluator Rubric Score: 5.0 / 5.0 (acceptance=5, correctness=5, boundaries=5, modularity=5, evidence=5) -> PASS. Log: `.harness/reviews/F006-review.md`.
 
-PR Review: pushed to PR #1 (`feat/F006-database-foundation` -> `main`), taken through 3 rounds of the new `loops/pr-review-loop.md` (code-review skill). 22 correctness/efficiency findings fixed across the 3 rounds (build ordering, layer-boundary regex gaps, cross-tenant/cross-architecture/cross-version integrity gaps on `versionId`/`parentId`, a missing FK, unwired domain invariants (`hasParentCycle`, `validateViewObject`), CI gaps, stale docs); 2 structural findings (TenantContext's per-model isolation pattern, `architecture.create`'s non-transactional `defaultVersionId` set) logged as open decisions in `BLOCKERS.md` rather than fixed mid-PR. Stopped at round 3 by user decision (diminishing severity; not all `MAX_PR_ROUNDS`=4 exhausted). Re-verified after every round: 21 tests green, typecheck/lint/build/check-architecture clean. Log: `.harness/reviews/F006-review.md`. Not yet merged.
+PR Review: pushed to PR #1 (`feat/F006-database-foundation` -> `main`), taken through 3 rounds of the new `loops/pr-review-loop.md` (code-review skill). 22 correctness/efficiency findings fixed across the 3 rounds (build ordering, layer-boundary regex gaps, cross-tenant/cross-architecture/cross-version integrity gaps on `versionId`/`parentId`, a missing FK, unwired domain invariants (`hasParentCycle`, `validateViewObject`), CI gaps, stale docs); 2 structural findings (TenantContext's per-model isolation pattern, `architecture.create`'s non-transactional `defaultVersionId` set) logged as open decisions in `BLOCKERS.md` rather than fixed mid-PR. Stopped at round 3 by user decision (diminishing severity; not all `MAX_PR_ROUNDS`=4 exhausted). Re-verified after every round: 21 tests green, typecheck/lint/build/check-architecture clean. Log: `.harness/reviews/F006-review.md`. Merged to `main`.
 
 ---
 
