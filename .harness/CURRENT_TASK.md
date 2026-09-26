@@ -1,35 +1,36 @@
 # Current Task
 
-Feature ID: F002
-Feature: Authentication (Login, logout, session handling, protected routes, API AuthGuard)
+Feature ID: F003
+Feature: Organizations (Tenancy root, membership, organization CRUD, tenant isolation)
 Status: COMPLETE (PR ready for review loop)
 Phase: Phase 01 — Foundation
 
 ## Objective
-Implement authentication across the stack: Auth.js in Next.js web (login, logout, session, protected route middleware redirect) and stateless JWT verification via AuthGuard in NestJS API, with zero external SaaS dependencies for local/CI testability.
+Implement organization entity and tenant isolation: authenticated users can create organizations, list their organizations, view/update organization details, and data of another organization is strictly inaccessible.
 
 ## Prerequisite
-F001, F006, and F007 are COMPLETE and merged to `main`. Branch `feat/F002-authentication` is active.
+F001, F002, F006, and F007 are COMPLETE and merged to `main`. Branch `feat/F003-organizations` is active.
 
 ## Steps
-- [x] Record provider decision (Auth.js) in DECISIONS.md (DEC-007)
-- [x] Add auth/user types to `packages/domain` (Id, User, SessionUser)
-- [x] Configure Auth.js in `apps/web` with Credentials provider, login page (`/login`), and session handling
-- [x] Add Next.js route protection middleware redirecting unauthenticated requests from `/dashboard` to `/login`
-- [x] Implement `AuthModule`, `AuthGuard`, `@CurrentUser()`, and `/auth/me` endpoint in `apps/api`
-- [x] Automated integration tests for Next.js auth/middleware and NestJS `AuthGuard`
+- [x] Create `OrganizationsModule`, `OrganizationsService`, and `OrganizationsController` in `apps/api`
+- [x] Implement DTOs with validation (`CreateOrganizationDto`, `UpdateOrganizationDto`)
+- [x] Add `POST /organizations` with transactional initial owner membership
+- [x] Add `GET /organizations` listing organizations where current user is a member
+- [x] Add `GET /organizations/:id`, `PATCH /organizations/:id`, `DELETE /organizations/:id` with tenant membership checks
+- [x] Add organization views / list in `apps/web`
+- [x] Automated unit and e2e integration tests verifying CRUD and cross-tenant isolation
 - [x] Full verification suite (`pnpm verify` + `pnpm build`)
 
 ## Verification
 - [x] TypeScript: PASS · Lint: PASS · Unit/Integration: PASS · Build: PASS · check-architecture: PASS
 
 ## Do Not
-- Build enterprise SSO / SAML / SCIM (Phase 13).
-- Implement multi-tenant organization switching (F003 / F004).
-- Add full RBAC permission matrices (F005).
+- Implement workspaces and architectures within orgs (F004).
+- Implement full RBAC permission matrices (F005 / F104).
+- Add enterprise SSO/SCIM (Phase 13).
 
 ## Next Task
-F003 — Organizations.
+F004 — Workspaces.
 
 ## Last Updated
 2026-09-26

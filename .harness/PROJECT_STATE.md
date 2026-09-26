@@ -13,35 +13,35 @@ Phase Name: Foundation
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F002
-Feature Name: Authentication
+Feature ID: F003
+Feature Name: Organizations
 Status: COMPLETE (pending PR review loop)
 
 ## Overall Progress
 Total Features: 135
-Completed: 4
+Completed: 5
 In Progress: 0
 Blocked: 0
-Not Started: 131
-Progress: 3.0%
+Not Started: 130
+Progress: 3.7%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F002 — Authentication. Auth.js (NextAuth v5) in `apps/web` with route protection middleware (`middleware.ts`), login page (`/login`), and JWT session handling. Stateless token verification in `apps/api` via `AuthModule`, `AuthGuard`, `@CurrentUser()`, `@Public()`, and `/auth/me` returning standard typed error envelopes (`UNAUTHORIZED`). Shared domain user/session types in `packages/domain`. Verified: 57 tests green across workspace (15 domain, 5 web, 37 api), typecheck/lint/build/check-architecture clean. Evaluator score 5.0/5.0. Log: `.harness/reviews/F002-review.md`.
+F003 — Organizations. Top of the tenancy tree, organization entity CRUD, membership, and strict cross-tenant data isolation. API `OrganizationsModule` (`POST/GET/PATCH/DELETE /organizations`, `GET /organizations/:id/members`), transactional initial owner member creation, tenant boundary enforcement, and Next.js web dashboard integration. Verified: 82 tests green across workspace (15 domain, 6 web, 61 api), typecheck/lint/build/check-architecture clean. Evaluator score 5.0/5.0. Log: `.harness/reviews/F003-review.md`.
 
-Prior: F007 — API foundation (PR #4 merged to main). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
+Prior: F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
 
 ## Current Work
-None in progress. F002 PR review loop in progress.
+F003 PR review loop in progress.
 
 ## Next Task
-F003 — Organizations. See `CURRENT_TASK.md`.
+F004 — Workspaces. See `CURRENT_TASK.md`.
 
 ## Last Verified
-F002 @ feat/F002-authentication — pnpm verify (typecheck / lint / test x57 / check-architecture) + pnpm build all green. PostgreSQL 16 container healthy.
+F003 @ feat/F003-organizations — pnpm verify (typecheck / lint / test x82 / check-architecture) + pnpm build all green. PostgreSQL 16 container healthy.
 
 ## Current Git Commit
-main @ a9fa586 (F006, harness docs, and agent-relay cleanup all merged). Branch `feat/F007-api-foundation`, branched fresh from main after those merges. Working tree CLEAN — the stashed F007 WIP mentioned in earlier versions of this file has been popped and built on; `git stash list` is empty.
+Branch `feat/F003-organizations`. Working tree clean.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.

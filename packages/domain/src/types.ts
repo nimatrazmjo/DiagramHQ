@@ -10,6 +10,7 @@ import type {
   TagId,
   TechnologyId,
   UserId,
+  MemberId,
   VersionId,
   ViewId,
   WorkspaceId,
@@ -122,7 +123,7 @@ export interface ViewObject {
 }
 
 export interface Member {
-  readonly id: string;
+  readonly id: MemberId;
   readonly orgId: OrgId;
   readonly userId: string;
   role: MemberRole;
