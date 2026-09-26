@@ -3,6 +3,8 @@ import type { CanvasEdge, CanvasNode, ProjectViewModelViewObject } from './canva
 import type { ModelConnection, ModelObject } from './types';
 import { isPerson } from './person';
 export { isPerson };
+import { isExternalSystem, isInternalSystem } from './system';
+export { isExternalSystem, isInternalSystem };
 
 export type C4ContextElementKind = 'person' | 'system' | 'external_system';
 
@@ -15,20 +17,6 @@ export interface C4ContextNodeData {
   systemId?: string;
   canDrillDown?: boolean;
   [key: string]: unknown;
-}
-
-/**
- * Returns true if the ModelObject represents an External Software System in C4 Context.
- */
-export function isExternalSystem(obj: ModelObject): boolean {
-  return obj.kind === 'system' && Boolean(obj.metadata?.external);
-}
-
-/**
- * Returns true if the ModelObject represents an Internal Software System in C4 Context.
- */
-export function isInternalSystem(obj: ModelObject): boolean {
-  return obj.kind === 'system' && !obj.metadata?.external;
 }
 
 /**
