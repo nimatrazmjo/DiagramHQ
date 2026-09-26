@@ -16,11 +16,12 @@ Implemented:
 Verification:
 - TypeScript: PASS (`pnpm typecheck` green across all workspace projects)
 - Lint: PASS (`pnpm lint` green, 0 errors/warnings)
-- Tests: PASS (31 tests: 15 domain, 16 api — up from 6; +10 for F007)
+- Tests: PASS (51 tests: 15 domain, 36 api — up from 6; +30 tests for F007 including integration, cache/dedup, timeout, and logger suites)
 - Architecture: PASS (`./scripts/check-architecture.sh` clean)
 - Build: PASS (`pnpm build` green)
 - Live smoke test: real compiled server against the running Postgres container — `GET /health` -> 200 `{"status":"ok",...,"checks":{"database":"up"}}`; `GET /does-not-exist` -> 404 `{"error":{"code":"NOT_FOUND",...}}`.
 - Evaluator Rubric Score: 5.0 / 5.0 -> PASS. Log: `.harness/reviews/F007-review.md`.
+- PR Review: pushed to PR #4 (`feat/F007-api-foundation` -> `main`), taken through 4 rounds of `loops/pr-review-loop.md` (code-review skill). 6 findings fixed in round 4 (vitest monorepo root env loading, in-flight probe deduplication preventing thundering herds, cache unit tests, withTimeout unit tests, structured logger unit tests, headersSent guard, custom details extraction). GitHub Actions CI green. Verdict: CLEAN.
 
 Notes: implementation was recovered from a concurrent (Antigravity/Cowork) session's uncommitted WIP, stashed mid-session and popped onto a fresh `feat/F007-api-foundation` branch (created from `main` after F006/harness-docs/agent-relay-cleanup all merged) rather than lost or discarded.
 
