@@ -35,6 +35,7 @@ export interface CanvasNode {
   height?: number;
   selected?: boolean;
   parentId?: string;
+  zIndex?: number;
 }
 
 export interface CanvasEdge {

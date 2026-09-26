@@ -13,29 +13,29 @@ Phase Name: Architecture Model
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F019
-Feature Name: C4 Context
+Feature ID: F020
+Feature Name: C4 Container
 Status: COMPLETE
 
 ## Overall Progress
 Total Features: 135
-Completed: 19
+Completed: 20
 In Progress: 0
 Blocked: 0
-Not Started: 116
-Progress: 14.1%
+Not Started: 115
+Progress: 14.8%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F019 — C4 Context. Level 1 C4 Context diagram & model elements: person/actor, system, external system, and their relationships. Canvas projection, drill-to-container triggers, custom C4ContextNode with persona card, solid system box, and external system boundary. 7 API e2e tests, 4 domain tests, 6 web tests. PR ready.
+F020 — C4 Container. Level 2 containers inside a system (apps, services, databases, queues) with `parentId = system.id`, technology badges, enclosing system boundary, and drill-to-components triggers. 8 API e2e tests, 4 domain tests, 8 web tests. PR ready.
 
-Prior: F018 — Architecture model (PR #19 merged). F017 — Minimap (PR #18 merged). F016 — Undo/redo (PR #17 merged). F015 — Auto-layout (PR #16 merged). F014 — Alignment (PR #15 merged). F013 — Multi-select (PR #14 merged). F012 — Drag and drop (PR #13 merged). F011 — Object selection (PR #12 merged). F010 — Pan and zoom (PR #11 merged). F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
+Prior: F019 — C4 Context (PR #20 merged). F018 — Architecture model (PR #19 merged). F017 — Minimap (PR #18 merged). F016 — Undo/redo (PR #17 merged). F015 — Auto-layout (PR #16 merged). F014 — Alignment (PR #15 merged). F013 — Multi-select (PR #14 merged). F012 — Drag and drop (PR #13 merged). F011 — Object selection (PR #12 merged). F010 — Pan and zoom (PR #11 merged). F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
 
 ## Current Work
-F019 — C4 Context: verification complete, merging to main.
+F020 — C4 Container: verification complete, merging to main.
 
 ## Next Task
-F020 — C4 Container. Level 2 containers inside a system (apps, services, stores, queues) and drill from system into container view.
+F021 — C4 Component. Level 3 components inside a container.
 
 ## Last Verified
 F016 @ main — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green.

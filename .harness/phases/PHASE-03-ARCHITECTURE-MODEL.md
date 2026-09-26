@@ -65,7 +65,7 @@ Test: create person+system, connect, reload persists, drill to container.
 
 ### F020 — C4 Container
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Level 2: containers inside a system.
 
