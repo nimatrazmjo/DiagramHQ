@@ -43,3 +43,16 @@ All 4 fixed in `12c754e`: the timer is captured and `clearTimeout`'d in a `final
 2 addressed by decision, not code: the suggestion to route the degraded health response through `AllExceptionsFilter` (reusing its status-mapping) was considered and rejected — throwing would replace the diagnostic body with the filter's generic envelope, losing exactly the per-check detail a probe/operator needs; documented in `health.controller.ts` instead. The `Promise.race` timeout doesn't cancel the losing DB query (a slow-not-dead DB keeps holding a pool connection past the timeout) — accepted as the standard client-side-timeout tradeoff, logged in `BLOCKERS.md` alongside the still-missing request-level `correlationId` propagation (bigger than this feature's scope; needs a request-scoped context spanning the whole app).
 
 Fixed in `6a72c4b`. Re-verified: typecheck/lint/build/check-architecture clean, 24 tests green, live smoke test confirming both the 503 path and the new 2s cache against the real server.
+
+## PR Review — round 4 (code-review skill, PR #4) — last round per MAX_PR_ROUNDS=4
+6 findings:
+1. `apps/api/vitest.config.ts`: Did not load the workspace root `.env`, causing test suites like `database.spec.ts` (relying on `DATABASE_URL` pointed to Docker port 5433) to fail on fallback port 5432 in any shell without manually exported env vars. Fixed by loading root `.env` via `loadEnv` from `vite`.
+2. `apps/api/src/health/health.service.ts`: The 2s cache had a thundering herd race condition — concurrent probes arriving while the cache was cold or expired all missed simultaneously and executed separate live `$queryRaw` queries. Fixed by adding `inFlight?: Promise<HealthStatus>` deduplication.
+3. `apps/api/src/health/health.service.spec.ts`: Lacked automated unit tests for round 3's cache and TTL behavior. Added unit tests asserting cached result reuse within TTL, TTL expiration, and concurrent in-flight deduplication.
+4. `apps/api/src/common/with-timeout.spec.ts`: Shared helper `withTimeout` lacked direct unit tests. Added unit test coverage for success resolution, error propagation, timeout expiration, and timer cleanup.
+5. `apps/api/src/common/logger.spec.ts`: Structured logger lacked direct unit tests verifying JSON formatting, levels, and fields. Added unit tests for `logInfo`, `logWarn`, and `logError`.
+6. `apps/api/src/common/http-exception.filter.ts`: Lacked a guard against writing to already-committed responses (`response?.headersSent`), risking `ERR_HTTP_HEADERS_SENT` crashes, and dropped custom structured `details` when provided on an `HttpException` response body. Fixed with `headersSent` early-exit and preserving custom `details`. Added regression tests for both.
+
+All 6 addressed in `feat/F007-api-foundation`. Re-verified: 51 tests green (15 domain, 36 api — up from 24; +12 tests across filter, health, with-timeout, and logger), typecheck/lint/build/check-architecture clean, live smoke test against the compiled server + real Postgres verified.
+
+**Verdict**: CLEAN. Exiting PR review loop.
