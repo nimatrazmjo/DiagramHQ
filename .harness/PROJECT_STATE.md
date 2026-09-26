@@ -13,34 +13,33 @@ Phase Name: Foundation
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F006
-Feature Name: Database foundation (next; F007 also unblocked)
+Feature ID: F007
+Feature Name: API foundation
 Status: NOT STARTED (details in CURRENT_TASK.md)
 
 ## Overall Progress
 Total Features: 135
-Completed: 1
+Completed: 2
 In Progress: 0
 Blocked: 0
-Not Started: 134
-Progress: 0.7%
+Not Started: 133
+Progress: 1.5%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F001 — Project architecture. pnpm monorepo (web/api/domain/config) + Docker + CI. Verified: typecheck/lint/test(4)/build green; independent subagent review passed after fixes. Lives on branch `feat/F001-project-architecture` (commits 1e817c4 + 6fc63c4). NOT yet merged or pushed.
+F006 — Database foundation. Postgres + Prisma + migrations for core model schema, tenant isolation, and domain invariants. Verified: migration applied, 20 tests green (15 domain, 5 api), seed script executed, typecheck/lint/build/check-architecture green. Evaluator score 5.0/5.0. Lives on branch `feat/F006-database-foundation`.
 
 ## Current Work
-None in progress. Session paused after F001 (user continues in Claude Code).
+None in progress. Ready for F007 (API foundation).
 
 ## Next Task
-F006 — Database foundation (F007 also unblocked). Merge F001 to main first. See CURRENT_TASK.md.
+F007 — API foundation (NestJS skeleton, validation, error envelope, health). See CURRENT_TASK.md.
 
 ## Last Verified
-F001 @ 6fc63c4 — pnpm typecheck / lint / test (4) / build all green. Docker NOT built (no Docker in the sandbox; run `docker compose build` on a machine with Docker).
+F006 @ feat/F006-database-foundation — pnpm typecheck / lint / test (20) / check-architecture / build all green. PostgreSQL 16 container healthy.
 
 ## Current Git Commit
-main @ f2e3e5f (harness). Branch feat/F001-project-architecture @ 6fc63c4 (F001). Working tree CLEAN.
-Merge + push are pending — do them from Claude Code with your GitHub credentials.
+main @ 4b709a3. Branch feat/F006-database-foundation @ 905243a (F006). Working tree CLEAN.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.

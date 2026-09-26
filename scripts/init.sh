@@ -6,4 +6,5 @@ pnpm install
 pnpm typecheck
 pnpm lint
 pnpm test
+./scripts/check-architecture.sh
 echo "init: baseline OK"

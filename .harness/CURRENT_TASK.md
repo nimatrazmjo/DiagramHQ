@@ -1,29 +1,30 @@
 # Current Task
-
-Feature ID: F006
-Feature: Database foundation (Postgres + Prisma + migrations; the model schema, tenant-isolated)
+ 
+Feature ID: F007
+Feature: API foundation (NestJS skeleton: validation, typed error envelope, health)
 Status: NOT STARTED
 Phase: Phase 01 — Foundation
-
+ 
 ## Objective
-Stand up PostgreSQL + Prisma with migrations for the core model schema, with tenant isolation from day one. This unblocks organizations/workspaces (F003/F004) and auth (F002).
-
+Establish the API edge foundation in NestJS: request validation at the edge, typed error envelopes `{ error: { code, message, details } }` preventing stack trace leaks past the edge, module-per-domain-area structure, and health endpoint wired with database check.
+ 
 ## Prerequisite
-F001 is COMPLETE on branch `feat/F001-project-architecture` (2 commits) but not yet merged. Merge it to `main` first (or branch F006 from it). F007 (API foundation) is also unblocked if you prefer that next.
-
+F001 and F006 are COMPLETE. F006 is on branch `feat/F006-database-foundation`. Merge to `main` before starting `feat/F007-api-foundation`.
+ 
 ## Steps
-- [ ] Add Prisma to apps/api; datasource + client generation
-- [ ] Schema: organizations, workspaces, architectures, versions (live + numbered), model_objects, model_connections, tags, technologies, views, view_objects (see .harness/architecture/DATA_MODEL.md)
-- [ ] Migration applies cleanly to a fresh Postgres (docker compose has postgres)
-- [ ] Mirror invariants in packages/domain as pure functions; api consumes domain (resolve the ESM/CJS interop noted for F018)
-- [ ] Seed script: one org/workspace/architecture for local dev
-- [ ] Tenant-isolation test: a cross-tenant read is denied
-
+- [ ] Merge F006 to `main` and branch `feat/F007-api-foundation`
+- [ ] Configure global ValidationPipe with class-validator / class-transformer for DTO validation at the edge
+- [ ] Implement global HttpExceptionFilter / ErrorFilter providing typed error envelope `{ error: { code, message, details } }`
+- [ ] Ensure no stack traces or raw database errors leak in production error responses
+- [ ] Enhance `/health` endpoint to check database connectivity via PrismaService
+- [ ] Integration tests verifying `/health` and structured error handling for invalid requests
+ 
 ## Verification
-- [ ] TypeScript: NOT RUN  · Lint: NOT RUN · Unit/Integration: NOT RUN · Build: NOT RUN
-
+- [ ] TypeScript: NOT RUN  · Lint: NOT RUN · Unit/Integration: NOT RUN · Build: NOT RUN · check-architecture: NOT RUN
+ 
 ## Do Not
-- Skip tenant isolation. · Build auth or model UI (later features). · Introduce a graph DB (ADR-0003: Postgres adjacency).
-
+- Build business domain CRUD endpoints yet (handled in F003/F004/F018).
+- Implement auth guards here (handled in F002).
+ 
 ## Last Updated
 2026-09-26
