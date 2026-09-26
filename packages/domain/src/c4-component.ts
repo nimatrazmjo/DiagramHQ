@@ -1,12 +1,13 @@
 import {
   createId,
   type ArchitectureId,
-  type ModelObject,
   type ObjectId,
   type VersionId,
-} from './';
+} from './ids';
+import type { ModelObject, ModelConnection } from './types';
 import type { CanvasEdge, CanvasNode } from './canvas';
-import type { ModelConnection } from './types';
+import { isComponent } from './component';
+export { isComponent };
 
 export type C4ComponentKind =
   | 'component'
@@ -43,12 +44,6 @@ export interface C4ContainerBoundaryNodeData {
   [key: string]: unknown;
 }
 
-/**
- * Checks whether a ModelObject is a C4 Component (Level 3).
- */
-export function isComponent(obj: ModelObject): boolean {
-  return obj.kind === 'component' || obj.metadata?.c4Level === 3;
-}
 
 /**
  * Checks whether a ModelObject is a component belonging to a specific container.
@@ -84,7 +79,7 @@ export function getC4ComponentKind(obj: ModelObject): C4ComponentKind {
   return 'component';
 }
 
-export interface CreateComponentOptions {
+export interface CreateC4ComponentOptions {
   componentKind?: C4ComponentKind;
   technology?: string;
   description?: string;
@@ -100,7 +95,7 @@ export function createC4Component(
   versionId: VersionId,
   containerId: ObjectId,
   name: string,
-  options: CreateComponentOptions = {},
+  options: CreateC4ComponentOptions = {},
 ): ModelObject {
   const componentKind = options.componentKind ?? 'component';
 
