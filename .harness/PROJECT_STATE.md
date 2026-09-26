@@ -15,24 +15,24 @@ Status: IN PROGRESS
 ## Current Feature
 Feature ID: F024
 Feature Name: Application
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Overall Progress
 Total Features: 135
-Completed: 23
-In Progress: 1
+Completed: 24
+In Progress: 0
 Blocked: 0
 Not Started: 111
-Progress: 17.0%
+Progress: 17.8%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F023 — System. Object type system CRUD, rendering (internal vs external systems, system boundary), drill-down capabilities, and canvas projection. 6 API e2e tests, 5 domain tests, 6 web tests. PR #24 merged.
+F024 — Application. Object type application/service CRUD, rendering, container parent linkage, technology, and canvas projection. 6 API e2e tests, 4 domain tests, 5 web tests. PR #25 merged.
 
-Prior: F022 — Person (PR #23 merged). F021 — C4 Component (PR #22 merged). F020 — C4 Container (PR #21 merged). F019 — C4 Context (PR #20 merged). F018 — Architecture model (PR #19 merged). F017 — Minimap (PR #18 merged). F016 — Undo/redo (PR #17 merged). F015 — Auto-layout (PR #16 merged). F014 — Alignment (PR #15 merged). F013 — Multi-select (PR #14 merged). F012 — Drag and drop (PR #13 merged). F011 — Object selection (PR #12 merged). F010 — Pan and zoom (PR #11 merged). F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
+Prior: F023 — System (PR #24 merged). F022 — Person (PR #23 merged). F021 — C4 Component (PR #22 merged). F020 — C4 Container (PR #21 merged). F019 — C4 Context (PR #20 merged). F018 — Architecture model (PR #19 merged). F017 — Minimap (PR #18 merged). F016 — Undo/redo (PR #17 merged). F015 — Auto-layout (PR #16 merged). F014 — Alignment (PR #15 merged). F013 — Multi-select (PR #14 merged). F012 — Drag and drop (PR #13 merged). F011 — Object selection (PR #12 merged). F010 — Pan and zoom (PR #11 merged). F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
 
 ## Current Work
-F024 — Application: Object type application/service CRUD, rendering, container parent linkage, technology, and canvas projection.
+F025 — Component: Object type component CRUD, rendering, container parent linkage, interface/technology metadata, and canvas projection.
 
 ## Next Task
 F025 — Component. Object type: component CRUD and render.

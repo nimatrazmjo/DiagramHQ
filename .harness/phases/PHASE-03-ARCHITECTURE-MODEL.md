@@ -119,7 +119,7 @@ Test: system CRUD + render.
 
 ### F024 — Application
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Object type: application/service.
 
