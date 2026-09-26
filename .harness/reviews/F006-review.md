@@ -22,3 +22,8 @@ Target: Postgres + Prisma + migrations + domain invariants + tenant isolation.
 - `pnpm build`: Clean across all apps and packages.
 - `prisma migrate deploy`: Migration `20260926000000_init` applied cleanly to fresh PostgreSQL 16.
 - `prisma:seed`: Successfully seeded 1 org, 1 workspace, 1 architecture, 4 model objects, 2 connections, and 1 view.
+
+## PR Review — round 1 (code-review skill, PR #1)
+8 findings: domain dist/ not built before typecheck/test in verify+init+CI (build-order fix); check-architecture.sh layer-boundary regex only matched bare package names, never subpath imports (silently defeated the check); modelObject.create didn't validate versionId belongs to the given architecture (cross-tenant integrity gap); modelConnection.create ran source/target lookups sequentially; architecture.create used a hand-rolled type instead of the generated Prisma type; database.spec.ts's DATABASE_URL fallback port (5433) didn't match the documented default (5432); domain tsconfig excluded `*.test.ts` but not `*.spec.ts`; `model.ts` was a redundant re-export shim.
+
+All 8 fixed in `8a288af`. Verified clean via `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm check-architecture` from a scratch build (20/20 tests pass). Pushed to PR #1 for round 2.
