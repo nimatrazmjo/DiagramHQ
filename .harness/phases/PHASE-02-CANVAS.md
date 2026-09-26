@@ -1,6 +1,6 @@
 # Phase 02 — Canvas
 
-Status: NOT STARTED
+Status: IN PROGRESS
 
 ## Description
 The generic infinite-canvas primitives (render + interaction) the architecture model renders into. React Flow behind a CanvasRenderer interface (ADR-0002).
@@ -12,7 +12,7 @@ Phase 01
 
 ### F009 — Infinite canvas
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: React Flow mounted behind the CanvasRenderer interface.
 

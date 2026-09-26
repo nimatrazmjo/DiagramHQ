@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { projectViewModelToCanvas } from '@diagramhq/domain';
+import { InfiniteCanvas } from '../../../components/canvas';
 
 export interface WorkspaceOverviewPageProps {
   params: {
@@ -11,22 +13,72 @@ export default function WorkspaceOverviewPage({
 }: WorkspaceOverviewPageProps): JSX.Element {
   const { workspaceId } = params;
 
+  const sampleObjects = [
+    {
+      id: 'sys-payment',
+      name: 'Payment Gateway System',
+      kind: 'system',
+      description: 'High-level payment processing and settlement boundary',
+    },
+    {
+      id: 'app-auth',
+      name: 'Auth Service App',
+      kind: 'application',
+      description: 'Authentication, token verification, and sessions',
+    },
+    {
+      id: 'store-pg',
+      name: 'Postgres Database Store',
+      kind: 'store',
+      description: 'Relational database for transactions and accounts',
+    },
+  ];
+
+  const sampleConnections = [
+    {
+      id: 'conn-auth-payment',
+      sourceId: 'app-auth',
+      targetId: 'sys-payment',
+      kind: 'sync',
+      description: 'Verify token before checkout',
+    },
+    {
+      id: 'conn-auth-store',
+      sourceId: 'app-auth',
+      targetId: 'store-pg',
+      kind: 'data',
+      description: 'Persist user sessions and credentials',
+    },
+  ];
+
+  const sampleViewObjects = [
+    { objectId: 'sys-payment', x: 80, y: 100 },
+    { objectId: 'app-auth', x: 420, y: 100 },
+    { objectId: 'store-pg', x: 420, y: 300 },
+  ];
+
+  const { nodes: sampleNodes, edges: sampleEdges } = projectViewModelToCanvas({
+    objects: sampleObjects,
+    connections: sampleConnections,
+    viewObjects: sampleViewObjects,
+  });
+
   const stats = [
     {
       label: 'Objects',
-      count: '0',
+      count: '3',
       description: 'Systems, Apps, and Data stores',
       href: `/workspace/${workspaceId}/systems`,
     },
     {
       label: 'Views',
-      count: '0',
+      count: '1',
       description: 'C4 and custom projections',
       href: `/workspace/${workspaceId}/views`,
     },
     {
       label: 'Connections',
-      count: '0',
+      count: '2',
       description: 'Dependencies and data flow relations',
       href: `/workspace/${workspaceId}/flows`,
     },
@@ -64,6 +116,25 @@ export default function WorkspaceOverviewPage({
         </div>
       </header>
 
+      {/* Live Interactive Infinite Canvas */}
+      <section aria-labelledby="live-canvas-heading" className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+            <h2 id="live-canvas-heading" className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+              Interactive Canvas (ADR-0002)
+            </h2>
+          </div>
+          <span className="text-xs text-slate-500 font-mono">
+            React Flow Renderer · Pure Model Projection
+          </span>
+        </div>
+
+        <div className="h-[480px] w-full rounded-xl overflow-hidden border border-slate-800 bg-slate-950/80 shadow-2xl relative">
+          <InfiniteCanvas initialNodes={sampleNodes} initialEdges={sampleEdges} />
+        </div>
+      </section>
+
       {/* Quick Statistics */}
       <section aria-labelledby="quick-stats-heading" className="space-y-3">
         <h2 id="quick-stats-heading" className="text-sm font-semibold uppercase tracking-wider text-slate-400">
@@ -83,37 +154,6 @@ export default function WorkspaceOverviewPage({
               <p className="text-xs text-slate-500 mt-2 leading-relaxed">{stat.description}</p>
             </Link>
           ))}
-        </div>
-      </section>
-
-      {/* Open Canvas Callout */}
-      <section
-        aria-labelledby="canvas-callout-heading"
-        className="p-6 rounded-lg bg-gradient-to-r from-blue-950/40 via-indigo-950/30 to-purple-950/40 border border-blue-900/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
-      >
-        <div className="space-y-1.5 max-w-2xl">
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-            <h3 id="canvas-callout-heading" className="text-base font-semibold text-white">
-              Infinite Canvas — Visual Architecture Modeler
-            </h3>
-          </div>
-          <p className="text-sm text-slate-300 leading-relaxed">
-            Interactive, zoomable infinite canvas with high-performance WebGL / SVG node graph rendering, drag-and-drop model positioning, and bidirectional live synchronization is coming in Phase 02 (F009 / F010).
-          </p>
-        </div>
-        <div className="flex-shrink-0">
-          <button
-            type="button"
-            disabled
-            className="px-4 py-2 text-xs font-semibold rounded-md bg-blue-600/30 text-blue-300 border border-blue-500/40 cursor-not-allowed inline-flex items-center gap-2 shadow-sm"
-            title="Scheduled for Phase 02"
-          >
-            <span>Open Canvas (Phase 02)</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono">
-              Coming Soon
-            </span>
-          </button>
         </div>
       </section>
 

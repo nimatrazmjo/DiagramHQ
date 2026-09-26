@@ -49,5 +49,6 @@ let sequence = 0;
 /** Generates a monotonic, prefixed id. Monotonicity keeps logs and tests stable. */
 export function createId<P extends IdPrefix>(prefix: P): Id<P> {
   sequence += 1;
-  return `${prefix}_${Date.now().toString(36)}${sequence.toString(36)}` as Id<P>;
+  const rand = Math.random().toString(36).slice(2, 6);
+  return `${prefix}_${Date.now().toString(36)}${sequence.toString(36)}${rand}` as Id<P>;
 }

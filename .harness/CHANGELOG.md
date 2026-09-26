@@ -2,6 +2,35 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F009 — Infinite Canvas
+
+Status: COMPLETE
+
+Implemented:
+- Domain canvas primitives & abstraction (`packages/domain/src/canvas.ts`):
+  - Defined framework-agnostic types: `CanvasNode`, `CanvasEdge`, `CanvasViewport`, `CanvasDimensions`, `CanvasInteractionHandler`.
+  - Defined `CanvasRenderer<TContainer>` interface isolating renderer from core model (ADR-0002, MODULES.md §7).
+  - Implemented pure model projection function `projectViewModelToCanvas` mapping objects and connections to canvas nodes and edges with deterministic fallback grid.
+  - Added unit tests in `packages/domain/src/canvas.test.ts` (11 tests).
+  - Hardened monotonic ID generation in `packages/domain/src/ids.ts` with random entropy suffix to eliminate concurrent test ID collisions.
+- Web canvas implementation (`apps/web`):
+  - Created transient UI store `useCanvasStore` (`apps/web/lib/canvas-store.ts`) adhering strictly to Layer Boundaries Rule 4 (zero domain entity models stored in Zustand; handles only viewport, selection IDs, and hover states).
+  - Implemented `ReactFlowCanvasRenderer` in `apps/web/components/canvas/canvas-renderer.ts` satisfying `CanvasRenderer<HTMLElement>`.
+  - Created custom architectural nodes (`SystemNode`, `AppNode`, `StoreNode`) with handles, semantic styling, badges, and icons in `apps/web/components/canvas/custom-nodes.tsx`.
+  - Implemented `InfiniteCanvas` component in `apps/web/components/canvas/infinite-canvas.tsx` integrating React Flow, MiniMap, Controls, Background grid, and selection callbacks.
+  - Integrated `InfiniteCanvas` into `/workspace/[workspaceId]` studio overview with sample projected architecture.
+  - Added comprehensive test suite in `apps/web/canvas.spec.ts` (17 tests).
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (225 tests: 34 domain, 61 web, 130 api)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean)
+- Evaluator Rubric Score: 5.0 / 5.0 -> PASS. Log: `.harness/reviews/F009-review.md`.
+
+---
+
 ## 2026-09-26 — F008 — Application Shell
 
 Status: COMPLETE

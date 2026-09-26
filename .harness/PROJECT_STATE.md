@@ -8,40 +8,40 @@ Name: DiagramHQ
 Description: Model-first architecture intelligence platform (a "better than IcePanel" Architecture OS). The model — objects + connections — is the product; diagrams are projections of it. Full spec: `product/PRODUCT.md`. CLI: `dhq`.
 
 ## Current Phase
-Phase: 01
-Phase Name: Foundation
-Status: COMPLETE
+Phase: 02
+Phase Name: Canvas
+Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F008
-Feature Name: Application shell
-Status: COMPLETE (ready for PR review loop)
+Feature ID: F009
+Feature Name: Infinite canvas
+Status: COMPLETE
 
 ## Overall Progress
 Total Features: 135
-Completed: 8
+Completed: 9
 In Progress: 0
 Blocked: 0
-Not Started: 127
-Progress: 5.9%
+Not Started: 126
+Progress: 6.7%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F008 — Application shell. Responsive Next.js application shell: LeftNavigator (Overview, Systems, Apps, Data, Flows, Views, Decisions), TopBar (search input with ⌘K, AI Copilot trigger, user session/signout), InspectorPanel (collapsible right-side inspector with Properties, Hierarchy, Metadata tabs), `/workspace/[workspaceId]` studio subroutes, and narrow phone width responsiveness. Phase 01 (Foundation) is now 100% COMPLETE. Verified: 197 tests green across workspace (23 domain, 44 web, 130 api), typecheck/lint/build/check-architecture clean. Evaluator score 5.0/5.0. Log: `.harness/reviews/F008-review.md`.
+F009 — Infinite canvas. React Flow mounted behind framework-agnostic `CanvasRenderer` interface (ADR-0002, MODULES.md §7). Pure model projection `projectViewModelToCanvas` maps domain objects and connections to canvas nodes and edges. UI interaction state (viewport, transient selection) strictly isolated in Zustand (`apps/web/lib/canvas-store.ts`) with zero domain entity models (Layer Boundaries Rule 4). Semantic architectural nodes (`SystemNode`, `AppNode`, `StoreNode`), MiniMap, Controls, background grid mounted in `/workspace/[workspaceId]` studio overview. Verified: 225 tests green across monorepo (34 domain, 61 web, 130 api), typecheck/lint/build/check-architecture clean. Evaluator score 5.0/5.0.
 
-Prior: F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
+Prior: F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
 
 ## Current Work
-F008 PR review loop in progress.
+F009 review and PR merge; next feature: F010 — Pan and zoom.
 
 ## Next Task
-F009 — Infinite canvas (Phase 02 — Canvas). See `CURRENT_TASK.md`.
+F010 — Pan and zoom. See `CURRENT_TASK.md`.
 
 ## Last Verified
-F008 @ feat/F008-application-shell — pnpm verify (typecheck / lint / test x197 / check-architecture) + pnpm build all green. PostgreSQL 16 container healthy.
+F009 @ feat/F009-infinite-canvas — pnpm verify (typecheck / lint / test x225 / check-architecture) + pnpm build all green. PostgreSQL 16 container healthy.
 
 ## Current Git Commit
-Branch `feat/F008-application-shell`. Working tree clean.
+Branch `feat/F009-infinite-canvas`. Working tree clean.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.

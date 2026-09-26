@@ -1,37 +1,37 @@
 # Current Task
 
-Feature ID: F008
-Feature: Application shell (Next.js shell: left navigator, top bar, inspector slot, responsive routing)
-Status: COMPLETE (PR ready for review loop)
-Phase: Phase 01 — Foundation
+Feature ID: F009
+Feature: Infinite canvas (React Flow mounted behind CanvasRenderer interface; pure model projection; no domain state in UI store)
+Status: COMPLETE
+Phase: Phase 02 — Canvas
 
 ## Objective
-Implement responsive Next.js application shell: Left navigator (Overview, Systems, Apps, Data, Flows, Views, Decisions), Top bar (search, AI, user), Right inspector slot, and route integration under `/workspace/[workspaceId]` holding at narrow phone viewports.
+Mount an interactive infinite canvas behind the framework-agnostic `CanvasRenderer` interface (ADR-0002). Model projections generate canvas nodes and edges, keeping UI interaction state (viewport, selection) strictly decoupled from domain state in accordance with layer boundaries.
 
 ## Prerequisite
-F001–F007 are COMPLETE and merged to `main`. Branch `feat/F008-application-shell` is active.
+Phase 01 (F001–F008) is COMPLETE and merged to `main`. Branch `feat/F009-infinite-canvas` is active.
 
 ## Steps
-- [x] Create `apps/web/components/shell/` (`left-navigator.tsx`, `top-bar.tsx`, `inspector-panel.tsx`, `app-shell.tsx`)
-- [x] Implement Left navigator with all 7 sections (Overview, Systems, Apps, Data, Flows, Views, Decisions)
-- [x] Implement Top bar with search input, AI button, and user session display
-- [x] Implement Right inspector slot with collapsible state
-- [x] Implement responsive layout with mobile drawer toggle for narrow phone widths
-- [x] Wire `/workspace/[workspaceId]` studio layout and views in `apps/web/app/workspace/`
-- [x] Protect `/workspace` in `apps/web/middleware.ts` and link from dashboard
-- [x] Unit & component tests in `apps/web/shell.spec.ts`
+- [x] Define `CanvasRenderer`, `CanvasNode`, `CanvasEdge`, `CanvasViewport` in `packages/domain/src/canvas.ts`
+- [x] Implement pure model projection `projectViewModelToCanvas` in `packages/domain/src/canvas.ts`
+- [x] Add unit tests in `packages/domain/src/canvas.test.ts`
+- [x] Implement transient UI store in `apps/web/lib/canvas-store.ts` (Zustand: viewport + transient selection only)
+- [x] Implement `ReactFlowCanvasRenderer` in `apps/web/components/canvas/canvas-renderer.ts`
+- [x] Implement `InfiniteCanvas` component in `apps/web/components/canvas/infinite-canvas.tsx`
+- [x] Integrate interactive canvas into `/workspace/[workspaceId]` studio page
+- [x] Unit & component tests in `apps/web/canvas.spec.ts`
 - [x] Run full verification suite (`pnpm verify` + `pnpm build`)
 
 ## Verification
 - [x] TypeScript: PASS · Lint: PASS · Unit/Integration: PASS · Build: PASS · check-architecture: PASS
 
 ## Do Not
-- Implement canvas nodes/edges (F009).
-- Implement pan and zoom canvas interactions (F010).
-- Wire live AI LLM streaming backend (Phase 08).
+- Store domain entity models inside Zustand stores (layer-boundaries rule 4).
+- Persist positions to DB without command layer (F012).
+- Re-implement graph storage or engine inside canvas.
 
 ## Next Task
-F009 — Infinite canvas (Phase 02 — Canvas).
+F010 — Pan and zoom.
 
 ## Last Updated
 2026-09-26
