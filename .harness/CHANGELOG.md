@@ -2,6 +2,20 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — Agent relay keep-awake + runtime notes (harness tooling)
+
+Status: COMPLETE (tooling; not a product feature)
+
+Implemented:
+- `scripts/agent-relay.sh`: keeps the Mac awake (`caffeinate -dimsu`) while the relay runs; cleans it up on INT/TERM/HUP/EXIT (was INT-only) and now also kills the backgrounded `claude`/`agy` child on signal, not just the caffeinate helper.
+- `.harness/RUNTIME-CONTINUITY.md`: documents a third environment (a cloud Cowork Linux VM that has touched this repo between relay sessions) — explicitly not part of `agent-relay.sh`'s two-runtime rotation — plus the cross-platform `node_modules`/Prisma-engine gotcha and the division of labor when a Cowork session is involved.
+
+Verification: `bash -n scripts/agent-relay.sh` clean; smoke-tested the background+wait+signal pattern in isolation (SIGTERM to the wrapper kills the backgrounded child, confirmed via `ps` before/after). No product code touched.
+
+Review: `code-review` skill via PR #3 (`loops/pr-review-loop.md`). Log: `.harness/reviews/agent-relay-cleanup-review.md`.
+
+---
+
 ## 2026-09-26 — F006 — Database foundation
 
 Status: COMPLETE

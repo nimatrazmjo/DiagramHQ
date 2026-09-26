@@ -23,10 +23,12 @@ if command -v caffeinate >/dev/null 2>&1; then
   caffeinate -dimsu &
   CAFFEINATE_PID=$!
 fi
+RUNTIME_PID=""
 CLEANED_UP=""
 cleanup() {
   [ -n "$CLEANED_UP" ] && return
   CLEANED_UP=1
+  [ -n "$RUNTIME_PID" ] && kill "$RUNTIME_PID" 2>/dev/null
   [ -n "$CAFFEINATE_PID" ] && kill "$CAFFEINATE_PID" 2>/dev/null
   echo; echo "relay stopped."
   exit 0
@@ -40,11 +42,17 @@ turn="${1:-claude}"
 while true; do
   if [ "$turn" = "claude" ]; then
     log "start Claude Code (active feature per CURRENT_TASK.md)"
-    claude "$BOOTSTRAP" || true      # returns on session limit or manual quit
+    claude "$BOOTSTRAP" &     # backgrounded so a signal to this script's PID (e.g. SIGTERM,
+    RUNTIME_PID=$!            # not just terminal Ctrl-C) can still reach it via cleanup()
+    wait "$RUNTIME_PID" || true      # returns on session limit or manual quit
+    RUNTIME_PID=""
     turn="agy"
   else
     log "start Antigravity agy (model=$SONNET_MODEL)"
-    agy -m "$SONNET_MODEL" "$BOOTSTRAP" || true
+    agy -m "$SONNET_MODEL" "$BOOTSTRAP" &
+    RUNTIME_PID=$!
+    wait "$RUNTIME_PID" || true
+    RUNTIME_PID=""
     turn="claude"
   fi
   echo
