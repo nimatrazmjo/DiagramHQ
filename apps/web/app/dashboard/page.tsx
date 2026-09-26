@@ -2,6 +2,9 @@ import { auth, signOut } from '@/auth';
 import Link from 'next/link';
 import { CreateOrgForm } from './create-org-form';
 import { fetchUserOrganizations } from './actions';
+import { fetchOrgWorkspaces } from './workspace-actions';
+import { WorkspaceList } from './workspace-list';
+import { CreateWorkspaceForm } from './create-workspace-form';
 
 export const metadata = {
   title: 'Dashboard — DiagramHQ',
@@ -10,6 +13,16 @@ export const metadata = {
 export default async function DashboardPage(): Promise<JSX.Element> {
   const session = await auth();
   const organizations = await fetchUserOrganizations();
+
+  const orgsWithWorkspaces = await Promise.all(
+    organizations.map(async (org) => {
+      const workspaces = await fetchOrgWorkspaces(org.id);
+      return {
+        ...org,
+        workspaces,
+      };
+    }),
+  );
 
   return (
     <main className="min-h-screen p-8 bg-gray-50">
@@ -47,28 +60,48 @@ export default async function DashboardPage(): Promise<JSX.Element> {
             Your Organizations
           </h2>
 
-          {organizations.length === 0 ? (
+          {orgsWithWorkspaces.length === 0 ? (
             <div className="p-4 bg-gray-50 rounded border border-gray-200 text-sm text-gray-600 mb-6">
               You are not a member of any organization yet. Create one below to get started.
             </div>
           ) : (
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-              {organizations.map((org) => (
-                <li
+            <div className="space-y-6 mb-6">
+              {orgsWithWorkspaces.map((org) => (
+                <div
                   key={org.id}
-                  className="p-4 border rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                  className="p-5 border rounded-lg bg-gray-50 shadow-sm space-y-4"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-gray-900">{org.name}</span>
-                    <span className="text-xs font-medium px-2 py-0.5 rounded bg-blue-100 text-blue-800 uppercase">
+                  <div className="flex items-center justify-between border-b pb-3">
+                    <div>
+                      <h3 className="font-bold text-base text-gray-900">{org.name}</h3>
+                      <div className="flex items-center gap-3 text-xs text-gray-500 mt-0.5">
+                        <span>slug: <code className="text-gray-700">{org.slug}</code></span>
+                        <span>ID: <code className="text-gray-400">{org.id}</code></span>
+                      </div>
+                    </div>
+                    <span className="text-xs font-medium px-2.5 py-1 rounded bg-blue-100 text-blue-800 uppercase tracking-wide">
                       {org.role}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">slug: {org.slug}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">ID: {org.id}</p>
-                </li>
+
+                  <div>
+                    <h4 className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+                      Workspaces
+                    </h4>
+                    <WorkspaceList workspaces={org.workspaces} />
+                  </div>
+
+                  <details className="pt-2 border-t border-gray-200">
+                    <summary className="cursor-pointer text-xs font-medium text-blue-600 hover:text-blue-800 select-none">
+                      + Create Workspace
+                    </summary>
+                    <div className="mt-3 p-3 bg-white border rounded">
+                      <CreateWorkspaceForm orgId={org.id} />
+                    </div>
+                  </details>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
 
           <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">

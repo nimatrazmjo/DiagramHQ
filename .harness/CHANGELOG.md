@@ -2,6 +2,35 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F004 — Workspaces
+
+Status: COMPLETE
+
+Implemented:
+- API workspace capabilities (`apps/api`):
+  - `WorkspacesModule`, `WorkspacesService`, and `WorkspacesController` composed into `AppModule`.
+  - Input validation: `CreateWorkspaceDto` and `UpdateWorkspaceDto`.
+  - Scoped workspace creation (`POST /organizations/:orgId/workspaces`): Creates workspace scoped to `orgId`; validates organization membership; rejects `viewer` role; enforces per-org unique slug (`@@unique([orgId, slug])`).
+  - Workspace retrieval & containment (`GET /organizations/:orgId/workspaces`, `GET /workspaces/:id`, `GET /workspaces/:id/architectures`): Verifies caller's membership in parent org (returns 404 for unassociated callers); returns workspace with architecture count and contained architecture summaries.
+  - Workspace update & cascade deletion (`PATCH /workspaces/:id`, `DELETE /workspaces/:id`): Verifies role permissions (`owner`/`admin`/`editor` for update, `owner`/`admin` for delete); deletes workspace and cascades to contained architectures.
+  - Unit test suite (`workspaces.service.spec.ts`, 25 tests) and e2e integration test suite (`workspaces.e2e.spec.ts`, 14 tests) verifying multi-tenant isolation, cross-org access prevention, and architecture containment against live PostgreSQL.
+- Web application (`apps/web`):
+  - `app/dashboard/workspace-actions.ts`: Server actions for creating and fetching workspaces.
+  - `app/dashboard/create-workspace-form.tsx`: Interactive workspace creation form with error feedback.
+  - `app/dashboard/workspace-list.tsx`: Workspace list with architecture count badges.
+  - `app/dashboard/page.tsx`: Displays workspaces under each organization.
+  - Unit test suite (`workspaces.spec.ts`, 11 tests) verifying actions and validation.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (147 tests: 15 domain, 17 web, 115 api)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean)
+- Evaluator Rubric Score: 5.0 / 5.0 -> PASS. Log: `.harness/reviews/F004-review.md`.
+
+---
+
 ## 2026-09-26 — F003 — Organizations
 
 Status: COMPLETE
