@@ -41,3 +41,21 @@ Target: Full-stack authentication foundation — Auth.js (NextAuth v5) in `apps/
 - `pnpm test`: 57 tests passed (15 domain, 5 web, 37 api).
 - `check-architecture`: Clean (`check-architecture: clean`).
 - `pnpm build`: Clean production build across all packages and Next.js / NestJS applications.
+- GitHub Actions CI: `CI/verify` passed on PR #5.
+
+## PR Review — Round 1 (PR #5)
+Independent pass over the full pull request diff (`git diff origin/main...feat/F002-authentication`):
+1. **Security & Secrets**:
+   - `AUTH_SECRET` is read via environment variable and only defaults to development fallback string if unset; no real secrets committed.
+   - All protected routes and API endpoints verify tokens or redirect.
+   - `AllExceptionsFilter` handles unauthenticated/unauthorized errors without leaking stack traces or internal exception details.
+2. **Framework & Type Safety**:
+   - NestJS DI metadata preserved; `packages/config/eslint-preset.js` cleanly accounts for injectable Nest components.
+   - Shared domain contracts (`User`, `AuthSessionUser`, `AuthTokenPayload`) maintain strong types between Next.js and NestJS.
+   - Accessible autofill login form conforms to modern web guidelines (`autocomplete="username"`, `autocomplete="current-password"`).
+3. **Automated Test Coverage**:
+   - Edge case coverage across null credentials, short passwords, malformed emails, invalid tokens, and expired tokens.
+   - Both unit test layers and real HTTP-level e2e integration test layers pass cleanly.
+
+**PR Verdict**: CLEAN. Exiting PR review loop.
+
