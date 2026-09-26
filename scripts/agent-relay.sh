@@ -27,7 +27,13 @@ BOOTSTRAP="Resume DiagramHQ. Read .harness/PROJECT_STATE.md, then CURRENT_TASK.m
 RUNTIME_PID=""
 CAFFEINATE_PID=""
 CLEANED_UP=""
+# $1 is which trap fired ("EXIT" for a normal stop -- the read-EOF path below
+# calls cleanup with no arg, defaulting to EXIT too). Exits with the
+# conventional 128+signum code for a real signal so a supervisor's $? can
+# still tell a forced kill from a graceful stop, instead of always reporting
+# success.
 cleanup() {
+  local sig="${1:-EXIT}"
   [ -n "$CLEANED_UP" ] && return
   CLEANED_UP=1
   if [ -n "$RUNTIME_PID" ]; then
@@ -49,12 +55,23 @@ cleanup() {
   fi
   [ -n "$CAFFEINATE_PID" ] && kill "$CAFFEINATE_PID" 2>/dev/null
   echo; echo "relay stopped."
-  exit 0
+  case "$sig" in
+    INT)  exit 130 ;;
+    TERM) exit 143 ;;
+    HUP)  exit 129 ;;
+    *)    exit 0 ;;
+  esac
 }
 # Trap installed BEFORE starting caffeinate below: a signal arriving in that
 # gap would otherwise exit under the default disposition, skipping cleanup()
-# and orphaning caffeinate.
-trap cleanup INT TERM HUP EXIT
+# and orphaning caffeinate. Each signal passes its own name so cleanup()
+# can exit with the right code; the resulting `exit` also re-fires the EXIT
+# trap, but CLEANED_UP makes that second call a no-op that just returns,
+# leaving the already-set exit code alone.
+trap 'cleanup INT'  INT
+trap 'cleanup TERM' TERM
+trap 'cleanup HUP'  HUP
+trap 'cleanup EXIT' EXIT
 
 # Keep the Mac awake for as long as the relay runs (macOS only; no-op elsewhere).
 if command -v caffeinate >/dev/null 2>&1; then
