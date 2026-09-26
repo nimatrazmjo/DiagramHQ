@@ -58,6 +58,9 @@ export interface InfiniteCanvasProps {
   isSpacePanning?: boolean;
   selectedNodeIds?: string[];
   selectedEdgeIds?: string[];
+  isMinimapVisible?: boolean;
+  isFullscreen?: boolean;
+  isFocusMode?: boolean;
   className?: string;
   viewId?: string;
   onNodeDragStop?: (nodeId: string, position: { x: number; y: number }) => void;
@@ -173,6 +176,22 @@ export function snapGroupPositions(
   return result;
 }
 
+/**
+ * Computes the fill color for a node on the canvas minimap (F017).
+ * Selected nodes are highlighted in vibrant blue, while unselected nodes
+ * are tinted by their architectural category (system, app/container, store/database, etc.).
+ */
+export function getMiniMapNodeColor(node: Node): string {
+  if (node.selected) return '#60a5fa';
+  const type = (node.type || '').toLowerCase();
+  if (type.includes('system')) return '#818cf8';
+  if (type.includes('app') || type.includes('container')) return '#38bdf8';
+  if (type.includes('store') || type.includes('database')) return '#34d399';
+  if (type.includes('component')) return '#fbbf24';
+  if (type.includes('person')) return '#f472b6';
+  return '#64748b';
+}
+
 function toFlowNode(node: CanvasNode): Node {
   return {
     id: node.id,
@@ -217,6 +236,9 @@ function InfiniteCanvasContent({
   isSpacePanning: propIsSpacePanning,
   selectedNodeIds: propSelectedNodeIds,
   selectedEdgeIds: propSelectedEdgeIds,
+  isMinimapVisible: propIsMinimapVisible,
+  isFullscreen: propIsFullscreen,
+  isFocusMode: propIsFocusMode,
   className = '',
   viewId,
   onNodeDragStop,
@@ -234,11 +256,80 @@ function InfiniteCanvasContent({
   const storeSelectedEdgeIds = useCanvasStore((s) => s.selectedEdgeIds);
   const isBoxSelectMode = useCanvasStore((s) => s.isBoxSelectMode);
   const isSnapToGridEnabled = useCanvasStore((s) => s.isSnapToGridEnabled);
+  const storeIsMinimapVisible = useCanvasStore((s) => s.isMinimapVisible);
+  const isMinimapVisible = propIsMinimapVisible ?? storeIsMinimapVisible;
+  const storeIsFullscreen = useCanvasStore((s) => s.isFullscreen);
+  const isFullscreen = propIsFullscreen ?? storeIsFullscreen;
+  const storeIsFocusMode = useCanvasStore((s) => s.isFocusMode);
+  const isFocusMode = propIsFocusMode ?? storeIsFocusMode;
   const selectedNodeIds = propSelectedNodeIds ?? storeSelectedNodeIds;
   const selectedEdgeIds = propSelectedEdgeIds ?? storeSelectedEdgeIds;
   const totalSelected = selectedNodeIds.length + selectedEdgeIds.length;
   const currentZoom = useCanvasStore((s) => s.viewport.zoom);
   const reactFlow = useReactFlow();
+
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  const handleToggleFullscreen = useCallback(() => {
+    if (typeof document === 'undefined') return;
+    if (!document.fullscreenElement) {
+      void containerRef.current?.requestFullscreen?.().catch((err: unknown) => {
+        console.warn('Fullscreen request failed:', err);
+      });
+      useCanvasStore.getState().setIsFullscreen(true);
+    } else {
+      void document.exitFullscreen?.().catch((err: unknown) => {
+        console.warn('Exit fullscreen failed:', err);
+      });
+      useCanvasStore.getState().setIsFullscreen(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const handleFullscreenChange = () => {
+      useCanvasStore.getState().setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  // In Focus Mode (F017), unselected nodes and unconnected edges are visually dimmed
+  // so the user can isolate the selected architecture component or sub-graph.
+  const displayedNodes = React.useMemo(() => {
+    if (!isFocusMode || selectedNodeIds.length === 0) return nodes;
+    const selectedSet = new Set(selectedNodeIds);
+    return nodes.map((n) => {
+      const isSelected = selectedSet.has(n.id);
+      return {
+        ...n,
+        style: {
+          ...n.style,
+          opacity: isSelected ? 1 : 0.15,
+          filter: isSelected ? 'none' : 'grayscale(100%)',
+          transition: 'opacity 0.2s ease, filter 0.2s ease',
+        },
+      };
+    });
+  }, [nodes, isFocusMode, selectedNodeIds]);
+
+  const displayedEdges = React.useMemo(() => {
+    if (!isFocusMode || selectedNodeIds.length === 0) return edges;
+    const selectedSet = new Set(selectedNodeIds);
+    return edges.map((e) => {
+      const isConnected = selectedSet.has(e.source) || selectedSet.has(e.target);
+      return {
+        ...e,
+        style: {
+          ...e.style,
+          opacity: isConnected ? 1 : 0.08,
+          transition: 'opacity 0.2s ease',
+        },
+      };
+    });
+  }, [edges, isFocusMode, selectedNodeIds]);
 
   const dragStartPositions = React.useRef<Map<string, { x: number; y: number }>>(new Map());
 
@@ -592,16 +683,32 @@ function InfiniteCanvasContent({
         void handleRedo();
       } else if (event.code === 'Space' && !event.repeat) {
         useCanvasStore.getState().setIsSpacePanning(true);
-      } else if (event.key === 'f' || event.key === 'F') {
+      } else if (event.shiftKey && (event.key === 'f' || event.key === 'F')) {
+        event.preventDefault();
+        handleToggleFullscreen();
+      } else if (event.altKey && (event.key === 'f' || event.key === 'F')) {
+        event.preventDefault();
+        useCanvasStore.getState().toggleFocusMode();
+      } else if (!event.shiftKey && !event.altKey && !isMod && (event.key === 'f' || event.key === 'F')) {
         event.preventDefault();
         reactFlow.fitView({ padding: 0.2, duration: 250 });
+      } else if (!event.shiftKey && !event.altKey && !isMod && (event.key === 'm' || event.key === 'M')) {
+        event.preventDefault();
+        useCanvasStore.getState().toggleMinimap();
       } else if (event.code === 'Escape') {
         event.preventDefault();
-        useCanvasStore.getState().clearSelection();
-        setNodes((nds) => nds.map((n) => ({ ...n, selected: false })));
-        setEdges((eds) => eds.map((e) => ({ ...e, selected: false })));
-        if (onNodeSelect) {
-          onNodeSelect(null);
+        const hasSelection =
+          useCanvasStore.getState().selectedNodeIds.length > 0 ||
+          useCanvasStore.getState().selectedEdgeIds.length > 0;
+        if (hasSelection) {
+          useCanvasStore.getState().clearSelection();
+          setNodes((nds) => nds.map((n) => ({ ...n, selected: false })));
+          setEdges((eds) => eds.map((e) => ({ ...e, selected: false })));
+          if (onNodeSelect) {
+            onNodeSelect(null);
+          }
+        } else if (useCanvasStore.getState().isFocusMode) {
+          useCanvasStore.getState().setIsFocusMode(false);
         }
       }
     };
@@ -618,7 +725,7 @@ function InfiniteCanvasContent({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [reactFlow, onNodeSelect, handleUndo, handleRedo]);
+  }, [reactFlow, onNodeSelect, handleUndo, handleRedo, handleToggleFullscreen]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes((nds) => applyNodeChanges(changes, nds));
@@ -686,6 +793,7 @@ function InfiniteCanvasContent({
 
   return (
     <div
+      ref={containerRef}
       data-testid="infinite-canvas-container"
       className={`w-full h-full relative bg-slate-950 select-none ${
         isSpacePanning ? 'cursor-grab active:cursor-grabbing' : ''
@@ -706,8 +814,8 @@ function InfiniteCanvasContent({
       </div>
 
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
+        nodes={displayedNodes}
+        edges={displayedEdges}
         nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
@@ -736,10 +844,18 @@ function InfiniteCanvasContent({
           className="bg-slate-800 border-slate-700 text-slate-200"
           showInteractive={false}
         />
-        <MiniMap
-          className="bg-slate-900 border border-slate-800 rounded"
-          nodeColor="#64748b"
-        />
+        {isMinimapVisible && (
+          <div data-testid="minimap">
+            <MiniMap
+              className="bg-slate-900 border border-slate-800 rounded shadow-md"
+              nodeColor={getMiniMapNodeColor}
+              nodeStrokeWidth={2}
+              maskColor="rgba(15, 23, 42, 0.7)"
+              pannable
+              zoomable
+            />
+          </div>
+        )}
 
         {/* Top-Left Canvas Badge */}
         <Panel position="top-left" className="m-3">
@@ -755,6 +871,14 @@ function InfiniteCanvasContent({
                 className="ml-2 px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px]"
               >
                 PAN MODE (SPACE)
+              </span>
+            )}
+            {isFocusMode && (
+              <span
+                data-testid="focus-mode-badge"
+                className="ml-2 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px]"
+              >
+                FOCUS MODE {selectedNodeIds.length > 0 ? `(${selectedNodeIds.length} ISOLATED)` : '(SELECT TO ISOLATE)'}
               </span>
             )}
             {totalSelected > 1 && (
@@ -853,6 +977,44 @@ function InfiniteCanvasContent({
               title="Toggle Box Select (drag to marquee-select objects)"
             >
               {isBoxSelectMode ? '✦ BOX SELECT' : '⬚ Box Select'}
+            </button>
+            <div className="w-px h-4 bg-slate-700 mx-0.5" />
+            <button
+              type="button"
+              data-testid="focus-mode-btn"
+              onClick={() => useCanvasStore.getState().toggleFocusMode()}
+              className={`px-2 h-7 flex items-center justify-center rounded text-[11px] font-medium transition-colors ${
+                isFocusMode
+                  ? 'bg-amber-600 hover:bg-amber-700 text-white border border-amber-500'
+                  : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white'
+              }`}
+              title="Toggle Focus Mode (Alt+F) — isolates selected objects"
+            >
+              {isFocusMode ? '🎯 Focused' : '🎯 Focus'}
+            </button>
+            <button
+              type="button"
+              data-testid="toggle-minimap-btn"
+              onClick={() => useCanvasStore.getState().toggleMinimap()}
+              className={`px-2 h-7 flex items-center justify-center rounded text-[11px] font-medium transition-colors ${
+                isMinimapVisible
+                  ? 'bg-slate-800 hover:bg-slate-700 text-slate-200'
+                  : 'bg-slate-800/50 hover:bg-slate-700 text-slate-500 hover:text-slate-300 line-through'
+              }`}
+              title="Toggle Minimap (M)"
+            >
+              🗺 Map
+            </button>
+            <button
+              type="button"
+              data-testid="fullscreen-btn"
+              onClick={handleToggleFullscreen}
+              className={`w-7 h-7 flex items-center justify-center rounded hover:bg-slate-800 text-slate-300 hover:text-white transition-colors ${
+                isFullscreen ? 'text-blue-400 bg-slate-800' : ''
+              }`}
+              title={isFullscreen ? 'Exit Fullscreen (Shift+F)' : 'Fullscreen (Shift+F)'}
+            >
+              {isFullscreen ? '⤓' : '⤢'}
             </button>
             {totalSelected > 0 && (
               <>

@@ -1,44 +1,40 @@
-# CURRENT TASK: F016 — Undo/redo
+# CURRENT TASK: F017 — Minimap
 
-## Status: COMPLETE
+## Status: IN PROGRESS
 
 ## Feature
-**F016 — Undo/redo**
+**F017 — Minimap**
 
-Reversible command layer on the canvas. Commands record reversible actions (create, connect, move, delete, metadata edit, align, layout) with per-session UI history and keyboard shortcuts (Cmd+Z / Cmd+Shift+Z).
+Minimap + fullscreen + focus mode on the infinite canvas.
+- Minimap reflects graph nodes and viewport, supports click-to-navigate / pan, and toggleable visibility.
+- Fullscreen mode expands canvas across the entire display via Fullscreen API.
+- Focus mode isolates active selection by dimming non-selected graph elements and displaying a focus mode banner.
 
 ## Scope
 
-### Web command layer (`apps/web/lib/commands/`)
-- `command.ts`: update `Command` interface to support optional `applyCanvasUpdate`.
-- `dispatcher.ts`: add `canUndo`, `canRedo`, `peekUndo`, `peekRedo`, `subscribe`, `notify`, `getUndone`.
-- `create-node-command.ts`: `CreateNodeCommand` (create node on canvas, undo removes it).
-- `delete-node-command.ts`: `DeleteNodeCommand` (delete node & attached edges, undo restores them).
-- `connect-nodes-command.ts`: `ConnectNodesCommand` (create edge, undo removes it).
-- `update-metadata-command.ts`: `UpdateNodeMetadataCommand` (update node data/metadata, undo reverts).
-- `move-node-command.ts`, `move-nodes-command.ts`, `align-nodes-command.ts`, `apply-layout-command.ts`: add `applyCanvasUpdate` so undo/redo updates canvas state.
-- `index.ts`: export new commands.
+### Canvas Store (`apps/web/lib/canvas-store.ts`)
+- Add `isMinimapVisible: boolean`, `toggleMinimap()`, `setMinimapVisible(boolean)`
+- Add `isFullscreen: boolean`, `toggleFullscreen()`, `setIsFullscreen(boolean)`
+- Add `isFocusMode: boolean`, `toggleFocusMode()`, `setIsFocusMode(boolean)`
 
-### Canvas integration (`apps/web/components/canvas/`)
-- `infinite-canvas.tsx`:
-  - Subscribe to `defaultCommandDispatcher` state (`canUndo`, `canRedo`).
-  - Wire up `handleUndo` and `handleRedo` syncing canvas `nodes` and `edges`.
-  - Add Cmd/Ctrl+Z and Cmd/Ctrl+Shift+Z (and Ctrl+Y) keyboard shortcuts.
-  - Add Undo (↶) and Redo (↷) buttons to the toolbar with `data-testid="undo-btn"` and `data-testid="redo-btn"`.
+### Canvas Component (`apps/web/components/canvas/infinite-canvas.tsx`)
+- Enhance `<MiniMap />` with dynamic `nodeColor` (reflecting node type and selection), pannable/zoomable navigation, and `data-testid="minimap"`.
+- Conditionally render or style `<MiniMap />` based on `isMinimapVisible`.
+- Implement fullscreen toggle via container element and event listeners (`fullscreenchange`).
+- Implement focus mode rendering: when `isFocusMode` is true and nodes are selected, apply dimmed styling / class to unselected nodes and unconnected edges.
+- Add Focus Mode badge (`data-testid="focus-mode-badge"`) when focus mode is active.
+- Add toolbar buttons for Minimap toggle, Focus Mode toggle, and Fullscreen toggle.
+- Keyboard shortcuts: <kbd>Shift</kbd>+<kbd>F</kbd> for fullscreen, <kbd>Alt</kbd>+<kbd>F</kbd> for focus mode, <kbd>Escape</kbd> handling.
 
 ### Tests (`apps/web/`)
-- `undo-redo.spec.ts`: comprehensive tests covering:
-  - CommandDispatcher undo/redo/subscribe/canUndo/canRedo mechanics.
-  - CreateNodeCommand execute/undo/redo.
-  - DeleteNodeCommand execute/undo/redo with connected edges.
-  - ConnectNodesCommand execute/undo/redo.
-  - UpdateNodeMetadataCommand execute/undo/redo.
-  - MoveNodeCommand / MoveNodesCommand undo/redo canvas updates.
-  - AlignNodesCommand / ApplyLayoutCommand undo/redo canvas updates.
-  - InfiniteCanvas toolbar Undo/Redo buttons SSR rendering.
+- Unit and SSR tests in `apps/web/minimap-fullscreen-focus.spec.ts` covering:
+  - Canvas store flags and toggles (`isMinimapVisible`, `isFullscreen`, `isFocusMode`).
+  - Minimap rendering, node coloring, and toggle.
+  - Focus mode selection isolation styles and badge.
+  - Fullscreen handler and toolbar controls.
 
 ## Verification
-- Target: TypeScript PASS · Lint PASS · Tests PASS · Architecture PASS · Build PASS
+- Monorepo checks: `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm check-architecture`, `pnpm build`.
 
 ## Owner
 Control plane (this agent)
@@ -47,4 +43,4 @@ Control plane (this agent)
 2026-09-26
 
 ## Next Task
-F017 — Minimap.
+F018 — Architecture model (Phase 03).

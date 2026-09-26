@@ -23,6 +23,9 @@ export interface CanvasStoreState {
   isSpacePanning: boolean;
   isBoxSelectMode: boolean;
   isSnapToGridEnabled: boolean;
+  isMinimapVisible: boolean;
+  isFullscreen: boolean;
+  isFocusMode: boolean;
 
   setViewport: (viewport: CanvasViewport) => void;
   setSelectedNodes: (ids: string[]) => void;
@@ -40,6 +43,12 @@ export interface CanvasStoreState {
   setBoxSelectMode: (enabled: boolean) => void;
   toggleSnapToGrid: () => void;
   setSnapToGrid: (enabled: boolean) => void;
+  toggleMinimap: () => void;
+  setMinimapVisible: (visible: boolean) => void;
+  toggleFullscreen: () => void;
+  setIsFullscreen: (fullscreen: boolean) => void;
+  toggleFocusMode: () => void;
+  setIsFocusMode: (focus: boolean) => void;
   zoomIn: (step?: number) => void;
   zoomOut: (step?: number) => void;
   resetZoom: () => void;
@@ -53,6 +62,9 @@ export const useCanvasStore = create<CanvasStoreState>((set, get) => ({
   isSpacePanning: false,
   isBoxSelectMode: false,
   isSnapToGridEnabled: false,
+  isMinimapVisible: true,
+  isFullscreen: false,
+  isFocusMode: false,
 
   setViewport: (viewport: CanvasViewport) =>
     set({
@@ -123,6 +135,15 @@ export const useCanvasStore = create<CanvasStoreState>((set, get) => ({
   toggleSnapToGrid: () =>
     set((state) => ({ isSnapToGridEnabled: !state.isSnapToGridEnabled })),
   setSnapToGrid: (enabled: boolean) => set({ isSnapToGridEnabled: enabled }),
+  toggleMinimap: () =>
+    set((state) => ({ isMinimapVisible: !state.isMinimapVisible })),
+  setMinimapVisible: (enabled: boolean) => set({ isMinimapVisible: enabled }),
+  toggleFullscreen: () =>
+    set((state) => ({ isFullscreen: !state.isFullscreen })),
+  setIsFullscreen: (enabled: boolean) => set({ isFullscreen: enabled }),
+  toggleFocusMode: () =>
+    set((state) => ({ isFocusMode: !state.isFocusMode })),
+  setIsFocusMode: (enabled: boolean) => set({ isFocusMode: enabled }),
 
   zoomIn: (step = 0.2) =>
     set((state) => ({

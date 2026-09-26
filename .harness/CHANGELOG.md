@@ -2,6 +2,33 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F017 — Minimap
+
+Status: COMPLETE
+
+Implemented:
+- Web layer canvas store (`apps/web/lib/canvas-store.ts`):
+  - Added transient UI state: `isMinimapVisible`, `isFullscreen`, `isFocusMode` with corresponding toggle and setter actions.
+  - Whitelist updated in `apps/web/canvas.spec.ts` guaranteeing strict compliance with Layer Boundary Rule 4 (zero domain entities in Zustand).
+- Canvas UI components (`apps/web/components/canvas/infinite-canvas.tsx`):
+  - Embedded `<MiniMap>` from `@xyflow/react` with `pannable`, `zoomable`, custom mask styling, and conditional rendering.
+  - `getMiniMapNodeColor` function styling nodes by architectural category (system, app/container, store/database, component, person) with blue accent for selected nodes.
+  - HTML5 Fullscreen API container integration with `fullscreenchange` synchronization and graceful exception fallback.
+  - Focus Mode isolating selected nodes with visual dimming (opacity 0.15, grayscale 100%) and edge isolation, plus top-left status badge indicator.
+  - Toolbar buttons for Focus Mode, Toggle Minimap, and Fullscreen.
+  - Keyboard shortcuts: <kbd>M</kbd> (toggle minimap), <kbd>Shift</kbd>+<kbd>F</kbd> (fullscreen), <kbd>Alt</kbd>+<kbd>F</kbd> (focus mode), <kbd>Escape</kbd> (clear selection / exit focus mode).
+- Tests (`apps/web/minimap-fullscreen-focus.spec.ts`):
+  - 11 unit & integration tests covering store state, Layer Boundary Rule 4 zero-entity compliance, node category coloring, toolbar buttons, minimap conditional rendering, and focus mode badges.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (all monorepo tests passing)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean — domain, api, web)
+- PR Review: Round 1 clean across all 8 angles. Verdict: CLEAN. Full log: `.harness/reviews/F017-review.md`.
+- PR: https://github.com/nimatrazmjo/DiagramHQ/pull/18
+
 ## 2026-09-26 — F016 — Undo/redo
 
 Status: COMPLETE

@@ -127,7 +127,7 @@ Test: undo/redo across all covered operations.
 
 ### F017 — Minimap
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Minimap + fullscreen + focus mode.
 
