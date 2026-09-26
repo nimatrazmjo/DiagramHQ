@@ -7,3 +7,4 @@ export * from './layout-registry';
 export * from './layout-builtins';
 export * from './architecture-model';
 export * from './c4-context';
+export * from './c4-container';

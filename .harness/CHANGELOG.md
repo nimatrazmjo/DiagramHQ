@@ -2,6 +2,38 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F020 — C4 Container
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `c4-container.ts`: C4 Level 2 container domain types (`C4ContainerKind`: 'web_app' | 'mobile_app' | 'api' | 'service' | 'database' | 'queue' | 'store', `C4ContainerNodeData`, `C4SystemBoundaryNodeData`).
+  - Helper functions: `createC4Container`, `createC4WebApp`, `createC4MobileApp`, `createC4Service`, `createC4Database`, `createC4Queue`.
+  - Predicates and invariant helpers: `isContainer`, `isContainerOfSystem`, `getSystemContainers`, `canDrillToComponents`.
+  - Canvas projection: `projectC4ContainerToCanvas` projecting enclosing system boundary, container nodes with technology tags, and inter-container connections.
+  - `canvas.ts`: added optional `zIndex?: number;` to `CanvasNode`.
+  - `c4-container.test.ts`: 4 unit tests verifying classification, filtering, component drill eligibility, and canvas projection.
+- API layer (`apps/api/src/architectures/`):
+  - Model verification for C4 Container elements inside a system (`parentId = system.id`).
+  - `c4-container.e2e.spec.ts`: 8 E2E tests verifying creation of containers (web app, api service, database, queue) inside parent system, inter-container sync & async connections, model snapshot reload identity, and cascade/unlink handling.
+- Web client layer (`apps/web/`):
+  - `C4ContainerNode` component (`components/canvas/c4-container-node.tsx`) rendering:
+    - Distinct visual themes and icons for Web Apps, Mobile Apps, API Services, Databases, and Message Queues.
+    - Technology tag `[Technology]` (e.g. `[TypeScript / React]`, `[PostgreSQL 16]`).
+    - Drill-to-components button `data-testid="drill-to-components-btn"` invoking `onDrillToComponents`.
+  - `C4SystemBoundaryNode` component (`components/canvas/c4-system-boundary-node.tsx`) rendering enclosing parent system boundary with `[System Boundary: System Name]`.
+  - Registration in `components/canvas/custom-nodes.tsx` for `c4Container` and `c4SystemBoundary`.
+  - `c4-container.spec.ts`: 8 tests covering SSR node rendering, drill-to-components callback invocation, system boundary rendering, canvas mounting, and ArchitectureModelClient reload identity.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (all monorepo tests passing: 178 API tests, 92 domain tests, 209 web tests)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean — domain, api, web)
+- PR Review: Round 1 clean across all 8 angles. Verdict: CLEAN. Full log: `.harness/reviews/F020-review.md`.
+
 ## 2026-09-26 — F019 — C4 Context
 
 Status: COMPLETE

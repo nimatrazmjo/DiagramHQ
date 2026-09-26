@@ -1,51 +1,53 @@
-# CURRENT TASK: F019 — C4 Context
+# CURRENT TASK: F020 — C4 Container
 
 ## Status: IN PROGRESS
 
 ## Feature
-**F019 — C4 Context** (Phase 03 — Architecture Model)
+**F020 — C4 Container** (Phase 03 — Architecture Model)
 
-Level 1 C4 Context diagram & model elements: person/actor, system, external system, and their relationships.
-- User can create Person (Actor), Software System, and External System elements.
-- User can connect Person -> System and System -> External System with descriptive labels.
-- Elements render with C4-compliant visual styling (Person avatar/shape, System box, External System boundary tag).
-- Elements persist in the architecture model independently of any diagram, reload accurately, and can be edited and deleted.
-- Drill-down capability from a System into its C4 Container view (Level 2).
+Level 2 C4 Container diagram & model elements: containers (applications, services, stores, databases, queues) inside a system.
+- User can create containers (apps, services, databases, queues) inside a parent Software System (`parentId = system.id`).
+- Containers capture technology (e.g. "React / Next.js", "NestJS / TypeScript", "PostgreSQL", "Kafka"), description, and container kind.
+- User can drill down from a System (Level 1) into its C4 Container view (Level 2).
+- Container view renders the enclosing Software System boundary and internal container elements with technology badges.
+- Containers support drilling down into Level 3 Components (`canDrillToComponents`).
+- Containers and inter-container connections persist in the architecture model independently of any diagram, reload accurately, and can be edited and deleted.
 
 ## Scope
 
 ### Domain Layer (`packages/domain/src/`)
-- C4 Context domain definitions & helpers:
-  - `C4ContextElementKind`: 'person' (actor), 'system', 'external_system'.
-  - Helper functions to create C4 Context nodes (`createC4Person`, `createC4System`, `createC4ExternalSystem`).
-  - Helper to identify C4 Context elements and drill-down capability (`canDrillDown(object)`).
+- `c4-container.ts`:
+  - `C4ContainerKind`: 'web_app' | 'mobile_app' | 'api' | 'service' | 'database' | 'queue' | 'store'.
+  - `C4ContainerNodeData`: interface with label, containerKind, technology, description, systemId, canDrillToComponents.
+  - Helpers: `createC4Container`, `createC4WebApp`, `createC4Service`, `createC4Database`, `createC4Queue`.
+  - Predicates: `isContainer`, `isContainerOfSystem`, `getSystemContainers`, `canDrillToComponents`.
+  - Projection: `projectC4ContainerViewToCanvas` projecting parent system boundary and container nodes + edges.
+- `c4-container.test.ts`: unit tests for domain helpers, predicates, and canvas projection.
 
 ### API Layer (`apps/api/src/`)
-- Ensure `/architectures/:id/objects` and `/architectures/:id/connections` seamlessly handle C4 Context elements and metadata (`external: boolean`, `c4Level: 1`).
-- Verify endpoints for C4 Context operations in E2E tests.
+- `c4-container.e2e.spec.ts`:
+  - Create parent System.
+  - Create child containers (web app, api service, database, queue) with `parentId = system.id`.
+  - Connect web app -> api, api -> database, api -> queue.
+  - Query and reload identical model snapshot (`isModelIdentical`).
+  - Verify cascade deletion of system removes child containers and their connections.
 
 ### Web Client Layer (`apps/web/`)
-- Custom C4 Context Node Component:
-  - `components/canvas/c4-context-node.tsx`: custom React Flow node with C4 styling for Person (actor), System, and External System.
-  - Drill-down button / trigger on System nodes to navigate into the Container view (`/workspace/:id/views?level=2&systemId=:sysId` or drill handler).
-  - Edit and delete actions.
-- C4 Context View & Toolbar Integration:
-  - Add C4 Context elements creation controls to the canvas / architecture interface.
-  - Drill-down event handling.
-- Tests in `apps/web/c4-context.spec.ts` and `apps/api/src/architectures/c4-context.e2e.spec.ts`:
-  - Create person + system + external system.
-  - Connect Person -> System.
-  - Reload persists identical model.
-  - Drill down from system to container view.
+- Custom C4 Container Node Component:
+  - `components/canvas/c4-container-node.tsx`: custom React Flow node with C4 styling for apps, services, databases, queues with technology tags and drill-to-components trigger.
+  - `components/canvas/c4-system-boundary-node.tsx`: group/boundary node encasing system containers.
+- Register node types in `components/canvas/custom-nodes.tsx` (`c4Container`, `c4SystemBoundary`, `application`, `store`).
+- Drill-down & view level integration:
+  - View navigation between Context (Level 1) and Container (Level 2) with system drill-down and breadcrumb back navigation.
+- Tests in `apps/web/c4-container.spec.ts`:
+  - Rendering containers with respective kind badges and technology tags.
+  - Drill-to-components callback invocation.
+  - System boundary rendering.
+  - Level 1 -> Level 2 view switching.
+  - Full client model integration and identical reload.
 
 ## Verification
 - Monorepo checks: `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm check-architecture`, `pnpm build`.
 
 ## Owner
 Control plane (this agent)
-
-## Started
-2026-09-26
-
-## Next Task
-F020 — C4 Container.
