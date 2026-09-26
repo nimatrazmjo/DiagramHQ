@@ -36,5 +36,24 @@ Target: Next.js responsive application shell: left navigator (7 sections), top b
 - `pnpm typecheck`: Clean across all packages and apps (0 errors).
 - `pnpm lint`: Clean (0 errors, 0 warnings).
 - `pnpm test`: 197 tests passed (23 domain, 44 web, 130 api).
-- `check-architecture`: Clean (`check-architecture: clean`).
 - `pnpm build`: Clean production build across all Next.js and NestJS targets.
+- GitHub Actions CI: `CI/verify` passed on PR #9 (1m33s).
+
+## PR Review — Round 1 (PR #9)
+Independent pass over the pull request diff (`git diff origin/main...feat/F008-application-shell`):
+1. **Application Shell Architecture & Layout**:
+   - `LeftNavigator` covers all 7 core model projections/sections: Overview, Systems, Apps, Data, Flows, Views, Decisions.
+   - `TopBar` incorporates search input (`⌘K`), AI Copilot action, user display, and panel toggles.
+   - `InspectorPanel` provides dedicated right slot with properties, hierarchy, and metadata sections, collapsible on demand.
+   - `AppShell` encapsulates the 3-pane layout, holds at mobile viewport widths (<768px), and provides drawer overlay.
+2. **Routing & Security Integration**:
+   - `/workspace/[workspaceId]` studio subroutes cleanly structured.
+   - `middleware.ts` updated to guard `/workspace` paths.
+   - Direct navigation from dashboard workspace list to studio.
+3. **Automated Testing & Pipeline Integrity**:
+   - 11 unit and component tests in `shell.spec.ts`.
+   - 197 total monorepo tests passing cleanly.
+   - GitHub Actions CI green on PR #9 (`CI/verify` 1m33s).
+
+**PR Verdict**: CLEAN. Exiting PR review loop.
+
