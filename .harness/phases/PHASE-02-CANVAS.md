@@ -45,7 +45,7 @@ Test: component test for zoom/pan/fit.
 
 ### F011 — Object selection
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Select objects on the canvas.
 

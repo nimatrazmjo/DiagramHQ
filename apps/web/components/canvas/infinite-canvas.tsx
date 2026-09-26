@@ -33,6 +33,8 @@ export interface InfiniteCanvasProps {
   initialEdges?: CanvasEdge[];
   onNodeSelect?: (nodeId: string | null) => void;
   isSpacePanning?: boolean;
+  selectedNodeIds?: string[];
+  selectedEdgeIds?: string[];
   className?: string;
 }
 
@@ -78,12 +80,19 @@ function InfiniteCanvasContent({
   initialEdges = [],
   onNodeSelect,
   isSpacePanning: propIsSpacePanning,
+  selectedNodeIds: propSelectedNodeIds,
+  selectedEdgeIds: propSelectedEdgeIds,
   className = '',
 }: InfiniteCanvasProps): JSX.Element {
   const [nodes, setNodes] = useState<Node[]>(() => initialNodes.map(toFlowNode));
   const [edges, setEdges] = useState<Edge[]>(() => initialEdges.map(toFlowEdge));
   const storeIsSpacePanning = useCanvasStore((s) => s.isSpacePanning);
   const isSpacePanning = propIsSpacePanning ?? storeIsSpacePanning;
+  const storeSelectedNodeIds = useCanvasStore((s) => s.selectedNodeIds);
+  const storeSelectedEdgeIds = useCanvasStore((s) => s.selectedEdgeIds);
+  const selectedNodeIds = propSelectedNodeIds ?? storeSelectedNodeIds;
+  const selectedEdgeIds = propSelectedEdgeIds ?? storeSelectedEdgeIds;
+  const totalSelected = selectedNodeIds.length + selectedEdgeIds.length;
   const currentZoom = useCanvasStore((s) => s.viewport.zoom);
   const reactFlow = useReactFlow();
 
@@ -95,7 +104,7 @@ function InfiniteCanvasContent({
     setEdges(initialEdges.map(toFlowEdge));
   }, [initialEdges]);
 
-  // Keyboard shortcut listener: Space for pan, 'F' for fit-to-content
+  // Keyboard shortcut listener: Space for pan, 'F' for fit-to-content, Escape for clearing selection
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (isTextInput(document.activeElement)) return;
@@ -105,6 +114,14 @@ function InfiniteCanvasContent({
       } else if (event.key === 'f' || event.key === 'F') {
         event.preventDefault();
         reactFlow.fitView({ padding: 0.2, duration: 250 });
+      } else if (event.code === 'Escape') {
+        event.preventDefault();
+        useCanvasStore.getState().clearSelection();
+        setNodes((nds) => nds.map((n) => ({ ...n, selected: false })));
+        setEdges((eds) => eds.map((e) => ({ ...e, selected: false })));
+        if (onNodeSelect) {
+          onNodeSelect(null);
+        }
       }
     };
 
@@ -120,7 +137,7 @@ function InfiniteCanvasContent({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [reactFlow]);
+  }, [reactFlow, onNodeSelect]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes((nds) => applyNodeChanges(changes, nds));
@@ -177,6 +194,15 @@ function InfiniteCanvasContent({
     reactFlow.zoomTo(DEFAULT_ZOOM, { duration: 200 });
   };
 
+  const onPaneClick = useCallback(() => {
+    useCanvasStore.getState().clearSelection();
+    setNodes((nds) => nds.map((n) => ({ ...n, selected: false })));
+    setEdges((eds) => eds.map((e) => ({ ...e, selected: false })));
+    if (onNodeSelect) {
+      onNodeSelect(null);
+    }
+  }, [onNodeSelect]);
+
   return (
     <div
       data-testid="infinite-canvas-container"
@@ -191,6 +217,7 @@ function InfiniteCanvasContent({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onSelectionChange={onSelectionChange}
+        onPaneClick={onPaneClick}
         onMoveEnd={onMoveEnd}
         onNodeMouseEnter={onNodeMouseEnter}
         onNodeMouseLeave={onNodeMouseLeave}
@@ -226,6 +253,14 @@ function InfiniteCanvasContent({
                 className="ml-2 px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px]"
               >
                 PAN MODE (SPACE)
+              </span>
+            )}
+            {totalSelected > 0 && (
+              <span
+                data-testid="selection-badge"
+                className="ml-2 px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px]"
+              >
+                {totalSelected} SELECTED (ESC TO CLEAR)
               </span>
             )}
           </div>
@@ -274,6 +309,20 @@ function InfiniteCanvasContent({
             >
               Fit (F)
             </button>
+            {totalSelected > 0 && (
+              <>
+                <div className="w-px h-4 bg-slate-700 mx-0.5" />
+                <button
+                  type="button"
+                  data-testid="clear-selection-btn"
+                  onClick={onPaneClick}
+                  className="px-2 h-7 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors text-[11px]"
+                  title="Deselect All (Esc)"
+                >
+                  Clear ({totalSelected})
+                </button>
+              </>
+            )}
           </div>
         </Panel>
       </ReactFlow>

@@ -2,6 +2,29 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F011 — Object Selection
+
+Status: COMPLETE
+
+Implemented:
+- Web canvas object selection (`apps/web`):
+  - Added transient selection helpers in `apps/web/lib/canvas-store.ts`: `selectNode`, `selectEdge`, `isNodeSelected`, `isEdgeSelected`, and `clearSelection` adhering strictly to Layer Boundaries Rule 4.
+  - Connected `onSelectionChange` and `onPaneClick` in `InfiniteCanvas` to update store selection and deselect on background click.
+  - Implemented window `Escape` key listener outside text inputs to clear selection (`useCanvasStore.getState().clearSelection()`).
+  - Added visual selection count badge (`data-testid="selection-badge"`) and toolbar `Clear` button (`data-testid="clear-selection-btn"`) on canvas.
+  - Verified active selection ring styling across custom nodes (`SystemNode`, `AppNode`, `StoreNode`).
+  - Added 10 automated unit and component tests in `apps/web/selection.spec.ts` covering store selection toggling, node selection styling, and UI badge/button rendering.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (245 tests: 34 domain, 81 web, 130 api)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean)
+- Evaluator Rubric Score: 5.0 / 5.0 -> PASS. Log: `.harness/reviews/F011-review.md`.
+
+---
+
 ## 2026-09-26 — F010 — Pan and Zoom
 
 Status: COMPLETE
