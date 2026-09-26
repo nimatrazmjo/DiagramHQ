@@ -2,6 +2,40 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F018 — Architecture model
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `types.ts`: added `ArchitectureModel` snapshot interface capturing architecture, default version, model objects, and connections.
+  - `architecture-model.ts`: immutable domain model functions (`createArchitectureModel`, `addModelObject`, `updateModelObject`, `removeModelObject` with Invariant 4 connection cascading, `addModelConnection`, `updateModelConnection`, `removeModelConnection`), snapshot integrity validation (`validateArchitectureModel`), and deep model equivalence checking (`isModelIdentical`).
+  - `architecture-model.test.ts`: 14 unit tests covering domain model creation, invariant violations (self-connection, cyclic parents, duplicate IDs, foreign endpoints), and identity equivalence.
+- API layer (`apps/api/src/architectures/`):
+  - `ArchitecturesModule`: REST endpoints conforming to `API_SURFACE.md`.
+  - Architecture CRUD (`POST /workspaces/:workspaceId/architectures`, `GET /architectures/:id`, `PATCH /architectures/:id`, `DELETE /architectures/:id`).
+  - Architecture model snapshot (`GET /architectures/:id/model`) loading objects + connections independent of any diagram.
+  - Model objects CRUD (`POST /architectures/:id/objects`, `GET /architectures/:id/objects`, `GET /objects/:id`, `PATCH /objects/:id`, `DELETE /objects/:id`).
+  - Model connections CRUD (`POST /architectures/:id/connections`, `GET /architectures/:id/connections`, `GET /connections/:id`, `PATCH /connections/:id`, `DELETE /connections/:id`).
+  - Invariant enforcement: rejects self-connection (`canConnect`), rejects foreign endpoints (`validateConnection`), rejects cyclic parent hierarchy (`hasParentCycle`).
+  - RBAC and multi-tenancy enforcement: checks workspace membership and restricts mutations to `canWrite(role)`.
+  - `architectures.e2e.spec.ts`: 18 tests covering complete lifecycle, save/load/reload identity, and role authorization.
+- Web client layer (`apps/web/lib/model/`):
+  - `ArchitectureModelClient`: client-side model manager maintaining domain models independent of diagrams and Zustand (Layer Boundary Rule 4).
+  - Optimistic mutations (`createObject`, `updateObject`, `deleteObject`, `createConnection`, `updateConnection`, `deleteConnection`) with guaranteed rollback to previous snapshot on error.
+  - Model subscriptions for reactive UI updates without placing entities in Zustand.
+  - Canvas projection bridge (`toCanvasProjection`) projecting model entities to canvas nodes and edges.
+  - `architecture-model.spec.ts`: 8 tests verifying client-side model management, reload identity, and optimistic rollback on rejection.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (all monorepo tests passing: 163 API tests, 84 domain tests, 195 web tests)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean — domain, api, web)
+- PR Review: Round 1 clean across all 8 angles. Verdict: CLEAN. Full log: `.harness/reviews/F018-review.md`.
+- PR: https://github.com/nimatrazmjo/DiagramHQ/pull/19
+
 ## 2026-09-26 — F017 — Minimap
 
 Status: COMPLETE

@@ -102,6 +102,13 @@ export interface ModelConnection {
   updatedAt: Date;
 }
 
+export interface ArchitectureModel {
+  readonly architecture: Architecture;
+  readonly version: Version;
+  readonly objects: ModelObject[];
+  readonly connections: ModelConnection[];
+}
+
 export interface View {
   readonly id: ViewId;
   readonly architectureId: ArchitectureId;
