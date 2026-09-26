@@ -13,35 +13,35 @@ Phase Name: Canvas
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F010
-Feature Name: Pan and zoom
+Feature ID: F011
+Feature Name: Object selection
 Status: COMPLETE
 
 ## Overall Progress
 Total Features: 135
-Completed: 10
+Completed: 11
 In Progress: 0
 Blocked: 0
-Not Started: 125
-Progress: 7.4%
+Not Started: 124
+Progress: 8.1%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F010 — Pan and zoom. Wheel zoom limits (0.1x to 4.0x) and clamping helpers, space-pan drag activation (`panActivationKeyCode="Space"` with grab cursor and pan-mode indicator badge), fit-to-content shortcut ('F' key) and top-right pan/zoom toolbar with Zoom Out, Zoom In, 100% Reset, and Fit. Synchronized with `useCanvasStore` (Layer Boundaries Rule 4). Verified: 235 tests green across monorepo (34 domain, 71 web, 130 api), typecheck/lint/build/check-architecture clean. Evaluator score 5.0/5.0.
+F011 — Object selection. Single-click node and edge selection on the canvas with active visual styling rings on CustomNodes (`SystemNode`, `AppNode`, `StoreNode`), Escape key clearing, pane click deselect, selection badge (`N SELECTED (ESC TO CLEAR)`), and toolbar `Clear` action. Synchronized with `useCanvasStore` (`selectNode`, `selectEdge`, `isNodeSelected`, `isEdgeSelected`, `clearSelection`) with zero domain entity models stored (Layer Boundaries Rule 4). Verified: 245 tests green across monorepo (34 domain, 81 web, 130 api), typecheck/lint/build/check-architecture clean. Evaluator score 5.0/5.0.
 
-Prior: F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
+Prior: F010 — Pan and zoom (PR #11 merged). F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
 
 ## Current Work
-F010 review and PR merge; next feature: F011 — Object selection.
+F011 review and PR merge; next feature: F012 — Drag and drop.
 
 ## Next Task
-F011 — Object selection. See `CURRENT_TASK.md`.
+F012 — Drag and drop. See `CURRENT_TASK.md`.
 
 ## Last Verified
-F010 @ feat/F010-pan-and-zoom — pnpm verify (typecheck / lint / test x235 / check-architecture) + pnpm build all green. PostgreSQL 16 container healthy.
+F011 @ feat/F011-object-selection — pnpm verify (typecheck / lint / test x245 / check-architecture) + pnpm build all green. PostgreSQL 16 container healthy.
 
 ## Current Git Commit
-Branch `feat/F010-pan-and-zoom`. Working tree clean.
+Branch `feat/F011-object-selection`. Working tree clean.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.
