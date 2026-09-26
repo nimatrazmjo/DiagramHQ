@@ -12,10 +12,11 @@ Strict mode on. No `any` without a `// why:` comment. Domain types live in `pack
 Follow `architecture/ARCHITECTURE.md` §repository shape. One module per domain area. Colocate tests with code (`*.test.ts`). No file over ~400 lines without a reason.
 
 ## Git
-- One feature per branch: `feat/<feature-id>` matching the `id` in `ROADMAP.md`.
+- One feature per branch: `feat/<feature-id>` matching the `id` in `ROADMAP.md`. For harness-only tooling/docs not tied to a ROADMAP feature id (e.g. this repo's `docs/pr-review-loop`), use a descriptive `docs/<slug>` or `chore/<slug>` branch instead of forcing a fake `feat/<FID>` — same PR-review-loop discipline still applies.
 - Conventional commits: `feat(model): add connection CRUD`, `fix(canvas): stop drag from mutating store`. Reference the feature id in the body.
 - Commit only when the feature (or a coherent sub-step) is green and has evidence. No "wip" on main.
 - Never commit secrets, `.env`, or generated artifacts.
+- After a feature passes maker-checker: push the branch, open a PR (reuse if one is already open for it — never open a second), review it, fix findings, and repeat until clean before starting the next feature. See `loops/pr-review-loop.md`.
 
 ## Evidence discipline
 A feature is `passed` only with recorded evidence in `CHANGELOG.md`: the exact command, its output (or a screenshot path under `.harness/evidence/`), or a test id. "Looks right" is not evidence. Screenshots for canvas features; command output for API/data features. See `verification/acceptance-evidence.md`.
@@ -29,6 +30,7 @@ Structured logs (json) with `level`, `event`, `correlationId`, and relevant ids.
 3. Rewrite `PROJECT_STATE.md` for a cold reader.
 4. Run `state/clean-state-checklist.md`. Leave the tree clean.
 5. Commit with the feature id.
+6. If the feature (or harness-only change) just went complete: push, open/reuse the PR, review it, and fix findings until clean (`loops/pr-review-loop.md`).
 
 ## Comments & docs
 Comment *why*, not *what*. Update the affected `.harness` doc in the same change that makes it stale (e.g. new endpoint -> update API_SURFACE.md). Stale docs are worse than none.

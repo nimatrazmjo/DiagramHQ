@@ -29,7 +29,7 @@ This is the **harness** for building DiagramHQ, a model-first architecture intel
 ├── architecture/            # ARCHITECTURE, DATA_MODEL, API_SURFACE, MODULES + decisions/ (ADRs)
 ├── rules/                   # layer-boundaries, scope-guard, conventions
 ├── verification/            # roles, evaluator-rubric, sprint-contract, acceptance-evidence
-├── loops/                   # goal, timer, maker-checker + loop-state
+├── loops/                   # goal, timer, maker-checker, pr-review + loop-state
 ├── graph/                   # workflow-graph (+ json) — the loop, drawn
 ├── scripts/                 # SCRIPTS.md — automation contracts (specs, not code)
 └── _archive/                # superseded files, kept for history (do not read as current)

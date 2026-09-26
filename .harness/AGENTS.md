@@ -22,7 +22,7 @@ A model-first architecture intelligence platform. The **model** (objects + conne
 6. **Modular and expandable.** New object types, view types, importers, exporters, and AI actions register against interfaces (`architecture/MODULES.md`); they do not edit the core. If adding a feature forces a core edit that a registry should handle, the abstraction is wrong.
 7. **Separate maker from checker.** After implementing (maker), switch to the Evaluator role (`verification/roles.md`) and score honestly against `verification/evaluator-rubric.md`. You may not approve your own work by assertion.
 8. **Persist state every session.** Before stopping, update `PROJECT_STATE.md`, `CURRENT_TASK.md`, `ROADMAP.md` (+ the phase file), and `CHANGELOG.md`; open/close anything in `BLOCKERS.md`; record decisions in `DECISIONS.md`. See `rules/conventions.md` and the Session-completion protocol below.
-9. **Small, reversible steps.** Thinnest vertical slice that is demonstrable. Commit per feature on `feat/<FID>` with the message format in `rules/conventions.md`. No drive-by refactors.
+9. **Small, reversible steps.** Thinnest vertical slice that is demonstrable. Commit per feature on `feat/<FID>` (or `docs/<slug>`/`chore/<slug>` for harness-only work, `rules/conventions.md`) with the message format in `rules/conventions.md`. No drive-by refactors. After a feature passes: push, open/reuse a PR, review it, and fix findings until clean before starting the next feature (`loops/pr-review-loop.md`).
 10. **Observability is not optional.** Structured logs at startup, boundaries, and errors (`scripts/SCRIPTS.md` → logger). If you can't see why it failed, add a log before you add a fix.
 
 ## Statuses (use ONLY these)
@@ -33,8 +33,11 @@ A model-first architecture intelligence platform. The **model** (objects + conne
 read PROJECT_STATE + CURRENT_TASK + ROADMAP + phase file  ->  confirm the ONE IN PROGRESS feature
   ->  write/confirm sprint-contract  ->  implement (Maker)
   ->  verify (typecheck, lint, tests, check-architecture)  ->  score as Checker (evaluator-rubric)
-  ->  pass? record evidence in CHANGELOG, mark COMPLETE in ROADMAP + phase file, pick next feature
+  ->  pass? record evidence in CHANGELOG, mark COMPLETE in ROADMAP + phase file
       fail? log defects, revise, repeat (bounded rounds)
+  ->  push branch, open/reuse PR, review it (code-review skill, loops/pr-review-loop.md)
+      clean? pick next feature
+      issues? fix (Maker), commit, push, review again (bounded rounds)
   ->  update PROJECT_STATE + CURRENT_TASK + BLOCKERS  ->  stop cleanly
 ```
 The explicit version, with routing rules, is `graph/workflow-graph.md`.
@@ -44,7 +47,8 @@ The explicit version, with routing rules, is `graph/workflow-graph.md`.
 - Verification recorded in `CHANGELOG.md` (reproducible command/output or artifact path).
 - No layer-boundary violation (`scripts/SCRIPTS.md` → check-architecture passes).
 - Evaluator score >= threshold (`verification/evaluator-rubric.md`).
-- `ROADMAP.md` + phase file marked `COMPLETE`; `PROJECT_STATE.md` + `CURRENT_TASK.md` updated; committed on `feat/<FID>`.
+- `ROADMAP.md` + phase file marked `COMPLETE`; `PROJECT_STATE.md` + `CURRENT_TASK.md` updated; committed on `feat/<FID>` (or `docs/<slug>`/`chore/<slug>` for harness-only work).
+- Branch pushed, PR opened/reused, reviewed clean, no unresolved findings (`loops/pr-review-loop.md`).
 
 ## Session-completion protocol (do all of this before you stop)
 1. Determine exactly what was implemented and run the appropriate tests.
@@ -52,9 +56,10 @@ The explicit version, with routing rules, is `graph/workflow-graph.md`.
 3. Update `ROADMAP.md` (checkbox + counts) and `CURRENT_TASK.md`.
 4. Update `PROJECT_STATE.md` (current phase/feature, progress, last verified, git commit).
 5. Add a `CHANGELOG.md` entry (feature ID + evidence).
-6. Update `BLOCKERS.md` and `DECISIONS.md` if anything changed.
-7. Record git branch/commit (or `Working tree: DIRTY`) in `PROJECT_STATE.md`.
-8. Clearly set the next task in `CURRENT_TASK.md`.
+6. If the feature just went `COMPLETE`: push the branch, open (or reuse) its PR, review it, and fix findings — repeat until clean before touching the next feature (`loops/pr-review-loop.md`).
+7. Update `BLOCKERS.md` and `DECISIONS.md` if anything changed.
+8. Record git branch/commit (or `Working tree: DIRTY`) in `PROJECT_STATE.md`.
+9. Clearly set the next task in `CURRENT_TASK.md`.
 
 ## Usage / session limits
 When you hit a usage or session limit, do not just stop: run the Session-completion protocol above (commit + update the tracker), then fail over to the other runtime per `RUNTIME-CONTINUITY.md` (Claude Code ⇄ Antigravity running Sonnet). The next runtime resumes from `PROJECT_STATE.md`.
