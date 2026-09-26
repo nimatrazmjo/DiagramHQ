@@ -2,6 +2,37 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F021 — C4 Component
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `c4-component.ts`: C4 Level 3 component domain types (`C4ComponentKind`: 'component' | 'controller' | 'service' | 'repository' | 'middleware' | 'handler', `C4CodeMappingStub`, `C4ComponentNodeData`, `C4ContainerBoundaryNodeData`).
+  - Helper functions: `createC4Component`, `createC4Controller`, `createC4DomainService`, `createC4Repository`.
+  - Predicates and invariant helpers: `isComponent`, `isComponentOfContainer`, `getContainerComponents`, `getC4ComponentKind`.
+  - Canvas projection: `projectC4ComponentToCanvas` mapping enclosing container boundary, component nodes with technology tags and L4 code mapping stubs, and inter-component edges.
+  - `c4-component.test.ts`: 4 unit tests verifying classification, filtering, and canvas projection.
+- API layer (`apps/api/src/architectures/`):
+  - Model verification for C4 Component elements inside a container (`parentId = container.id`).
+  - `c4-component.e2e.spec.ts`: 7 E2E tests verifying creation of components (controllers, services, repositories) inside parent container, L4 code mapping metadata persistence, inter-component connections, model snapshot reload identity, and cascade deletion.
+- Web client layer (`apps/web/`):
+  - `C4ComponentNode` component (`components/canvas/c4-component-node.tsx`) rendering:
+    - Dedicated visual themes and icons for Controllers, Services, Repositories, Middlewares, and Handlers.
+    - Technology tag `[Technology]` (e.g. `[NestJS Controller]`, `[Prisma ORM]`).
+    - L4 Code mapping stub indicator with file path and inspect action `data-testid="c4-code-mapping-btn"`.
+  - `C4ContainerBoundaryNode` component (`components/canvas/c4-container-boundary-node.tsx`) rendering enclosing parent container boundary with `[Container Boundary: Container Name]` and technology.
+  - Registration in `components/canvas/custom-nodes.tsx` for `c4Component`, `c4ContainerBoundary`, and `component`.
+  - `c4-component.spec.ts`: 7 tests covering SSR node rendering, code mapping stub callback invocation, container boundary rendering, canvas mounting, and ArchitectureModelClient reload identity.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (all monorepo tests passing: 185 API tests, 96 domain tests, 216 web tests)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean — domain, api, web)
+- PR Review: Round 1 clean across all 8 angles. Verdict: CLEAN. Full log: `.harness/reviews/F021-review.md`.
+
 ## 2026-09-26 — F020 — C4 Container
 
 Status: COMPLETE
