@@ -44,3 +44,24 @@ Target: Basic role model (owner, admin, editor, viewer), write gating, and membe
 - `pnpm test`: 176 tests passed (23 domain, 23 web, 130 api).
 - `check-architecture`: Clean (`check-architecture: clean`).
 - `pnpm build`: Clean production build across all Next.js and NestJS targets.
+- GitHub Actions CI: `CI/verify` passed on PR #8 (1m18s).
+
+## PR Review — Round 1 (PR #8)
+Independent pass over the pull request diff (`git diff origin/main...feat/F005-user-roles`):
+1. **Multi-Tenant & Role Security**:
+   - Pure domain invariants correctly enforce role capabilities (`canWrite`, `canAdmin`, `canDeleteOrg`, `assertRoleCanWrite`).
+   - `RolesGuard` and `@RequireRoles` decorator provide declarative role verification.
+   - Owner demotion protection ensures organization ownership invariants cannot be broken by unauthorized callers.
+   - Viewers are rejected with 403 on all write attempts; editors can write; delete operations restricted to owner/admin.
+2. **Data Model & Invariant Integrity**:
+   - `Member.role` using `MemberRole` enum (`owner`, `admin`, `editor`, `viewer`).
+   - Clean validation on role updates with `UpdateMemberRoleDto`.
+3. **Automated Testing & Pipeline Integrity**:
+   - 23 domain unit tests passing.
+   - 7 unit tests in `roles.guard.spec.ts`.
+   - 8 integration tests in `roles.e2e.spec.ts` against live PostgreSQL verifying write gating, workspace creation denial for viewers, editor write permissions, and role promotion transitions.
+   - 6 unit tests in `apps/web/roles.spec.ts` covering role helpers and server actions.
+   - GitHub Actions CI green on PR #8 (`CI/verify` 1m18s).
+
+**PR Verdict**: CLEAN. Exiting PR review loop.
+
