@@ -65,11 +65,11 @@ flowchart TD
 | record | push | standard | always |
 | push | open-pr | standard | always |
 | open-pr | pr-review | standard | always |
-| pr-review | pr-fix | conditional | findings present |
+| pr-review | pr-fix | conditional | findings present, prRound < MAX_PR_ROUNDS |
 | pr-fix | push | standard | fixes committed (loop) |
 | pr-review | plan | conditional | clean and more features remain in slice |
 | pr-review | handoff | conditional | clean and slice complete |
-| pr-review | escalate | conditional | max PR rounds hit |
+| pr-review | escalate | conditional | prRound >= MAX_PR_ROUNDS (checked before pr-fix; wins if findings are also present) |
 | handoff | stop | standard | always |
 | escalate | stop | standard | always |
 
@@ -98,11 +98,11 @@ if evaluate == REVISE                     -> implement (round++)
 if evaluate == PASS and passes <  required -> implement (round++)
 if evaluate == PASS and passes >= required -> record
 if record                                 -> push -> open-pr -> pr-review
+if pr-review and prRound >= MAX_PR_ROUNDS -> escalate (checked first: wins even if findings are also present)
 if pr-review finds findings               -> pr-fix -> push (prRound++)
 if pr-review clean and more features left -> plan (next feature)
 if pr-review clean and slice complete     -> handoff
 if round >= MAX_ROUNDS or hard-stop       -> escalate
-if prRound >= MAX_PR_ROUNDS               -> escalate
 if plan finds scope ambiguous             -> escalate
 ```
 

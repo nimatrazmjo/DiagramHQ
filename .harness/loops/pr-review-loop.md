@@ -15,14 +15,16 @@ after record (feature passed maker-checker):
 
 ## Components
 
+`<branch>` below is `feat/<FID>` for a ROADMAP feature, or `docs/<slug>`/`chore/<slug>` for harness-only tooling work (`rules/conventions.md`'s branch-naming exception). `<name>` is the FID, or the branch's slug for harness-only work.
+
 ### Push
-`git push -u origin feat/<FID>` (plain `git push` once upstream is set). Never force-push a shared branch.
+`git push -u origin <branch>` (plain `git push` once upstream is set). Never force-push a shared branch.
 
 ### Open / reuse PR
-`gh pr create --base main --head feat/<FID> --title "<type>(<scope>): <desc>"` — title follows the commit convention (`rules/conventions.md`). Body is the write-up already conventional at `.harness/reviews/<FID>-PR.md` (see `F001-PR.md`, `F006-PR.md`) — write that file first, pass it as `--body-file`. Check `gh pr list --head feat/<FID>` before creating; if one is open, push updates to it instead.
+`gh pr create --base main --head <branch> --title "<type>(<scope>): <desc>"` — title follows the commit convention (`rules/conventions.md`). Body is the write-up already conventional at `.harness/reviews/<name>-PR.md` (see `F001-PR.md`, `F006-PR.md`) — write that file first, pass it as `--body-file`. Check `gh pr list --head <branch>` before creating; if one is open, push updates to it instead.
 
 ### Review
-Run the `code-review` skill against the branch/PR diff. Same principle as the Checker in `maker-checker-loop.md`: it must not just trust the Maker's summary of its own diff. Record findings in `.harness/reviews/<FID>-review.md` (existing convention).
+Run the `code-review` skill against the branch/PR diff. Same principle as the Checker in `maker-checker-loop.md`: it must not just trust the Maker's summary of its own diff. Record findings in `.harness/reviews/<name>-review.md` (existing convention; see `pr-review-loop-review.md` for a harness-only example).
 
 ### Fix
 Findings get addressed as the Maker, committed, and pushed to the same branch — never a new PR, never a force-push. Then review again.
