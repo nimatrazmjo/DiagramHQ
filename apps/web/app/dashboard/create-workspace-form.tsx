@@ -2,6 +2,7 @@
 
 import { useFormState, useFormStatus } from 'react-dom';
 import { createWorkspaceAction, type ActionState } from './workspace-actions';
+import { canRoleWrite } from './role-badge';
 import { useEffect, useRef } from 'react';
 
 function SubmitButton(): JSX.Element {
@@ -20,9 +21,11 @@ function SubmitButton(): JSX.Element {
 
 export interface CreateWorkspaceFormProps {
   orgId: string;
+  userRole?: string;
 }
 
-export function CreateWorkspaceForm({ orgId }: CreateWorkspaceFormProps): JSX.Element {
+export function CreateWorkspaceForm({ orgId, userRole }: CreateWorkspaceFormProps): JSX.Element {
+  const isReadOnly = Boolean(userRole && !canRoleWrite(userRole));
   const createWorkspaceWithOrg = createWorkspaceAction.bind(null, orgId);
   const [state, formAction] = useFormState<ActionState, FormData>(createWorkspaceWithOrg, {});
   const formRef = useRef<HTMLFormElement>(null);
@@ -34,7 +37,7 @@ export function CreateWorkspaceForm({ orgId }: CreateWorkspaceFormProps): JSX.El
   }, [state.success]);
 
   return (
-    <form ref={formRef} action={formAction} className="flex flex-col gap-2 max-w-sm">
+    <form ref={formRef} action={isReadOnly ? undefined : formAction} className="flex flex-col gap-2 max-w-sm">
       <input type="hidden" name="orgId" value={orgId} />
       {state.error && (
         <div role="alert" className="p-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded">
@@ -59,8 +62,9 @@ export function CreateWorkspaceForm({ orgId }: CreateWorkspaceFormProps): JSX.El
           required
           minLength={2}
           maxLength={64}
+          disabled={isReadOnly}
           placeholder="e.g. Core Banking Platform"
-          className="w-full px-2.5 py-1 border rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-2.5 py-1 border rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
         />
       </div>
 
@@ -73,13 +77,20 @@ export function CreateWorkspaceForm({ orgId }: CreateWorkspaceFormProps): JSX.El
           name="slug"
           type="text"
           maxLength={64}
+          disabled={isReadOnly}
           placeholder="e.g. core-banking"
-          className="w-full px-2.5 py-1 border rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-2.5 py-1 border rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
         />
       </div>
 
       <div className="pt-1">
-        <SubmitButton />
+        {isReadOnly ? (
+          <div role="status" className="p-2 text-xs text-gray-600 bg-gray-100 border border-gray-200 rounded">
+            Viewers have read-only access and cannot create workspaces.
+          </div>
+        ) : (
+          <SubmitButton />
+        )}
       </div>
     </form>
   );

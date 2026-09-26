@@ -1,39 +1,35 @@
 # Current Task
 
-Feature ID: F004
-Feature: Workspaces (Workspace under an organization; contains architectures; scoped to org membership)
+Feature ID: F005
+Feature: User roles (Basic role model: owner/admin/editor/viewer; writes gating; role stored per member)
 Status: COMPLETE (PR ready for review loop)
 Phase: Phase 01 — Foundation
 
 ## Objective
-Implement workspace entity and organization scoping: authenticated members of an organization can create, retrieve, update, delete, and list workspaces within that organization. A workspace contains architectures, and access to any workspace is strictly gated by organization membership.
+Implement basic role model: each member has an assigned role (`owner`, `admin`, `editor`, `viewer`). Enforce write gating across endpoints so that viewers cannot write (HTTP 403) while editors/admins/owners can write. Support updating member roles by owners/admins.
 
 ## Prerequisite
-F001, F002, F003, F006, and F007 are COMPLETE and merged to `main`. Branch `feat/F004-workspaces` is active.
+F001, F002, F003, F004, F006, and F007 are COMPLETE and merged to `main`. Branch `feat/F005-user-roles` is active.
 
 ## Steps
-- [x] Create `WorkspacesModule`, `WorkspacesService`, and `WorkspacesController` in `apps/api/src/workspaces`
-- [x] Implement DTOs with validation (`CreateWorkspaceDto`, `UpdateWorkspaceDto`)
-- [x] Add `POST /organizations/:orgId/workspaces` with org membership verification and per-org slug uniqueness
-- [x] Add `GET /organizations/:orgId/workspaces` listing workspaces for an organization
-- [x] Add `GET /workspaces/:id` returning workspace details, parent org, and contained architecture count/list
-- [x] Add `PATCH /workspaces/:id` and `DELETE /workspaces/:id` with org membership & role verification
-- [x] Add `GET /workspaces/:id/architectures` listing architectures contained in the workspace
-- [x] Add workspace server actions and UI in `apps/web`
-- [x] Automated unit and e2e integration tests verifying CRUD, architecture containment, and tenant/membership isolation
-- [x] Full verification suite (`pnpm verify` + `pnpm build`)
+- [x] Add role permission invariants (`canWrite`, `canAdmin`, `assertRoleCanWrite`) in `packages/domain/src/invariants.ts`
+- [x] Add unit tests in `packages/domain/src/invariants.test.ts` verifying a viewer cannot write and an editor can write
+- [x] Add `RolesGuard` and `@RequireRoles()` decorator in `apps/api/src/roles/`
+- [x] Add `PATCH /organizations/:orgId/members/:memberId` endpoint in `apps/api` to update member roles
+- [x] Add integration tests in `apps/api/src/roles/roles.e2e.spec.ts` verifying write gating and role transitions
+- [x] Add role-aware UI logic and tests in `apps/web`
+- [x] Run full verification suite (`pnpm verify` + `pnpm build`)
 
 ## Verification
 - [x] TypeScript: PASS · Lint: PASS · Unit/Integration: PASS · Build: PASS · check-architecture: PASS
 
 ## Do Not
-- Implement canvas engine, pan/zoom, or nodes/edges (Phase 02).
-- Implement full architecture CRUD and version branching (Phase 03 F018).
-- Implement full RBAC permission matrices (F005 / F104).
-- Add enterprise SSO/SCIM (Phase 13).
+- Implement granular custom RBAC permission matrices (F104 / Phase 13).
+- Implement enterprise SCIM / SSO directory synchronization (Phase 13).
+- Implement canvas features (Phase 02).
 
 ## Next Task
-F005 — User roles (or F008 — Application shell).
+F008 — Application shell.
 
 ## Last Updated
 2026-09-26

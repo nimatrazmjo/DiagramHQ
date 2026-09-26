@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { createId } from '@diagramhq/domain';
+import { createId, type MemberRole } from '@diagramhq/domain';
 import { PrismaService } from '../database/prisma.service';
 import type { CreateOrganizationDto, UpdateOrganizationDto } from './organizations.dto';
 
@@ -214,5 +214,69 @@ export class OrganizationsService {
       role: m.role,
       createdAt: m.createdAt,
     }));
+  }
+
+  async updateMemberRole(
+    userId: string,
+    orgId: string,
+    memberId: string,
+    newRole: MemberRole,
+  ): Promise<{
+    id: string;
+    orgId: string;
+    userId: string;
+    role: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }> {
+    const callerMember = await this.prisma.member.findUnique({
+      where: {
+        orgId_userId: {
+          orgId,
+          userId,
+        },
+      },
+    });
+
+    if (!callerMember) {
+      throw new NotFoundException(`Organization '${orgId}' not found`);
+    }
+
+    if (callerMember.role !== 'owner' && callerMember.role !== 'admin') {
+      throw new ForbiddenException('Only owners and admins can update member roles');
+    }
+
+    const targetMember = await this.prisma.member.findUnique({
+      where: { id: memberId },
+    });
+
+    if (!targetMember || targetMember.orgId !== orgId) {
+      throw new NotFoundException('Member not found');
+    }
+
+    if (targetMember.role === 'owner' && newRole !== 'owner') {
+      throw new ForbiddenException('Cannot change the role of an organization owner');
+    }
+
+    if (callerMember.role === 'admin' && (targetMember.role === 'admin' || targetMember.role === 'owner')) {
+      if (targetMember.role === 'admin') {
+        throw new ForbiddenException('Only owners can change an admin role');
+      }
+      throw new ForbiddenException('Cannot change the role of an organization owner');
+    }
+
+    const updated = await this.prisma.member.update({
+      where: { id: memberId },
+      data: { role: newRole },
+    });
+
+    return {
+      id: updated.id,
+      orgId: updated.orgId,
+      userId: updated.userId,
+      role: updated.role,
+      createdAt: updated.createdAt,
+      updatedAt: updated.updatedAt,
+    };
   }
 }
