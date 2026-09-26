@@ -29,4 +29,29 @@ Diff reviewed: `git diff origin/main...HEAD` (15 files, ~935 insertions). Ran `p
 - Architecture: PASS (`pnpm check-architecture`)
 - Build: PASS (`pnpm build`)
 
-**Verdict: CLEAN after round-1 fixes.** No PR round 2 needed — all 5 findings addressed in a single follow-up commit.
+## Round 2 — Findings
+
+Re-ran `/code-review 15 --level high` against the round-1 fix commit. 4 new findings, all against the round-1 fix itself:
+
+1. **[CONFIRMED, high]** `handleSelectionDragStop`'s new snap-to-grid path (added in round 1) called `snapToGrid(rawPosition)` independently per dragged node. For a rigid group drag this distorts relative offsets (e.g. two nodes 10px apart could become 20px apart post-snap) — a regression specific to the group-drag snap path added by this feature.
+2. **[CONFIRMED, medium]** `dispatchAlignOperation`'s optimistic `setNodes` (added in round 1) never rolled back on a `persistFn` rejection, so a failed persist left the canvas showing unsaved positions with no user-visible signal beyond a console error.
+3. **[ACKNOWLEDGED, not fixed, low]** `dispatchAlignOperation` closes over the render-time `nodes`/`selectedNodeIds`; two align/distribute clicks fired before React re-renders between them could both read pre-first-click state. This is a general property of closure-based React state shared by the pre-existing `handleNodeDragStop`/`handleSelectionDragStop` handlers (not introduced by F014), requires a nontrivial ref-synchronization change to fully close, and has no realistic single-user trigger (only back-to-back synthetic/scripted clicks within one render tick). Deferred rather than risking a speculative fix; worth revisiting with F016 (undo/redo) if a more robust state model is introduced then.
+4. **[CONFIRMED, low]** `dispatchAlignOperation` reintroduced an O(n·m) `.filter(... .includes(...))` scan the same feature had already fixed for the `.find()` lookups elsewhere in the same function.
+
+### Fixes applied (same branch, second follow-up commit)
+
+- Added `snapGroupPositions(positions, gridSize?)` (exported, module-level): derives one delta from an anchor node and applies it uniformly to the whole group, preserving relative offsets. `handleSelectionDragStop` now uses it instead of per-node `snapToGrid`. Fixes #1.
+- `dispatchAlignOperation` now captures `previousPositionById` before the optimistic update and reverts to it in the dispatch `.catch()`. Fixes #2.
+- `dispatchAlignOperation` now builds a `Set` from `selectedNodeIds` for the membership check instead of `.includes()`. Fixes #4.
+- #3 left as-is with rationale recorded above.
+- Added 4 regression tests for `snapGroupPositions` in `apps/web/alignment.spec.ts` (empty input, anchor snaps, relative offset preserved, custom grid size) — 138 web tests now pass (was 134).
+
+### Re-verification after round-2 fixes
+
+- TypeScript: PASS
+- Lint: PASS
+- Tests: PASS (331 tests: 48 domain, 138 web, 145 api)
+- Architecture: PASS
+- Build: PASS
+
+**Verdict: CLEAN.** 3 of 4 round-2 findings fixed; #3 explicitly deferred with rationale (pre-existing pattern, no realistic trigger, risky speculative fix). No further PR round required.

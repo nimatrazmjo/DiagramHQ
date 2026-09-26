@@ -139,6 +139,30 @@ export function toAlignableNode(node: Node): AlignableNode {
   };
 }
 
+/**
+ * Snaps a dragged group to the grid as a rigid body: the delta is derived
+ * from a single anchor node and applied uniformly to every node, so the
+ * relative offsets within the group are preserved (snapping each node's
+ * position independently would distort them).
+ */
+export function snapGroupPositions(
+  positions: Array<{ id: string; position: { x: number; y: number } }>,
+  gridSize?: number,
+): Map<string, { x: number; y: number }> {
+  const result = new Map<string, { x: number; y: number }>();
+  if (positions.length === 0) return result;
+
+  const anchor = positions[0]!;
+  const snappedAnchor = snapToGrid(anchor.position, gridSize);
+  const dx = snappedAnchor.x - anchor.position.x;
+  const dy = snappedAnchor.y - anchor.position.y;
+
+  for (const { id, position } of positions) {
+    result.set(id, { x: position.x + dx, y: position.y + dy });
+  }
+  return result;
+}
+
 function toFlowNode(node: CanvasNode): Node {
   return {
     id: node.id,
@@ -239,15 +263,22 @@ function InfiniteCanvasContent({
     (_event, draggedNodes) => {
       if (draggedNodes.length === 0) return;
 
+      const snappedById = isSnapToGridEnabled
+        ? snapGroupPositions(
+            draggedNodes.map((n) => ({ id: n.id, position: { x: n.position.x, y: n.position.y } })),
+          )
+        : null;
+
       const moves: NodeMoveItem[] = draggedNodes.map((draggedNode) => {
         const startPos = dragStartPositions.current.get(draggedNode.id);
         dragStartPositions.current.delete(draggedNode.id);
         const prevPosition = startPos ?? { x: draggedNode.position.x, y: draggedNode.position.y };
         const rawPosition = { x: draggedNode.position.x, y: draggedNode.position.y };
+        const newPosition = snappedById?.get(draggedNode.id) ?? rawPosition;
         return {
           objectId: draggedNode.id,
           prevPosition,
-          newPosition: isSnapToGridEnabled ? snapToGrid(rawPosition) : rawPosition,
+          newPosition,
         };
       });
 
@@ -282,10 +313,14 @@ function InfiniteCanvasContent({
    */
   const dispatchAlignOperation = useCallback(
     (operation: AlignOperation, minNodes: number) => {
-      const selected = nodes.filter((n) => selectedNodeIds.includes(n.id));
+      const selectedIdSet = new Set(selectedNodeIds);
+      const selected = nodes.filter((n) => selectedIdSet.has(n.id));
       if (selected.length < minNodes) return;
 
       const alignableNodes: AlignableNode[] = selected.map(toAlignableNode);
+      const previousPositionById = new Map(
+        alignableNodes.map((n) => [n.id, n.position]),
+      );
 
       const positions =
         operation.type === 'align'
@@ -313,8 +348,16 @@ function InfiniteCanvasContent({
         onCommandDispatched(command);
       }
 
+      // Revert the optimistic update if persistence fails, so the canvas
+      // never shows positions the server didn't accept.
       void defaultCommandDispatcher.dispatch(command).catch((error) => {
         console.error('Failed to persist alignment:', error);
+        setNodes((nds) =>
+          nds.map((n) => {
+            const position = previousPositionById.get(n.id);
+            return position ? { ...n, position } : n;
+          }),
+        );
       });
     },
     [nodes, selectedNodeIds, viewId, batchPersistFn, onCommandDispatched],

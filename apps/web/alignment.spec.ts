@@ -7,7 +7,7 @@ import { AlignNodesCommand, type AlignOperation } from './lib/commands/align-nod
 import { CommandDispatcher } from './lib/commands/dispatcher';
 import { useCanvasStore } from './lib/canvas-store';
 import { AlignmentToolbar } from './components/canvas/alignment-toolbar';
-import { toAlignableNode } from './components/canvas/infinite-canvas';
+import { toAlignableNode, snapGroupPositions } from './components/canvas/infinite-canvas';
 
 // ----------------------------------------------------------------
 // AlignNodesCommand unit tests
@@ -161,6 +161,42 @@ describe('toAlignableNode', () => {
       width: undefined,
       height: undefined,
     });
+  });
+});
+
+// ----------------------------------------------------------------
+// snapGroupPositions: rigid-body group snap-to-grid
+// ----------------------------------------------------------------
+describe('snapGroupPositions', () => {
+  it('returns an empty map for no positions', () => {
+    expect(snapGroupPositions([]).size).toBe(0);
+  });
+
+  it('snaps the anchor (first) node to the grid', () => {
+    const result = snapGroupPositions([{ id: 'a', position: { x: 105, y: 8 } }]);
+    expect(result.get('a')).toEqual({ x: 100, y: 0 });
+  });
+
+  it('preserves relative offsets between grouped nodes (rigid-body snap)', () => {
+    // a and b are 10px apart on x; independent per-node snapping would
+    // change that gap (105->100, 115->120 = 20px apart). A shared delta
+    // derived from the anchor must keep them exactly 10px apart.
+    const result = snapGroupPositions([
+      { id: 'a', position: { x: 105, y: 0 } },
+      { id: 'b', position: { x: 115, y: 0 } },
+    ]);
+    const a = result.get('a')!;
+    const b = result.get('b')!;
+    expect(a).toEqual({ x: 100, y: 0 });
+    expect(b.x - a.x).toBe(10);
+  });
+
+  it('respects a custom grid size', () => {
+    const result = snapGroupPositions(
+      [{ id: 'a', position: { x: 37, y: 63 } }],
+      25,
+    );
+    expect(result.get('a')).toEqual({ x: 25, y: 75 });
   });
 });
 
