@@ -55,3 +55,15 @@ Caveat: the script treats any exit as a switch signal. To switch **only** on a r
 - Commit before switching; the receiving runtime trusts committed code over stale tracking and reconciles per `AGENTS.md`.
 - If a limit hits mid-feature, `CURRENT_TASK.md` must record the exact next step so the other runtime continues rather than restarts.
 - Antigravity runs **Sonnet** here to stay in Claude Code's model family; keep the choice deliberate.
+
+## Platform & environment notes (learned 2026-09-26)
+Separate from the two-runtime relay above — this is about *where* those runtimes execute, not a third node in the alternation. Claude Code / `agy` normally run on the macOS host (darwin-arm64, Docker + full network). This repo has also been touched between relay sessions by a cloud Cowork session running in a Linux VM that mounts the repo; that VM is **not** part of `scripts/agent-relay.sh`'s rotation (still Claude Code ⇄ Antigravity only) and never triggers or receives a handoff itself — treat any Cowork-touched state the same as any other uncommitted change you find in the tree (inspect, don't assume).
+
+`node_modules` lives in the repo folder, so its **native binaries belong to whichever platform installed last**. After a cross-platform touch (Cowork VM, or any non-macOS environment), rebuild for this platform before running native-dependent tools:
+```
+pnpm install             # rebuilds rollup / esbuild / Next SWC for this platform
+pnpm prisma:generate     # separate step -- install alone does NOT regenerate the Prisma
+                          # client/engine (see scripts/init.sh, which runs these as two steps)
+```
+
+Also, the Linux VM's egress blocks `binaries.prisma.sh`, so `prisma generate` and DB-backed tests can't run there. **Division of labor when a Cowork session is involved:** it does design, code, `typecheck`, `lint`, docs and tracking; the macOS host and CI run `test`, `build`, `prisma generate/migrate`, and the Postgres-backed suites. CI (`.github/workflows/ci.yml`) provisions Postgres + generates the Prisma client, so it is the authoritative full-verification gate regardless of which environment wrote the code.
