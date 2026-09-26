@@ -39,3 +39,24 @@ Target: Workspace entity, organization scoping, architecture containment, worksp
 - `pnpm test`: 147 tests passed (15 domain, 17 web, 115 api).
 - `check-architecture`: Clean (`check-architecture: clean`).
 - `pnpm build`: Clean production build across all Next.js and NestJS targets.
+- GitHub Actions CI: `CI/verify` passed on PR #7 (1m32s).
+
+## PR Review — Round 1 (PR #7)
+Independent pass over the pull request diff (`git diff origin/main...feat/F004-workspaces`):
+1. **Multi-Tenant Boundary Security**:
+   - Queries strictly verify membership in the workspace's parent organization (`Member.findUnique({ where: { orgId_userId: { orgId, userId } } })`).
+   - Unauthorized tenant access returns 404 (preventing cross-tenant metadata enumeration).
+   - Mutations (`PATCH`, `DELETE`) are guarded by member role; `DELETE` is strictly restricted to `owner` and `admin`.
+2. **Data Model & Invariant Integrity**:
+   - Workspaces scoped to organizations via `orgId` with per-org slug uniqueness (`@@unique([orgId, slug])`).
+   - Prefix conventions (`ws_` prefix and `WorkspaceId`) respected.
+   - Clean slug validation with collision resolution (409 for user conflicts, unique suffix for auto-slugs).
+   - Architecture containment relation (`Workspace.architectures`) verified with cascade deletion.
+3. **Automated Testing & Pipeline Integrity**:
+   - 25 unit tests in `workspaces.service.spec.ts` covering CRUD, roles, and slug collisions with zero `any`.
+   - 14 integration tests in `workspaces.e2e.spec.ts` testing HTTP pipeline and live database isolation.
+   - 11 unit tests in `apps/web/workspaces.spec.ts` covering web server actions.
+   - GitHub Actions CI green on PR #7 (`CI/verify` 1m32s).
+
+**PR Verdict**: CLEAN. Exiting PR review loop.
+
