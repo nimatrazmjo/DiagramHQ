@@ -1,25 +1,22 @@
 # Current Task
 
-Feature ID: F009
-Feature: Infinite canvas (React Flow mounted behind CanvasRenderer interface; pure model projection; no domain state in UI store)
+Feature ID: F010
+Feature: Pan and zoom (Wheel zoom, space-pan, fit-to-content 'F' shortcut, smooth viewport transitions)
 Status: COMPLETE
 Phase: Phase 02 — Canvas
 
 ## Objective
-Mount an interactive infinite canvas behind the framework-agnostic `CanvasRenderer` interface (ADR-0002). Model projections generate canvas nodes and edges, keeping UI interaction state (viewport, selection) strictly decoupled from domain state in accordance with layer boundaries.
+Support smooth, infinite pan and zoom on the canvas with wheel zoom limits (0.1x to 4x), space-bar drag panning, and a fit-to-content shortcut ('F' key), keeping viewport interactions responsive and synchronized with the UI store.
 
 ## Prerequisite
-Phase 01 (F001–F008) is COMPLETE and merged to `main`. Branch `feat/F009-infinite-canvas` is active.
+F009 (Infinite canvas) is COMPLETE and merged to `main`. Branch `feat/F010-pan-and-zoom` is active.
 
 ## Steps
-- [x] Define `CanvasRenderer`, `CanvasNode`, `CanvasEdge`, `CanvasViewport` in `packages/domain/src/canvas.ts`
-- [x] Implement pure model projection `projectViewModelToCanvas` in `packages/domain/src/canvas.ts`
-- [x] Add unit tests in `packages/domain/src/canvas.test.ts`
-- [x] Implement transient UI store in `apps/web/lib/canvas-store.ts` (Zustand: viewport + transient selection only)
-- [x] Implement `ReactFlowCanvasRenderer` in `apps/web/components/canvas/canvas-renderer.ts`
-- [x] Implement `InfiniteCanvas` component in `apps/web/components/canvas/infinite-canvas.tsx`
-- [x] Integrate interactive canvas into `/workspace/[workspaceId]` studio page
-- [x] Unit & component tests in `apps/web/canvas.spec.ts`
+- [x] Implement wheel zoom limits (minZoom 0.1, maxZoom 4) in `InfiniteCanvas`
+- [x] Configure space-pan activation (`panActivationKeyCode="Space"`) and grab cursor styling
+- [x] Implement fit-to-content ('F' keypress listener outside inputs) invoking `fitView`
+- [x] Add zoom helpers in `canvas-store.ts` (`zoomIn`, `zoomOut`, `resetZoom`)
+- [x] Implement component tests in `apps/web/pan-zoom.spec.ts`
 - [x] Run full verification suite (`pnpm verify` + `pnpm build`)
 
 ## Verification
@@ -28,10 +25,9 @@ Phase 01 (F001–F008) is COMPLETE and merged to `main`. Branch `feat/F009-infin
 ## Do Not
 - Store domain entity models inside Zustand stores (layer-boundaries rule 4).
 - Persist positions to DB without command layer (F012).
-- Re-implement graph storage or engine inside canvas.
 
 ## Next Task
-F010 — Pan and zoom.
+F011 — Object selection.
 
 ## Last Updated
 2026-09-26

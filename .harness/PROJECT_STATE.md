@@ -13,35 +13,35 @@ Phase Name: Canvas
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F009
-Feature Name: Infinite canvas
+Feature ID: F010
+Feature Name: Pan and zoom
 Status: COMPLETE
 
 ## Overall Progress
 Total Features: 135
-Completed: 9
+Completed: 10
 In Progress: 0
 Blocked: 0
-Not Started: 126
-Progress: 6.7%
+Not Started: 125
+Progress: 7.4%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F009 — Infinite canvas. React Flow mounted behind framework-agnostic `CanvasRenderer` interface (ADR-0002, MODULES.md §7). Pure model projection `projectViewModelToCanvas` maps domain objects and connections to canvas nodes and edges. UI interaction state (viewport, transient selection) strictly isolated in Zustand (`apps/web/lib/canvas-store.ts`) with zero domain entity models (Layer Boundaries Rule 4). Semantic architectural nodes (`SystemNode`, `AppNode`, `StoreNode`), MiniMap, Controls, background grid mounted in `/workspace/[workspaceId]` studio overview. Verified: 225 tests green across monorepo (34 domain, 61 web, 130 api), typecheck/lint/build/check-architecture clean. Evaluator score 5.0/5.0.
+F010 — Pan and zoom. Wheel zoom limits (0.1x to 4.0x) and clamping helpers, space-pan drag activation (`panActivationKeyCode="Space"` with grab cursor and pan-mode indicator badge), fit-to-content shortcut ('F' key) and top-right pan/zoom toolbar with Zoom Out, Zoom In, 100% Reset, and Fit. Synchronized with `useCanvasStore` (Layer Boundaries Rule 4). Verified: 235 tests green across monorepo (34 domain, 71 web, 130 api), typecheck/lint/build/check-architecture clean. Evaluator score 5.0/5.0.
 
-Prior: F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
+Prior: F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
 
 ## Current Work
-F009 review and PR merge; next feature: F010 — Pan and zoom.
+F010 review and PR merge; next feature: F011 — Object selection.
 
 ## Next Task
-F010 — Pan and zoom. See `CURRENT_TASK.md`.
+F011 — Object selection. See `CURRENT_TASK.md`.
 
 ## Last Verified
-F009 @ feat/F009-infinite-canvas — pnpm verify (typecheck / lint / test x225 / check-architecture) + pnpm build all green. PostgreSQL 16 container healthy.
+F010 @ feat/F010-pan-and-zoom — pnpm verify (typecheck / lint / test x235 / check-architecture) + pnpm build all green. PostgreSQL 16 container healthy.
 
 ## Current Git Commit
-Branch `feat/F009-infinite-canvas`. Working tree clean.
+Branch `feat/F010-pan-and-zoom`. Working tree clean.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.

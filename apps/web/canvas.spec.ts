@@ -95,11 +95,16 @@ describe('Web Canvas Implementation (F009 - Infinite Canvas)', () => {
         'selectedNodeIds',
         'selectedEdgeIds',
         'hoveredNodeId',
+        'isSpacePanning',
         'setViewport',
         'setSelectedNodes',
         'setSelectedEdges',
         'clearSelection',
         'setHoveredNode',
+        'setIsSpacePanning',
+        'zoomIn',
+        'zoomOut',
+        'resetZoom',
       ]);
 
       for (const key of keys) {
