@@ -19,6 +19,7 @@ Run before you stop and before you start (init verifies the "start" half). A dir
 - [ ] No stray files, no secrets, no `.env`, no debug logging left on.
 - [ ] Committed on a `feat/<feature-id>` branch with a conventional message.
 - [ ] Exactly one `active` feature remains (or all passed and phase advanced).
+- [ ] If the feature just went `COMPLETE`: branch pushed, PR opened/reused, reviewed clean — no unresolved findings (`loops/pr-review-loop.md`).
 
 ## Red flags that mean "not clean"
 - Tests skipped or commented out to make the suite pass.

@@ -5,9 +5,10 @@
   "entry": "read-state",
   "state": [
     "activeFeatureId", "sprintContract", "codeChanges", "verifyResults",
-    "evaluatorVerdict", "evaluatorScore", "consecutivePasses", "round", "standingDefects"
+    "evaluatorVerdict", "evaluatorScore", "consecutivePasses", "round", "standingDefects",
+    "prRound", "prFindings", "prVerdict"
   ],
-  "params": { "REQUIRED_PASSES": 2, "MAX_ROUNDS": 6 },
+  "params": { "REQUIRED_PASSES": 2, "MAX_ROUNDS": 6, "MAX_PR_ROUNDS": 4 },
   "nodes": [
     { "id": "read-state", "type": "code",  "does": "load handoff, feature_list, sprint contract" },
     { "id": "plan",       "type": "agent", "role": "Planner",   "does": "write/confirm sprint contract" },
@@ -15,6 +16,10 @@
     { "id": "verify",     "type": "code",  "does": "typecheck, lint, test, check-architecture" },
     { "id": "evaluate",   "type": "agent", "role": "Checker",   "does": "re-run checks, score against rubric" },
     { "id": "record",     "type": "code",  "does": "write evidence, mark feature passed" },
+    { "id": "push",       "type": "code",  "does": "push branch to origin" },
+    { "id": "open-pr",    "type": "code",  "does": "open PR if none exists, else reuse" },
+    { "id": "pr-review",  "type": "agent", "role": "Checker",   "does": "review PR diff (code-review skill)" },
+    { "id": "pr-fix",     "type": "agent", "role": "Maker",     "does": "address PR findings, commit" },
     { "id": "rollback",   "type": "code",  "does": "revert to last clean commit" },
     { "id": "handoff",    "type": "agent", "does": "rewrite handoff, run clean-state checklist" },
     { "id": "escalate",   "type": "human", "does": "stop and alert a human" },
@@ -31,8 +36,14 @@
     { "from": "evaluate",   "to": "implement", "when": "verdict_revise_or_passes_below_required", "kind": "rollback" },
     { "from": "evaluate",   "to": "record",    "when": "pass_and_passes_at_or_above_required" },
     { "from": "evaluate",   "to": "escalate",  "when": "max_rounds_or_hard_stop" },
-    { "from": "record",     "to": "plan",      "when": "more_features_in_slice" },
-    { "from": "record",     "to": "handoff",   "when": "slice_complete" },
+    { "from": "record",     "to": "push",      "when": "always" },
+    { "from": "push",       "to": "open-pr",   "when": "always" },
+    { "from": "open-pr",    "to": "pr-review", "when": "always" },
+    { "from": "pr-review",  "to": "pr-fix",    "when": "findings_present", "kind": "rollback" },
+    { "from": "pr-fix",     "to": "push",      "when": "fixes_committed", "kind": "rollback" },
+    { "from": "pr-review",  "to": "plan",      "when": "clean_and_more_features_in_slice" },
+    { "from": "pr-review",  "to": "handoff",   "when": "clean_and_slice_complete" },
+    { "from": "pr-review",  "to": "escalate",  "when": "max_pr_rounds" },
     { "from": "handoff",    "to": "stop",      "when": "always" },
     { "from": "escalate",   "to": "stop",      "when": "always" }
   ]

@@ -16,6 +16,7 @@ Follow `architecture/ARCHITECTURE.md` §repository shape. One module per domain 
 - Conventional commits: `feat(model): add connection CRUD`, `fix(canvas): stop drag from mutating store`. Reference the feature id in the body.
 - Commit only when the feature (or a coherent sub-step) is green and has evidence. No "wip" on main.
 - Never commit secrets, `.env`, or generated artifacts.
+- After a feature passes maker-checker: push the branch, open a PR (reuse if one is already open for it — never open a second), review it, fix findings, and repeat until clean before starting the next feature. See `loops/pr-review-loop.md`.
 
 ## Evidence discipline
 A feature is `passed` only with recorded evidence in `CHANGELOG.md`: the exact command, its output (or a screenshot path under `.harness/evidence/`), or a test id. "Looks right" is not evidence. Screenshots for canvas features; command output for API/data features. See `verification/acceptance-evidence.md`.

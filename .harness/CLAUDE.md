@@ -50,4 +50,4 @@ The app does not exist yet. As you scaffold it (F001), keep this table current �
 **Phase 01 — Foundation. Feature F001 — Project architecture** (monorepo scaffold + clean baseline). Details: `CURRENT_TASK.md`.
 
 ## Before you stop
-Run the Session-completion protocol in `AGENTS.md`: update PROJECT_STATE, CURRENT_TASK, ROADMAP (+ phase file), CHANGELOG, BLOCKERS/DECISIONS as needed; leave the tree clean (`state/clean-state-checklist.md`); commit on `feat/<FID>`.
+Run the Session-completion protocol in `AGENTS.md`: update PROJECT_STATE, CURRENT_TASK, ROADMAP (+ phase file), CHANGELOG, BLOCKERS/DECISIONS as needed; leave the tree clean (`state/clean-state-checklist.md`); commit on `feat/<FID>`. If the feature just went COMPLETE: push, open/reuse the PR, review it (code-review skill), fix findings, and repeat until clean before starting the next feature (`loops/pr-review-loop.md`).
