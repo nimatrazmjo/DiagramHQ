@@ -90,6 +90,7 @@ model Architecture {
   name             String
   description      String?
   defaultVersionId String?           @map("default_version_id")
+  defaultVersion   Version?          @relation("ArchitectureDefaultVersion", fields: [defaultVersionId], references: [id], onDelete: SetNull)
   createdAt        DateTime          @default(now()) @map("created_at")
   updatedAt        DateTime          @updatedAt @map("updated_at")
   versions         Version[]
@@ -120,6 +121,7 @@ model Version {
   modelObjects     ModelObject[]
   modelConnections ModelConnection[]
   phases           Phase[]
+  defaultForArchitectures Architecture[] @relation("ArchitectureDefaultVersion")
 
   @@map("versions")
 }

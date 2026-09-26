@@ -19,7 +19,7 @@ fi
 
 # Rule 2 & 5: apps/web must not import @prisma/client or @nestjs
 if [ -d "apps/web" ]; then
-  web_forbidden=$(grep -rnE "from ['\"](@prisma/client|@nestjs)(/[^'\"]*)?['\"]" apps/web --exclude-dir=".next" --exclude-dir="node_modules" || true)
+  web_forbidden=$(grep -rnE "from ['\"](@prisma/client|@nestjs)(/[^'\"]*)?['\"]" apps/web --exclude-dir=".next" --exclude-dir="node_modules" --exclude-dir="dist" || true)
   if [ -n "$web_forbidden" ]; then
     echo "VIOLATION [Rule 2/5]: apps/web contains forbidden persistence/server imports:" >&2
     echo "$web_forbidden" >&2

@@ -143,6 +143,17 @@ export class TenantContext {
       if (!version || version.architectureId !== data.architectureId) {
         throw new Error('Version does not belong to the given architecture');
       }
+      if (data.parentId) {
+        if (data.parentId === data.id) {
+          throw new Error('Object cannot be its own parent');
+        }
+        const parent = await this.prisma.modelObject.findUnique({
+          where: { id: data.parentId },
+        });
+        if (!parent || parent.architectureId !== data.architectureId) {
+          throw new Error('Parent object does not belong to the given architecture');
+        }
+      }
       return this.prisma.modelObject.create({
         data,
       });

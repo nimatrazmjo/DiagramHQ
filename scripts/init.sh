@@ -3,7 +3,8 @@
 set -euo pipefail
 corepack enable >/dev/null 2>&1 || true
 pnpm install
-pnpm build
+pnpm prisma:generate
+pnpm build:domain
 pnpm typecheck
 pnpm lint
 pnpm test

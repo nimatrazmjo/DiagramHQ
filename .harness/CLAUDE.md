@@ -41,9 +41,9 @@ The app does not exist yet. As you scaffold it (F001), keep this table current �
 | Lint | `pnpm lint` |
 | Test | `pnpm test` |
 | Build | `pnpm build` |
-| Verify baseline | `./scripts/init.sh` (install + typecheck + lint + test) or `pnpm verify` |
+| Verify baseline | `./scripts/init.sh` (install + prisma generate + build:domain + typecheck + lint + test + check-architecture) or `pnpm verify` |
 | Containers | `docker compose up --build` (or `make up`) |
-| Check boundaries | see `scripts/SCRIPTS.md` → check-architecture (implemented from F018) |
+| Check boundaries | `pnpm check-architecture` (`scripts/check-architecture.sh`, implemented from F006) |
 | Progress % | see `scripts/SCRIPTS.md` → progress-counter (contract; manual for now) |
 
 ## Current target
