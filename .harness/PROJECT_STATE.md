@@ -10,38 +10,38 @@ Description: Model-first architecture intelligence platform (a "better than IceP
 ## Current Phase
 Phase: 01
 Phase Name: Foundation
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Current Feature
-Feature ID: F005
-Feature Name: User roles
+Feature ID: F008
+Feature Name: Application shell
 Status: COMPLETE (ready for PR review loop)
 
 ## Overall Progress
 Total Features: 135
-Completed: 7
+Completed: 8
 In Progress: 0
 Blocked: 0
-Not Started: 128
-Progress: 5.2%
+Not Started: 127
+Progress: 5.9%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F005 — User roles. Basic role model (owner, admin, editor, viewer), write gating, and member role management. Domain invariants (`canWrite`, `canAdmin`, `assertRoleCanWrite`), API `RolesGuard`, `@RequireRoles` decorator, `PATCH /organizations/:id/members/:memberId` endpoint, and Next.js web dashboard integration. Verified: 176 tests green across workspace (23 domain, 23 web, 130 api), typecheck/lint/build/check-architecture clean. Evaluator score 5.0/5.0. Log: `.harness/reviews/F005-review.md`.
+F008 — Application shell. Responsive Next.js application shell: LeftNavigator (Overview, Systems, Apps, Data, Flows, Views, Decisions), TopBar (search input with ⌘K, AI Copilot trigger, user session/signout), InspectorPanel (collapsible right-side inspector with Properties, Hierarchy, Metadata tabs), `/workspace/[workspaceId]` studio subroutes, and narrow phone width responsiveness. Phase 01 (Foundation) is now 100% COMPLETE. Verified: 197 tests green across workspace (23 domain, 44 web, 130 api), typecheck/lint/build/check-architecture clean. Evaluator score 5.0/5.0. Log: `.harness/reviews/F008-review.md`.
 
-Prior: F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
+Prior: F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
 
 ## Current Work
-F005 PR review loop in progress.
+F008 PR review loop in progress.
 
 ## Next Task
-F008 — Application shell. See `CURRENT_TASK.md`.
+F009 — Infinite canvas (Phase 02 — Canvas). See `CURRENT_TASK.md`.
 
 ## Last Verified
-F005 @ feat/F005-user-roles — pnpm verify (typecheck / lint / test x176 / check-architecture) + pnpm build all green. PostgreSQL 16 container healthy.
+F008 @ feat/F008-application-shell — pnpm verify (typecheck / lint / test x197 / check-architecture) + pnpm build all green. PostgreSQL 16 container healthy.
 
 ## Current Git Commit
-Branch `feat/F005-user-roles`. Working tree clean.
+Branch `feat/F008-application-shell`. Working tree clean.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.

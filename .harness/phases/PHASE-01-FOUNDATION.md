@@ -1,6 +1,6 @@
 # Phase 01 — Foundation
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Description
 Tenant-isolated foundation: auth, organizations, workspaces, roles, the database + API foundation, and the application shell. Everything else is built on this.
@@ -148,7 +148,7 @@ Test: integration: health returns ok; a bad request returns a typed error.
 
 ### F008 — Application shell
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Next.js shell: left navigator, top bar, inspector slot.
 

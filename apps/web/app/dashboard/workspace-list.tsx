@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { WorkspaceItem } from './workspace-actions';
 
 export interface WorkspaceListProps {
@@ -22,9 +23,17 @@ export function WorkspaceList({ workspaces }: WorkspaceListProps): JSX.Element {
         >
           <div className="flex items-center justify-between">
             <span className="font-medium text-sm text-gray-900">{ws.name}</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 font-medium">
-              {ws._count?.architectures ?? 0} {(ws._count?.architectures ?? 0) === 1 ? 'architecture' : 'architectures'}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 font-medium">
+                {ws._count?.architectures ?? 0} {(ws._count?.architectures ?? 0) === 1 ? 'architecture' : 'architectures'}
+              </span>
+              <Link
+                href={`/workspace/${ws.id}`}
+                className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline inline-flex items-center"
+              >
+                Open Studio →
+              </Link>
+            </div>
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-xs text-gray-500">
             <span>

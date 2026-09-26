@@ -1,19 +1,28 @@
 import { auth } from '@/auth';
 import { NextResponse } from 'next/server';
 
+export function isProtectedRoute(pathname: string): boolean {
+  return (
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/architectures') ||
+    pathname.startsWith('/workspace')
+  );
+}
+
+export function isAuthRoute(pathname: string): boolean {
+  return pathname.startsWith('/login') || pathname.startsWith('/api/auth');
+}
+
 export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const { pathname } = req.nextUrl;
 
-  const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/api/auth');
-  const isProtectedRoute = pathname.startsWith('/dashboard') || pathname.startsWith('/architectures');
-
-  if (isProtectedRoute && !isLoggedIn) {
+  if (isProtectedRoute(pathname) && !isLoggedIn) {
     const callbackUrl = encodeURIComponent(pathname + req.nextUrl.search);
     return NextResponse.redirect(new URL(`/login?callbackUrl=${callbackUrl}`, req.nextUrl));
   }
 
-  if (isAuthRoute && isLoggedIn && pathname === '/login') {
+  if (isAuthRoute(pathname) && isLoggedIn && pathname === '/login') {
     return NextResponse.redirect(new URL('/dashboard', req.nextUrl));
   }
 

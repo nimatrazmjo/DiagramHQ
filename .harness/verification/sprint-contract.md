@@ -1,67 +1,71 @@
-# Sprint Contract — F005 (User Roles)
+# Sprint Contract — F008 (Application Shell)
 
 Written by the Planner before any code. It fixes "done" so the Generator cannot drift and the Evaluator has something objective to grade against.
 
 ## Feature
-- Id: F005
-- Title: User roles
+- Id: F008
+- Title: Application shell
 - Phase / slice: Phase 01 — Foundation
 
 ## Goal (one sentence)
-Organization members have an assigned role (owner, admin, editor, viewer) that gates writes across the system, ensuring viewers cannot perform write mutations while editors/admins/owners can.
+A responsive Next.js application shell providing a left navigator (Overview, Systems, Apps, Data, Flows, Views, Decisions), a top bar (search, AI trigger, user session), a right inspector slot, and active subrouting that adapts seamlessly to narrow phone viewports.
 
 ## Acceptance -> checks
 Map each acceptance item from `PHASE-01-FOUNDATION.md` to how it will be verified.
 | Acceptance item | How verified (command / test / screenshot) |
 |---|---|
-| Role stored per member | Prisma schema `Member.role` (MemberRole enum); integration test verifying role assignment and retrieval on member records |
-| A basic role check gates writes | Unit & integration tests proving a viewer cannot create/update workspaces or orgs (HTTP 403 Forbidden), while an editor/admin/owner can write |
-| Full role catalog deferred to Phase 13 | Verified that only basic roles (`owner`, `admin`, `editor`, `viewer`) are implemented without complex enterprise RBAC matrices |
-| Test: unit: a viewer cannot write; an editor can | Unit test in `packages/domain/src/invariants.test.ts` + API integration tests in `apps/api/src/roles/roles.e2e.spec.ts` |
+| Left navigator (Overview, Systems, Apps, Data, Flows, Views, Decisions) | Automated component/unit tests verifying all 7 navigation items render with correct routes and active state |
+| Top bar (search, AI, user) | Automated tests verifying search input, AI trigger button, and user session badge / sign out control |
+| Right inspector slot | Automated tests verifying right inspector panel renders slotted content, collapsible toggles |
+| Routing + responsive to phone width | Automated tests verifying responsive layout styles, mobile drawer/toggle holding at phone width (<768px), and subroute navigation |
+| Test: e2e: shell renders; navigation routes; layout holds at narrow width | Unit & integration tests in `apps/web/shell.spec.ts` |
 
 ## Plan (steps)
-1. In `packages/domain`:
-   - Add role invariant functions: `canWrite(role: MemberRole): boolean`, `canAdmin(role: MemberRole): boolean`, `assertRoleCanWrite(role: MemberRole): void`, and `RolePermissionDeniedError`.
-   - Add unit tests in `packages/domain/src/invariants.test.ts` verifying that viewers cannot write and editors can write.
-2. In `apps/api`:
-   - Implement `RolesGuard` and `@RequireRole('owner' | 'admin' | 'editor')` or `@RequireWriteRole()` decorator.
-   - Add member role update endpoint: `PATCH /organizations/:orgId/members/:memberId` (guarded to `owner` and `admin`, prevents demoting the last owner).
-   - Write integration tests in `apps/api/src/roles/roles.e2e.spec.ts` verifying:
-     - Member roles are stored and returned.
-     - Viewer write attempts to `POST /organizations/:orgId/workspaces` return 403 Forbidden.
-     - Editor write attempts succeed (201 Created).
-     - Editor delete attempts return 403 Forbidden (delete requires owner/admin).
-     - Owner/admin can promote/demote members.
-3. In `apps/web`:
-   - Add role-aware UI logic in dashboard (displaying user role badge, gating workspace creation form for viewers).
-   - Unit test in `apps/web/roles.spec.ts`.
-4. Verification:
+1. In `apps/web`:
+   - Create `components/shell/`:
+     - `left-navigator.tsx`: Navigation items (Overview, Systems, Apps, Data, Flows, Views, Decisions) with active path highlighting and collapse/expand.
+     - `top-bar.tsx`: Search input with keyboard shortcut cue, AI assistant trigger button, and user session info with sign-out.
+     - `inspector-panel.tsx`: Right inspector slot with collapsible toggle and tabbed inspector placeholder (properties, details).
+     - `app-shell.tsx`: Main layout grid combining TopBar, LeftNavigator, main canvas/content area, and RightInspector, with responsive CSS styles/drawers for phone viewports.
+   - Add workspace studio route in `apps/web/app/workspace/[workspaceId]/`:
+     - `layout.tsx`: Wraps children in `<AppShell>`.
+     - `page.tsx`: Workspace default view (Overview).
+     - Subroutes for `systems`, `apps`, `data`, `flows`, `views`, `decisions`.
+   - Update `middleware.ts` to protect `/workspace` routes.
+   - Update `apps/web/app/dashboard/workspace-list.tsx` to link each workspace directly to its studio route `/workspace/${ws.id}`.
+2. Automated tests:
+   - Comprehensive test suite in `apps/web/shell.spec.ts` testing:
+     - Rendering of LeftNavigator with all 7 required navigation links.
+     - TopBar with search, AI button, and user display.
+     - Inspector slot visibility and collapse behavior.
+     - Responsive behavior / mobile drawer toggle for narrow screens.
+3. Verification:
    - Run `pnpm verify` (`typecheck`, `lint`, `test`, `check-architecture`) and `pnpm build`.
 
 ## In scope
-- Basic role model: `owner`, `admin`, `editor`, `viewer` stored per `Member`.
-- Write gating: Viewers can read but cannot perform writes; editors can write; admins and owners can administer and delete.
-- Role management: Updating member roles by owners/admins.
-- Domain invariants for role permissions.
+- Next.js application shell components and layout in `apps/web`.
+- 7 navigation items: Overview, Systems, Apps, Data, Flows, Views, Decisions.
+- Top bar with search input, AI action trigger, and user account.
+- Right inspector panel slot.
+- Subroute navigation under `/workspace/[workspaceId]`.
+- Responsive behavior for mobile / narrow viewports.
 
 ## Explicitly out of scope (parked)
-- Full custom RBAC permission matrices, granular permission flags (F104 / Phase 13).
-- Enterprise SSO, directory sync, SCIM (Phase 13).
-- Canvas and drawing tools (Phase 02).
+- Interactive canvas rendering (React Flow nodes/edges) -> Phase 02 Canvas (F009).
+- Pan/zoom gesture engine -> F010.
+- Live AI streaming endpoint backend -> Phase 08 (AI Copilot).
 
 ## New dependencies
-None. Reuses existing Prisma schema and domain types.
+None. Pure React / Next.js and CSS modules / inline styles without breaking existing builds.
 
 ## Boundaries touched
-- `packages/domain`: `src/invariants.ts`, `src/invariants.test.ts`.
-- `apps/api`: `src/roles/` (guard, decorators, spec, e2e spec), `src/organizations/organizations.service.ts` & `organizations.controller.ts` (member role update).
-- `apps/web`: `app/dashboard/` (role UI badge and disabled states), `roles.spec.ts`.
+- `apps/web`: `components/shell/*`, `app/workspace/*`, `middleware.ts`, `app/dashboard/workspace-list.tsx`, `shell.spec.ts`.
 
 ## Definition of done
 - All acceptance checks green + evidence recorded.
 - `check-architecture` passes.
 - Evaluator score >= 4.0, no criterion at 1.
-- State + handoff updated, committed on `feat/F005-user-roles`.
+- State + handoff updated, committed on `feat/F008-application-shell`.
 
 ---
 Signed off (Planner) before build: [x]
