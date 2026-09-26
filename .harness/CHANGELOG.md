@@ -2,6 +2,36 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F015 — Auto-layout
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer, layout-engine registry (MODULES.md §6 — new capabilities register(); core never switches on names):
+  - `layout-registry.ts`: `LayoutNode`, `LayoutEdge`, `LayoutOptions`, `LayoutEngineName`, `LayoutEngine`, `registerLayoutEngine`, `getLayoutEngine`, `listLayoutEngines`, `applyLayout` (throws a descriptive error for an unregistered name; `[]` short-circuit for zero nodes).
+  - `layout-engine-grid.ts`: row-major grid, default spacing derived from the largest node's width/height so it never overlaps.
+  - `layout-engine-layered.ts`: `computeLayers` (Kahn's-algorithm longest-path-from-root layering; cycle members fall back to layer 0 instead of hanging), backing `hierarchical`, `tree`, `layered`, `TB` (all identical — a tree is just a DAG with no cross-branching) and `LR` (same algorithm, axes swapped).
+  - `layout-engine-radial.ts`: concentric rings from the same layering; each ring's radius is the larger of "clear of the previous ring" and "enough circumference for its own node count," so same-ring nodes can't collide even with many siblings.
+  - `layout-engine-force-directed.ts`: deterministic force simulation (circular index-seeded, no RNG; repulsion + spring-to-ideal-distance attraction over 150 iterations) followed by a deterministic overlap-resolution pass that guarantees zero bbox overlap even if the simulation didn't fully converge.
+  - `layout-builtins.ts`: side-effect barrel registering all 4 built-ins; a third-party engine registers the same way without touching this file.
+  - Tests: `layout-registry.test.ts` (4, registry mechanics + a test-only engine registering without core edits) + `layout-builtins.test.ts` (10: the acceptance-criteria bbox-non-overlap test across all 8 registered names on a sample graph with a deliberate cycle, plus per-engine correctness checks).
+- Web layer:
+  - `lib/commands/apply-layout-command.ts`: `ApplyLayoutCommand` — same `Command<...>` shape as `AlignNodesCommand` (batch persist, undo restores prior positions).
+  - `components/canvas/layout-menu.tsx`: dropdown listing every `listLayoutEngines()` entry.
+  - `components/canvas/infinite-canvas.tsx`: `handleApplyLayout` mirrors F014's `dispatchAlignOperation` exactly (in-flight ref+state guard, synchronous optimistic update via the pure domain function, background persist with rollback-on-failure) — reuses the review-hardened pattern instead of reintroducing the bugs F014 already found and fixed. Menu mounted bottom-left, shown whenever `nodes.length > 1` (whole-graph action, not gated by selection — "manual positions preserved unless re-applied" means this only ever runs on explicit click).
+  - Tests: `auto-layout.spec.ts` — 11 tests (command execute/undo/persist/no-persist/all-8-engines, dispatcher history+undo, `LayoutMenu` SSR markup).
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (366 tests: 70 domain, 151 web, 145 api)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean — domain, api, web)
+- PR Review, round 1: `code-review` skill found 1 high (align and apply-layout used independent busy-guards, so the two whole-graph mutations could race and clobber each other) + 2 medium (`ApplyLayoutCommand` recomputed the layout a second time on persist, doubling cost for `forceDirected`; `resolveOverlaps`' fixed pass count wasn't guaranteed to converge for larger graphs) + 1 low (`LayoutNode` duplicated `AlignableNode`'s shape); all fixed in a follow-up commit.
+- PR Review, round 2: found 1 high (the round-1 guard had no try/catch around its synchronous compute, so a throw could brick both toolbars permanently), 2 medium (rollback could clobber an unrelated successful edit made mid-persist; `computeLayers` collapsed nodes downstream of a cycle to the same fallback layer as the cycle itself), 4 low (missing engine-output length validation, a `columns: 0` footgun in grid layout, `LayoutMenu`'s option buttons not disabled, duplicated persist logic across commands) — all fixed with a proper DFS back-edge-removal rewrite of `computeLayers` plus the rest; 2 more low findings addressed via documentation (softened an overclaiming docstring; clarified `MODULES.md`'s built-in-location rule rather than moving correctly-layered pure-math code).
+- PR Review, round 3: found 1 medium (gridLayout fractional column counts in (0, 1) producing NaN/Infinity) + 3 low (applyLayout coordinate validation, forceDirected integer coordinate rounding, LayoutMenu outside pointerdown/Escape dismissal); all fixed with regression tests. Verdict: CLEAN. Full log: `.harness/reviews/F015-review.md`.
+- PR: https://github.com/nimatrazmjo/DiagramHQ/pull/16
+
 ## 2026-09-26 — F014 — Alignment
 
 Status: COMPLETE

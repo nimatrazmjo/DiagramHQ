@@ -7,4 +7,9 @@ export {
   type AlignNodesCommandParams,
   type AlignedNodeResult,
 } from './align-nodes-command';
+export {
+  ApplyLayoutCommand,
+  type ApplyLayoutCommandParams,
+  type LayoutNodeResult,
+} from './apply-layout-command';
 export { CommandDispatcher, defaultCommandDispatcher } from './dispatcher';
