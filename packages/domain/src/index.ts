@@ -10,3 +10,4 @@ export * from './c4-context';
 export * from './c4-container';
 export * from './c4-component';
 export * from './person';
+export * from './system';

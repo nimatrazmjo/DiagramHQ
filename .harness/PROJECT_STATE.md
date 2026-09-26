@@ -13,16 +13,16 @@ Phase Name: Architecture Model
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F022
-Feature Name: Person
-Status: COMPLETE
+Feature ID: F023
+Feature Name: System
+Status: IN PROGRESS
 
 ## Overall Progress
 Total Features: 135
 Completed: 22
-In Progress: 0
+In Progress: 1
 Blocked: 0
-Not Started: 113
+Not Started: 112
 Progress: 16.3%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
@@ -35,7 +35,7 @@ Prior: F021 — C4 Component (PR #22 merged). F020 — C4 Container (PR #21 merg
 F023 — System: Object type system CRUD, rendering (internal vs external systems, system boundary), drill-down capabilities, and canvas projection.
 
 ## Next Task
-F023 — System. Object type: system CRUD and render (internal vs external).
+F024 — Application. Object type: application/service CRUD and render.
 
 ## Last Verified
 F016 @ main — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green.
