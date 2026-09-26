@@ -22,7 +22,7 @@ A model-first architecture intelligence platform. The **model** (objects + conne
 6. **Modular and expandable.** New object types, view types, importers, exporters, and AI actions register against interfaces (`architecture/MODULES.md`); they do not edit the core. If adding a feature forces a core edit that a registry should handle, the abstraction is wrong.
 7. **Separate maker from checker.** After implementing (maker), switch to the Evaluator role (`verification/roles.md`) and score honestly against `verification/evaluator-rubric.md`. You may not approve your own work by assertion.
 8. **Persist state every session.** Before stopping, update `PROJECT_STATE.md`, `CURRENT_TASK.md`, `ROADMAP.md` (+ the phase file), and `CHANGELOG.md`; open/close anything in `BLOCKERS.md`; record decisions in `DECISIONS.md`. See `rules/conventions.md` and the Session-completion protocol below.
-9. **Small, reversible steps.** Thinnest vertical slice that is demonstrable. Commit per feature on `feat/<FID>` with the message format in `rules/conventions.md`. No drive-by refactors. After a feature passes: push, open/reuse a PR, review it, and fix findings until clean before starting the next feature (`loops/pr-review-loop.md`).
+9. **Small, reversible steps.** Thinnest vertical slice that is demonstrable. Commit per feature on `feat/<FID>` (or `docs/<slug>`/`chore/<slug>` for harness-only work, `rules/conventions.md`) with the message format in `rules/conventions.md`. No drive-by refactors. After a feature passes: push, open/reuse a PR, review it, and fix findings until clean before starting the next feature (`loops/pr-review-loop.md`).
 10. **Observability is not optional.** Structured logs at startup, boundaries, and errors (`scripts/SCRIPTS.md` → logger). If you can't see why it failed, add a log before you add a fix.
 
 ## Statuses (use ONLY these)
@@ -47,7 +47,7 @@ The explicit version, with routing rules, is `graph/workflow-graph.md`.
 - Verification recorded in `CHANGELOG.md` (reproducible command/output or artifact path).
 - No layer-boundary violation (`scripts/SCRIPTS.md` → check-architecture passes).
 - Evaluator score >= threshold (`verification/evaluator-rubric.md`).
-- `ROADMAP.md` + phase file marked `COMPLETE`; `PROJECT_STATE.md` + `CURRENT_TASK.md` updated; committed on `feat/<FID>`.
+- `ROADMAP.md` + phase file marked `COMPLETE`; `PROJECT_STATE.md` + `CURRENT_TASK.md` updated; committed on `feat/<FID>` (or `docs/<slug>`/`chore/<slug>` for harness-only work).
 - Branch pushed, PR opened/reused, reviewed clean, no unresolved findings (`loops/pr-review-loop.md`).
 
 ## Session-completion protocol (do all of this before you stop)
