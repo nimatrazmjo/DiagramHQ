@@ -23,4 +23,20 @@ describe('HealthService', () => {
     const { timestamp } = await new HealthService(prismaUp).getStatus();
     expect(new Date(timestamp).toISOString()).toBe(timestamp);
   });
+
+  it('reports degraded when the database check hangs past the timeout', async () => {
+    vi.useFakeTimers();
+    try {
+      const hangingPrisma = {
+        $queryRaw: vi.fn(() => new Promise(() => {})), // never resolves/rejects
+      } as unknown as PrismaService;
+      const statusPromise = new HealthService(hangingPrisma).getStatus();
+      await vi.advanceTimersByTimeAsync(3000);
+      const status = await statusPromise;
+      expect(status.status).toBe('degraded');
+      expect(status.checks.database).toBe('down');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

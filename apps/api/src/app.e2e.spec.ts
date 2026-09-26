@@ -80,3 +80,31 @@ describe('API edge foundation (F007)', () => {
     expect(Array.isArray(res.body.error.details)).toBe(true);
   });
 });
+
+describe('API edge foundation (F007) — degraded database', () => {
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(PrismaService)
+      .useValue({ $queryRaw: vi.fn().mockRejectedValue(new Error('connection refused')) })
+      .compile();
+
+    app = moduleRef.createNestApplication();
+    app.useGlobalFilters(new AllExceptionsFilter());
+    await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  // A probe keying off HTTP status (not body content) must see this fail too,
+  // not just the body's status field -- this is what round 1's review caught.
+  it('GET /health returns 503 (not 200) when the database check fails', async () => {
+    const res = await request(app.getHttpServer()).get('/health');
+    expect(res.status).toBe(503);
+    expect(res.body.status).toBe('degraded');
+    expect(res.body.checks.database).toBe('down');
+  });
+});

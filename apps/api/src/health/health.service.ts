@@ -13,6 +13,11 @@ export interface HealthStatus {
  * (the database). Kept free of transport concerns so it is unit-testable and
  * reusable by other probes.
  */
+// A network partition (as opposed to a clean connection-refused) can leave
+// $queryRaw neither resolving nor rejecting; without a bound, a probe calling
+// /health would hang past its own timeout instead of getting a fast "down".
+const DATABASE_CHECK_TIMEOUT_MS = 3000;
+
 @Injectable()
 export class HealthService {
   private readonly logger = new Logger(HealthService.name);
@@ -31,7 +36,15 @@ export class HealthService {
 
   private async checkDatabase(): Promise<'up' | 'down'> {
     try {
-      await this.prisma.$queryRaw`SELECT 1`;
+      await Promise.race([
+        this.prisma.$queryRaw`SELECT 1`,
+        new Promise((_, reject) =>
+          setTimeout(
+            () => reject(new Error(`timed out after ${DATABASE_CHECK_TIMEOUT_MS}ms`)),
+            DATABASE_CHECK_TIMEOUT_MS,
+          ),
+        ),
+      ]);
       return 'up';
     } catch (error) {
       this.logger.warn(`database health check failed: ${error instanceof Error ? error.message : String(error)}`);
