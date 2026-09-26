@@ -1,6 +1,6 @@
 # CURRENT TASK: F021 — C4 Component
 
-## Status: NOT STARTED
+## Status: IN PROGRESS
 
 ## Feature
 **F021 — C4 Component** (Phase 03 — Architecture Model)

@@ -80,7 +80,7 @@ Test: containers render under a system; drill works.
 
 ### F021 — C4 Component
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Level 3 (+ L4 code stub).
 
