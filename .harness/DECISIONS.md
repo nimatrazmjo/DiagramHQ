@@ -41,6 +41,12 @@ Decision: The progress counter is a contract (spec in `scripts/SCRIPTS.md`), not
 Reason: Keeps the repo code-free during setup; the counter is trivial to implement later from ROADMAP.md.
 Status: Accepted
 
+## DEC-007
+Date: 2026-09-26
+Decision: Use Auth.js (NextAuth v5) as the primary authentication provider.
+Reason: Self-contained, open-source, and does not require third-party SaaS cloud API keys for local development and CI test runners. Provides standard JWT sessions that both Next.js edge/middleware and NestJS API guards can verify statelessly with a shared `AUTH_SECRET`. Enterprise SSO/SCIM deferred to Phase 13.
+Status: Accepted
+
 ---
 
 ## Template

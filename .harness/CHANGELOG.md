@@ -2,6 +2,37 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F002 — Authentication
+
+Status: COMPLETE
+
+Implemented:
+- Architecture decision DEC-007: Auth.js (NextAuth v5) selected with credentials provider and stateless JWT session strategy using shared `AUTH_SECRET`. Zero external cloud SaaS dependencies for clean local development and CI testing.
+- Domain types (`packages/domain`): Added `usr_` id prefix, `User`, `AuthSessionUser`, and `AuthTokenPayload` interfaces.
+- Web authentication (`apps/web`):
+  - NextAuth v5 configuration (`auth.config.ts`, `auth.ts`, `app/api/auth/[...nextauth]/route.ts`).
+  - Next.js edge route protection `middleware.ts` redirecting unauthenticated requests from `/dashboard` to `/login?callbackUrl=...`.
+  - Accessible, autofill-compliant `/login` form (`LoginForm`).
+  - Protected `/dashboard` view with active user session display and sign-out action.
+  - Dedicated unit tests in `apps/web/auth.spec.ts`.
+- API authentication (`apps/api`):
+  - `AuthModule`, `AuthService`, `AuthGuard`, `@CurrentUser()`, `@Public()` decorators.
+  - `POST /auth/token` endpoint for token exchange with structured 401 error envelope on invalid credentials.
+  - `GET /auth/me` endpoint verifying Bearer JWT tokens and injecting authenticated user claims into controller handler.
+  - Unit tests for `AuthService` (5 tests) and `AuthGuard` (5 tests).
+  - End-to-end integration tests in `auth.e2e.spec.ts` (6 tests) exercising the real HTTP pipeline and NestJS DI container.
+- Config: Updated `packages/config/eslint-preset.js` to preserve NestJS DI decorator metadata across guards, filters, pipes, and interceptors.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (57 tests: 15 domain, 5 web, 37 api)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean)
+- Evaluator Rubric Score: 5.0 / 5.0 -> PASS. Log: `.harness/reviews/F002-review.md`.
+
+---
+
 ## 2026-09-26 — F007 — API foundation
 
 Status: COMPLETE

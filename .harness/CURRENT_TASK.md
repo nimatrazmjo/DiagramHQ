@@ -1,33 +1,35 @@
 # Current Task
- 
-Feature ID: F007
-Feature: API foundation (NestJS skeleton: validation, typed error envelope, health)
-Status: COMPLETE
+
+Feature ID: F002
+Feature: Authentication (Login, logout, session handling, protected routes, API AuthGuard)
+Status: COMPLETE (PR ready for review loop)
 Phase: Phase 01 — Foundation
- 
+
 ## Objective
-Establish the API edge foundation in NestJS: request validation at the edge, typed error envelopes `{ error: { code, message, details } }` preventing stack trace leaks past the edge, module-per-domain-area structure, and health endpoint wired with database check.
- 
+Implement authentication across the stack: Auth.js in Next.js web (login, logout, session, protected route middleware redirect) and stateless JWT verification via AuthGuard in NestJS API, with zero external SaaS dependencies for local/CI testability.
+
 ## Prerequisite
-F001 and F006 are COMPLETE. F006 is on branch `feat/F006-database-foundation`. Merge to `main` before starting `feat/F007-api-foundation`.
- 
+F001, F006, and F007 are COMPLETE and merged to `main`. Branch `feat/F002-authentication` is active.
+
 ## Steps
-- [x] Merge F006 to `main` and branch `feat/F007-api-foundation`
-- [x] Configure global ValidationPipe with class-validator / class-transformer for DTO validation at the edge
-- [x] Implement global HttpExceptionFilter / ErrorFilter providing typed error envelope `{ error: { code, message, details } }`
-- [x] Ensure no stack traces or raw database errors leak in production error responses
-- [x] Enhance `/health` endpoint to check database connectivity via PrismaService
-- [x] Integration tests verifying `/health` and structured error handling for invalid requests
- 
+- [x] Record provider decision (Auth.js) in DECISIONS.md (DEC-007)
+- [x] Add auth/user types to `packages/domain` (Id, User, SessionUser)
+- [x] Configure Auth.js in `apps/web` with Credentials provider, login page (`/login`), and session handling
+- [x] Add Next.js route protection middleware redirecting unauthenticated requests from `/dashboard` to `/login`
+- [x] Implement `AuthModule`, `AuthGuard`, `@CurrentUser()`, and `/auth/me` endpoint in `apps/api`
+- [x] Automated integration tests for Next.js auth/middleware and NestJS `AuthGuard`
+- [x] Full verification suite (`pnpm verify` + `pnpm build`)
+
 ## Verification
-- [x] TypeScript: PASS · Lint: PASS · Unit/Integration: PASS (51 tests: 15 domain, 36 api) · Build: PASS · check-architecture: PASS. Evaluator: 5.0/5.0. PR #4: 4 review rounds, verdict CLEAN. Log: `.harness/reviews/F007-review.md`.
- 
+- [x] TypeScript: PASS · Lint: PASS · Unit/Integration: PASS · Build: PASS · check-architecture: PASS
+
 ## Do Not
-- Build business domain CRUD endpoints yet (handled in F003/F004/F018).
-- Implement auth guards here (handled in F002).
- 
+- Build enterprise SSO / SAML / SCIM (Phase 13).
+- Implement multi-tenant organization switching (F003 / F004).
+- Add full RBAC permission matrices (F005).
+
 ## Next Task
-F002 — Authentication. Next unchecked item in `ROADMAP.md`'s Phase 01 order (F006/F007 were worked ahead of it with no recorded reason in `DECISIONS.md`; F002 is the honest next pick absent one).
- 
+F003 — Organizations.
+
 ## Last Updated
 2026-09-26

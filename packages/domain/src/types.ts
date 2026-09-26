@@ -9,6 +9,7 @@ import type {
   PhaseId,
   TagId,
   TechnologyId,
+  UserId,
   VersionId,
   ViewId,
   WorkspaceId,
@@ -175,3 +176,28 @@ export interface Phase {
   name: string;
   versionId?: VersionId | null;
 }
+
+export interface User {
+  readonly id: UserId;
+  email: string;
+  name?: string | null;
+  image?: string | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface AuthSessionUser {
+  id: string;
+  email: string;
+  name?: string | null;
+  image?: string | null;
+}
+
+export interface AuthTokenPayload {
+  sub: string;
+  email: string;
+  name?: string | null;
+  iat?: number;
+  exp?: number;
+}
+
