@@ -2,6 +2,30 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F022 — Person
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `person.ts`: Person / Actor domain model, `PersonMetadata` interface (role, department, external flag, email), `PersonNodeData` interface, helper `createPerson`, predicates `isPerson`, `isExternalPerson`, and canvas projection `projectPersonToCanvas`.
+  - `person.test.ts`: 4 unit tests verifying classification, internal/external persona options, and canvas projection.
+  - `c4-context.ts`: re-exported `isPerson` from `./person` to maintain clean modular dependencies.
+- API layer (`apps/api/src/architectures/`):
+  - `person.e2e.spec.ts`: 7 E2E tests verifying creation of internal Person (with role, department, email), external Person (customer/external actor), connection to software system, metadata PATCH update, model snapshot reload identity, and cascade deletion.
+- Web client layer (`apps/web/`):
+  - `PersonNode` component (`components/canvas/person-node.tsx`) rendering avatar icon, role badge (`[Role: ...]`), department tag (`[Dept: ...]`), external vs internal actor badges, contact email with icon, and 4-way connection handles.
+  - Registration in `components/canvas/custom-nodes.tsx` for `person` and `actor`.
+  - `person.spec.ts`: 5 tests covering SSR node rendering, external persona badge, selected ring, canvas mounting with `InfiniteCanvas`, and `ArchitectureModelClient` reload identity.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (all monorepo tests passing: 192 API tests, 100 domain tests, 221 web tests)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean — domain, api, web)
+- PR Review: Round 1 clean across all 8 angles. Verdict: CLEAN. Full log: `.harness/reviews/F022-review.md`.
+
 ## 2026-09-26 — F021 — C4 Component
 
 Status: COMPLETE

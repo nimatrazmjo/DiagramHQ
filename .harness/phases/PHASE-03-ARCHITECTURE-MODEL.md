@@ -95,7 +95,7 @@ Test: components render under a container; drill works.
 
 ### F022 — Person
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Object type: person.
 
