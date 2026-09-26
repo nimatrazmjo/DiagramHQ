@@ -1,0 +1,183 @@
+# Phase 13 — Enterprise
+
+Status: NOT STARTED
+
+## Description
+Enterprise readiness: SSO/SAML/SCIM, advanced RBAC + org policies, audit logs, enterprise security, private deployment, compliance packs, billing, marketplace, mobile.
+
+## Dependencies
+Phase 01, Phase 06, Phase 11
+
+## Features
+
+### F101 — SSO
+
+Status: NOT STARTED
+
+Description: Single sign-on.
+
+Acceptance Criteria:
+
+- SSO login via an IdP
+
+Test: SSO login via a test IdP.
+
+### F102 — SAML
+
+Status: NOT STARTED
+
+Description: SAML support.
+
+Dependencies: F101
+
+Acceptance Criteria:
+
+- SAML assertion flow
+
+Test: SAML login via a test IdP.
+
+### F103 — SCIM
+
+Status: NOT STARTED
+
+Description: Provisioning.
+
+Dependencies: F101
+
+Acceptance Criteria:
+
+- SCIM create/update/deactivate provisions/deprovisions users
+
+Test: SCIM create then deactivate.
+
+### F104 — Advanced RBAC
+
+Status: NOT STARTED
+
+Description: Fine-grained roles.
+
+Dependencies: F053
+
+Acceptance Criteria:
+
+- Fine-grained roles beyond the base catalog; least privilege
+
+Test: a fine-grained role denies an out-of-scope action.
+
+### F105 — Audit logs
+
+Status: NOT STARTED
+
+Description: Immutable audit.
+
+Acceptance Criteria:
+
+- Immutable who/what/when, including AI-agent actions
+
+Test: actions recorded; the log is append-only.
+
+### F106 — Organization policies
+
+Status: NOT STARTED
+
+Description: Org-wide governance.
+
+Dependencies: F086
+
+Acceptance Criteria:
+
+- Org policies, IP restrictions, session management, data retention, export controls
+
+Test: a policy is enforced in test.
+
+### F107 — Enterprise security
+
+Status: NOT STARTED
+
+Description: Hardening.
+
+Acceptance Criteria:
+
+- Encryption, backup, retention, export controls, security review checklist
+
+Test: the enterprise security checklist passes.
+
+### F108 — Private deployment
+
+Status: NOT STARTED
+
+Description: Self-hosted.
+
+Acceptance Criteria:
+
+- Deployable to a customer VPC; air-gapped config; deployment docs
+
+Test: deploy to a clean environment; smoke passes.
+
+### F131 — Compliance packs
+
+Status: NOT STARTED
+
+Description: Framework mappings.
+
+Dependencies: F085
+
+Acceptance Criteria:
+
+- SOC2, ISO 27001, GDPR, HIPAA, PCI DSS, NIST, CIS mappings
+- Control -> objects -> evidence -> owner -> status; never auto-claims compliance
+
+Test: map a control; evidence + status shown; no false 'compliant' badge.
+
+### F132 — Billing & plans
+
+Status: NOT STARTED
+
+Description: Monetization.
+
+Acceptance Criteria:
+
+- Free/Pro/Business/Enterprise tiers gate features; usage limits
+
+Test: tier gating enforced; over-limit blocked.
+
+### F133 — Marketplace
+
+Status: NOT STARTED
+
+Description: Extensions.
+
+Dependencies: F115
+
+Acceptance Criteria:
+
+- Templates, integration plugins, technology catalogs, AI agents, rules, compliance packs; install flow
+
+Test: install a template pack; assets appear.
+
+### F134 — Mobile
+
+Status: NOT STARTED
+
+Description: Mobile companion.
+
+Dependencies: F050, F060
+
+Acceptance Criteria:
+
+- Mobile web: view, search, comments, approvals, notifications, AI questions; canvas stays desktop-first
+
+Test: mobile viewport: view + approve a change + comment.
+
+---
+
+## Phase Completion Criteria
+
+This phase is COMPLETE only when:
+
+- Every feature above is COMPLETE with recorded evidence
+- All acceptance criteria pass; tests pass (typecheck, lint, unit, integration as applicable)
+- No critical blockers remain (BLOCKERS.md)
+- Documentation exists; existing functionality still works (no regressions)
+- check-architecture is clean (layer boundaries)
+- PROJECT_STATE.md, ROADMAP.md, and CHANGELOG.md are updated

@@ -1,0 +1,1325 @@
+{
+  "product": "DiagramHQ",
+  "updated": "2026-09-25",
+  "activePhase": "P1",
+  "activeSlice": "model-canvas-core",
+  "sourceSpec": "Master feature checklist (98 sections), mapped to DiagramHQ. CLI named 'dhq'. Name locked as DiagramHQ; spec's 'SystemAtlas' was its placeholder.",
+  "legend": {
+    "status": [
+      "pending",
+      "active",
+      "passed",
+      "blocked"
+    ],
+    "featureRule": "Exactly one feature across the whole file is 'active' at a time. A feature is 'passed' only when every acceptance item is met AND its 'test' passes AND evidence is recorded. Do not start a feature whose dependsOn are not all 'passed'.",
+    "phaseRule": "Phases are gated and built in order (P1..P6). A phase's features may not go 'active' until the previous phase's testGate has passed. Each phase must be fully implemented AND tested (its testGate) before the next begins.",
+    "fields": {
+      "spec": "section number(s) in the master checklist this feature covers",
+      "test": "the specific test that must pass for this feature",
+      "evidence": "reproducible command/output or artifact path; null until passed"
+    }
+  },
+  "phases": [
+    {
+      "id": "P1",
+      "name": "Core product",
+      "status": "active",
+      "goal": "The fundamental IcePanel-class experience: a versioned, tenant-isolated architecture model with objects, connections, an infinite canvas, C4 drill-down, diagrams-as-views, metadata, search, save/load, undo/redo, auto-layout and export.",
+      "headlineFlow": "Model a system top-to-bottom (context -> container -> component), lay it out, inspect and edit metadata, save, reload, and export a PNG.",
+      "testGate": "Every feature in this phase is 'passed' with recorded evidence; an end-to-end smoke test of the headline flow is green; check-architecture is clean; a short demo is captured under .harness/evidence/<phase>/. The next phase does not start until this gate passes.",
+      "features": [
+        {
+          "id": "p1-scaffold",
+          "title": "Monorepo scaffold + clean baseline",
+          "spec": "harness",
+          "status": "active",
+          "dependsOn": [],
+          "acceptance": [
+            "pnpm workspace: apps/web (Next.js App Router), apps/api (NestJS), packages/domain (framework-free), packages/config",
+            "typecheck, lint, and a trivial test pass across the workspace",
+            "init script runs green from a clean clone",
+            "CLAUDE.md command table updated with real install/dev/typecheck/lint/test commands"
+          ],
+          "test": "init + pnpm typecheck/lint/test green from a clean clone; check-architecture runs",
+          "evidence": null
+        },
+        {
+          "id": "p1-data-model",
+          "title": "Core model, tenancy & versioning schema",
+          "spec": "\u00a71,\u00a74,\u00a732,\u00a791",
+          "status": "pending",
+          "dependsOn": [
+            "p1-scaffold"
+          ],
+          "acceptance": [
+            "Prisma schema: organizations, workspaces, architectures, versions (live + immutable numbered), model_objects, model_connections, tags, technologies, views, view_objects (DATA_MODEL.md)",
+            "Tenant isolation enforced at the query layer (org+workspace scoping)",
+            "Object lifecycle states: future, live, deprecated, removed",
+            "Domain invariants live in packages/domain as pure functions"
+          ],
+          "test": "Migration applies to a fresh Postgres; test round-trips an entity; a cross-tenant read is denied by test",
+          "evidence": null
+        },
+        {
+          "id": "p1-object-types",
+          "title": "Object-type catalog + hierarchy",
+          "spec": "\u00a76,\u00a77",
+          "status": "pending",
+          "dependsOn": [
+            "p1-data-model"
+          ],
+          "acceptance": [
+            "Object-type registry seeded with the full catalog: person, actor, system, external-system, application, service, component, database, cache, queue, topic, bucket, api, function, server, container, k8s-workload, cloud-resource, load-balancer, gateway, group, boundary",
+            "Parent/child nesting with cycle prevention",
+            "Adding a new type is a registration, not a core edit (MODULES.md)"
+          ],
+          "test": "Unit test: each built-in type registered; nesting rejects a cycle; a new type added via the registry appears with no core change",
+          "evidence": null
+        },
+        {
+          "id": "p1-object-api",
+          "title": "Object CRUD API",
+          "spec": "\u00a766",
+          "status": "pending",
+          "dependsOn": [
+            "p1-data-model",
+            "p1-object-types"
+          ],
+          "acceptance": [
+            "GET/POST /architectures/:id/objects, GET/PATCH/DELETE /objects/:id",
+            "Request validation at the edge, invariant checks in domain",
+            "Delete cascades connections + view_objects, never other objects"
+          ],
+          "test": "Integration test: create -> read -> update -> delete",
+          "evidence": null
+        },
+        {
+          "id": "p1-connection-api",
+          "title": "First-class connections + properties",
+          "spec": "\u00a710",
+          "status": "pending",
+          "dependsOn": [
+            "p1-data-model"
+          ],
+          "acceptance": [
+            "Connection is an entity with source/dest/protocol/technology/direction/data-type/auth/encryption/status/owner/tags/api/port/frequency/latency/error-behavior",
+            "Connection types: HTTP, HTTPS, REST, GraphQL, gRPC, WebSocket, TCP, UDP, Kafka, Event, Queue, Database, File, Internal, External",
+            "Source and target validated to exist in the same architecture + version"
+          ],
+          "test": "Integration test: create with properties; invalid endpoint rejected",
+          "evidence": null
+        },
+        {
+          "id": "p1-canvas-render",
+          "title": "Infinite canvas renders the model",
+          "spec": "\u00a711",
+          "status": "pending",
+          "dependsOn": [
+            "p1-object-api",
+            "p1-connection-api"
+          ],
+          "acceptance": [
+            "React Flow behind a CanvasRenderer interface (ADR-0002, MODULES.md \u00a77)",
+            "Objects + connections fetched via TanStack Query render as nodes/edges",
+            "Infinite pan + zoom + minimap",
+            "Canvas holds no domain data in Zustand (layer-boundaries rule 4)"
+          ],
+          "test": "pnpm test (canvas + command layer) + screenshot of a rendered model",
+          "evidence": null
+        },
+        {
+          "id": "p1-canvas-interactions",
+          "title": "Full canvas interaction set",
+          "spec": "\u00a711",
+          "status": "pending",
+          "dependsOn": [
+            "p1-canvas-render"
+          ],
+          "acceptance": [
+            "zoom, pan, drag, multi-select, box-select, snap-to-grid, align, distribute, copy, paste, duplicate, delete, lock, hide, group, ungroup, collapse, expand, minimap, fullscreen, focus mode",
+            "Positions persist to view_objects (per-view layout)",
+            "Canvas mutates only through the client-model command layer (layer-boundaries rule 3)"
+          ],
+          "test": "Component tests for select/drag/group/distribute; screenshot of minimap + focus mode",
+          "evidence": null
+        },
+        {
+          "id": "p1-canvas-tools",
+          "title": "Canvas toolbar",
+          "spec": "\u00a712",
+          "status": "pending",
+          "dependsOn": [
+            "p1-canvas-interactions",
+            "p1-create-connect"
+          ],
+          "acceptance": [
+            "Toolbar: select, pan, object, connection, group, boundary, text, note, comment(stub), search, AI(stub)",
+            "Tool switching + keyboard binding",
+            "Creating via object/connection/boundary tools works"
+          ],
+          "test": "Each tool activates; object/connection/boundary creation via toolbar works",
+          "evidence": null
+        },
+        {
+          "id": "p1-create-connect",
+          "title": "Create objects and connect them on canvas",
+          "spec": "\u00a710,\u00a711",
+          "status": "pending",
+          "dependsOn": [
+            "p1-canvas-render"
+          ],
+          "acceptance": [
+            "Create an object of each built-in kind from the canvas/palette",
+            "Draw a connection between two objects; it persists via the connection API",
+            "Optimistic update with rollback on API error"
+          ],
+          "test": "Create each kind; connect two; simulated API error rolls back",
+          "evidence": null
+        },
+        {
+          "id": "p1-smart-connections",
+          "title": "Smart connection routing",
+          "spec": "\u00a713",
+          "status": "pending",
+          "dependsOn": [
+            "p1-create-connect"
+          ],
+          "acceptance": [
+            "Routing modes: straight, orthogonal, curved, automatic, manual",
+            "Auto routing minimizes crossings",
+            "Manual override persists"
+          ],
+          "test": "Routing modes render; crossing count reduced vs a naive layout on a sample graph",
+          "evidence": null
+        },
+        {
+          "id": "p1-auto-layout",
+          "title": "Auto-layout engines",
+          "spec": "\u00a714",
+          "status": "pending",
+          "dependsOn": [
+            "p1-canvas-render"
+          ],
+          "acceptance": [
+            "Layout-engine registry: hierarchical, tree, force-directed, layered, radial, grid, left-to-right, top-to-bottom",
+            "Apply-layout arranges without overlaps and persists positions",
+            "Manual positions preserved unless layout is re-applied"
+          ],
+          "test": "Each engine lays out a sample without overlap (assert bbox non-overlap)",
+          "evidence": null
+        },
+        {
+          "id": "p1-c4-drilldown",
+          "title": "C4 drill-down navigation",
+          "spec": "\u00a75,\u00a77",
+          "status": "pending",
+          "dependsOn": [
+            "p1-canvas-render"
+          ],
+          "acceptance": [
+            "Double-click a system drills to its containers; a container to its components; a component toward code (L4 stub)",
+            "Breadcrumb reflects the current level; navigation is over the model, not separate files",
+            "Back/up returns to the parent level"
+          ],
+          "test": "Double-click drills a level; breadcrumb + back verified",
+          "evidence": null
+        },
+        {
+          "id": "p1-diagrams",
+          "title": "Diagrams as views over the model",
+          "spec": "\u00a74,\u00a715",
+          "status": "pending",
+          "dependsOn": [
+            "p1-canvas-render",
+            "p1-data-model"
+          ],
+          "acceptance": [
+            "A diagram is a saved view (filter/set + layout), never a store of objects",
+            "Diagram types: system-context, container, component",
+            "The same object appears in multiple diagrams; create/open/rename diagrams"
+          ],
+          "test": "Add an object to two diagrams; delete from one leaves it in the other and in the model",
+          "evidence": null
+        },
+        {
+          "id": "p1-inspector",
+          "title": "Object inspector + full metadata + lifecycle",
+          "spec": "\u00a78,\u00a79",
+          "status": "pending",
+          "dependsOn": [
+            "p1-canvas-render",
+            "p1-object-api"
+          ],
+          "acceptance": [
+            "Inspector shows/edits name, description, caption, type, owner, team, technology, status, environment, domain, tags, links, repository, documentation, criticality, data-classification, compliance, cost-center, SLA, RTO, RPO, version, created, updated",
+            "Lifecycle transitions: future -> live -> deprecated -> removed",
+            "Inspector sections come from the object-type registry"
+          ],
+          "test": "Edit persists via API + reflects on canvas; a lifecycle transition is recorded",
+          "evidence": null
+        },
+        {
+          "id": "p1-search",
+          "title": "Global search (Cmd+K)",
+          "spec": "\u00a761,\u00a762",
+          "status": "pending",
+          "dependsOn": [
+            "p1-object-api"
+          ],
+          "acceptance": [
+            "Search across objects, tags, technologies (P1 scope; flows/ADRs/docs join later)",
+            "Fuzzy matching; results grouped by kind",
+            "Cmd+K opens; jump-to selects and centers the object on canvas"
+          ],
+          "test": "Search returns matching objects; jump centers the node",
+          "evidence": null
+        },
+        {
+          "id": "p1-command-palette",
+          "title": "Command palette actions",
+          "spec": "\u00a762",
+          "status": "pending",
+          "dependsOn": [
+            "p1-create-connect",
+            "p1-search"
+          ],
+          "acceptance": [
+            "Cmd+K palette: create system/service/database/connection, connect objects, generate diagram, search, open docs, export, share",
+            "Actions dispatch through the client-model command layer",
+            "Fuzzy search over objects in the current architecture"
+          ],
+          "test": "Representative actions execute via the palette",
+          "evidence": null
+        },
+        {
+          "id": "p1-undo-redo",
+          "title": "Undo / redo",
+          "spec": "\u00a711",
+          "status": "pending",
+          "dependsOn": [
+            "p1-create-connect",
+            "p1-canvas-interactions"
+          ],
+          "acceptance": [
+            "Command layer records reversible commands; Cmd+Z / Cmd+Shift+Z",
+            "Covers create, connect, move, delete, metadata edit",
+            "History is per-session UI state, not persisted model data"
+          ],
+          "test": "Undo/redo across all covered ops verified",
+          "evidence": null
+        },
+        {
+          "id": "p1-persistence",
+          "title": "Save / load / autosave",
+          "spec": "\u00a711",
+          "status": "pending",
+          "dependsOn": [
+            "p1-object-api",
+            "p1-connection-api"
+          ],
+          "acceptance": [
+            "Model persists server-side; debounced autosave",
+            "Reload restores model + per-view layout",
+            "Optimistic writes with rollback"
+          ],
+          "test": "Create -> reload -> identical model; simulated API error rolls back",
+          "evidence": null
+        },
+        {
+          "id": "p1-export",
+          "title": "Export PNG / SVG",
+          "spec": "\u00a763",
+          "status": "pending",
+          "dependsOn": [
+            "p1-canvas-render"
+          ],
+          "acceptance": [
+            "Export current diagram/view to PNG and SVG (exporter registry)",
+            "Fidelity matches the canvas; large graphs handled"
+          ],
+          "test": "Export a sample view; assert file produced + non-empty; visual check screenshot",
+          "evidence": null
+        },
+        {
+          "id": "p1-keyboard-shortcuts",
+          "title": "Keyboard shortcuts",
+          "spec": "\u00a794",
+          "status": "pending",
+          "dependsOn": [
+            "p1-command-palette",
+            "p1-undo-redo"
+          ],
+          "acceptance": [
+            "Cmd+K palette, / search, Space pan, Delete, Cmd+Z / Cmd+Shift+Z, Cmd+C/V/D, F fit, 1/2/3 view levels"
+          ],
+          "test": "Each shortcut triggers its action (keymap unit test + a few e2e)",
+          "evidence": null
+        },
+        {
+          "id": "p1-auth-tenancy",
+          "title": "Minimal auth + tenant isolation",
+          "spec": "\u00a750(min),\u00a791",
+          "status": "pending",
+          "dependsOn": [
+            "p1-data-model"
+          ],
+          "acceptance": [
+            "A single auth provider gates the app (decide Auth.js/Clerk/WorkOS; note the ADR)",
+            "All model reads/writes scoped to the user's org + workspace",
+            "Owner/editor/viewer check; no cross-tenant access"
+          ],
+          "test": "Unauthorized denied; cross-tenant read denied; role check on write",
+          "evidence": null
+        }
+      ]
+    },
+    {
+      "id": "P2",
+      "name": "Collaboration",
+      "status": "pending",
+      "goal": "Turn the single-player model into a team tool: users, teams, roles/permissions, comments, mentions, real-time editing, share links, version history and notifications.",
+      "headlineFlow": "Two users collaborate live on one architecture with roles enforced, comment and @mention, snapshot a version, and share a read-only link.",
+      "testGate": "Every feature in this phase is 'passed' with recorded evidence; an end-to-end smoke test of the headline flow is green; check-architecture is clean; a short demo is captured under .harness/evidence/<phase>/. The next phase does not start until this gate passes.",
+      "features": [
+        {
+          "id": "p2-users-teams",
+          "title": "Users, teams, members + ownership",
+          "spec": "\u00a71,\u00a751",
+          "status": "pending",
+          "dependsOn": [],
+          "acceptance": [
+            "Org members; teams; object ownership (owner + backup team)",
+            "'Show everything owned by X' query"
+          ],
+          "test": "Assign owner; filter by owner returns exactly the owned set",
+          "evidence": null
+        },
+        {
+          "id": "p2-roles-permissions",
+          "title": "Roles & permissions (RBAC)",
+          "spec": "\u00a750",
+          "status": "pending",
+          "dependsOn": [
+            "p2-users-teams"
+          ],
+          "acceptance": [
+            "Roles: organization-owner, admin, architect, engineer, reviewer, viewer, guest",
+            "Permission checks on every mutation; engineer scoped to assigned systems"
+          ],
+          "test": "Role permission matrix test: each role's allowed/denied actions enforced",
+          "evidence": null
+        },
+        {
+          "id": "p2-comments",
+          "title": "Comments",
+          "spec": "\u00a748",
+          "status": "pending",
+          "dependsOn": [
+            "p2-users-teams"
+          ],
+          "acceptance": [
+            "Comments on objects, connections, diagrams, flows, documentation, architecture changes",
+            "Reply, resolve"
+          ],
+          "test": "Comment CRUD + resolve; attached to the correct entity",
+          "evidence": null
+        },
+        {
+          "id": "p2-mentions",
+          "title": "Mentions & tasks",
+          "spec": "\u00a748",
+          "status": "pending",
+          "dependsOn": [
+            "p2-comments",
+            "p2-notifications"
+          ],
+          "acceptance": [
+            "@mention notifies the user; convert a comment into a task"
+          ],
+          "test": "Mention creates a notification; task created from a comment",
+          "evidence": null
+        },
+        {
+          "id": "p2-realtime",
+          "title": "Real-time editing + presence",
+          "spec": "\u00a749",
+          "status": "pending",
+          "dependsOn": [
+            "p2-users-teams"
+          ],
+          "acceptance": [
+            "Multiple users edit live; cursors, selection, current-object, presence",
+            "Conflict resolution (CRDT/OT)"
+          ],
+          "test": "Two clients: an edit in one appears in the other; presence shows both",
+          "evidence": null
+        },
+        {
+          "id": "p2-share-links",
+          "title": "Share links (read-only)",
+          "spec": "\u00a747",
+          "status": "pending",
+          "dependsOn": [
+            "p2-roles-permissions"
+          ],
+          "acceptance": [
+            "Generate a read-only link that preserves viewer position + selection",
+            "Viewable without an account"
+          ],
+          "test": "Open the link in an anonymous context; state is preserved",
+          "evidence": null
+        },
+        {
+          "id": "p2-version-history",
+          "title": "Version history & snapshots",
+          "spec": "\u00a732",
+          "status": "pending",
+          "dependsOn": [
+            "p1-data-model"
+          ],
+          "acceptance": [
+            "Live editable version + immutable numbered snapshots",
+            "A snapshot captures objects, connections, views, flows, metadata, documentation",
+            "Restore / compare versions"
+          ],
+          "test": "Snapshot v1.0; edit live; snapshot stays immutable; diff shows the changes",
+          "evidence": null
+        },
+        {
+          "id": "p2-notifications",
+          "title": "Notifications",
+          "spec": "\u00a788",
+          "status": "pending",
+          "dependsOn": [
+            "p2-users-teams"
+          ],
+          "acceptance": [
+            "In-app notifications for changes, comments, mentions, review requests",
+            "Email + Slack + Microsoft Teams channels (config)"
+          ],
+          "test": "An event produces a notification; channel dispatch tested (stubbed transport)",
+          "evidence": null
+        }
+      ]
+    },
+    {
+      "id": "P3",
+      "name": "Architecture intelligence",
+      "status": "pending",
+      "goal": "Make the model useful for engineering decisions: dynamic views, flows, domains, technology catalog, ADRs, dependency graph, impact/SPOF/blast-radius, failure simulation, security view, data lineage, rules+linting, health, catalogs, branches/PRs/diff, scenarios/roadmap, templates and documentation.",
+      "headlineFlow": "Filter to a security view, trace a PII data-lineage path, run impact analysis + failure simulation, lint against rules, and open an architecture PR with a diff.",
+      "testGate": "Every feature in this phase is 'passed' with recorded evidence; an end-to-end smoke test of the headline flow is green; check-architecture is clean; a short demo is captured under .harness/evidence/<phase>/. The next phase does not start until this gate passes.",
+      "features": [
+        {
+          "id": "p3-dynamic-views",
+          "title": "Dynamic filtered views",
+          "spec": "\u00a716",
+          "status": "pending",
+          "dependsOn": [],
+          "acceptance": [
+            "Filter the model by team, technology, environment, domain, owner, status, tag, criticality, data-classification, cloud-provider, region, repository",
+            "A view is a stored filter that stays live as the model changes"
+          ],
+          "test": "Filter by team returns exactly the matching objects; adding a matching object updates the view",
+          "evidence": null
+        },
+        {
+          "id": "p3-saved-views-personas",
+          "title": "Saved views & persona modes",
+          "spec": "\u00a717,\u00a782,\u00a783,\u00a784,\u00a785,\u00a786,\u00a787",
+          "status": "pending",
+          "dependsOn": [
+            "p3-dynamic-views"
+          ],
+          "acceptance": [
+            "Save/star named views (executive, security, payments, AWS, data, production...)",
+            "Persona modes over one model: architect, developer, security, SRE, data, product, executive, auditor"
+          ],
+          "test": "Save a view; switching persona re-scopes the render without changing the model",
+          "evidence": null
+        },
+        {
+          "id": "p3-flows",
+          "title": "Flow system",
+          "spec": "\u00a718,\u00a720",
+          "status": "pending",
+          "dependsOn": [],
+          "acceptance": [
+            "A flow is an ordered sequence of existing connections (not a static line)",
+            "Flow types: user-journey, API-request, data, authentication, payment, checkout, event, background-job, batch, disaster-recovery, security",
+            "Create/edit ordered steps"
+          ],
+          "test": "Build a flow from connections; steps ordered; an invalid step is rejected",
+          "evidence": null
+        },
+        {
+          "id": "p3-flow-playback",
+          "title": "Flow playback",
+          "spec": "\u00a719",
+          "status": "pending",
+          "dependsOn": [
+            "p3-flows"
+          ],
+          "acceptance": [
+            "Controls: play, pause, next, previous, speed, restart",
+            "Animates steps in order over the model"
+          ],
+          "test": "Playback advances the step index; controls work (component test)",
+          "evidence": null
+        },
+        {
+          "id": "p3-domains",
+          "title": "Domains / bounded contexts",
+          "spec": "\u00a752",
+          "status": "pending",
+          "dependsOn": [],
+          "acceptance": [
+            "DDD domains group objects; nested domains; assign objects to a domain"
+          ],
+          "test": "Assign an object to a domain; filter by domain returns the set",
+          "evidence": null
+        },
+        {
+          "id": "p3-technology-catalog",
+          "title": "Technology catalog + lifecycle",
+          "spec": "\u00a753,\u00a754",
+          "status": "pending",
+          "dependsOn": [],
+          "acceptance": [
+            "Technology library: name, category, version, vendor, lifecycle, security-status, owner, documentation",
+            "Lifecycle states; 'find systems using unsupported technology'"
+          ],
+          "test": "Tag objects with a technology; query for unsupported returns them",
+          "evidence": null
+        },
+        {
+          "id": "p3-adr",
+          "title": "ADR system",
+          "spec": "\u00a772",
+          "status": "pending",
+          "dependsOn": [],
+          "acceptance": [
+            "ADR: title, status, context, decision, consequences, alternatives",
+            "Attach to objects, connections, changes, versions; history shown on an object"
+          ],
+          "test": "Create an ADR, link it to an object, and see it in the object's history",
+          "evidence": null
+        },
+        {
+          "id": "p3-dependency-graph",
+          "title": "Dependency graph view",
+          "spec": "\u00a776",
+          "status": "pending",
+          "dependsOn": [
+            "p3-dynamic-views"
+          ],
+          "acceptance": [
+            "Dedicated dependency-graph screen",
+            "Filters: direct, indirect, runtime, compile-time, data, external"
+          ],
+          "test": "Graph renders dependencies; each filter narrows correctly",
+          "evidence": null
+        },
+        {
+          "id": "p3-analysis-safety",
+          "title": "Circular deps, SPOF & blast radius",
+          "spec": "\u00a777,\u00a778,\u00a779",
+          "status": "pending",
+          "dependsOn": [
+            "p3-dependency-graph"
+          ],
+          "acceptance": [
+            "Detect circular dependencies",
+            "Detect single points of failure",
+            "Blast-radius counts: services, flows, databases, teams, customer-facing features"
+          ],
+          "test": "Seeded cycle detected; SPOF flagged on a fan-in; blast-radius counts correct",
+          "evidence": null
+        },
+        {
+          "id": "p3-impact-analysis",
+          "title": "Impact analysis",
+          "spec": "\u00a736",
+          "status": "pending",
+          "dependsOn": [
+            "p3-dependency-graph"
+          ],
+          "acceptance": [
+            "Select an object -> direct + indirect dependencies, affected flows/teams/APIs, critical paths"
+          ],
+          "test": "Impact of deleting a node matches the expected dependency + path sets",
+          "evidence": null
+        },
+        {
+          "id": "p3-failure-sim",
+          "title": "Failure simulation",
+          "spec": "\u00a737,\u00a775",
+          "status": "pending",
+          "dependsOn": [
+            "p3-impact-analysis"
+          ],
+          "acceptance": [
+            "Mark an object down; highlight the blast radius with severity",
+            "Count dependent requests/flows; distinguish fallback vs no-fallback"
+          ],
+          "test": "Simulate a DB outage; downstream flagged; fallback vs no-fallback distinguished",
+          "evidence": null
+        },
+        {
+          "id": "p3-security-view",
+          "title": "Security view + data classification",
+          "spec": "\u00a738,\u00a740",
+          "status": "pending",
+          "dependsOn": [
+            "p3-dynamic-views"
+          ],
+          "acceptance": [
+            "Overlay trust boundaries, public endpoints, authentication, authorization, encryption, secrets, PII, PCI, HIPAA, SOC2",
+            "Data classification on objects + flows: public, internal, confidential, restricted, PII, PHI, PCI, secrets, financial"
+          ],
+          "test": "Classify data; the security view renders boundaries and flags public endpoints",
+          "evidence": null
+        },
+        {
+          "id": "p3-data-lineage",
+          "title": "Data lineage",
+          "spec": "\u00a739",
+          "status": "pending",
+          "dependsOn": [
+            "p3-flows",
+            "p3-security-view"
+          ],
+          "acceptance": [
+            "Trace a data element across objects and flows",
+            "'Where does <data> leave our infrastructure?'"
+          ],
+          "test": "Lineage of a field returns the ordered path including the external exit point",
+          "evidence": null
+        },
+        {
+          "id": "p3-rules-linting",
+          "title": "Architecture rules + linting",
+          "spec": "\u00a743,\u00a744",
+          "status": "pending",
+          "dependsOn": [
+            "p3-dynamic-views"
+          ],
+          "acceptance": [
+            "Org-defined rules (owner required, external API auth, no cross-service DB access, PII flow restrictions)",
+            "Lint with error / warning / info findings"
+          ],
+          "test": "Seeded violations produce the expected lint findings; a compliant model is clean",
+          "evidence": null
+        },
+        {
+          "id": "p3-arch-health",
+          "title": "Architecture health + analytics",
+          "spec": "\u00a742,\u00a780,\u00a781",
+          "status": "pending",
+          "dependsOn": [
+            "p3-rules-linting"
+          ],
+          "acceptance": [
+            "Categorized health (dependencies, documentation, security, ownership, drift) with concrete findings",
+            "Analytics counts (systems, apps, components, dbs, external deps, teams, flows, decisions) + change analytics"
+          ],
+          "test": "Health computed on a sample; findings match the seeded gaps",
+          "evidence": null
+        },
+        {
+          "id": "p3-catalogs",
+          "title": "API / event / database catalogs",
+          "spec": "\u00a758,\u00a759,\u00a760",
+          "status": "pending",
+          "dependsOn": [],
+          "acceptance": [
+            "API catalog: endpoints linked to service + repo",
+            "Event catalog: producer, consumers, schema, topic, frequency",
+            "Database catalog: schema/table/column (model-driven; imports in P5)"
+          ],
+          "test": "Create API/event/db entries, link to objects, and browse the catalogs",
+          "evidence": null
+        },
+        {
+          "id": "p3-branches-changes",
+          "title": "Branches, changes, diff & PRs",
+          "spec": "\u00a733,\u00a734,\u00a735",
+          "status": "pending",
+          "dependsOn": [
+            "p2-version-history"
+          ],
+          "acceptance": [
+            "Architecture branches off main",
+            "Architecture change/PR: added/modified/removed + affected counts (objects, flows, teams)",
+            "Diff view (added/modified/removed/moved colors); review, comment, approve, reject, merge"
+          ],
+          "test": "Branch; make changes; the PR shows the correct diff; merge applies to main",
+          "evidence": null
+        },
+        {
+          "id": "p3-scenarios-roadmap",
+          "title": "Scenarios & roadmap",
+          "spec": "\u00a773,\u00a774",
+          "status": "pending",
+          "dependsOn": [
+            "p3-branches-changes"
+          ],
+          "acceptance": [
+            "Hypothetical scenarios (current vs proposed) without touching the real model",
+            "Roadmap items linked to architecture changes"
+          ],
+          "test": "Create a scenario, compare it; a roadmap item links to a change",
+          "evidence": null
+        },
+        {
+          "id": "p3-templates",
+          "title": "Architecture templates",
+          "spec": "\u00a795",
+          "status": "pending",
+          "dependsOn": [],
+          "acceptance": [
+            "Templates: SaaS, e-commerce, fintech, banking, healthcare, microservices, monolith, serverless, event-driven, data-platform, AI-platform, Kubernetes, AWS, Azure, GCP",
+            "Instantiate a template into a new architecture"
+          ],
+          "test": "Instantiate a template; the expected objects/connections are created",
+          "evidence": null
+        },
+        {
+          "id": "p3-documentation",
+          "title": "Documentation editor + pages",
+          "spec": "\u00a745,\u00a746",
+          "status": "pending",
+          "dependsOn": [],
+          "acceptance": [
+            "Every object renders to a documentation page",
+            "Editor: markdown, rich text, images, architecture embeds, diagrams, tables, code blocks, links, mentions, comments",
+            "Architecture documentation tree"
+          ],
+          "test": "Edit a doc, embed a diagram; it renders correctly",
+          "evidence": null
+        },
+        {
+          "id": "p3-rest-api",
+          "title": "REST API surface (intelligence resources)",
+          "spec": "\u00a766",
+          "status": "pending",
+          "dependsOn": [
+            "p3-flows",
+            "p3-domains",
+            "p3-adr",
+            "p3-branches-changes"
+          ],
+          "acceptance": [
+            "REST endpoints for views, flows, domains, technologies, decisions, branches, changes",
+            "Consistent auth + pagination + typed errors"
+          ],
+          "test": "Contract tests for the new resource endpoints",
+          "evidence": null
+        }
+      ]
+    },
+    {
+      "id": "P4",
+      "name": "AI",
+      "status": "pending",
+      "goal": "AI as a first-class surface: grounded Copilot, the AI command set, NL generation and editing with evidence, AI documentation, a review agent, AI analysis, an MCP tool server and specialized agents.",
+      "headlineFlow": "Ask the Copilot a grounded question, generate + NL-edit architecture as approved changesets with evidence, and have the review agent gate a PR; drive it all via MCP.",
+      "testGate": "Every feature in this phase is 'passed' with recorded evidence; an end-to-end smoke test of the headline flow is green; check-architecture is clean; a short demo is captured under .harness/evidence/<phase>/. The next phase does not start until this gate passes.",
+      "features": [
+        {
+          "id": "p4-ai-copilot",
+          "title": "Architecture Copilot panel",
+          "spec": "\u00a722",
+          "status": "pending",
+          "dependsOn": [],
+          "acceptance": [
+            "Persistent right-side panel; grounded Q&A over the model",
+            "Answers cite the object ids they are grounded in"
+          ],
+          "test": "Ask 'why does X depend on Y'; the answer references the real connection",
+          "evidence": null
+        },
+        {
+          "id": "p4-ai-commands",
+          "title": "AI command set",
+          "spec": "\u00a723",
+          "status": "pending",
+          "dependsOn": [
+            "p4-ai-copilot"
+          ],
+          "acceptance": [
+            "explain, generate, modify, find-dependencies, find-bottlenecks, find-SPOF, find-security-issues, find-unused, find-duplicated, find-circular, find-external, find-PII-paths, find-critical-paths, generate-docs, generate-ADR, generate-diagram, generate-flow, compare-versions, review-change, estimate-impact"
+          ],
+          "test": "A representative subset returns correct grounded results against a seeded model",
+          "evidence": null
+        },
+        {
+          "id": "p4-ai-generate",
+          "title": "AI architecture generation (NL)",
+          "spec": "\u00a721",
+          "status": "pending",
+          "dependsOn": [
+            "p4-ai-copilot"
+          ],
+          "acceptance": [
+            "NL prompt -> objects, connections, descriptions, technologies, tags, flows, diagrams, documentation as a proposed changeset"
+          ],
+          "test": "A prompt generates a changeset; applying it yields a valid model",
+          "evidence": null
+        },
+        {
+          "id": "p4-ai-nl-editing",
+          "title": "Natural-language editing",
+          "spec": "\u00a724",
+          "status": "pending",
+          "dependsOn": [
+            "p4-ai-generate"
+          ],
+          "acceptance": [
+            "NL edit -> explicit proposed changes (added/modified/removed) with Apply / Reject",
+            "Never silently modifies the architecture"
+          ],
+          "test": "'Add Redis between A and B' proposes exactly those changes; Reject leaves the model unchanged",
+          "evidence": null
+        },
+        {
+          "id": "p4-ai-evidence",
+          "title": "AI evidence + confidence",
+          "spec": "\u00a725",
+          "status": "pending",
+          "dependsOn": [
+            "p4-ai-commands"
+          ],
+          "acceptance": [
+            "Every AI assertion/edit carries evidence (repository/file/line where applicable) + a confidence score"
+          ],
+          "test": "A generated dependency includes evidence fields; low-confidence items are flagged",
+          "evidence": null
+        },
+        {
+          "id": "p4-ai-docs",
+          "title": "AI documentation generation",
+          "spec": "\u00a745",
+          "status": "pending",
+          "dependsOn": [
+            "p3-documentation",
+            "p4-ai-copilot"
+          ],
+          "acceptance": [
+            "Auto-generate object + architecture documentation grounded in metadata and connections",
+            "Keeps documentation current on change"
+          ],
+          "test": "Generate docs for a service; content is grounded in its metadata + connections",
+          "evidence": null
+        },
+        {
+          "id": "p4-ai-review-agent",
+          "title": "Architecture review agent",
+          "spec": "\u00a771",
+          "status": "pending",
+          "dependsOn": [
+            "p4-ai-commands",
+            "p3-branches-changes",
+            "p3-rules-linting"
+          ],
+          "acceptance": [
+            "Pre-merge review: no circular dependency, all services have owners, no unapproved external dependency, backup policy, DR, no PII to unapproved third parties",
+            "Request-changes verdict"
+          ],
+          "test": "Seeded violations produce the expected review verdict on a PR",
+          "evidence": null
+        },
+        {
+          "id": "p4-ai-analysis",
+          "title": "AI impact / security / bottleneck analysis",
+          "spec": "\u00a723,\u00a738",
+          "status": "pending",
+          "dependsOn": [
+            "p4-ai-commands",
+            "p3-impact-analysis",
+            "p3-security-view"
+          ],
+          "acceptance": [
+            "AI narratives layered over impact-analysis, failure-simulation, and security-view results"
+          ],
+          "test": "The AI explanation matches the computed impact set",
+          "evidence": null
+        },
+        {
+          "id": "p4-mcp",
+          "title": "MCP tool server",
+          "spec": "\u00a769",
+          "status": "pending",
+          "dependsOn": [
+            "p3-rest-api"
+          ],
+          "acceptance": [
+            "Expose: search_architecture, get_object, create_object, update_object, delete_object, get_dependencies, get_dependents, analyze_impact, create_diagram, create_flow, compare_versions, create_change, review_change, create_adr",
+            "Mutating tools return a proposed change (approval required), never a silent commit"
+          ],
+          "test": "Each tool is callable; create_object returns a proposal, not a silent commit",
+          "evidence": null
+        },
+        {
+          "id": "p4-arch-agents",
+          "title": "Specialized architecture agents",
+          "spec": "\u00a770",
+          "status": "pending",
+          "dependsOn": [
+            "p4-mcp",
+            "p4-ai-commands"
+          ],
+          "acceptance": [
+            "Analyst, Designer, Security, Cloud, Documentation, Migration, Code agents built on the MCP surface"
+          ],
+          "test": "Each agent completes a scoped task against a sample model",
+          "evidence": null
+        }
+      ]
+    },
+    {
+      "id": "P5",
+      "name": "Code & infrastructure intelligence",
+      "status": "pending",
+      "goal": "Close the code -> architecture loop: GitHub/GitLab, OpenAPI, Terraform, Kubernetes, AWS/Azure/GCP import with evidence, code mapping, drift detection, cost, model-as-code + CLI, webhooks, SDK and a public portal.",
+      "headlineFlow": "Connect a repo + IaC, generate/refresh the model with evidence, detect drift and open a change request, and push/pull via the CLI.",
+      "testGate": "Every feature in this phase is 'passed' with recorded evidence; an end-to-end smoke test of the headline flow is green; check-architecture is clean; a short demo is captured under .harness/evidence/<phase>/. The next phase does not start until this gate passes.",
+      "features": [
+        {
+          "id": "p5-github",
+          "title": "GitHub integration + code mapping",
+          "spec": "\u00a726,\u00a727",
+          "status": "pending",
+          "dependsOn": [
+            "p4-ai-evidence"
+          ],
+          "acceptance": [
+            "Connect a repo; detect services, APIs, databases, queues, dependencies, libraries, frameworks, cloud SDKs",
+            "Map component -> repository -> folder -> file; open-in-GitHub",
+            "Every detected object/connection carries evidence"
+          ],
+          "test": "Scan a sample repo; the expected objects are proposed with evidence",
+          "evidence": null
+        },
+        {
+          "id": "p5-gitlab",
+          "title": "GitLab integration",
+          "spec": "\u00a726",
+          "status": "pending",
+          "dependsOn": [
+            "p5-github"
+          ],
+          "acceptance": [
+            "Same detection + mapping as GitHub for GitLab repos"
+          ],
+          "test": "Scan a sample GitLab repo; parity with the GitHub importer",
+          "evidence": null
+        },
+        {
+          "id": "p5-openapi",
+          "title": "OpenAPI import -> API catalog",
+          "spec": "\u00a758,\u00a763",
+          "status": "pending",
+          "dependsOn": [
+            "p3-catalogs"
+          ],
+          "acceptance": [
+            "Import an OpenAPI spec; endpoints populate the API catalog and link to a service"
+          ],
+          "test": "Import a spec; endpoints appear in the catalog linked to the right service",
+          "evidence": null
+        },
+        {
+          "id": "p5-terraform",
+          "title": "Terraform integration",
+          "spec": "\u00a729",
+          "status": "pending",
+          "dependsOn": [
+            "p5-github"
+          ],
+          "acceptance": [
+            "Parse Terraform; map aws_instance, aws_db_instance, aws_s3_bucket, aws_lambda_function, aws_sqs_queue, etc. to objects"
+          ],
+          "test": "Parse sample Terraform; the expected resources are mapped",
+          "evidence": null
+        },
+        {
+          "id": "p5-kubernetes",
+          "title": "Kubernetes integration",
+          "spec": "\u00a730",
+          "status": "pending",
+          "dependsOn": [],
+          "acceptance": [
+            "Import cluster, namespace, deployment, statefulset, pod, service, ingress, configmap, secret, persistentvolume, job, cronjob",
+            "Render the namespace topology"
+          ],
+          "test": "Import sample manifests; the topology renders",
+          "evidence": null
+        },
+        {
+          "id": "p5-aws",
+          "title": "AWS import",
+          "spec": "\u00a728",
+          "status": "pending",
+          "dependsOn": [],
+          "acceptance": [
+            "Import EC2, ECS, EKS, Lambda, RDS, DynamoDB, S3, CloudFront, API Gateway, SQS, SNS, EventBridge, VPC as objects"
+          ],
+          "test": "Import a mocked account; resources are mapped to objects",
+          "evidence": null
+        },
+        {
+          "id": "p5-azure-gcp",
+          "title": "Azure & GCP import",
+          "spec": "\u00a728",
+          "status": "pending",
+          "dependsOn": [
+            "p5-aws"
+          ],
+          "acceptance": [
+            "Equivalent resource import for Azure and GCP"
+          ],
+          "test": "Import mocked Azure + GCP resources; mapped to objects",
+          "evidence": null
+        },
+        {
+          "id": "p5-drift",
+          "title": "Architecture drift detection",
+          "spec": "\u00a731",
+          "status": "pending",
+          "dependsOn": [
+            "p5-github",
+            "p3-branches-changes"
+          ],
+          "acceptance": [
+            "Compare the documented model against imported/actual state; surface the delta",
+            "Actions: Update Model, Ignore, Create Change Request"
+          ],
+          "test": "Seeded drift is detected; Create-Change-Request produces a PR",
+          "evidence": null
+        },
+        {
+          "id": "p5-cost",
+          "title": "Cost visualization",
+          "spec": "\u00a757",
+          "status": "pending",
+          "dependsOn": [
+            "p5-aws"
+          ],
+          "acceptance": [
+            "Attach cloud cost to infrastructure objects; per-service rollup (compute/database/storage/networking)"
+          ],
+          "test": "Mocked cost data rolls up correctly per service",
+          "evidence": null
+        },
+        {
+          "id": "p5-model-as-code",
+          "title": "Model-as-code + CLI",
+          "spec": "\u00a764,\u00a765",
+          "status": "pending",
+          "dependsOn": [
+            "p3-rest-api"
+          ],
+          "acceptance": [
+            "YAML model maps to objects + connections by slug -> stable id",
+            "CLI: dhq login, init, pull, push, validate, diff, deploy, export, generate",
+            "push then pull round-trips the file"
+          ],
+          "test": "push YAML -> model; pull -> equivalent YAML; validate catches errors",
+          "evidence": null
+        },
+        {
+          "id": "p5-webhooks",
+          "title": "Webhooks",
+          "spec": "\u00a768",
+          "status": "pending",
+          "dependsOn": [
+            "p3-rest-api"
+          ],
+          "acceptance": [
+            "Emit object.created/updated/deleted, connection.created/updated, diagram.created, flow.created, architecture.updated, version.created, change.approved, change.merged"
+          ],
+          "test": "An action fires the expected webhook (captured by a test sink)",
+          "evidence": null
+        },
+        {
+          "id": "p5-sdk",
+          "title": "SDK (TypeScript first)",
+          "spec": "\u00a767",
+          "status": "pending",
+          "dependsOn": [
+            "p3-rest-api"
+          ],
+          "acceptance": [
+            "Typed TS SDK over the REST API (Python/Go/Java/C# later)"
+          ],
+          "test": "SDK CRUD round-trip against a test server",
+          "evidence": null
+        },
+        {
+          "id": "p5-public-portal",
+          "title": "Public architecture portal",
+          "spec": "\u00a747",
+          "status": "pending",
+          "dependsOn": [
+            "p3-documentation",
+            "p2-share-links"
+          ],
+          "acceptance": [
+            "Publish a read-only site: search, zoom, navigate, drill-down, flows, documentation, objects, dependencies",
+            "No account required to view"
+          ],
+          "test": "Publish; an anonymous visitor can browse and drill down",
+          "evidence": null
+        }
+      ]
+    },
+    {
+      "id": "P6",
+      "name": "Enterprise",
+      "status": "pending",
+      "goal": "Enterprise readiness: SSO, SCIM, advanced RBAC + org policies, audit log, compliance packs, governance, private deployment, billing, marketplace and mobile.",
+      "headlineFlow": "SSO + SCIM + RBAC + audit in place, a compliance pack mapped with evidence, a private-deployment smoke test, and billing tier gates enforced.",
+      "testGate": "Every feature in this phase is 'passed' with recorded evidence; an end-to-end smoke test of the headline flow is green; check-architecture is clean; a short demo is captured under .harness/evidence/<phase>/. The next phase does not start until this gate passes.",
+      "features": [
+        {
+          "id": "p6-sso",
+          "title": "SSO (SAML / OAuth)",
+          "spec": "\u00a790",
+          "status": "pending",
+          "dependsOn": [],
+          "acceptance": [
+            "SSO login via SAML/OAuth against an IdP"
+          ],
+          "test": "SSO login via a test IdP succeeds",
+          "evidence": null
+        },
+        {
+          "id": "p6-scim",
+          "title": "SCIM provisioning",
+          "spec": "\u00a790",
+          "status": "pending",
+          "dependsOn": [
+            "p6-sso"
+          ],
+          "acceptance": [
+            "SCIM create/update/deactivate provisions and deprovisions users"
+          ],
+          "test": "SCIM create/deactivate provisions then deprovisions a user",
+          "evidence": null
+        },
+        {
+          "id": "p6-advanced-rbac",
+          "title": "Advanced RBAC + org policies",
+          "spec": "\u00a790",
+          "status": "pending",
+          "dependsOn": [
+            "p2-roles-permissions"
+          ],
+          "acceptance": [
+            "Fine-grained roles, organization policies, IP restrictions, session management"
+          ],
+          "test": "A policy denies an out-of-policy action; an IP restriction is enforced",
+          "evidence": null
+        },
+        {
+          "id": "p6-audit-log",
+          "title": "Audit log",
+          "spec": "\u00a789",
+          "status": "pending",
+          "dependsOn": [],
+          "acceptance": [
+            "Immutable audit of who/what/when, including AI-agent actions"
+          ],
+          "test": "Actions are recorded; the log is append-only / immutable (verified by test)",
+          "evidence": null
+        },
+        {
+          "id": "p6-compliance",
+          "title": "Compliance mode + packs",
+          "spec": "\u00a741",
+          "status": "pending",
+          "dependsOn": [
+            "p3-rules-linting",
+            "p6-audit-log"
+          ],
+          "acceptance": [
+            "Mappings for SOC2, ISO 27001, GDPR, HIPAA, PCI DSS, NIST, CIS",
+            "Control -> affected objects -> evidence -> owner -> status; never auto-claims compliance"
+          ],
+          "test": "Map a control; evidence + status shown; no false 'compliant' badge",
+          "evidence": null
+        },
+        {
+          "id": "p6-governance",
+          "title": "Advanced governance",
+          "spec": "\u00a790",
+          "status": "pending",
+          "dependsOn": [
+            "p3-rules-linting"
+          ],
+          "acceptance": [
+            "Org-wide rule enforcement, data retention, backup, export controls"
+          ],
+          "test": "A retention/export policy is enforced in test",
+          "evidence": null
+        },
+        {
+          "id": "p6-private-deploy",
+          "title": "Private / self-hosted deployment",
+          "spec": "\u00a790",
+          "status": "pending",
+          "dependsOn": [],
+          "acceptance": [
+            "Deployable to a customer VPC; config for air-gapped; deployment docs"
+          ],
+          "test": "Deploy to a clean environment; the smoke suite passes",
+          "evidence": null
+        },
+        {
+          "id": "p6-billing",
+          "title": "Billing & plans",
+          "spec": "\u00a792",
+          "status": "pending",
+          "dependsOn": [],
+          "acceptance": [
+            "Free / Pro / Business / Enterprise tiers gate features; usage limits"
+          ],
+          "test": "Tier gating enforced; an over-limit action is blocked",
+          "evidence": null
+        },
+        {
+          "id": "p6-marketplace",
+          "title": "Marketplace",
+          "spec": "\u00a796",
+          "status": "pending",
+          "dependsOn": [
+            "p3-templates"
+          ],
+          "acceptance": [
+            "Templates, integration plugins, technology catalogs, AI agents, architecture rules, compliance packs; install flow"
+          ],
+          "test": "Install a template pack; its assets appear",
+          "evidence": null
+        },
+        {
+          "id": "p6-mobile",
+          "title": "Mobile (view / approve / comment)",
+          "spec": "\u00a793",
+          "status": "pending",
+          "dependsOn": [
+            "p2-comments",
+            "p3-branches-changes"
+          ],
+          "acceptance": [
+            "Mobile web: view, search, comments, approvals, notifications, AI questions",
+            "Full canvas remains desktop-first"
+          ],
+          "test": "Mobile viewport: view + approve a change + comment",
+          "evidence": null
+        }
+      ]
+    }
+  ],
+  "parkingLot": []
+}

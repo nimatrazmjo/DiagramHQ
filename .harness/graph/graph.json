@@ -1,0 +1,39 @@
+{
+  "name": "diagramhq-build-loop",
+  "description": "Maker-checker build loop for DiagramHQ. Machine-readable twin of workflow-graph.md.",
+  "version": "1.0.0",
+  "entry": "read-state",
+  "state": [
+    "activeFeatureId", "sprintContract", "codeChanges", "verifyResults",
+    "evaluatorVerdict", "evaluatorScore", "consecutivePasses", "round", "standingDefects"
+  ],
+  "params": { "REQUIRED_PASSES": 2, "MAX_ROUNDS": 6 },
+  "nodes": [
+    { "id": "read-state", "type": "code",  "does": "load handoff, feature_list, sprint contract" },
+    { "id": "plan",       "type": "agent", "role": "Planner",   "does": "write/confirm sprint contract" },
+    { "id": "implement",  "type": "agent", "role": "Maker",     "does": "build thinnest step + evidence" },
+    { "id": "verify",     "type": "code",  "does": "typecheck, lint, test, check-architecture" },
+    { "id": "evaluate",   "type": "agent", "role": "Checker",   "does": "re-run checks, score against rubric" },
+    { "id": "record",     "type": "code",  "does": "write evidence, mark feature passed" },
+    { "id": "rollback",   "type": "code",  "does": "revert to last clean commit" },
+    { "id": "handoff",    "type": "agent", "does": "rewrite handoff, run clean-state checklist" },
+    { "id": "escalate",   "type": "human", "does": "stop and alert a human" },
+    { "id": "stop",       "type": "terminal" }
+  ],
+  "edges": [
+    { "from": "read-state", "to": "plan",      "when": "always" },
+    { "from": "plan",       "to": "implement", "when": "contract_signed" },
+    { "from": "plan",       "to": "escalate",  "when": "scope_ambiguous" },
+    { "from": "implement",  "to": "verify",    "when": "step_complete" },
+    { "from": "verify",     "to": "rollback",  "when": "boundary_violation", "kind": "rollback" },
+    { "from": "rollback",   "to": "implement", "when": "tree_clean" },
+    { "from": "verify",     "to": "evaluate",  "when": "checks_ran" },
+    { "from": "evaluate",   "to": "implement", "when": "verdict_revise_or_passes_below_required", "kind": "rollback" },
+    { "from": "evaluate",   "to": "record",    "when": "pass_and_passes_at_or_above_required" },
+    { "from": "evaluate",   "to": "escalate",  "when": "max_rounds_or_hard_stop" },
+    { "from": "record",     "to": "plan",      "when": "more_features_in_slice" },
+    { "from": "record",     "to": "handoff",   "when": "slice_complete" },
+    { "from": "handoff",    "to": "stop",      "when": "always" },
+    { "from": "escalate",   "to": "stop",      "when": "always" }
+  ]
+}
