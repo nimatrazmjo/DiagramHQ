@@ -27,19 +27,19 @@ Progress: 1.5%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F006 — Database foundation. Postgres + Prisma + migrations for core model schema, tenant isolation, and domain invariants. Verified: migration applied, 20 tests green (15 domain, 5 api), seed script executed, typecheck/lint/build/check-architecture green. Evaluator score 5.0/5.0. Lives on branch `feat/F006-database-foundation`.
+F006 — Database foundation. Postgres + Prisma + migrations for core model schema, tenant isolation, and domain invariants. Verified: migration applied, 21 tests green (15 domain, 6 api), seed script executed, typecheck/lint/build/check-architecture green. Evaluator score 5.0/5.0. Pushed to PR #1 (`feat/F006-database-foundation` -> `main`) and taken through 3 rounds of PR review (`loops/pr-review-loop.md`); every correctness finding fixed, 2 structural items (TenantContext's per-model isolation pattern, `architecture.create`'s non-transactional defaultVersionId set) logged as open decisions in `BLOCKERS.md` rather than fixed. Not yet merged — awaiting human merge of PR #1.
 
 ## Current Work
-None in progress. Ready for F007 (API foundation).
+None in progress. F006 done pending PR #1 merge; ready to start F007 (API foundation) once merged.
 
 ## Next Task
-F007 — API foundation (NestJS skeleton, validation, error envelope, health). See CURRENT_TASK.md.
+Merge PR #1 (F006), then F007 — API foundation (NestJS skeleton, validation, error envelope, health). See CURRENT_TASK.md.
 
 ## Last Verified
-F006 @ feat/F006-database-foundation — pnpm typecheck / lint / test (20) / check-architecture / build all green. PostgreSQL 16 container healthy.
+F006 @ feat/F006-database-foundation — pnpm verify (typecheck / lint / test x21 / check-architecture) + pnpm build all green. PostgreSQL 16 container healthy.
 
 ## Current Git Commit
-main @ 4b709a3. Branch feat/F006-database-foundation @ 905243a (F006). Working tree CLEAN.
+main @ 4b709a3 (unchanged; PR #1 not yet merged). Branch feat/F006-database-foundation @ a3886f6. Working tree CLEAN on this branch — a stashed, unrelated F007 WIP (from a concurrent session) sits in `git stash list`, not yet popped.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.
@@ -54,7 +54,7 @@ None. See BLOCKERS.md.
 NOT STARTED. Target layers + boundaries defined in `architecture/ARCHITECTURE.md` and `rules/layer-boundaries.md`.
 
 ## Database Status
-NOT STARTED. Schema designed in `architecture/DATA_MODEL.md` (Postgres + Prisma; tenant-isolated; model_objects + model_connections adjacency, ADR-0003). Lands in F006.
+Foundation COMPLETE (F006, pending PR #1 merge). Postgres + Prisma schema matching `architecture/DATA_MODEL.md`, tenant-isolated via `TenantContext` (`apps/api/src/database/tenant.context.ts`), model_objects + model_connections adjacency (ADR-0003).
 
 ## API Status
 Scaffolded (NestJS 10 + health endpoint). Full surface from F007. Not yet wired to the domain/DB.
@@ -66,7 +66,7 @@ Scaffolded (Next.js 14 standalone shell). React Flow canvas in Phase 02. Tailwin
 NOT STARTED. NestJS + Prisma + Redis. Foundation in Phase 01.
 
 ## Testing Status
-Vitest wired; 4 tests passing (domain + api). GitHub Actions CI runs lint/typecheck/test/build.
+Vitest wired; 21 tests passing (15 domain, 6 api). GitHub Actions CI runs lint/build/typecheck/test/check-architecture (see `.github/workflows/ci.yml`).
 
 ## Integration Status
 NOT STARTED. Code integrations Phase 09; infrastructure Phase 10. None connected.
