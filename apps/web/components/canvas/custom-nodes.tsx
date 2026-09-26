@@ -1,5 +1,8 @@
 import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { C4ContextNode } from './c4-context-node';
+
+export { C4ContextNode } from './c4-context-node';
 
 export interface CustomNodeData {
   label: string;
@@ -222,5 +225,9 @@ export const nodeTypes = {
   system: SystemNode,
   application: AppNode,
   store: StoreNode,
+  c4Context: C4ContextNode,
+  actor: C4ContextNode,
+  person: C4ContextNode,
   default: SystemNode,
 };
+

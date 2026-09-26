@@ -36,7 +36,7 @@ Notes: This is the heart of the product. Never store objects inside a diagram (D
 
 ### F019 — C4 Context
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Level 1: person/actor/system/external-system and their relationships.
 

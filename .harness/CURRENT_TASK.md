@@ -1,53 +1,42 @@
-# CURRENT TASK: F018 — Architecture model
+# CURRENT TASK: F019 — C4 Context
 
 ## Status: IN PROGRESS
 
 ## Feature
-**F018 — Architecture model** (Phase 03 — Architecture Model)
+**F019 — C4 Context** (Phase 03 — Architecture Model)
 
-The model entity: objects + connections persisted independently of any diagram.
-- Architecture holds objects + connections independent of diagrams (DEC-001 / ADR-0001).
-- Full CRUD via API for architectures, model objects, and model connections; save/load; reload yields an identical model.
-- Optimistic writes on client/command layer with automatic rollback on error.
-- Domain invariants: no self-connection (`canConnect`), endpoint existence & same architecture/version (`validateConnection`), no parent cycle (`hasParentCycle`).
+Level 1 C4 Context diagram & model elements: person/actor, system, external system, and their relationships.
+- User can create Person (Actor), Software System, and External System elements.
+- User can connect Person -> System and System -> External System with descriptive labels.
+- Elements render with C4-compliant visual styling (Person avatar/shape, System box, External System boundary tag).
+- Elements persist in the architecture model independently of any diagram, reload accurately, and can be edited and deleted.
+- Drill-down capability from a System into its C4 Container view (Level 2).
 
 ## Scope
 
 ### Domain Layer (`packages/domain/src/`)
-- Define `ArchitectureModel` snapshot interface (`architecture`, `version`, `objects`, `connections`).
-- Domain functions for pure model transformations: `createArchitectureModel`, `addModelObject`, `updateModelObject`, `removeModelObject` (with cascade connection removal), `addModelConnection`, `updateModelConnection`, `removeModelConnection`.
-- Equality verification: `isModelIdentical(modelA, modelB): boolean`.
-- Model-level invariant validation: `validateArchitectureModel`.
+- C4 Context domain definitions & helpers:
+  - `C4ContextElementKind`: 'person' (actor), 'system', 'external_system'.
+  - Helper functions to create C4 Context nodes (`createC4Person`, `createC4System`, `createC4ExternalSystem`).
+  - Helper to identify C4 Context elements and drill-down capability (`canDrillDown(object)`).
 
-### API Layer (`apps/api/src/architectures/`)
-- Create `ArchitecturesModule`, `ArchitecturesService`, `ArchitecturesController`, and DTOs:
-  - `POST /workspaces/:workspaceId/architectures`: create architecture + default main version.
-  - `GET /architectures/:id`: get architecture with default version.
-  - `PATCH /architectures/:id`: update architecture metadata.
-  - `DELETE /architectures/:id`: delete architecture (cascades).
-  - `GET /architectures/:id/model`: load full model snapshot (`{ architecture, version, objects, connections }`).
-  - `GET /architectures/:id/objects`: list model objects in architecture.
-  - `POST /architectures/:id/objects`: create model object.
-  - `GET /objects/:id`: get single object.
-  - `PATCH /objects/:id`: update model object.
-  - `DELETE /objects/:id`: delete model object (cascades to connections).
-  - `GET /architectures/:id/connections`: list model connections.
-  - `POST /architectures/:id/connections`: create model connection (enforcing domain invariants).
-  - `GET /connections/:id`: get connection.
-  - `PATCH /connections/:id`: update connection.
-  - `DELETE /connections/:id`: delete connection.
-- RBAC and Tenant authorization: checks workspace membership and `canWrite` role.
-- Register `ArchitecturesModule` in `AppModule`.
-- Comprehensive E2E tests in `apps/api/src/architectures/architectures.e2e.spec.ts`.
+### API Layer (`apps/api/src/`)
+- Ensure `/architectures/:id/objects` and `/architectures/:id/connections` seamlessly handle C4 Context elements and metadata (`external: boolean`, `c4Level: 1`).
+- Verify endpoints for C4 Context operations in E2E tests.
 
-### Web Client Layer (`apps/web/lib/model/`)
-- `architecture-model-client.ts`:
-  - `ArchitectureModelClient` or state manager managing in-memory model snapshots.
-  - CRUD operations with optimistic mutation and rollback on simulated or network failure.
-  - Projection to canvas nodes/edges via `projectViewModelToCanvas`.
-- Unit tests in `apps/web/architecture-model.spec.ts` proving:
-  - Create -> reload -> identical model.
-  - Simulated API error rolls back optimistic mutation cleanly.
+### Web Client Layer (`apps/web/`)
+- Custom C4 Context Node Component:
+  - `components/canvas/c4-context-node.tsx`: custom React Flow node with C4 styling for Person (actor), System, and External System.
+  - Drill-down button / trigger on System nodes to navigate into the Container view (`/workspace/:id/views?level=2&systemId=:sysId` or drill handler).
+  - Edit and delete actions.
+- C4 Context View & Toolbar Integration:
+  - Add C4 Context elements creation controls to the canvas / architecture interface.
+  - Drill-down event handling.
+- Tests in `apps/web/c4-context.spec.ts` and `apps/api/src/architectures/c4-context.e2e.spec.ts`:
+  - Create person + system + external system.
+  - Connect Person -> System.
+  - Reload persists identical model.
+  - Drill down from system to container view.
 
 ## Verification
 - Monorepo checks: `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm check-architecture`, `pnpm build`.
@@ -59,4 +48,4 @@ Control plane (this agent)
 2026-09-26
 
 ## Next Task
-F019 — C4 Context.
+F020 — C4 Container.

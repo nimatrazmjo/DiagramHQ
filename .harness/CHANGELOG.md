@@ -2,6 +2,35 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F019 — C4 Context
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `c4-context.ts`: C4 Context domain types and node data structures (`C4ContextElementKind`: 'person' | 'system' | 'external_system', `C4ContextNodeData`).
+  - Helper functions: `createC4Person`, `createC4System`, `createC4ExternalSystem`, `isPerson`, `isExternalSystem`, `canDrillToContainers`.
+  - Canvas projection bridge: `projectC4ContextToCanvas` mapping C4 model objects and connections to canvas nodes and edges with distinct handles, badges, dimensions, and type indicators.
+  - `c4-context.test.ts`: 4 unit tests verifying node data extraction, drilling eligibility, and canvas projection.
+- API layer (`apps/api/src/architectures/`):
+  - Model verification for C4 Context elements: Person, internal System, external System, and relationships.
+  - `c4-context.e2e.spec.ts`: 7 E2E tests verifying creation of Person, System, External System, connecting Person -> System and System -> External System, model reload identity, and cascade deletion.
+- Web client layer (`apps/web/`):
+  - `C4ContextNode` component (`components/canvas/c4-context-node.tsx`) rendering:
+    - Persona card for People/Actors with avatar badge and description.
+    - Solid branded container for internal Systems with `data-testid="drill-down-btn"` providing container drill-down action.
+    - Muted dashed-border container for external / third-party Systems.
+  - Registration in `components/canvas/custom-nodes.tsx` for `c4Context`, `person`, and `actor`.
+  - `c4-context.spec.ts`: 6 tests covering SSR node rendering, drill-down callback invocation, canvas mounting, and ArchitectureModelClient reload identity.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (all monorepo tests passing: 170 API tests, 88 domain tests, 201 web tests)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean — domain, api, web)
+- PR Review: Round 1 clean across all 8 angles. Verdict: CLEAN. Full log: `.harness/reviews/F019-review.md`.
+
 ## 2026-09-26 — F018 — Architecture model
 
 Status: COMPLETE
