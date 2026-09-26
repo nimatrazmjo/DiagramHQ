@@ -14,7 +14,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check-architecture": "./scripts/check-architecture.sh",
-    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm check-architecture"
+    "verify": "pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm check-architecture"
   },
   "devDependencies": {
     "@diagramhq/config": "workspace:*",

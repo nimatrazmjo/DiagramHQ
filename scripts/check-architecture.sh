@@ -9,7 +9,7 @@ echo "Running architectural boundary checks..."
 
 # Rule 1: packages/domain imports nothing framework-specific
 if [ -d "packages/domain/src" ]; then
-  domain_forbidden=$(grep -rnE "from ['\"](@nestjs|next|react|@prisma/client|axios|node-fetch)['\"]" packages/domain/src || true)
+  domain_forbidden=$(grep -rnE "from ['\"](@nestjs|next|react|@prisma/client|axios|node-fetch)(/[^'\"]*)?['\"]" packages/domain/src || true)
   if [ -n "$domain_forbidden" ]; then
     echo "VIOLATION [Rule 1]: packages/domain contains framework-specific imports:" >&2
     echo "$domain_forbidden" >&2
@@ -19,7 +19,7 @@ fi
 
 # Rule 2 & 5: apps/web must not import @prisma/client or @nestjs
 if [ -d "apps/web" ]; then
-  web_forbidden=$(grep -rnE "from ['\"](@prisma/client|@nestjs)['\"]" apps/web --exclude-dir=".next" --exclude-dir="node_modules" || true)
+  web_forbidden=$(grep -rnE "from ['\"](@prisma/client|@nestjs)(/[^'\"]*)?['\"]" apps/web --exclude-dir=".next" --exclude-dir="node_modules" || true)
   if [ -n "$web_forbidden" ]; then
     echo "VIOLATION [Rule 2/5]: apps/web contains forbidden persistence/server imports:" >&2
     echo "$web_forbidden" >&2
@@ -28,7 +28,7 @@ if [ -d "apps/web" ]; then
 fi
 
 # Rule 5: Prisma client only under apps/api
-other_prisma=$(grep -rnE "from ['\"]@prisma/client['\"]" packages/ apps/web --exclude-dir=".next" --exclude-dir="node_modules" --exclude-dir="dist" || true)
+other_prisma=$(grep -rnE "from ['\"]@prisma/client(/[^'\"]*)?['\"]" packages/ apps/web --exclude-dir=".next" --exclude-dir="node_modules" --exclude-dir="dist" || true)
 if [ -n "$other_prisma" ]; then
   echo "VIOLATION [Rule 5]: @prisma/client imported outside apps/api:" >&2
   echo "$other_prisma" >&2

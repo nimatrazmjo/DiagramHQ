@@ -3,6 +3,7 @@
 set -euo pipefail
 corepack enable >/dev/null 2>&1 || true
 pnpm install
+pnpm build
 pnpm typecheck
 pnpm lint
 pnpm test

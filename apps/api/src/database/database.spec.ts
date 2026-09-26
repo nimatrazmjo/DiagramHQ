@@ -4,7 +4,7 @@ import { TenantContext } from './tenant.context';
 import { TenantAccessDeniedError } from '@diagramhq/domain';
 
 const databaseUrl =
-  process.env.DATABASE_URL || 'postgresql://diagramhq:diagramhq@localhost:5433/diagramhq';
+  process.env.DATABASE_URL || 'postgresql://diagramhq:diagramhq@localhost:5432/diagramhq';
 
 describe('Database Foundation & Tenant Isolation (F006)', () => {
   let prisma: PrismaClient;

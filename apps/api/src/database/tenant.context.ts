@@ -108,23 +108,9 @@ export class TenantContext {
       return arch;
     },
 
-    create: async (data: {
-      id: string;
-      workspaceId: string;
-      name: string;
-      description?: string | null;
-      defaultVersionId?: string | null;
-    }) => {
+    create: async (data: Prisma.ArchitectureUncheckedCreateInput) => {
       await this.assertWorkspaceAccess(data.workspaceId);
-      return this.prisma.architecture.create({
-        data: {
-          id: data.id,
-          name: data.name,
-          description: data.description,
-          defaultVersionId: data.defaultVersionId,
-          workspace: { connect: { id: data.workspaceId } },
-        },
-      });
+      return this.prisma.architecture.create({ data });
     },
   };
 
@@ -151,6 +137,12 @@ export class TenantContext {
 
     create: async (data: Prisma.ModelObjectUncheckedCreateInput) => {
       await this.assertArchitectureAccess(data.architectureId);
+      const version = await this.prisma.version.findUnique({
+        where: { id: data.versionId },
+      });
+      if (!version || version.architectureId !== data.architectureId) {
+        throw new Error('Version does not belong to the given architecture');
+      }
       return this.prisma.modelObject.create({
         data,
       });
@@ -182,12 +174,10 @@ export class TenantContext {
       await this.assertArchitectureAccess(data.architectureId);
 
       // Verify domain invariants
-      const source = await this.prisma.modelObject.findUnique({
-        where: { id: data.sourceObjectId },
-      });
-      const target = await this.prisma.modelObject.findUnique({
-        where: { id: data.targetObjectId },
-      });
+      const [source, target] = await Promise.all([
+        this.prisma.modelObject.findUnique({ where: { id: data.sourceObjectId } }),
+        this.prisma.modelObject.findUnique({ where: { id: data.targetObjectId } }),
+      ]);
 
       if (!source || !target) {
         throw new Error('Source or target model object does not exist');
