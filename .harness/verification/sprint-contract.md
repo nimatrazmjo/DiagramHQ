@@ -1,63 +1,72 @@
-# Sprint Contract — F002 (Authentication)
+# Sprint Contract — F003 (Organizations)
 
 Written by the Planner before any code. It fixes "done" so the Generator cannot drift and the Evaluator has something objective to grade against.
 
 ## Feature
-- Id: F002
-- Title: Authentication
+- Id: F003
+- Title: Organizations
 - Phase / slice: Phase 01 — Foundation
 
 ## Goal (one sentence)
-Users can log in and log out with managed sessions, unauthenticated visits to protected web routes are redirected to login, and the API protects endpoints via stateless token validation.
+Authenticated users can create, retrieve, update, and list organizations they belong to, with automatic owner membership upon creation and strict tenant isolation preventing any cross-organization data visibility.
 
 ## Acceptance -> checks
 Map each acceptance item from `PHASE-01-FOUNDATION.md` to how it will be verified.
 | Acceptance item | How verified (command / test / screenshot) |
 |---|---|
-| Login, logout, session handling | Web auth routes/session state + API token issuance/validation integration tests |
-| Protected routes redirect when unauthenticated | Next.js middleware test / integration check: unauthenticated GET to `/dashboard` redirects to `/login`; API `AuthGuard` returns 401 `UNAUTHORIZED` envelope |
-| Authenticated access allowed | Request with valid token/session passes through to protected routes and populates current user |
-| No SSO/SCIM (Phase 13) | Code review confirms standard auth only; enterprise SSO/SCIM parked for Phase 13 |
+| Create an organization; a user belongs to one or more orgs | Integration test `POST /organizations` creating an org and automatically creating an `owner` membership for the authenticated user; verifying the user belongs to multiple created orgs |
+| All data is scoped to an org | Integration test verifying `GET /organizations` only returns orgs where the caller is a member; `GET /organizations/:id` returns 404/403 for an org the user does not belong to; database tenant isolation assertion |
+| Org CRUD integration test | Full automated test suite in `apps/api/src/organizations/organizations.e2e.spec.ts` exercising create, get by id, list, update, and delete with tenant boundary checks |
 
 ## Plan (steps)
-1. In `apps/web`: Set up Auth.js (`next-auth`) with Credentials provider, session handling, login page (`/login`), and route protection middleware (`middleware.ts`).
-2. In `apps/api`: Implement `AuthModule`, `AuthGuard`, `@CurrentUser()` parameter decorator, and a protected endpoint (e.g. `GET /auth/me`) validating the shared session JWT / Bearer token using standard error envelope (`UNAUTHORIZED`).
-3. Shared session/user types in `packages/domain` or shared contract so web and api use the exact same user payload shape `{ id, email, name }`.
+1. In `apps/api`: Create `OrganizationsModule`, `OrganizationsService`, and `OrganizationsController`.
+   - `POST /organizations`: create organization with validated name and generated or validated slug, transactional initial `owner` member creation for `@CurrentUser()`.
+   - `GET /organizations`: list organizations where `@CurrentUser()` is an active member.
+   - `GET /organizations/:id`: return organization details if caller is a member; return 404/403 if not found or caller lacks membership.
+   - `PATCH /organizations/:id`: update organization name/slug (restricted to owner/admin member).
+   - `DELETE /organizations/:id`: delete organization (restricted to owner).
+2. DTOs and Validation:
+   - `CreateOrganizationDto`: `@IsString()`, `@MinLength(2)`, `@MaxLength(64)`, optional `slug` (`@Matches(/^[a-z0-9-]+$/)`).
+   - `UpdateOrganizationDto`: optional name and slug.
+3. In `apps/web`:
+   - Add organization selection and creation UI in dashboard / `/organizations`.
+   - Verify protected routing and auth session propagation.
 4. Automated tests:
-   - Next.js middleware and auth handler tests in `apps/web`.
-   - NestJS `AuthGuard` and `/auth/me` integration tests in `apps/api` (401 when unauthenticated/invalid token, 200 with user profile when valid token provided).
-5. Verify: `pnpm typecheck`, `pnpm lint`, `pnpm test`, `./scripts/check-architecture.sh`, `pnpm build`.
+   - Unit tests for `OrganizationsService` in `apps/api/src/organizations/organizations.service.spec.ts`.
+   - End-to-end integration tests in `apps/api/src/organizations/organizations.e2e.spec.ts` testing CRUD and multi-user tenant isolation.
+5. Verification:
+   - Run `pnpm verify` (`typecheck`, `lint`, `test`, `check-architecture`) and `pnpm build`.
 
 ## In scope
-- Auth.js in `apps/web` with Credentials authentication for development/CI and standard JWT strategy.
-- `/login` page and sign-out functionality.
-- Route protection middleware in Next.js redirecting unauthenticated visitors to `/login`.
-- NestJS `AuthModule`, `AuthGuard`, token extraction (Bearer header or cookie), and current user injection.
-- Integration tests in both apps verifying authentication boundaries.
+- Organization entity CRUD scoped to authenticated user (`apps/api`).
+- Initial owner member record creation upon organization creation.
+- Listing organizations for the authenticated user.
+- Multi-tenant boundary enforcement: users cannot read, list, update, or delete organizations they do not belong to.
+- Dashboard / organization creation in `apps/web`.
 
 ## Explicitly out of scope (parked)
-- Enterprise SSO / SAML / OIDC provider federation (Phase 13 — F106).
-- SCIM directory synchronization (Phase 13 — F107).
-- Organization membership / tenant switching (F003 / F004).
-- Granular RBAC permissions (F005 / F104).
+- Multi-workspace architecture hierarchy within an org (F004 — Workspaces).
+- Full granular RBAC permission matrix (F005 — User roles / F104).
+- Enterprise SSO / SCIM federation (Phase 13).
+- Billing / subscription tier management (Phase 12).
 
 ## New dependencies
-- `apps/web`: `next-auth@5.0.0-beta.25` (or compatible Auth.js) for Next.js App Router auth.
-- `apps/api`: `jsonwebtoken` + `@types/jsonwebtoken` for verifying JWTs signed with `AUTH_SECRET`.
+None. Leverages existing NestJS, Prisma, Auth.js, and domain packages.
 
 ## Boundaries touched
-- Layers: `apps/web` (UI, middleware, auth API route), `apps/api` (auth module, guards, edge filter compatibility), `packages/domain` (user/auth types).
-- Check-architecture rules: no domain -> web/api imports, no cross-app imports.
+- `apps/api`: `src/organizations/` (controller, service, DTOs, module, unit and e2e specs), wired into `app.module.ts`.
+- `apps/web`: `/dashboard` organization view / management.
+- `packages/domain`: Reuses existing `OrgId`, `Organization`, `Member`, `assertTenantAccess`.
 
 ## Risks / unknowns
-- Next.js 14 App Router compatibility with next-auth v5 beta vs v4: verify clean build with `next build`.
-- Shared secret `AUTH_SECRET` must be set in `.env` for both web and api.
+- Slug collisions: Unique constraint on `organizations.slug` must be handled gracefully with 409 conflict envelope or auto-slug generation.
+- Cascade deletion: Deleting an organization cascades to members and workspaces cleanly via foreign key cascade defined in Prisma schema.
 
 ## Definition of done
 - All acceptance checks green + evidence recorded.
-- check-architecture passes.
+- `check-architecture` passes.
 - Evaluator score >= 4.0, no criterion at 1.
-- state + handoff updated, committed on `feat/F002-authentication`.
+- State + handoff updated, committed on `feat/F003-organizations`.
 
 ---
 Signed off (Planner) before build: [x]

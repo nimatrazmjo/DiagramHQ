@@ -58,7 +58,7 @@ Test: e2e: unauthenticated request is denied; login establishes a session.
 
 ### F003 — Organizations
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Organization entity, the top of the tenancy tree.
 

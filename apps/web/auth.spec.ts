@@ -32,3 +32,25 @@ describe('authorizeUser', () => {
     expect(user?.id.startsWith('usr_')).toBe(true);
   });
 });
+
+describe('signApiToken', () => {
+  it('signs a token with user claims readable by HS256', async () => {
+    const { signApiToken } = await import('./lib/api-token');
+    const { jwtVerify } = await import('jose');
+
+    const token = await signApiToken({
+      id: 'usr_test123',
+      email: 'test@diagramhq.com',
+      name: 'Test User',
+    });
+
+    const secretKey = new TextEncoder().encode(
+      process.env.AUTH_SECRET || 'diagramhq-dev-auth-secret-minimum-32-chars!',
+    );
+    const { payload } = await jwtVerify(token, secretKey);
+
+    expect(payload.sub).toBe('usr_test123');
+    expect(payload.email).toBe('test@diagramhq.com');
+    expect(payload.name).toBe('Test User');
+  });
+});

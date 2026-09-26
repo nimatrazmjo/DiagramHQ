@@ -23,7 +23,8 @@ export type IdPrefix =
   | 'ph'
   | 'tag'
   | 'tech'
-  | 'usr';
+  | 'usr'
+  | 'mem';
 
 export type Id<P extends IdPrefix> = string & { readonly __brand: P };
 
@@ -41,6 +42,7 @@ export type PhaseId = Id<'ph'>;
 export type TagId = Id<'tag'>;
 export type TechnologyId = Id<'tech'>;
 export type UserId = Id<'usr'>;
+export type MemberId = Id<'mem'>;
 
 let sequence = 0;
 

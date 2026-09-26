@@ -2,6 +2,36 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F003 — Organizations
+
+Status: COMPLETE
+
+Implemented:
+- Domain types (`packages/domain`): Registered `mem` prefix in `IdPrefix`, typed `MemberId`, and updated `Member` interface.
+- API organization capabilities (`apps/api`):
+  - `OrganizationsModule`, `OrganizationsService`, and `OrganizationsController` composed into `AppModule`.
+  - Input validation: `CreateOrganizationDto` and `UpdateOrganizationDto`.
+  - Transactional creation (`POST /organizations`): Creates organization and initial `owner` membership for the authenticated caller; auto-generates slug or validates custom slug with collision resolution.
+  - Multi-tenant boundary enforcement: `GET /organizations` only lists organizations where caller is a member; `GET /organizations/:id`, `PATCH /organizations/:id`, `DELETE /organizations/:id` return 404 for unassociated callers (complete cross-tenant invisibility).
+  - Role-guarded mutations: `PATCH` guarded to `owner` and `admin` roles; `DELETE` guarded strictly to `owner`.
+  - Membership querying: `GET /organizations/:id/members`.
+  - Unit test suite (`organizations.service.spec.ts`, 15 tests) and e2e integration test suite (`organizations.e2e.spec.ts`, 9 tests).
+- Web application (`apps/web`):
+  - `lib/api-token.ts`: Signs stateless JWT tokens from user sessions for backend calls.
+  - `app/dashboard/actions.ts`: Server actions for organization creation and listing.
+  - `app/dashboard/create-org-form.tsx`: Interactive organization creation form with error feedback.
+  - `app/dashboard/page.tsx`: Displays authenticated user's organizations with their assigned roles and creation UI.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (82 tests: 15 domain, 6 web, 61 api)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean)
+- Evaluator Rubric Score: 5.0 / 5.0 -> PASS. Log: `.harness/reviews/F003-review.md`.
+
+---
+
 ## 2026-09-26 — F002 — Authentication
 
 Status: COMPLETE
