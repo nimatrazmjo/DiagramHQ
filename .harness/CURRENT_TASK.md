@@ -1,30 +1,44 @@
-# CURRENT TASK: F015 — Auto-layout
+# CURRENT TASK: F016 — Undo/redo
 
 ## Status: COMPLETE
 
 ## Feature
-**F015 — Auto-layout**
+**F016 — Undo/redo**
 
-Layout-engine registry (MODULES.md §6): pluggable, whole-graph auto-layout strategies applied on demand via a toolbar menu. Manual positions are untouched until explicitly re-applied.
+Reversible command layer on the canvas. Commands record reversible actions (create, connect, move, delete, metadata edit, align, layout) with per-session UI history and keyboard shortcuts (Cmd+Z / Cmd+Shift+Z).
 
 ## Scope
 
-### Domain layer (`packages/domain/src/`)
-- `layout-registry.ts`: the registry core — `LayoutNode`, `LayoutEdge`, `LayoutOptions`, `LayoutEngineName`, `LayoutEngine`, `registerLayoutEngine`, `getLayoutEngine`, `listLayoutEngines`, `applyLayout`. No built-in engine is hardcoded here — core iterates the registry.
-- `layout-engine-grid.ts`, `layout-engine-layered.ts` (hierarchical/tree/layered/TB/LR share one longest-path layering, orientation-parameterized), `layout-engine-radial.ts`, `layout-engine-force-directed.ts`: built-in engines, each self-registers on import.
-- `layout-builtins.ts`: side-effect barrel importing all 4 built-in engine modules.
-- `layout-registry.test.ts`, `layout-builtins.test.ts`: registry mechanics + the acceptance test (every registered engine lays out a sample graph with zero bbox overlap), plus per-engine correctness checks.
+### Web command layer (`apps/web/lib/commands/`)
+- `command.ts`: update `Command` interface to support optional `applyCanvasUpdate`.
+- `dispatcher.ts`: add `canUndo`, `canRedo`, `peekUndo`, `peekRedo`, `subscribe`, `notify`, `getUndone`.
+- `create-node-command.ts`: `CreateNodeCommand` (create node on canvas, undo removes it).
+- `delete-node-command.ts`: `DeleteNodeCommand` (delete node & attached edges, undo restores them).
+- `connect-nodes-command.ts`: `ConnectNodesCommand` (create edge, undo removes it).
+- `update-metadata-command.ts`: `UpdateNodeMetadataCommand` (update node data/metadata, undo reverts).
+- `move-node-command.ts`, `move-nodes-command.ts`, `align-nodes-command.ts`, `apply-layout-command.ts`: add `applyCanvasUpdate` so undo/redo updates canvas state.
+- `index.ts`: export new commands.
 
-### Web layer (`apps/web/`)
-- `lib/commands/apply-layout-command.ts`: `ApplyLayoutCommand` implementing `Command<...>` — same shape as `AlignNodesCommand` (batch persist, undo restores prior positions).
-- `lib/commands/index.ts`: re-export.
-- `components/canvas/layout-menu.tsx`: dropdown listing every registered engine.
-- `components/canvas/infinite-canvas.tsx`: `handleApplyLayout` (in-flight guard + optimistic update + rollback-on-failure, mirroring F014's `dispatchAlignOperation`), menu mounted bottom-left when `nodes.length > 1`.
-- `auto-layout.spec.ts`: command + component tests.
+### Canvas integration (`apps/web/components/canvas/`)
+- `infinite-canvas.tsx`:
+  - Subscribe to `defaultCommandDispatcher` state (`canUndo`, `canRedo`).
+  - Wire up `handleUndo` and `handleRedo` syncing canvas `nodes` and `edges`.
+  - Add Cmd/Ctrl+Z and Cmd/Ctrl+Shift+Z (and Ctrl+Y) keyboard shortcuts.
+  - Add Undo (↶) and Redo (↷) buttons to the toolbar with `data-testid="undo-btn"` and `data-testid="redo-btn"`.
+
+### Tests (`apps/web/`)
+- `undo-redo.spec.ts`: comprehensive tests covering:
+  - CommandDispatcher undo/redo/subscribe/canUndo/canRedo mechanics.
+  - CreateNodeCommand execute/undo/redo.
+  - DeleteNodeCommand execute/undo/redo with connected edges.
+  - ConnectNodesCommand execute/undo/redo.
+  - UpdateNodeMetadataCommand execute/undo/redo.
+  - MoveNodeCommand / MoveNodesCommand undo/redo canvas updates.
+  - AlignNodesCommand / ApplyLayoutCommand undo/redo canvas updates.
+  - InfiniteCanvas toolbar Undo/Redo buttons SSR rendering.
 
 ## Verification
-- TypeScript: PASS · Lint: PASS · Tests: PASS (366: 70 domain, 151 web, 145 api) · Build: PASS · check-architecture: PASS
-- Evidence: `.harness/CHANGELOG.md` — "2026-09-26 — F015 — Auto-layout"
+- Target: TypeScript PASS · Lint PASS · Tests PASS · Architecture PASS · Build PASS
 
 ## Owner
 Control plane (this agent)
@@ -32,8 +46,5 @@ Control plane (this agent)
 ## Started
 2026-09-26
 
-## Completed
-2026-09-26 — implementation + local verification done, PR opened.
-
 ## Next Task
-F016 — Undo/redo. Per `loops/pr-review-loop.md`, do not start it until this feature's PR is merged.
+F017 — Minimap.

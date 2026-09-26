@@ -2,6 +2,37 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F016 — Undo/redo
+
+Status: COMPLETE
+
+Implemented:
+- Web layer command infrastructure (`apps/web/lib/commands/`):
+  - `command.ts`: `StateSetFn<T>`, `applyCanvasUpdate(setNodes, setEdges, mode)` hook on `Command<T>` typed with `@xyflow/react`.
+  - `dispatcher.ts`: reactive listener subscription (`subscribe`, `notify`), stack inspectors (`canUndo`, `canRedo`, `peekUndo`, `peekRedo`, `getUndone`), and error-recovery rollback ensuring failed async operations do not corrupt history or undone stacks.
+  - Reversible command implementations:
+    - `create-node-command.ts`: `CreateNodeCommand` (creates node, undo removes it).
+    - `delete-node-command.ts`: `DeleteNodeCommand` (removes node + connected edges, undo restores both).
+    - `connect-nodes-command.ts`: `ConnectNodesCommand` (creates edge, undo removes it).
+    - `update-metadata-command.ts`: `UpdateNodeMetadataCommand` (updates node metadata, undo reverts to prior data).
+    - `move-node-command.ts`, `move-nodes-command.ts`, `align-nodes-command.ts`, `apply-layout-command.ts`: wired with `applyCanvasUpdate` for bidirectional visual position synchronization.
+- Canvas UI and keyboard integration (`apps/web/components/canvas/infinite-canvas.tsx`):
+  - Real-time dispatcher subscription updating undo/redo enabled states.
+  - Undo (↶, `data-testid="undo-btn"`) and Redo (↷, `data-testid="redo-btn"`) toolbar buttons with disabled styling when stacks are empty or graph mutations are in flight.
+  - Global keyboard listener for <kbd>Cmd</kbd>/<kbd>Ctrl</kbd>+<kbd>Z</kbd> and <kbd>Cmd</kbd>/<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> (plus <kbd>Ctrl</kbd>+<kbd>Y</kbd>), suppressed while typing in text inputs.
+  - Concurrency guard preventing rapid successive keystrokes/clicks from racing during async network persistence.
+- Tests (`apps/web/undo-redo.spec.ts`):
+  - 25 tests covering dispatcher history, subscriber notifications, undo/redo across all 5 domain operations (create, delete, connect, move, metadata edit), canvas state synchronization, error stack restoration, and toolbar SSR rendering.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (all monorepo tests passing)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean — domain, api, web)
+- PR Review: Round 1 identified stack corruption on failed undo/redo execution and race-guard omission; both fixed with regression tests. Verdict: CLEAN. Full log: `.harness/reviews/F016-review.md`.
+- PR: https://github.com/nimatrazmjo/DiagramHQ/pull/17
+
 ## 2026-09-26 — F015 — Auto-layout
 
 Status: COMPLETE

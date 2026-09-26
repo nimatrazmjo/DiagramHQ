@@ -111,7 +111,7 @@ Test: each engine lays out a sample without overlap (bbox non-overlap assertion)
 
 ### F016 — Undo/redo
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Reversible command layer.
 

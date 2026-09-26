@@ -1,31 +1,38 @@
-# Sprint Contract — F013: Multi-Select
+# Sprint Contract — F016: Undo/redo
 
-Feature: F013 — Multi-select
+Feature: F016 — Undo/redo
 Phase: Phase 02 — Canvas
 Date: 2026-09-26
 
 ## 1. Scope & Acceptance Criteria
-- [ ] Shift-click and modifier-click to toggle individual objects in and out of the multi-selection.
-- [ ] Marquee box-selection: Drag to draw a selection rectangle that selects all intersecting/contained objects on the canvas.
-- [ ] UI feedback: Distinct multi-selection badge ("MULTI-SELECT (N ITEMS)"), clear selection action, and active focus rings on all selected nodes.
-- [ ] Group move: Dragging any selected object moves all selected objects simultaneously, strictly preserving their relative offsets/positions.
-- [ ] Multi-node command layer persistence: `MoveNodesCommand` implementing the `Command` interface, dispatching batched coordinate updates through `CommandDispatcher` with full undo/redo capability.
-- [ ] API batch layout endpoint: `PATCH /views/:viewId/objects/positions` to atomically persist multiple object positions in a single transaction with multi-tenant and role authorization guards.
-- [ ] Monorepo verification: `pnpm verify` (typecheck, lint, test, check-architecture) and `pnpm build` pass with zero errors.
+- [x] Command layer records reversible commands with per-session UI state (`CommandDispatcher.history` and `undone`).
+- [x] Keyboard shortcuts: <kbd>Cmd</kbd>+<kbd>Z</kbd> / <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> (Mac) and <kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd> (Windows/Linux) when focus is not in text inputs.
+- [x] Covered operations:
+  - `create`: `CreateNodeCommand` (creates a node, undo removes it).
+  - `connect`: `ConnectNodesCommand` (creates an edge, undo removes it).
+  - `move`: `MoveNodeCommand` & `MoveNodesCommand` (moves nodes, undo restores positions).
+  - `delete`: `DeleteNodeCommand` (removes node and connected edges, undo restores them).
+  - `metadata edit`: `UpdateNodeMetadataCommand` (edits node data, undo reverts to previous data).
+  - `align` & `layout`: `AlignNodesCommand` & `ApplyLayoutCommand` (undo restores previous positions).
+- [x] Canvas state synchronization: Calling `undo()` or `redo()` synchronizes React Flow local nodes and edges so visual position and diagram contents update on screen immediately.
+- [x] UI feedback: Undo (↶) and Redo (↷) buttons on the canvas toolbar with disabled states when history or undone stack is empty (`canUndo`, `canRedo`).
+- [x] History is per-session UI state (not persisted across page reloads).
+- [x] Monorepo verification: `pnpm verify` (typecheck, lint, test, check-architecture) and `pnpm build` pass with zero errors.
 
 ## 2. Boundaries & Invariants
 - Rule 3: Canvas code mutates ONLY via client-model command layer (never direct fetch).
 - Rule 4: Canvas holds NO domain entity models in Zustand (transient viewport and selection IDs only).
-- Zero `any` types across all packages and apps.
+- Zero `any` types without explanation.
 
-## 3. Worker Decomposition
-- **Sub-Agent 1: API Batch Layout Worker**
-  - Scope: `apps/api/src/views/` (`views.dto.ts`, `views.service.ts`, `views.controller.ts`, `views.service.spec.ts`, `views.e2e.spec.ts`)
-  - Deliverables: `BatchUpdateObjectPositionsDto`, `updateMultipleObjectPositions` method, `PATCH :viewId/objects/positions` endpoint, unit & E2E tests.
-- **Sub-Agent 2: Web Command & Multi-Select Canvas Worker**
-  - Scope: `apps/web/lib/commands/` (`move-nodes-command.ts`, `index.ts`), `apps/web/lib/canvas-store.ts`, `apps/web/components/canvas/infinite-canvas.tsx`, `apps/web/multi-select.spec.ts`
-  - Deliverables: `MoveNodesCommand` with batch execution and undo, marquee box-selection props and toggle mode, group drag stop handler preserving relative coordinates, unit & component tests.
-
-## 4. Verification Targets
-- All monorepo tests pass.
-- Evaluator rubric score >= 4.5/5.0.
+## 3. Implementation Steps
+1. Update `apps/web/lib/commands/command.ts` and `dispatcher.ts` with `canUndo`, `canRedo`, `peekUndo`, `peekRedo`, `subscribe`, and `applyCanvasUpdate` interface.
+2. Implement new command classes:
+   - `create-node-command.ts` (`CreateNodeCommand`)
+   - `delete-node-command.ts` (`DeleteNodeCommand`)
+   - `connect-nodes-command.ts` (`ConnectNodesCommand`)
+   - `update-metadata-command.ts` (`UpdateNodeMetadataCommand`)
+3. Add `applyCanvasUpdate` to existing command classes (`move-node-command.ts`, `move-nodes-command.ts`, `align-nodes-command.ts`, `apply-layout-command.ts`).
+4. Re-export all commands from `apps/web/lib/commands/index.ts`.
+5. Integrate undo/redo handling, keyboard shortcuts, and toolbar buttons in `apps/web/components/canvas/infinite-canvas.tsx`.
+6. Write comprehensive tests in `apps/web/undo-redo.spec.ts`.
+7. Verify monorepo: typecheck, lint, test, check-architecture, build.

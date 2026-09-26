@@ -518,6 +518,54 @@ function InfiniteCanvasContent({
     onDragStopReady(handleNodeDragStop);
   }
 
+  const [canUndo, setCanUndo] = useState(() => defaultCommandDispatcher.canUndo());
+  const [canRedo, setCanRedo] = useState(() => defaultCommandDispatcher.canRedo());
+
+  useEffect(() => {
+    return defaultCommandDispatcher.subscribe(() => {
+      setCanUndo(defaultCommandDispatcher.canUndo());
+      setCanRedo(defaultCommandDispatcher.canRedo());
+    });
+  }, []);
+
+  const handleUndo = useCallback(async () => {
+    if (isMutatingGraphRef.current) return;
+    const cmd = defaultCommandDispatcher.peekUndo();
+    if (!cmd) return;
+    isMutatingGraphRef.current = true;
+    setIsMutatingGraph(true);
+    try {
+      await defaultCommandDispatcher.undo();
+      if ('applyCanvasUpdate' in cmd && typeof cmd.applyCanvasUpdate === 'function') {
+        cmd.applyCanvasUpdate(setNodes, setEdges, 'undo');
+      }
+    } catch (error) {
+      console.error('Failed to undo command:', error);
+    } finally {
+      isMutatingGraphRef.current = false;
+      setIsMutatingGraph(false);
+    }
+  }, []);
+
+  const handleRedo = useCallback(async () => {
+    if (isMutatingGraphRef.current) return;
+    const cmd = defaultCommandDispatcher.peekRedo();
+    if (!cmd) return;
+    isMutatingGraphRef.current = true;
+    setIsMutatingGraph(true);
+    try {
+      await defaultCommandDispatcher.redo();
+      if ('applyCanvasUpdate' in cmd && typeof cmd.applyCanvasUpdate === 'function') {
+        cmd.applyCanvasUpdate(setNodes, setEdges, 'execute');
+      }
+    } catch (error) {
+      console.error('Failed to redo command:', error);
+    } finally {
+      isMutatingGraphRef.current = false;
+      setIsMutatingGraph(false);
+    }
+  }, []);
+
   useEffect(() => {
     setNodes(initialNodes.map(toFlowNode));
   }, [initialNodes]);
@@ -531,7 +579,18 @@ function InfiniteCanvasContent({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (isTextInput(document.activeElement)) return;
 
-      if (event.code === 'Space' && !event.repeat) {
+      const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+      const isMod = isMac ? event.metaKey : event.ctrlKey;
+      if (isMod && !event.shiftKey && (event.key === 'z' || event.key === 'Z')) {
+        event.preventDefault();
+        void handleUndo();
+      } else if (
+        (isMod && event.shiftKey && (event.key === 'z' || event.key === 'Z')) ||
+        (!isMac && event.ctrlKey && (event.key === 'y' || event.key === 'Y'))
+      ) {
+        event.preventDefault();
+        void handleRedo();
+      } else if (event.code === 'Space' && !event.repeat) {
         useCanvasStore.getState().setIsSpacePanning(true);
       } else if (event.key === 'f' || event.key === 'F') {
         event.preventDefault();
@@ -559,7 +618,7 @@ function InfiniteCanvasContent({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [reactFlow, onNodeSelect]);
+  }, [reactFlow, onNodeSelect, handleUndo, handleRedo]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes((nds) => applyNodeChanges(changes, nds));
@@ -749,6 +808,27 @@ function InfiniteCanvasContent({
               title="Zoom In (+)"
             >
               +
+            </button>
+            <div className="w-px h-4 bg-slate-700 mx-0.5" />
+            <button
+              type="button"
+              data-testid="undo-btn"
+              onClick={handleUndo}
+              disabled={!canUndo || isMutatingGraph}
+              className="w-7 h-7 flex items-center justify-center rounded hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 hover:text-white transition-colors"
+              title="Undo (Cmd+Z)"
+            >
+              ↶
+            </button>
+            <button
+              type="button"
+              data-testid="redo-btn"
+              onClick={handleRedo}
+              disabled={!canRedo || isMutatingGraph}
+              className="w-7 h-7 flex items-center justify-center rounded hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 hover:text-white transition-colors"
+              title="Redo (Cmd+Shift+Z)"
+            >
+              ↷
             </button>
             <div className="w-px h-4 bg-slate-700 mx-0.5" />
             <button
