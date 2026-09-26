@@ -26,6 +26,7 @@ import type {
   AlignableNode,
   CanvasEdge,
   CanvasNode,
+  CanvasPosition,
   LayoutEdge,
   LayoutEngineName,
 } from '@diagramhq/domain';
@@ -351,18 +352,26 @@ function InfiniteCanvasContent({
       isMutatingGraphRef.current = true;
       setIsMutatingGraph(true);
 
-      const alignableNodes: AlignableNode[] = selected.map(toAlignableNode);
-      const previousPositionById = new Map(
-        alignableNodes.map((n) => [n.id, n.position]),
-      );
+      let alignableNodes: AlignableNode[];
+      let positionById: Map<string, CanvasPosition>;
+      try {
+        alignableNodes = selected.map(toAlignableNode);
+        const positions =
+          operation.type === 'align'
+            ? alignNodes(alignableNodes, operation.axis)
+            : distributeNodes(alignableNodes, operation.axis);
+        positionById = new Map(alignableNodes.map((n, i) => [n.id, positions[i]!]));
+      } catch (error) {
+        // A synchronous throw here must still release the shared guard —
+        // otherwise both the alignment toolbar and the layout menu would be
+        // stuck disabled for the rest of the session.
+        console.error('Failed to compute alignment:', error);
+        isMutatingGraphRef.current = false;
+        setIsMutatingGraph(false);
+        return;
+      }
 
-      const positions =
-        operation.type === 'align'
-          ? alignNodes(alignableNodes, operation.axis)
-          : distributeNodes(alignableNodes, operation.axis);
-      const positionById = new Map(
-        alignableNodes.map((n, i) => [n.id, positions[i]!]),
-      );
+      const previousPositionById = new Map(alignableNodes.map((n) => [n.id, n.position]));
 
       setNodes((nds) =>
         nds.map((n) => {
@@ -383,15 +392,22 @@ function InfiniteCanvasContent({
       }
 
       // Revert the optimistic update if persistence fails, so the canvas
-      // never shows positions the server didn't accept.
+      // never shows positions the server didn't accept. Only revert a node
+      // if it's still sitting exactly where this op put it — if something
+      // else (e.g. a plain drag, which isn't gated by this guard) has since
+      // moved it, that later change wins instead of being silently clobbered.
       void defaultCommandDispatcher
         .dispatch(command)
         .catch((error) => {
           console.error('Failed to persist alignment:', error);
           setNodes((nds) =>
             nds.map((n) => {
-              const position = previousPositionById.get(n.id);
-              return position ? { ...n, position } : n;
+              const attempted = positionById.get(n.id);
+              const revertTo = previousPositionById.get(n.id);
+              if (!attempted || !revertTo) return n;
+              const stillAtAttemptedPosition =
+                n.position.x === attempted.x && n.position.y === attempted.y;
+              return stillAtAttemptedPosition ? { ...n, position: revertTo } : n;
             }),
           );
         })
@@ -431,12 +447,25 @@ function InfiniteCanvasContent({
       isMutatingGraphRef.current = true;
       setIsMutatingGraph(true);
 
-      const layoutNodes = nodes.map(toAlignableNode);
-      const layoutEdges: LayoutEdge[] = edges.map((e) => ({ source: e.source, target: e.target }));
-      const previousPositionById = new Map(layoutNodes.map((n) => [n.id, n.position]));
+      let layoutNodes: AlignableNode[];
+      let positionById: Map<string, CanvasPosition>;
+      let positions: CanvasPosition[];
+      try {
+        layoutNodes = nodes.map(toAlignableNode);
+        const layoutEdges: LayoutEdge[] = edges.map((e) => ({ source: e.source, target: e.target }));
+        positions = applyLayout(layoutNodes, layoutEdges, engine);
+        positionById = new Map(layoutNodes.map((n, i) => [n.id, positions[i]!]));
+      } catch (error) {
+        // A synchronous throw (e.g. a misbehaving third-party engine) must
+        // still release the shared guard, or both the alignment toolbar and
+        // the layout menu stay stuck disabled for the rest of the session.
+        console.error('Failed to compute layout:', error);
+        isMutatingGraphRef.current = false;
+        setIsMutatingGraph(false);
+        return;
+      }
 
-      const positions = applyLayout(layoutNodes, layoutEdges, engine);
-      const positionById = new Map(layoutNodes.map((n, i) => [n.id, positions[i]!]));
+      const previousPositionById = new Map(layoutNodes.map((n) => [n.id, n.position]));
 
       setNodes((nds) =>
         nds.map((n) => {
@@ -456,14 +485,21 @@ function InfiniteCanvasContent({
         onCommandDispatched(command);
       }
 
+      // Only revert a node if it's still exactly where this op put it — if
+      // a plain drag (not gated by this guard) has since moved it, that
+      // later change wins instead of being silently clobbered.
       void defaultCommandDispatcher
         .dispatch(command)
         .catch((error) => {
           console.error('Failed to persist layout:', error);
           setNodes((nds) =>
             nds.map((n) => {
-              const position = previousPositionById.get(n.id);
-              return position ? { ...n, position } : n;
+              const attempted = positionById.get(n.id);
+              const revertTo = previousPositionById.get(n.id);
+              if (!attempted || !revertTo) return n;
+              const stillAtAttemptedPosition =
+                n.position.x === attempted.x && n.position.y === attempted.y;
+              return stillAtAttemptedPosition ? { ...n, position: revertTo } : n;
             }),
           );
         })

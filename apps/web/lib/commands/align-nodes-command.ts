@@ -6,6 +6,7 @@ import {
   type CanvasPosition,
 } from '@diagramhq/domain';
 import type { Command } from './command';
+import { persistPositions, type PersistPositionsFn } from './persist-positions';
 
 export type AlignOperation =
   | { type: 'align'; axis: AlignAxis }
@@ -15,10 +16,7 @@ export interface AlignNodesCommandParams {
   viewId?: string;
   nodes: AlignableNode[];
   operation: AlignOperation;
-  persistFn?: (
-    viewId: string,
-    positions: Array<{ objectId: string; x: number; y: number }>,
-  ) => Promise<void>;
+  persistFn?: PersistPositionsFn;
 }
 
 export interface AlignedNodeResult {
@@ -45,22 +43,13 @@ export class AlignNodesCommand implements Command<AlignedNodeResult[]> {
       : distributeNodes(nodes, operation.axis);
   }
 
-  private async persist(results: AlignedNodeResult[]): Promise<void> {
-    if (this.params.persistFn && this.params.viewId) {
-      await this.params.persistFn(
-        this.params.viewId,
-        results.map((r) => ({ objectId: r.objectId, x: r.position.x, y: r.position.y })),
-      );
-    }
-  }
-
   async execute(): Promise<AlignedNodeResult[]> {
     const positions = this.computePositions();
     const results = this.params.nodes.map((n, i) => ({
       objectId: n.id,
       position: positions[i]!,
     }));
-    await this.persist(results);
+    await persistPositions(this.params.viewId, this.params.persistFn, results);
     return results;
   }
 
@@ -69,7 +58,7 @@ export class AlignNodesCommand implements Command<AlignedNodeResult[]> {
       objectId: n.id,
       position: this.prevPositions.get(n.id)!,
     }));
-    await this.persist(results);
+    await persistPositions(this.params.viewId, this.params.persistFn, results);
     return results;
   }
 }

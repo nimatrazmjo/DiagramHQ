@@ -27,4 +27,42 @@ Branch: `feat/F015-auto-layout`. Target: PR #16.
 - Architecture: PASS
 - Build: PASS
 
-**Verdict: pending round-2 re-review.**
+**Verdict: CLEAN after round-1 fixes** — but round-2 re-review (below) found new issues in the round-1 fix itself, plus deeper pre-existing gaps a --level high pass surfaced once the round-1 races were gone.
+
+## Round 2 — Findings
+
+Re-ran `/code-review 16 --level high` against the round-1 fix commit. 10 findings.
+
+1. **[CONFIRMED, high]** `isMutatingGraphRef`/`isMutatingGraph` were set `true` before the synchronous `applyLayout()`/`alignNodes()`/`distributeNodes()` call with no try/catch — a synchronous throw (e.g. from a misbehaving third-party engine) would skip the `.finally()` reset entirely, permanently disabling both the alignment toolbar and the layout menu for the rest of the session.
+2. **[CONFIRMED, medium]** The layout/align persist-failure rollback unconditionally reverted **every** node in its own snapshot, including one a user had separately dragged (not gated by the shared guard) and successfully persisted in the meantime — silently discarding that unrelated, successful edit.
+3. **[CONFIRMED, medium]** `computeLayers` only seeded its BFS from true in-degree-0 roots; a node downstream of a cycle (but not itself cyclic) never got its in-degree to 0 either, so it collapsed into the same "layer 0" fallback as the cycle members — misplacing it in every layering-based engine (hierarchical/tree/layered/TB/LR/radial).
+4. **[CONFIRMED, low]** `ApplyLayoutCommand.execute()` indexed `positions[i]!` with no length check; the registry is explicitly built for third-party engines, so a misbehaving one returning the wrong count would produce `undefined` several frames before it surfaces.
+5. **[CONFIRMED, low]** `gridLayout`'s `options?.columns ?? default` used nullish coalescing, so an explicit `columns: 0` (or negative) passed through unchanged, producing `NaN`/`Infinity` coordinates instead of falling back to the computed default.
+6. **[CONFIRMED, low]** `LayoutMenu` only disabled its toggle button; the per-engine option buttons inside an already-open dropdown stayed clickable (and silently no-op'd) while `disabled` was true.
+7. **[NOTED, accepted limitation]** `forceDirectedLayout` + its overlap-resolution pass run synchronously on the main thread; for graphs of hundreds+ nodes this could visibly freeze the tab. No worker infrastructure exists anywhere in this codebase yet, and nothing in this app currently produces diagrams at that scale — addressing it (worker offload, chunked/yielding iteration) is a disproportionate architecture change for a hypothetical scale this feature doesn't need to support today. Documented in the function's docstring instead of built.
+8. **[CONFIRMED, low, doc-only]** The same docstring overclaimed an absolute "guarantees zero bbox overlap" — softened to describe it accurately as a heuristic verified for the sizes actually tested, not a formally-proven bound.
+9. **[ADDRESSED VIA DOCS, not code]** Built-in layout engines living in `packages/domain` reads as contradicting `MODULES.md`'s general "Built-ins register under apps/api / apps/web" line. Checked `rules/layer-boundaries.md` Rule 1 (domain must stay framework-free) and `check-architecture.sh` (only greps for framework imports, no location-of-registration rule): a layout algorithm is pure math with no I/O, the same category as `alignment.ts` already in `packages/domain` — moving it to `apps/web` for no functional reason would be worse architecture just to match a general line written with I/O-dependent built-ins (importers/exporters/AI-actions) in mind. Amended `MODULES.md` to state the actual dividing line (Rule 1, not physical location) instead of moving working, correctly-layered code.
+10. **[CONFIRMED, low]** `ApplyLayoutCommand.persist()` duplicated `AlignNodesCommand.persist()` almost verbatim.
+
+### Fixes applied (same branch, second follow-up commit)
+
+- Both `dispatchAlignOperation` and `handleApplyLayout` now wrap their synchronous domain-function calls in try/catch; on a throw, the shared guard is released and the error is logged instead of the op silently bricking the toolbar. Fixes #1.
+- Both rollback handlers now only revert a node if its **current** position still exactly matches the position this operation set it to — if anything else changed it since (e.g. a plain drag), that later change wins instead of being clobbered. Fixes #2.
+- `computeLayers` rewritten to do standard DFS-based back-edge detection (the same cycle-breaking approach tools like dagre use) before layering, so the graph handed to Kahn's algorithm is always acyclic and every node gets a real, meaningful layer — the "fall back to 0" path is now a defensive backstop that should never actually trigger. New tests: a 2-node cycle no longer collapses both nodes to layer 0 (one is correctly ordered after the other), a node downstream of a cycle gets a layer strictly greater than the cycle it hangs off, and a larger 3-node-cycle-with-tails case doesn't hang or throw. Fixes #3.
+- `applyLayout()` (registry core) now throws a clear error if an engine returns the wrong number of positions; `ApplyLayoutCommand`'s constructor adds the same check as a second line of defense for callers that bypass `applyLayout()`. Fixes #4.
+- `gridLayout`'s columns guard now explicitly checks `> 0` before using a caller-supplied value. Fixes #5.
+- `LayoutMenu`'s per-engine option buttons now receive `disabled` too, and the dropdown auto-closes when `disabled` flips true. Fixes #6.
+- `forceDirectedLayout`'s docstring rewritten to describe an empirically-verified heuristic with a noted main-thread-cost caveat, not an unconditional guarantee. Fixes #7 (documented, not built) and #8.
+- `MODULES.md` amended: the dividing line for where a built-in registers is Rule 1 (framework-free or not), not a blanket "always under apps/*" — pure-math built-ins like layout engines belong in `packages/domain` next to the registry. Fixes #9 (as a documentation correction).
+- Extracted `apps/web/lib/commands/persist-positions.ts` (`persistPositions` helper); both `AlignNodesCommand` and `ApplyLayoutCommand` now use it instead of duplicating the same `viewId`/`persistFn` guard and `objectId`/`x`/`y` mapping. Fixes #10.
+
+### Re-verification after round-2 fixes
+
+- TypeScript: PASS
+- Lint: PASS
+- Tests: PASS (362 tests: 66 domain, 151 web, 145 api) — includes 3 new `computeLayers` cycle-handling tests and the existing 40-node force-directed stress test, still passing under the new pass cap
+- Architecture: PASS
+- Build: PASS
+- Noted in passing: `apps/api`'s `organizations.e2e.spec.ts`/`workspaces.e2e.spec.ts` failed twice with different symptoms (assertion mismatches, then timeouts) under `pnpm test`'s parallel workspace run, then passed cleanly 145/145 on a solo re-run — pre-existing DB-contention flakiness in test infra unrelated to this PR (no `apps/api` files touched by this branch). Not fixed here; out of scope for F015.
+
+**Verdict: CLEAN.**

@@ -63,7 +63,7 @@ Not a registry but a swap point: `CanvasRenderer` abstracts React Flow behind an
 
 ## Where registries live
 
-`packages/domain` owns the interfaces (framework-free). Built-ins register in their own modules under `apps/api` / `apps/web`. Third-party/enterprise plugins register the same way. The core imports the registry, never the modules.
+`packages/domain` owns the interfaces (framework-free). Built-ins register in their own modules under `apps/api` / `apps/web` — **except** a built-in that is itself pure, framework-free computation with no I/O (e.g. the layout-engine registry's `grid`/`layered`/`radial`/`forceDirected` implementations, F015): those register from their own modules *inside* `packages/domain`, next to the registry, on the same footing as `alignment.ts`. The dividing line is Rule 1 in `rules/layer-boundaries.md` (no framework imports in `packages/domain`), not physical location — an importer/exporter/AI-action built-in almost always needs I/O or a framework and so belongs under `apps/*`; a layout algorithm is just math and belongs wherever the other pure math already lives. Third-party/enterprise plugins register the same way, from wherever suits them. The core imports the registry, never the modules.
 
 ## Test of a good module
 

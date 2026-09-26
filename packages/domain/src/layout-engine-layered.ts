@@ -7,26 +7,78 @@ import {
 } from './layout-registry';
 
 /**
+ * DFS-based back-edge detection (standard cycle-breaking for Sugiyama-style
+ * layering, the same approach tools like dagre use): any edge that closes a
+ * cycle — points back to a node still on the current DFS path — is a back
+ * edge. Removing back edges leaves a DAG, so the longest-path layering below
+ * can give every node a real layer instead of falling back to a placeholder
+ * for anything cyclic or downstream of a cycle.
+ */
+function findBackEdgeIndices(nodes: LayoutNode[], edges: LayoutEdge[]): Set<number> {
+  const idSet = new Set(nodes.map((n) => n.id));
+  const adjacency = new Map<string, Array<{ target: string; edgeIndex: number }>>();
+  for (const n of nodes) adjacency.set(n.id, []);
+  edges.forEach((e, edgeIndex) => {
+    if (!idSet.has(e.source) || !idSet.has(e.target) || e.source === e.target) return;
+    adjacency.get(e.source)!.push({ target: e.target, edgeIndex });
+  });
+
+  const UNVISITED = 0;
+  const ON_STACK = 1;
+  const DONE = 2;
+  const state = new Map<string, number>(nodes.map((n) => [n.id, UNVISITED]));
+  const backEdgeIndices = new Set<number>();
+
+  const stack: Array<{ id: string; nextChild: number }> = [];
+  for (const start of nodes) {
+    if (state.get(start.id) !== UNVISITED) continue;
+    stack.push({ id: start.id, nextChild: 0 });
+    state.set(start.id, ON_STACK);
+    while (stack.length > 0) {
+      const frame = stack[stack.length - 1]!;
+      const children = adjacency.get(frame.id) ?? [];
+      if (frame.nextChild >= children.length) {
+        state.set(frame.id, DONE);
+        stack.pop();
+        continue;
+      }
+      const { target, edgeIndex } = children[frame.nextChild]!;
+      frame.nextChild++;
+      const targetState = state.get(target);
+      if (targetState === ON_STACK) {
+        backEdgeIndices.add(edgeIndex);
+      } else if (targetState === UNVISITED) {
+        state.set(target, ON_STACK);
+        stack.push({ id: target, nextChild: 0 });
+      }
+    }
+  }
+  return backEdgeIndices;
+}
+
+/**
  * Assigns each node a layer = the longest path from any root (a node with
- * no incoming edges), via a Kahn's-algorithm-style BFS. Nodes that are part
- * of a cycle (never reach in-degree 0) fall back to layer 0 rather than
- * looping forever — layout should degrade gracefully, not crash, on cyclic
- * input.
+ * no incoming edges), via a Kahn's-algorithm-style BFS over the graph with
+ * back edges removed. Because that's guaranteed acyclic, every node reaches
+ * in-degree 0 eventually — the layer-0 fallback below only exists as a
+ * defensive backstop and should never actually trigger.
  */
 export function computeLayers(nodes: LayoutNode[], edges: LayoutEdge[]): Map<string, number> {
+  const backEdgeIndices = findBackEdgeIndices(nodes, edges);
+  const idSet = new Set(nodes.map((n) => n.id));
   const ids = nodes.map((n) => n.id);
-  const idSet = new Set(ids);
   const outEdges = new Map<string, string[]>();
   const remainingInDegree = new Map<string, number>();
   for (const id of ids) {
     outEdges.set(id, []);
     remainingInDegree.set(id, 0);
   }
-  for (const e of edges) {
-    if (!idSet.has(e.source) || !idSet.has(e.target) || e.source === e.target) continue;
+  edges.forEach((e, edgeIndex) => {
+    if (backEdgeIndices.has(edgeIndex)) return;
+    if (!idSet.has(e.source) || !idSet.has(e.target) || e.source === e.target) return;
     outEdges.get(e.source)!.push(e.target);
     remainingInDegree.set(e.target, (remainingInDegree.get(e.target) ?? 0) + 1);
-  }
+  });
 
   const layer = new Map<string, number>();
   const queue: string[] = ids.filter((id) => remainingInDegree.get(id) === 0);
@@ -48,7 +100,8 @@ export function computeLayers(nodes: LayoutNode[], edges: LayoutEdge[]): Map<str
     }
   }
 
-  // Cycle members never reach in-degree 0 above; place them at layer 0.
+  // Defensive backstop only — with back edges removed the graph is acyclic,
+  // so every node should already have a layer at this point.
   for (const id of ids) {
     if (!layer.has(id)) layer.set(id, 0);
   }

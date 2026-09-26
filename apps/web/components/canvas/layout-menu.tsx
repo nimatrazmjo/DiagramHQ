@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { LayoutEngineName } from '@diagramhq/domain';
 
 export interface LayoutMenuProps {
@@ -29,6 +29,12 @@ const engineLabels: Partial<Record<LayoutEngineName, string>> = {
 export function LayoutMenu({ engines, onApply, disabled = false }: LayoutMenuProps): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
 
+  // Don't leave a dropdown full of disabled-looking-enabled options open
+  // once an operation starts persisting.
+  useEffect(() => {
+    if (disabled) setIsOpen(false);
+  }, [disabled]);
+
   return (
     <div data-testid="layout-menu" className="relative">
       <button
@@ -55,7 +61,8 @@ export function LayoutMenu({ engines, onApply, disabled = false }: LayoutMenuPro
                 onApply(engine);
                 setIsOpen(false);
               }}
-              className="px-2 py-1.5 text-left rounded text-xs text-slate-200 hover:bg-slate-800 transition-colors"
+              disabled={disabled}
+              className="px-2 py-1.5 text-left rounded text-xs text-slate-200 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               {engineLabels[engine] ?? engine}
             </button>

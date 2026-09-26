@@ -11,8 +11,12 @@ import {
  * pulling their endpoints toward an ideal distance. Initial positions are
  * seeded deterministically (evenly spaced on a circle by index, no RNG) so
  * the result is reproducible. A final deterministic overlap-resolution pass
- * guarantees zero bbox overlap even if the simulation hasn't fully
- * converged for a given input.
+ * pushes apart any bboxes still overlapping once the simulation settles —
+ * verified overlap-free for graphs up to at least a few dozen densely-seeded
+ * nodes (see layout-builtins.test.ts) — but is not a formally-proven
+ * guarantee for arbitrary input sizes; this is a graph-layout heuristic, not
+ * a certified solver. Runs synchronously on the caller's thread — for very
+ * large graphs (hundreds+ of nodes) this can take a noticeable moment.
  */
 export function forceDirectedLayout(
   nodes: LayoutNode[],

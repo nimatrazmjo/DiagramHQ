@@ -71,5 +71,15 @@ export function applyLayout(
       `Unknown layout engine "${engineName}". Registered: ${listLayoutEngines().join(', ') || '(none)'}`,
     );
   }
-  return engine.layout(nodes, edges, options);
+
+  const positions = engine.layout(nodes, edges, options);
+  if (positions.length !== nodes.length) {
+    // The registry is open to third-party engines (MODULES.md #6); this
+    // check keeps a misbehaving one from producing an `undefined` position
+    // several call frames away from here.
+    throw new Error(
+      `Layout engine "${engineName}" returned ${positions.length} position(s) for ${nodes.length} node(s).`,
+    );
+  }
+  return positions;
 }

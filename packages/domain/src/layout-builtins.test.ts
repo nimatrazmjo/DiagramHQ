@@ -109,18 +109,52 @@ describe('computeLayers', () => {
     expect(layers.get('b')).toBe(2);
   });
 
-  it('falls back cycle members to layer 0 instead of looping forever', () => {
+  it('breaks a 2-node cycle by treating the closing edge as a back edge, not falling both nodes back to 0', () => {
     const nodes: LayoutNode[] = [
       { id: 'x', position: { x: 0, y: 0 } },
       { id: 'y', position: { x: 0, y: 0 } },
     ];
     const edges: LayoutEdge[] = [
       { source: 'x', target: 'y' },
-      { source: 'y', target: 'x' },
+      { source: 'y', target: 'x' }, // closes the cycle -> detected as the back edge
     ];
     const layers = computeLayers(nodes, edges);
     expect(layers.get('x')).toBe(0);
-    expect(layers.get('y')).toBe(0);
+    expect(layers.get('y')).toBe(1);
+  });
+
+  it('gives a node downstream of a cycle its own real layer instead of collapsing it to 0', () => {
+    // x <-> y is a cycle; z hangs off y and is NOT part of the cycle.
+    const nodes: LayoutNode[] = [
+      { id: 'x', position: { x: 0, y: 0 } },
+      { id: 'y', position: { x: 0, y: 0 } },
+      { id: 'z', position: { x: 0, y: 0 } },
+    ];
+    const edges: LayoutEdge[] = [
+      { source: 'x', target: 'y' },
+      { source: 'y', target: 'x' },
+      { source: 'y', target: 'z' },
+    ];
+    const layers = computeLayers(nodes, edges);
+    expect(layers.get('z')).toBeGreaterThan(layers.get('y')!);
+  });
+
+  it('does not hang or throw on a larger cycle with multiple downstream tails', () => {
+    const nodes: LayoutNode[] = ['a', 'b', 'c', 'tail1', 'tail2'].map((id) => ({
+      id,
+      position: { x: 0, y: 0 },
+    }));
+    const edges: LayoutEdge[] = [
+      { source: 'a', target: 'b' },
+      { source: 'b', target: 'c' },
+      { source: 'c', target: 'a' }, // 3-node cycle
+      { source: 'b', target: 'tail1' },
+      { source: 'c', target: 'tail2' },
+    ];
+    expect(() => computeLayers(nodes, edges)).not.toThrow();
+    const layers = computeLayers(nodes, edges);
+    expect(layers.get('tail1')).toBeGreaterThan(layers.get('a')!);
+    expect(layers.get('tail2')).toBeGreaterThan(layers.get('a')!);
   });
 });
 

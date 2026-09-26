@@ -18,7 +18,10 @@ export function gridLayout(
   const maxHeight = nodes.reduce((m, n) => Math.max(m, n.height ?? 0), 80);
   const spacingX = options?.spacingX ?? maxWidth + 60;
   const spacingY = options?.spacingY ?? maxHeight + 60;
-  const columns = options?.columns ?? Math.ceil(Math.sqrt(nodes.length));
+  const columns =
+    options?.columns != null && options.columns > 0
+      ? Math.floor(options.columns)
+      : Math.ceil(Math.sqrt(nodes.length));
 
   return nodes.map((_, i) => ({
     x: (i % columns) * spacingX,
