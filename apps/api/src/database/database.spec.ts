@@ -246,4 +246,93 @@ describe('Database Foundation & Tenant Isolation (F006)', () => {
       }),
     ).rejects.toThrow('same version');
   });
+
+  it('enforces object-hierarchy and view-object invariants at the persistence layer', async () => {
+    const orgId = `org_hier_${Date.now()}`;
+    const wsId = `ws_hier_${Date.now()}`;
+    const archId = `arch_hier_${Date.now()}`;
+    const otherArchId = `arch_hier_other_${Date.now()}`;
+    const verId = `ver_hier_${Date.now()}`;
+    const otherVerId = `ver_hier_other_${Date.now()}`;
+    const parentId = `app_hier_parent_${Date.now()}`;
+    const foreignParentId = `app_hier_foreign_${Date.now()}`;
+
+    await prisma.organization.create({
+      data: { id: orgId, name: 'Hierarchy Org', slug: `hier-org-${Date.now()}` },
+    });
+
+    const tenant = new TenantContext(prisma, orgId);
+
+    await tenant.workspace.create({ id: wsId, name: 'Hierarchy Workspace', slug: 'hier-ws' });
+    await tenant.architecture.create({ id: archId, workspaceId: wsId, name: 'Hierarchy Architecture' });
+    await tenant.architecture.create({
+      id: otherArchId,
+      workspaceId: wsId,
+      name: 'Other Architecture',
+    });
+
+    await prisma.version.createMany({
+      data: [
+        { id: verId, architectureId: archId, name: 'v1' },
+        { id: otherVerId, architectureId: otherArchId, name: 'v1' },
+      ],
+    });
+
+    const parent = await tenant.modelObject.create({
+      id: parentId,
+      architectureId: archId,
+      versionId: verId,
+      kind: ObjectKind.system,
+      name: 'Parent System',
+    });
+    expect(parent.id).toBe(parentId);
+
+    const foreignParent = await tenant.modelObject.create({
+      id: foreignParentId,
+      architectureId: otherArchId,
+      versionId: otherVerId,
+      kind: ObjectKind.system,
+      name: 'Foreign Parent',
+    });
+    expect(foreignParent.id).toBe(foreignParentId);
+
+    // Parent from a different architecture/version should be rejected
+    await expect(
+      tenant.modelObject.create({
+        id: `app_hier_bad_${Date.now()}`,
+        architectureId: archId,
+        versionId: verId,
+        parentId: foreignParentId,
+        kind: ObjectKind.application,
+        name: 'Bad Child',
+      }),
+    ).rejects.toThrow('architecture/version');
+
+    // A parent in the same architecture/version should be accepted
+    const child = await tenant.modelObject.create({
+      id: `app_hier_child_${Date.now()}`,
+      architectureId: archId,
+      versionId: verId,
+      parentId,
+      kind: ObjectKind.application,
+      name: 'Valid Child',
+    });
+    expect(child.parentId).toBe(parentId);
+
+    const view = await tenant.view.create({
+      id: `vw_hier_${Date.now()}`,
+      architectureId: archId,
+      kind: 'context',
+      name: 'Hierarchy View',
+    });
+
+    // A view object pointing at an object from a different architecture should be rejected
+    await expect(
+      tenant.viewObject.create({ viewId: view.id, objectId: foreignParentId }),
+    ).rejects.toThrow('same architecture');
+
+    // A view object pointing at an object in the view's own architecture should be accepted
+    const viewObject = await tenant.viewObject.create({ viewId: view.id, objectId: parentId });
+    expect(viewObject.objectId).toBe(parentId);
+  });
 });

@@ -5,7 +5,7 @@
   "packageManager": "pnpm@9.12.3",
   "engines": { "node": ">=20" },
   "scripts": {
-    "dev": "pnpm -r --parallel --if-present dev",
+    "dev": "pnpm build:domain && pnpm -r --parallel --if-present dev",
     "build": "pnpm -r --if-present build",
     "build:domain": "pnpm --filter @diagramhq/domain build",
     "prisma:generate": "pnpm --filter @diagramhq/api prisma:generate",

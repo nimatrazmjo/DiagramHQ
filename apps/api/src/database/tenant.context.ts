@@ -8,7 +8,12 @@ import type {
   Workspace,
 } from '@prisma/client';
 import type { ArchitectureId, ObjectId, VersionId } from '@diagramhq/domain';
-import { assertTenantAccess, validateConnection } from '@diagramhq/domain';
+import {
+  assertTenantAccess,
+  hasParentCycle,
+  validateConnection,
+  validateViewObject,
+} from '@diagramhq/domain';
 
 export class TenantContext {
   constructor(
@@ -143,15 +148,39 @@ export class TenantContext {
       if (!version || version.architectureId !== data.architectureId) {
         throw new Error('Version does not belong to the given architecture');
       }
-      if (data.parentId) {
-        if (data.parentId === data.id) {
-          throw new Error('Object cannot be its own parent');
-        }
+      if (data.parentId != null) {
         const parent = await this.prisma.modelObject.findUnique({
           where: { id: data.parentId },
         });
-        if (!parent || parent.architectureId !== data.architectureId) {
-          throw new Error('Parent object does not belong to the given architecture');
+        if (
+          !parent ||
+          parent.architectureId !== data.architectureId ||
+          parent.versionId !== data.versionId
+        ) {
+          throw new Error('Parent object does not belong to the given architecture/version');
+        }
+
+        // Walk the existing ancestor chain so hasParentCycle can check the new
+        // object against it. A create-only path can't yet form a cycle on its
+        // own (the new id can't already be an ancestor), but this keeps the
+        // guard correct once objects can be reparented.
+        const ancestors = new Map<string, string | null>([[parent.id, parent.parentId]]);
+        let cursor = parent.parentId;
+        while (cursor && !ancestors.has(cursor)) {
+          const node = await this.prisma.modelObject.findUnique({
+            where: { id: cursor },
+            select: { id: true, parentId: true },
+          });
+          if (!node) break;
+          ancestors.set(node.id, node.parentId);
+          cursor = node.parentId;
+        }
+        if (
+          hasParentCycle(data.id as ObjectId, data.parentId as ObjectId, (id) =>
+            ancestors.get(id) as ObjectId | null | undefined,
+          )
+        ) {
+          throw new Error('Parent assignment would create a cycle');
         }
       }
       return this.prisma.modelObject.create({
@@ -242,6 +271,37 @@ export class TenantContext {
       return this.prisma.view.create({
         data,
       });
+    },
+  };
+
+  readonly viewObject = {
+    create: async (data: Prisma.ViewObjectUncheckedCreateInput) => {
+      const view = await this.prisma.view.findUnique({
+        where: { id: data.viewId },
+        include: { architecture: { include: { workspace: true } } },
+      });
+      if (!view) {
+        throw new Error(`View ${data.viewId} not found`);
+      }
+      assertTenantAccess(view.architecture.workspace.orgId, this.orgId);
+
+      const object = await this.prisma.modelObject.findUnique({
+        where: { id: data.objectId },
+      });
+      if (!object) {
+        throw new Error(`Model object ${data.objectId} not found`);
+      }
+
+      if (
+        !validateViewObject(
+          { architectureId: view.architectureId as ArchitectureId },
+          { architectureId: object.architectureId as ArchitectureId },
+        )
+      ) {
+        throw new Error('View object must belong to the same architecture as the view');
+      }
+
+      return this.prisma.viewObject.create({ data });
     },
   };
 }

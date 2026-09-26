@@ -37,8 +37,7 @@ jobs:
       - run: pnpm --filter @diagramhq/api prisma:generate
       - run: pnpm --filter @diagramhq/api prisma:migrate:deploy
       - run: pnpm lint
-      - run: pnpm build:domain
+      - run: pnpm build
       - run: pnpm typecheck
       - run: pnpm test
-      - run: pnpm build
       - run: pnpm check-architecture
