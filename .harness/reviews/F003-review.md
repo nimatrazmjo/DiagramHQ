@@ -39,3 +39,22 @@ Target: Organization entity, tenancy root, membership, organization CRUD, and cr
 - `pnpm test`: 82 tests passed (15 domain, 6 web, 61 api).
 - `check-architecture`: Clean (`check-architecture: clean`).
 - `pnpm build`: Clean production build across all Next.js and NestJS targets.
+- GitHub Actions CI: `CI/verify` passed on PR #6.
+
+## PR Review — Round 1 (PR #6)
+Independent pass over the pull request diff (`git diff origin/main...feat/F003-organizations`):
+1. **Multi-Tenant Boundary Security**:
+   - Queries strictly filter by membership (`where: { userId }` or `where: { orgId_userId: { orgId, userId } }`).
+   - Unauthorized tenant access returns 404 (preventing cross-tenant metadata enumeration).
+   - Mutations (`PATCH`, `DELETE`) are guarded by member role; `DELETE` is strictly restricted to `owner`.
+2. **Data Model & Invariant Integrity**:
+   - Organization and initial `owner` membership created transactionally via `$transaction`.
+   - Brand ID conventions (`mem_` prefix and `MemberId`) implemented without leaking runtime overhead.
+   - Clean slug validation with collision resolution.
+3. **Automated Testing & Pipeline Integrity**:
+   - Unit tests verify service logic, role boundaries, and slug collision paths.
+   - E2E integration tests verify real HTTP pipeline, validation pipes, and multi-user tenant isolation against real PostgreSQL database.
+   - GitHub Actions CI green (1m26s).
+
+**PR Verdict**: CLEAN. Exiting PR review loop.
+
