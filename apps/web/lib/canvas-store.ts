@@ -21,17 +21,22 @@ export interface CanvasStoreState {
   selectedEdgeIds: string[];
   hoveredNodeId: string | null;
   isSpacePanning: boolean;
+  isBoxSelectMode: boolean;
 
   setViewport: (viewport: CanvasViewport) => void;
   setSelectedNodes: (ids: string[]) => void;
   setSelectedEdges: (ids: string[]) => void;
   selectNode: (id: string, multi?: boolean) => void;
   selectEdge: (id: string, multi?: boolean) => void;
+  toggleNodeSelection: (id: string) => void;
+  toggleEdgeSelection: (id: string) => void;
   isNodeSelected: (id: string) => boolean;
   isEdgeSelected: (id: string) => boolean;
   clearSelection: () => void;
   setHoveredNode: (id: string | null) => void;
   setIsSpacePanning: (isPanning: boolean) => void;
+  toggleBoxSelectMode: () => void;
+  setBoxSelectMode: (enabled: boolean) => void;
   zoomIn: (step?: number) => void;
   zoomOut: (step?: number) => void;
   resetZoom: () => void;
@@ -43,6 +48,7 @@ export const useCanvasStore = create<CanvasStoreState>((set, get) => ({
   selectedEdgeIds: [],
   hoveredNodeId: null,
   isSpacePanning: false,
+  isBoxSelectMode: false,
 
   setViewport: (viewport: CanvasViewport) =>
     set({
@@ -84,9 +90,32 @@ export const useCanvasStore = create<CanvasStoreState>((set, get) => ({
   isNodeSelected: (id: string) => get().selectedNodeIds.includes(id),
   isEdgeSelected: (id: string) => get().selectedEdgeIds.includes(id),
 
+  toggleNodeSelection: (id: string) =>
+    set((state) => {
+      const exists = state.selectedNodeIds.includes(id);
+      return {
+        selectedNodeIds: exists
+          ? state.selectedNodeIds.filter((nodeId) => nodeId !== id)
+          : [...state.selectedNodeIds, id],
+      };
+    }),
+
+  toggleEdgeSelection: (id: string) =>
+    set((state) => {
+      const exists = state.selectedEdgeIds.includes(id);
+      return {
+        selectedEdgeIds: exists
+          ? state.selectedEdgeIds.filter((edgeId) => edgeId !== id)
+          : [...state.selectedEdgeIds, id],
+      };
+    }),
+
   clearSelection: () => set({ selectedNodeIds: [], selectedEdgeIds: [] }),
   setHoveredNode: (id: string | null) => set({ hoveredNodeId: id }),
   setIsSpacePanning: (isPanning: boolean) => set({ isSpacePanning: isPanning }),
+  toggleBoxSelectMode: () =>
+    set((state) => ({ isBoxSelectMode: !state.isBoxSelectMode })),
+  setBoxSelectMode: (enabled: boolean) => set({ isBoxSelectMode: enabled }),
 
   zoomIn: (step = 0.2) =>
     set((state) => ({
