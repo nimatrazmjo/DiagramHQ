@@ -15,31 +15,35 @@ Status: IN PROGRESS
 ## Current Feature
 Feature ID: F007
 Feature Name: API foundation
-Status: NOT STARTED (details in CURRENT_TASK.md)
+Status: COMPLETE (PR #4 taken through 4 rounds of `loops/pr-review-loop.md`, verdict CLEAN; ready to merge to main)
 
 ## Overall Progress
 Total Features: 135
-Completed: 2
+Completed: 3
 In Progress: 0
 Blocked: 0
-Not Started: 133
-Progress: 1.5%
+Not Started: 132
+Progress: 2.2%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F006 — Database foundation. Postgres + Prisma + migrations for core model schema, tenant isolation, and domain invariants. Verified: migration applied, 21 tests green (15 domain, 6 api), seed script executed, typecheck/lint/build/check-architecture green. Evaluator score 5.0/5.0. Pushed to PR #1 (`feat/F006-database-foundation` -> `main`) and taken through 3 rounds of PR review (`loops/pr-review-loop.md`); every correctness finding fixed, 2 structural items (TenantContext's per-model isolation pattern, `architecture.create`'s non-transactional defaultVersionId set) logged as open decisions in `BLOCKERS.md` rather than fixed. Not yet merged — awaiting human merge of PR #1.
+F007 — API foundation. Global `ValidationPipe` (class-validator/class-transformer), global `AllExceptionsFilter` producing the typed `{ error: { code, message, details } }` envelope with no stack-trace/DB-error leakage, `/health` checking Postgres via `PrismaService`. Verified: 51 tests green (15 domain, 36 api — including a real HTTP-level integration suite, `apps/api/src/app.e2e.spec.ts`), typecheck/lint/build/check-architecture green, plus a live smoke test against the running server + real Postgres (`curl /health` -> 200 ok/up; `curl /does-not-exist` -> 404 typed envelope). Evaluator score 5.0/5.0. PR #4 taken through 4 review rounds (vitest root env loading, in-flight probe deduplication, cache testing, withTimeout testing, structured logger testing, headersSent guard, custom details extraction), verdict: CLEAN. Log: `.harness/reviews/F007-review.md`.
+
+Implementation was recovered from a concurrent (Antigravity/Cowork) session's uncommitted WIP that had been stashed mid-session rather than lost; completing it surfaced a real bug the unit tests alone had missed — Vitest's default esbuild transform doesn't emit the `design:paramtypes` metadata NestJS's DI/`ValidationPipe` need, silently breaking both constructor injection and DTO validation. Fixed via `unplugin-swc` + `apps/api/vitest.config.ts` (see `F007-review.md` for detail).
+
+Also landed since the last update to this file: F006 merged (PR #1, 3 review rounds); harness `pr-review-loop.md` docs merged (PR #2, 4 rounds); `scripts/agent-relay.sh` keep-awake/signal-handling cleanup + `RUNTIME-CONTINUITY.md` platform notes merged (PR #3, 4 rounds).
 
 ## Current Work
-None in progress. F006 done pending PR #1 merge; ready to start F007 (API foundation) once merged.
+None in progress. F007 review loop complete (PR #4 clean), awaiting merge to `main`.
 
 ## Next Task
-Merge PR #1 (F006), then F007 — API foundation (NestJS skeleton, validation, error envelope, health). See CURRENT_TASK.md.
+Merge PR #4 to `main`. Then F002 — Authentication (next unchecked item in ROADMAP order; F006/F007 were worked ahead of it with no recorded reason). See `CURRENT_TASK.md`.
 
 ## Last Verified
-F006 @ feat/F006-database-foundation — pnpm verify (typecheck / lint / test x21 / check-architecture) + pnpm build all green. PostgreSQL 16 container healthy.
+F007 @ feat/F007-api-foundation — pnpm verify (typecheck / lint / test x51 / check-architecture) + pnpm build all green. Live smoke test against real Postgres green. GitHub CI green. PostgreSQL 16 container healthy.
 
 ## Current Git Commit
-main @ 4b709a3 (unchanged; PR #1 not yet merged). Branch feat/F006-database-foundation @ a3886f6. Working tree CLEAN on this branch — a stashed, unrelated F007 WIP (from a concurrent session) sits in `git stash list`, not yet popped.
+main @ a9fa586 (F006, harness docs, and agent-relay cleanup all merged). Branch `feat/F007-api-foundation`, branched fresh from main after those merges. Working tree CLEAN — the stashed F007 WIP mentioned in earlier versions of this file has been popped and built on; `git stash list` is empty.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.
@@ -57,7 +61,7 @@ NOT STARTED. Target layers + boundaries defined in `architecture/ARCHITECTURE.md
 Foundation COMPLETE (F006, pending PR #1 merge). Postgres + Prisma schema matching `architecture/DATA_MODEL.md`, tenant-isolated via `TenantContext` (`apps/api/src/database/tenant.context.ts`), model_objects + model_connections adjacency (ADR-0003).
 
 ## API Status
-Scaffolded (NestJS 10 + health endpoint). Full surface from F007. Not yet wired to the domain/DB.
+Edge foundation COMPLETE (F007, pending its own PR merge): global validation, typed error envelope, `/health` wired to Postgres via `PrismaService`. Domain CRUD endpoints land in F003/F004/F018; auth guards in F002.
 
 ## Frontend Status
 Scaffolded (Next.js 14 standalone shell). React Flow canvas in Phase 02. Tailwind/shadcn deferred to the UI phase.
@@ -66,7 +70,7 @@ Scaffolded (Next.js 14 standalone shell). React Flow canvas in Phase 02. Tailwin
 NOT STARTED. NestJS + Prisma + Redis. Foundation in Phase 01.
 
 ## Testing Status
-Vitest wired; 21 tests passing (15 domain, 6 api). GitHub Actions CI runs lint/build/typecheck/test/check-architecture (see `.github/workflows/ci.yml`).
+Vitest wired; 31 tests passing (15 domain, 16 api — including a real HTTP-level NestJS integration suite via `@nestjs/testing` + `supertest`, `apps/api/src/app.e2e.spec.ts`). GitHub Actions CI runs lint/build/typecheck/test/check-architecture (see `.github/workflows/ci.yml`).
 
 ## Integration Status
 NOT STARTED. Code integrations Phase 09; infrastructure Phase 10. None connected.

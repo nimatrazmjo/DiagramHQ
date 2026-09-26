@@ -127,7 +127,7 @@ Test: migration applies to a fresh Postgres; a test round-trips an entity; a cro
 
 ### F007 — API foundation
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: NestJS API skeleton: validation, typed error envelope, health.
 
