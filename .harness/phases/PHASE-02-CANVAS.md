@@ -32,7 +32,7 @@ Test: component test + screenshot of a rendered graph.
 
 ### F010 — Pan and zoom
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Infinite pan and zoom.
 

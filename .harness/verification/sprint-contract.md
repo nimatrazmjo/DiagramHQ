@@ -1,73 +1,69 @@
-# Sprint Contract — F009 (Infinite Canvas)
+# Sprint Contract — F010 (Pan and Zoom)
 
 Written by the Planner before any code. It fixes "done" so the Generator cannot drift and the Evaluator has something objective to grade against.
 
 ## Feature
-- Id: F009
-- Title: Infinite canvas
+- Id: F010
+- Title: Pan and zoom
 - Phase / slice: Phase 02 — Canvas
 
 ## Goal (one sentence)
-An interactive infinite canvas mounted behind a framework-agnostic CanvasRenderer interface that projects domain objects and connections into canvas nodes and edges, keeping UI interaction state decoupled from domain state.
+Support smooth, infinite pan and zoom on the canvas with wheel zoom clamping, space-bar drag panning, and a fit-to-content shortcut ('F' key), keeping viewport interactions responsive and synchronized with the UI store.
 
 ## Acceptance -> checks
 Map each acceptance item from `PHASE-02-CANVAS.md` to how it will be verified.
 | Acceptance item | How verified (command / test / screenshot) |
 |---|---|
-| Infinite canvas mounts and renders nodes/edges | Component test in `apps/web/canvas.spec.ts` rendering the canvas with nodes and edges; snapshot / DOM verification |
-| CanvasRenderer interface isolates the renderer (ADR-0002, MODULES.md §7) | Pure TypeScript interface in `packages/domain/src/canvas.ts` implemented by `ReactFlowCanvasRenderer` in `apps/web/components/canvas/react-flow-renderer.ts`, swappable for PixiJS/WebGL |
-| Canvas holds no domain data in Zustand (layer-boundaries rule 4) | UI store (`apps/web/lib/canvas-store.ts`) stores only viewport (`{ x, y, zoom }`) and transient selection (`selectedIds: string[]`), with no domain entities mirrored |
-| Test: component test + screenshot / DOM structure of a rendered graph | Comprehensive tests in `apps/web/canvas.spec.ts` verifying mounting, projection, and isolation |
+| Wheel zoom with min/max zoom limits (0.1x to 4x) | Unit/component tests in `apps/web/pan-zoom.spec.ts` asserting zoom clamping and viewport update |
+| Space-pan activation (Space key sets panning mode) | Component test verifying spacebar activates pan-on-drag cursor and gesture behavior |
+| Fit-to-content ('F' key / button shortcut) | Component test asserting 'F' keypress triggers fit-to-content viewport adjustment |
+| Smooth at target node counts | Viewport changes fire smoothly without triggering domain model re-renders |
+| Test: component test for zoom/pan/fit | Automated Vitest test suite in `apps/web/pan-zoom.spec.ts` |
 
 ## Plan (steps)
-1. In `packages/domain`:
-   - Create `src/canvas.ts`:
-     - Define `CanvasNode`, `CanvasEdge`, `CanvasViewport`, `CanvasInteractionHandler`.
-     - Define `CanvasRenderer` interface (`name`, `mount`, `unmount`, `render`, `setViewport`, `getViewport`, `fitView`).
-     - Define pure projection function: `projectViewModelToCanvas(view, objects, connections): { nodes: CanvasNode[]; edges: CanvasEdge[] }`.
-     - Re-export from `packages/domain/src/index.ts`.
-   - Unit tests in `packages/domain/src/canvas.test.ts`.
-2. In `apps/web`:
-   - Create `lib/canvas-store.ts` (Zustand):
-     - Stores only transient UI state: `viewport` (`x, y, zoom`), `selectedNodeIds`, `selectedEdgeIds`, `hoveredNodeId`. No domain entities stored (layer-boundaries rule 4).
-   - Create `components/canvas/`:
-     - `canvas-renderer.ts`: Concrete implementation of `CanvasRenderer` adapting React Flow.
-     - `infinite-canvas.tsx`: Client component rendering React Flow with controls, background grid, minimap placeholder, custom architecture node types (SystemNode, AppNode, StoreNode), and edge types.
-     - `canvas-nodes.tsx`: Node components for architectural objects (systems, apps, stores).
-     - `index.ts`: Unified export.
-   - Integrate into `/workspace/[workspaceId]` studio page:
-     - Provide a toggle or dedicated tab to view the live Interactive Canvas.
-3. Automated tests:
-   - `apps/web/canvas.spec.ts`: Component & unit tests for `CanvasRenderer`, `projectViewModelToCanvas`, React Flow canvas mounting, node rendering, and Zustand store boundary verification.
-4. Verification:
-   - Run `pnpm verify` (`typecheck`, `lint`, `test`, `check-architecture`) and `pnpm build`.
+1. In `apps/web/components/canvas/infinite-canvas.tsx`:
+   - Configure React Flow with `minZoom={0.1}`, `maxZoom={4}`.
+   - Configure `panActivationKeyCode="Space"` (or Space key down enables grab/dragging).
+   - Add keyboard event listener for 'F' / 'f' key (when focus is outside text input) to trigger `fitView({ padding: 0.2, duration: 250 })`.
+   - Add quick zoom/fit controls in the top toolbar or Controls panel.
+   - Handle viewport transitions smoothly.
+2. In `apps/web/components/canvas/canvas-renderer.ts`:
+   - Ensure `ReactFlowCanvasRenderer` implements `zoomIn`, `zoomOut`, `fitView`, `setViewport`, `getViewport`.
+3. In `apps/web/lib/canvas-store.ts`:
+   - Add zoom helpers: `zoomIn()`, `zoomOut()`, `resetZoom()`.
+4. Automated tests in `apps/web/pan-zoom.spec.ts`:
+   - Test zoom bounds clamping.
+   - Test space key activates pan.
+   - Test 'F' key triggers fitView.
+   - Test store viewport synchronization.
+5. Verification:
+   - Run `pnpm verify` and `pnpm build`.
 
 ## In scope
-- `CanvasRenderer` interface in `packages/domain`.
-- React Flow canvas mounting behind `CanvasRenderer` interface in `apps/web`.
-- Pure model projection (`projectViewModelToCanvas`).
-- Transient UI store (`canvas-store.ts`) adhering to layer boundaries (no domain data in store).
-- Architecture node components (systems, apps, stores) and edge rendering.
+- Wheel zoom limits (`0.1x` to `4x`).
+- Space-bar pan activation.
+- 'F' key shortcut for fit-to-content.
+- Zoom helper methods on `useCanvasStore` and `CanvasRenderer`.
+- Component tests for zoom, pan, and fit in `apps/web/pan-zoom.spec.ts`.
 
 ## Explicitly out of scope (parked)
-- Advanced pan/zoom gesture physics (F010).
-- Drag and drop layout persistence to `view_objects` table (F012).
-- Multi-select marquee box (F013).
-- Auto-layout dagre/elk engine (F015).
-
-## New dependencies
-- `@xyflow/react` in `apps/web` (React Flow).
-- `zustand` in `apps/web` (transient UI state).
+- Object selection (F011).
+- Drag and drop layout persistence (F012).
+- Multi-select marquee (F013).
+- Alignment helpers (F014).
+- Auto-layout registry (F015).
 
 ## Boundaries touched
-- `packages/domain`: `src/canvas.ts`, `src/canvas.test.ts`, `src/index.ts`.
-- `apps/web`: `components/canvas/*`, `lib/canvas-store.ts`, `app/workspace/*`, `canvas.spec.ts`.
+- `apps/web/components/canvas/infinite-canvas.tsx`
+- `apps/web/components/canvas/canvas-renderer.ts`
+- `apps/web/lib/canvas-store.ts`
+- `apps/web/pan-zoom.spec.ts`
 
 ## Definition of done
 - All acceptance checks green + evidence recorded.
 - `check-architecture` passes.
-- Evaluator score >= 4.0, no criterion at 1.
-- State + handoff updated, committed on `feat/F009-infinite-canvas`.
+- Evaluator score >= 4.0.
+- State + handoff updated, committed on `feat/F010-pan-and-zoom`.
 
 ---
 Signed off (Planner) before build: [x]

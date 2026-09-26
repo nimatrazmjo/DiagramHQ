@@ -3,10 +3,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ReactFlow,
+  ReactFlowProvider,
   Background,
   Controls,
   MiniMap,
   Panel,
+  useReactFlow,
   applyNodeChanges,
   applyEdgeChanges,
   type Node,
@@ -18,13 +20,19 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import type { CanvasEdge, CanvasNode } from '@diagramhq/domain';
-import { useCanvasStore } from '../../lib/canvas-store';
+import {
+  useCanvasStore,
+  MIN_ZOOM,
+  MAX_ZOOM,
+  DEFAULT_ZOOM,
+} from '../../lib/canvas-store';
 import { nodeTypes } from './custom-nodes';
 
 export interface InfiniteCanvasProps {
   initialNodes?: CanvasNode[];
   initialEdges?: CanvasEdge[];
   onNodeSelect?: (nodeId: string | null) => void;
+  isSpacePanning?: boolean;
   className?: string;
 }
 
@@ -54,19 +62,30 @@ function toFlowEdge(edge: CanvasEdge): Edge {
   };
 }
 
-/**
- * Interactive infinite canvas powered by React Flow (ADR-0002).
- * Model projections are rendered as nodes/edges, keeping transient
- * interaction state isolated in useCanvasStore without storing domain entities.
- */
-export function InfiniteCanvas({
+function isTextInput(el: Element | null): boolean {
+  if (!el) return false;
+  const tag = el.tagName.toLowerCase();
+  return (
+    tag === 'input' ||
+    tag === 'textarea' ||
+    tag === 'select' ||
+    (el as HTMLElement).isContentEditable
+  );
+}
+
+function InfiniteCanvasContent({
   initialNodes = [],
   initialEdges = [],
   onNodeSelect,
+  isSpacePanning: propIsSpacePanning,
   className = '',
 }: InfiniteCanvasProps): JSX.Element {
   const [nodes, setNodes] = useState<Node[]>(() => initialNodes.map(toFlowNode));
   const [edges, setEdges] = useState<Edge[]>(() => initialEdges.map(toFlowEdge));
+  const storeIsSpacePanning = useCanvasStore((s) => s.isSpacePanning);
+  const isSpacePanning = propIsSpacePanning ?? storeIsSpacePanning;
+  const currentZoom = useCanvasStore((s) => s.viewport.zoom);
+  const reactFlow = useReactFlow();
 
   useEffect(() => {
     setNodes(initialNodes.map(toFlowNode));
@@ -75,6 +94,33 @@ export function InfiniteCanvas({
   useEffect(() => {
     setEdges(initialEdges.map(toFlowEdge));
   }, [initialEdges]);
+
+  // Keyboard shortcut listener: Space for pan, 'F' for fit-to-content
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (isTextInput(document.activeElement)) return;
+
+      if (event.code === 'Space' && !event.repeat) {
+        useCanvasStore.getState().setIsSpacePanning(true);
+      } else if (event.key === 'f' || event.key === 'F') {
+        event.preventDefault();
+        reactFlow.fitView({ padding: 0.2, duration: 250 });
+      }
+    };
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (event.code === 'Space') {
+        useCanvasStore.getState().setIsSpacePanning(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [reactFlow]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes((nds) => applyNodeChanges(changes, nds));
@@ -115,10 +161,28 @@ export function InfiniteCanvas({
     useCanvasStore.getState().setHoveredNode(null);
   }, []);
 
+  const handleZoomIn = () => {
+    reactFlow.zoomIn({ duration: 200 });
+  };
+
+  const handleZoomOut = () => {
+    reactFlow.zoomOut({ duration: 200 });
+  };
+
+  const handleFitView = () => {
+    reactFlow.fitView({ padding: 0.2, duration: 250 });
+  };
+
+  const handleResetZoom = () => {
+    reactFlow.zoomTo(DEFAULT_ZOOM, { duration: 200 });
+  };
+
   return (
     <div
       data-testid="infinite-canvas-container"
-      className={`w-full h-full relative bg-slate-950 ${className}`}
+      className={`w-full h-full relative bg-slate-950 select-none ${
+        isSpacePanning ? 'cursor-grab active:cursor-grabbing' : ''
+      } ${className}`}
     >
       <ReactFlow
         nodes={nodes}
@@ -130,14 +194,25 @@ export function InfiniteCanvas({
         onMoveEnd={onMoveEnd}
         onNodeMouseEnter={onNodeMouseEnter}
         onNodeMouseLeave={onNodeMouseLeave}
+        minZoom={MIN_ZOOM}
+        maxZoom={MAX_ZOOM}
+        panActivationKeyCode="Space"
+        zoomOnScroll
+        zoomOnPinch
+        panOnScroll={false}
         fitView
       >
         <Background color="#334155" gap={20} size={1} />
-        <Controls className="bg-slate-800 border-slate-700 text-slate-200" />
+        <Controls
+          className="bg-slate-800 border-slate-700 text-slate-200"
+          showInteractive={false}
+        />
         <MiniMap
           className="bg-slate-900 border border-slate-800 rounded"
           nodeColor="#64748b"
         />
+
+        {/* Top-Left Canvas Badge */}
         <Panel position="top-left" className="m-3">
           <div
             data-testid="canvas-status-badge"
@@ -145,10 +220,76 @@ export function InfiniteCanvas({
           >
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span>Infinite Canvas — React Flow Renderer (ADR-0002)</span>
+            {isSpacePanning && (
+              <span
+                data-testid="pan-mode-indicator"
+                className="ml-2 px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px]"
+              >
+                PAN MODE (SPACE)
+              </span>
+            )}
+          </div>
+        </Panel>
+
+        {/* Top-Right Pan & Zoom Controls Toolbar */}
+        <Panel position="top-right" className="m-3">
+          <div
+            data-testid="pan-zoom-toolbar"
+            className="flex items-center gap-1 p-1 rounded-md bg-slate-900/90 border border-slate-700/80 shadow-md backdrop-blur-sm text-xs text-slate-200"
+          >
+            <button
+              type="button"
+              data-testid="zoom-out-btn"
+              onClick={handleZoomOut}
+              className="w-7 h-7 flex items-center justify-center rounded hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+              title="Zoom Out (-)"
+            >
+              −
+            </button>
+            <button
+              type="button"
+              data-testid="reset-zoom-btn"
+              onClick={handleResetZoom}
+              className="px-2 h-7 flex items-center justify-center rounded hover:bg-slate-800 font-mono text-xs text-slate-300 hover:text-white transition-colors"
+              title="Reset Zoom to 100%"
+            >
+              {Math.round(currentZoom * 100)}%
+            </button>
+            <button
+              type="button"
+              data-testid="zoom-in-btn"
+              onClick={handleZoomIn}
+              className="w-7 h-7 flex items-center justify-center rounded hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+              title="Zoom In (+)"
+            >
+              +
+            </button>
+            <div className="w-px h-4 bg-slate-700 mx-0.5" />
+            <button
+              type="button"
+              data-testid="fit-view-btn"
+              onClick={handleFitView}
+              className="px-2 h-7 flex items-center justify-center rounded bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-medium transition-colors"
+              title="Fit to content (F)"
+            >
+              Fit (F)
+            </button>
           </div>
         </Panel>
       </ReactFlow>
     </div>
+  );
+}
+
+/**
+ * Interactive infinite canvas powered by React Flow (ADR-0002).
+ * Wrapped in ReactFlowProvider to enable full viewport/zoom control.
+ */
+export function InfiniteCanvas(props: InfiniteCanvasProps): JSX.Element {
+  return (
+    <ReactFlowProvider>
+      <InfiniteCanvasContent {...props} />
+    </ReactFlowProvider>
   );
 }
 

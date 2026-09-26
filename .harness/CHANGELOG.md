@@ -2,6 +2,29 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F010 — Pan and Zoom
+
+Status: COMPLETE
+
+Implemented:
+- Web canvas pan & zoom controls (`apps/web`):
+  - Added wheel zoom clamping (`clampZoom`, `MIN_ZOOM` = 0.1, `MAX_ZOOM` = 4.0, `DEFAULT_ZOOM` = 1.0) and transient zoom action helpers (`zoomIn`, `zoomOut`, `resetZoom`) in `apps/web/lib/canvas-store.ts`.
+  - Configured React Flow canvas with `minZoom={0.1}`, `maxZoom={4.0}`, `zoomOnScroll={true}`, and `panActivationKeyCode="Space"`.
+  - Wrapped `InfiniteCanvas` with `ReactFlowProvider` and implemented `pan-zoom-toolbar` with Zoom In (+), Zoom Out (−), 100% Reset, and Fit to Content (F) buttons.
+  - Implemented keyboard shortcut handler for Space-bar pan activation (updating `isSpacePanning`, toggling grab/grabbing cursor, rendering `PAN MODE (SPACE)` status badge) and 'F' key fit-to-content triggering `fitView({ padding: 0.2, duration: 250 })`.
+  - Guarded keyboard shortcuts against text inputs (`input`, `textarea`, `select`, `contentEditable`).
+  - Added 10 automated unit and component tests in `apps/web/pan-zoom.spec.ts` covering store zoom clamping, space pan toggling, CanvasRenderer viewport contract, toolbar rendering, and pan mode indicators.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (235 tests: 34 domain, 71 web, 130 api)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean)
+- Evaluator Rubric Score: 5.0 / 5.0 -> PASS. Log: `.harness/reviews/F010-review.md`.
+
+---
+
 ## 2026-09-26 — F009 — Infinite Canvas
 
 Status: COMPLETE
