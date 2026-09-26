@@ -23,19 +23,36 @@ describe('AllExceptionsFilter', () => {
     expect(json).toHaveBeenCalledWith({ error: { code: 'BAD_REQUEST', message: 'bad input', details: undefined } });
   });
 
-  it('hides internals for unknown errors (500 INTERNAL, no leak)', () => {
+  it('hides internals for unknown errors (500 INTERNAL_SERVER_ERROR, no leak)', () => {
     const { host, status, json } = mockHost();
     new AllExceptionsFilter().catch(new Error('secret connection string'), host);
     expect(status).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
-    expect(json).toHaveBeenCalledWith({ error: { code: 'INTERNAL', message: 'Internal server error' } });
+    expect(json).toHaveBeenCalledWith({
+      error: { code: 'INTERNAL_SERVER_ERROR', message: 'Internal server error', details: undefined },
+    });
   });
 
-  it('maps a deliberately-thrown 5xx to a stable code, not the generic ERROR fallback', () => {
+  it('maps a deliberately-thrown 5xx to a stable code, but still masks its message', () => {
     const { host, status, json } = mockHost();
     new AllExceptionsFilter().catch(new ServiceUnavailableException('maintenance'), host);
     expect(status).toHaveBeenCalledWith(HttpStatus.SERVICE_UNAVAILABLE);
+    // The code is a closed, enumerable string -- safe to expose and useful
+    // for a client to branch on. The message isn't: the filter can't tell
+    // "deliberately authored, safe static string" apart from
+    // "accidentally-interpolated internal detail" from the status alone, so
+    // every 5xx message is masked, even one as innocuous as this.
     expect(json).toHaveBeenCalledWith({
-      error: { code: 'SERVICE_UNAVAILABLE', message: 'maintenance', details: undefined },
+      error: { code: 'SERVICE_UNAVAILABLE', message: 'Internal server error', details: undefined },
+    });
+  });
+
+  it('honors a legitimate status on a non-HttpException error (e.g. body-parser)', () => {
+    const { host, status, json } = mockHost();
+    const payloadTooLarge = Object.assign(new Error('request entity too large'), { status: 413, type: 'entity.too.large' });
+    new AllExceptionsFilter().catch(payloadTooLarge, host);
+    expect(status).toHaveBeenCalledWith(413);
+    expect(json).toHaveBeenCalledWith({
+      error: { code: 'PAYLOAD_TOO_LARGE', message: 'request entity too large', details: undefined },
     });
   });
 
