@@ -17,10 +17,25 @@ LEDGER="$REPO/.harness/RUNTIME-SWITCHES.md"
 SONNET_MODEL="${AGY_SONNET_MODEL:-claude-sonnet}"   # set to the exact id from: agy -> /model
 BOOTSTRAP="Resume DiagramHQ. Read .harness/PROJECT_STATE.md, then CURRENT_TASK.md, then follow .harness/AGENTS.md. Work only the one active feature. Do NOT restart from Phase 1."
 
+# Keep the Mac awake for as long as the relay runs (macOS only; no-op elsewhere).
+CAFFEINATE_PID=""
+if command -v caffeinate >/dev/null 2>&1; then
+  caffeinate -dimsu &
+  CAFFEINATE_PID=$!
+fi
+CLEANED_UP=""
+cleanup() {
+  [ -n "$CLEANED_UP" ] && return
+  CLEANED_UP=1
+  [ -n "$CAFFEINATE_PID" ] && kill "$CAFFEINATE_PID" 2>/dev/null
+  echo; echo "relay stopped."
+  exit 0
+}
+trap cleanup INT TERM HUP EXIT
+
 log() { printf -- '- %s — %s\n' "$(date -u +%FT%TZ)" "$1" >> "$LEDGER"; }
 
 turn="${1:-claude}"
-trap 'echo; echo "relay stopped."; exit 0' INT
 
 while true; do
   if [ "$turn" = "claude" ]; then
@@ -33,5 +48,5 @@ while true; do
     turn="claude"
   fi
   echo
-  read -r -p "Next runtime: '$turn'. Press Enter to switch, or Ctrl-C to stop... " _ || { echo; exit 0; }
+  read -r -p "Next runtime: '$turn'. Press Enter to switch, or Ctrl-C to stop... " _ || cleanup
 done
