@@ -1,0 +1,37 @@
+:root {
+  color-scheme: light dark;
+  --bg: #0b0d12;
+  --fg: #e6e8ee;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.shell {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 64px 24px;
+}
+
+h1 {
+  margin: 0 0 12px;
+  font-size: 2rem;
+}
+
+p {
+  line-height: 1.6;
+  opacity: 0.82;
+}

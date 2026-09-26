@@ -1,0 +1,7 @@
+{
+  "name": "@diagramhq/config",
+  "version": "0.0.0",
+  "private": true,
+  "main": "eslint-preset.js",
+  "files": ["eslint-preset.js"]
+}

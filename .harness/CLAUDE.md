@@ -35,14 +35,16 @@ The app does not exist yet. As you scaffold it (F001), keep this table current �
 
 | Action | Command |
 |---|---|
-| Install | `TBD (pnpm install)` |
-| Dev server | `TBD (pnpm dev)` |
-| Typecheck | `TBD (pnpm typecheck)` |
-| Lint | `TBD (pnpm lint)` |
-| Test | `TBD (pnpm test)` |
-| Verify baseline | see `scripts/SCRIPTS.md` → init |
-| Check boundaries | see `scripts/SCRIPTS.md` → check-architecture |
-| Progress % | see `scripts/SCRIPTS.md` → progress-counter |
+| Install | `pnpm install` |
+| Dev server | `pnpm dev` (all apps in parallel) |
+| Typecheck | `pnpm typecheck` |
+| Lint | `pnpm lint` |
+| Test | `pnpm test` |
+| Build | `pnpm build` |
+| Verify baseline | `./scripts/init.sh` (install + typecheck + lint + test) or `pnpm verify` |
+| Containers | `docker compose up --build` (or `make up`) |
+| Check boundaries | see `scripts/SCRIPTS.md` → check-architecture (implemented from F018) |
+| Progress % | see `scripts/SCRIPTS.md` → progress-counter (contract; manual for now) |
 
 ## Current target
 **Phase 01 — Foundation. Feature F001 — Project architecture** (monorepo scaffold + clean baseline). Details: `CURRENT_TASK.md`.
