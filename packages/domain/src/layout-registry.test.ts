@@ -48,4 +48,30 @@ describe('Layout-engine registry (F015, MODULES.md #6)', () => {
       expect(names).toContain(expected);
     }
   });
+
+  it('throws when an engine returns mismatched position count', () => {
+    const badEngine: LayoutEngine = {
+      // @ts-expect-error test-only engine name
+      name: 'count-mismatch-engine',
+      layout: () => [],
+    };
+    registerLayoutEngine(badEngine);
+    // @ts-expect-error test-only engine name
+    expect(() => applyLayout([{ id: 'a', position: { x: 0, y: 0 } }], [], 'count-mismatch-engine')).toThrow(
+      /returned 0 position\(s\) for 1 node\(s\)/,
+    );
+  });
+
+  it('throws when an engine returns invalid/non-finite position coordinates', () => {
+    const nanEngine: LayoutEngine = {
+      // @ts-expect-error test-only engine name
+      name: 'nan-coords-engine',
+      layout: () => [{ x: NaN, y: 0 }],
+    };
+    registerLayoutEngine(nanEngine);
+    // @ts-expect-error test-only engine name
+    expect(() => applyLayout([{ id: 'a', position: { x: 0, y: 0 } }], [], 'nan-coords-engine')).toThrow(
+      /returned invalid position at index 0/,
+    );
+  });
 });

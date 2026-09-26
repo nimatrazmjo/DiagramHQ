@@ -19,7 +19,7 @@ export function gridLayout(
   const spacingX = options?.spacingX ?? maxWidth + 60;
   const spacingY = options?.spacingY ?? maxHeight + 60;
   const columns =
-    options?.columns != null && options.columns > 0
+    options?.columns != null && Math.floor(options.columns) > 0
       ? Math.floor(options.columns)
       : Math.ceil(Math.sqrt(nodes.length));
 

@@ -23,7 +23,7 @@ Layout-engine registry (MODULES.md §6): pluggable, whole-graph auto-layout stra
 - `auto-layout.spec.ts`: command + component tests.
 
 ## Verification
-- TypeScript: PASS · Lint: PASS · Tests: PASS (358: 63 domain, 150 web, 145 api) · Build: PASS · check-architecture: PASS
+- TypeScript: PASS · Lint: PASS · Tests: PASS (366: 70 domain, 151 web, 145 api) · Build: PASS · check-architecture: PASS
 - Evidence: `.harness/CHANGELOG.md` — "2026-09-26 — F015 — Auto-layout"
 
 ## Owner

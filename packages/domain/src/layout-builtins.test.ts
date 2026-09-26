@@ -90,6 +90,18 @@ describe('gridLayout', () => {
       { x: 0, y: 50 },
     ]);
   });
+
+  it('falls back to default columns when columns is fractional and < 1, avoiding NaN/Infinity', () => {
+    const nodes: LayoutNode[] = [
+      { id: 'a', position: { x: 0, y: 0 } },
+      { id: 'b', position: { x: 0, y: 0 } },
+    ];
+    const result = gridLayout(nodes, [], { columns: 0.5 });
+    expect(Number.isFinite(result[0]!.x)).toBe(true);
+    expect(Number.isFinite(result[0]!.y)).toBe(true);
+    expect(Number.isFinite(result[1]!.x)).toBe(true);
+    expect(Number.isFinite(result[1]!.y)).toBe(true);
+  });
 });
 
 describe('computeLayers', () => {
@@ -229,5 +241,13 @@ describe('forceDirectedLayout', () => {
     // heavily overlapping, forcing the resolution pass to do real work.
     const positions = forceDirectedLayout(nodes, [], { spacingX: 10 });
     assertNoOverlap(nodes, positions);
+  });
+
+  it('returns rounded integer coordinates', () => {
+    const positions = forceDirectedLayout(sampleNodes, sampleEdges);
+    for (const p of positions) {
+      expect(Number.isInteger(p.x)).toBe(true);
+      expect(Number.isInteger(p.y)).toBe(true);
+    }
   });
 });

@@ -81,5 +81,13 @@ export function applyLayout(
       `Layout engine "${engineName}" returned ${positions.length} position(s) for ${nodes.length} node(s).`,
     );
   }
+  for (let i = 0; i < positions.length; i++) {
+    const pos = positions[i];
+    if (!pos || !Number.isFinite(pos.x) || !Number.isFinite(pos.y)) {
+      throw new Error(
+        `Layout engine "${engineName}" returned invalid position at index ${i}: ${JSON.stringify(pos)}`,
+      );
+    }
+  }
   return positions;
 }

@@ -24,11 +24,12 @@ Implemented:
 Verification:
 - TypeScript: PASS (`pnpm typecheck` clean across monorepo)
 - Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
-- Tests: PASS (362 tests: 66 domain, 151 web, 145 api)
+- Tests: PASS (366 tests: 70 domain, 151 web, 145 api)
 - Architecture: PASS (`./scripts/check-architecture.sh` clean)
 - Build: PASS (`pnpm build` clean — domain, api, web)
 - PR Review, round 1: `code-review` skill found 1 high (align and apply-layout used independent busy-guards, so the two whole-graph mutations could race and clobber each other) + 2 medium (`ApplyLayoutCommand` recomputed the layout a second time on persist, doubling cost for `forceDirected`; `resolveOverlaps`' fixed pass count wasn't guaranteed to converge for larger graphs) + 1 low (`LayoutNode` duplicated `AlignableNode`'s shape); all fixed in a follow-up commit.
-- PR Review, round 2: found 1 high (the round-1 guard had no try/catch around its synchronous compute, so a throw could brick both toolbars permanently), 2 medium (rollback could clobber an unrelated successful edit made mid-persist; `computeLayers` collapsed nodes downstream of a cycle to the same fallback layer as the cycle itself), 4 low (missing engine-output length validation, a `columns: 0` footgun in grid layout, `LayoutMenu`'s option buttons not disabled, duplicated persist logic across commands) — all fixed with a proper DFS back-edge-removal rewrite of `computeLayers` plus the rest; 2 more low findings addressed via documentation (softened an overclaiming docstring; clarified `MODULES.md`'s built-in-location rule rather than moving correctly-layered pure-math code). Verdict: CLEAN. Full log: `.harness/reviews/F015-review.md`.
+- PR Review, round 2: found 1 high (the round-1 guard had no try/catch around its synchronous compute, so a throw could brick both toolbars permanently), 2 medium (rollback could clobber an unrelated successful edit made mid-persist; `computeLayers` collapsed nodes downstream of a cycle to the same fallback layer as the cycle itself), 4 low (missing engine-output length validation, a `columns: 0` footgun in grid layout, `LayoutMenu`'s option buttons not disabled, duplicated persist logic across commands) — all fixed with a proper DFS back-edge-removal rewrite of `computeLayers` plus the rest; 2 more low findings addressed via documentation (softened an overclaiming docstring; clarified `MODULES.md`'s built-in-location rule rather than moving correctly-layered pure-math code).
+- PR Review, round 3: found 1 medium (gridLayout fractional column counts in (0, 1) producing NaN/Infinity) + 3 low (applyLayout coordinate validation, forceDirected integer coordinate rounding, LayoutMenu outside pointerdown/Escape dismissal); all fixed with regression tests. Verdict: CLEAN. Full log: `.harness/reviews/F015-review.md`.
 - PR: https://github.com/nimatrazmjo/DiagramHQ/pull/16
 
 ## 2026-09-26 — F014 — Alignment

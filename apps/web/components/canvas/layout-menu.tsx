@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { LayoutEngineName } from '@diagramhq/domain';
 
 export interface LayoutMenuProps {
@@ -28,6 +28,7 @@ const engineLabels: Partial<Record<LayoutEngineName, string>> = {
  */
 export function LayoutMenu({ engines, onApply, disabled = false }: LayoutMenuProps): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // Don't leave a dropdown full of disabled-looking-enabled options open
   // once an operation starts persisting.
@@ -35,8 +36,29 @@ export function LayoutMenu({ engines, onApply, disabled = false }: LayoutMenuPro
     if (disabled) setIsOpen(false);
   }, [disabled]);
 
+  // Dismiss dropdown on outside clicks or Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (event: PointerEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
+
   return (
-    <div data-testid="layout-menu" className="relative">
+    <div ref={menuRef} data-testid="layout-menu" className="relative">
       <button
         type="button"
         data-testid="layout-menu-toggle"

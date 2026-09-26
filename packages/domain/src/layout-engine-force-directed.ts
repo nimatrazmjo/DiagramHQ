@@ -95,7 +95,7 @@ export function forceDirectedLayout(
 
   resolveOverlaps(pos, nodes, maxWidth, maxHeight, margin);
 
-  return pos;
+  return pos.map((p) => ({ x: Math.round(p.x), y: Math.round(p.y) }));
 }
 
 function resolveOverlaps(

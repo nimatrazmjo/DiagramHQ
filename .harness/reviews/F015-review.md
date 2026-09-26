@@ -65,4 +65,31 @@ Re-ran `/code-review 16 --level high` against the round-1 fix commit. 10 finding
 - Build: PASS
 - Noted in passing: `apps/api`'s `organizations.e2e.spec.ts`/`workspaces.e2e.spec.ts` failed twice with different symptoms (assertion mismatches, then timeouts) under `pnpm test`'s parallel workspace run, then passed cleanly 145/145 on a solo re-run — pre-existing DB-contention flakiness in test infra unrelated to this PR (no `apps/api` files touched by this branch). Not fixed here; out of scope for F015.
 
+**Verdict: CLEAN after round-2 fixes** — but round-3 re-review (below) surfaced edge cases in fractional grid options, coordinate rounding consistency, registry validation, and menu dismissal.
+
+## Round 3 — Findings
+
+Re-ran code review (`/code-review 16 --level high`) against the round-2 fix commit. 4 findings:
+
+1. **[CONFIRMED, medium]** `gridLayout`'s columns guard (`options?.columns != null && options.columns > 0 ? Math.floor(options.columns) : ...`) permitted fractional values in `(0, 1)` (e.g. `columns: 0.5`) to pass through the `> 0` check, which `Math.floor()` then truncated to `0` — producing division/modulo by zero and `NaN`/`Infinity` coordinates.
+2. **[CONFIRMED, low]** `applyLayout()` in `layout-registry.ts` checked position length (`positions.length === nodes.length`) but did not validate coordinate values; an engine returning `NaN`, `Infinity`, or `undefined` within an element would silently pass through into local UI state.
+3. **[CONFIRMED, low]** `forceDirectedLayout` returned raw unrounded floating-point coordinates from continuous physics simulation (e.g. `124.91823719827391`), unlike all other engines (`grid`, `layered`, `radial`) which return integer pixel coordinates. Causes subpixel antialiasing blurring and persists unrounded floats to the database.
+4. **[CONFIRMED, low]** `LayoutMenu` dropdown remained open indefinitely on outside canvas clicks and Escape key presses; user had to re-click the toggle or select an option to dismiss it.
+
+### Fixes applied (same branch, third follow-up commit)
+
+- `gridLayout`: updated the columns guard to `Math.floor(options.columns) > 0`, safely falling back to the computed default for any fractional value less than 1. Added regression test asserting finite coordinates for `columns: 0.5`. Fixes #1.
+- `applyLayout()`: added validation asserting that every returned position contains finite numbers (`Number.isFinite(pos.x) && Number.isFinite(pos.y)`). Added regression tests for length mismatch and non-finite coordinates. Fixes #2.
+- `forceDirectedLayout`: rounded final positions via `Math.round(p.x)`, `Math.round(p.y)`. Because margin is 20px, rounding by at most 0.5px does not re-introduce bbox overlap while ensuring crisp rendering and clean serialization. Added regression test asserting integer coordinates. Fixes #3.
+- `LayoutMenu`: added outside pointerdown and Escape key event listeners to dismiss the dropdown cleanly when interacting elsewhere on the canvas. Fixes #4.
+
+### Re-verification after round-3 fixes
+
+- TypeScript: PASS
+- Lint: PASS
+- Tests: PASS (366 tests: 70 domain, 151 web, 145 api) — includes 4 new regression tests
+- Architecture: PASS
+- Build: PASS
+
 **Verdict: CLEAN.**
+
