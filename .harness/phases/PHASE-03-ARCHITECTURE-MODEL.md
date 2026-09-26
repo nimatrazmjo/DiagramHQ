@@ -107,7 +107,7 @@ Test: person CRUD + render.
 
 ### F023 — System
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Object type: system.
 

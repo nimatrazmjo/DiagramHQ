@@ -2,6 +2,30 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F023 — System
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `system.ts`: System domain model, `SystemMetadata` interface (external flag, domain, systemType, critical), `SystemNodeData` interface, helper `createSystem`, predicates `isSystem`, `isExternalSystem`, `isInternalSystem`, and canvas projection `projectSystemToCanvas`.
+  - `system.test.ts`: 5 unit tests verifying internal vs external system classification, metadata properties, and canvas projection.
+  - `c4-context.ts`: re-exported `isExternalSystem` and `isInternalSystem` from `./system` to eliminate duplication.
+- API layer (`apps/api/src/architectures/`):
+  - `system.e2e.spec.ts`: 6 E2E tests verifying creation of internal System (domain, systemType, critical), external System (third-party SaaS integration), system-to-system connections, metadata PATCH update, model snapshot reload identity, and cascade deletion.
+- Web client layer (`apps/web/`):
+  - `SystemNode` component (`components/canvas/system-node.tsx`) rendering internal systems (solid blue theme, domain badge `[Domain: ...]`, system type tag `[Type: ...]`, criticality badge `[Tier 0]`, container drill-down button) vs external systems (dashed slate border, external SaaS badge, no drill-down button), and 4-way handles.
+  - Registration in `components/canvas/custom-nodes.tsx` for `system` and `default`.
+  - `system.spec.ts`: 6 tests covering SSR node rendering, external system styling, drill-down callback invocation, canvas mounting with `InfiniteCanvas`, and `ArchitectureModelClient` reload identity.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (all monorepo tests passing: 198 API tests, 105 domain tests, 228 web tests. Total: 531 tests)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean — domain, api, web)
+- PR Review: Round 1 clean across all 8 angles. Verdict: CLEAN. Full log: `.harness/reviews/F023-review.md`.
+
 ## 2026-09-26 — F022 — Person
 
 Status: COMPLETE
