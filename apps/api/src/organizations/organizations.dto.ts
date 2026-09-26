@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import { IsIn, IsNotEmpty, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import type { MemberRole } from '@diagramhq/domain';
 
 export class CreateOrganizationDto {
   @IsString()
@@ -32,4 +33,10 @@ export class UpdateOrganizationDto {
     message: 'slug must contain only lowercase alphanumeric characters and hyphens',
   })
   slug?: string;
+}
+
+export class UpdateMemberRoleDto {
+  @IsNotEmpty()
+  @IsIn(['admin', 'editor', 'viewer'])
+  role!: MemberRole;
 }

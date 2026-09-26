@@ -89,7 +89,7 @@ Test: integration: workspace CRUD scoped to org.
 
 ### F005 — User roles
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Basic role model (owner/editor/viewer here; full RBAC is F104).
 

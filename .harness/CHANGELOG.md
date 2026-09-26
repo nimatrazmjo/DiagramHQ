@@ -2,6 +2,36 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F005 — User Roles
+
+Status: COMPLETE
+
+Implemented:
+- Domain invariants (`packages/domain`):
+  - Pure role gating functions in `invariants.ts`: `canWrite`, `canAdmin`, `canDeleteOrg`, `assertRoleCanWrite`, and `RolePermissionDeniedError`.
+  - Unit tests verifying viewers cannot write and editors can write (`invariants.test.ts`).
+- API role gating & management (`apps/api`):
+  - `RolesGuard` and `@RequireRoles` decorator (`apps/api/src/roles/`).
+  - `PATCH /organizations/:id/members/:memberId` endpoint with `UpdateMemberRoleDto` and `updateMemberRole` service logic.
+  - Owner demotion protection and role privilege hierarchy.
+  - Unit tests in `roles.guard.spec.ts` (7 tests).
+  - Integration tests in `roles.e2e.spec.ts` (8 tests) against live PostgreSQL testing write gating, workspace creation denial for viewers, editor write permissions, and role promotion transitions.
+- Web application (`apps/web`):
+  - `RoleBadge` component and `canRoleWrite` helper.
+  - Server action `updateMemberRoleAction`.
+  - Read-only UI gating in `CreateWorkspaceForm` for viewers.
+  - Unit tests in `roles.spec.ts` (6 tests).
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (176 tests: 23 domain, 23 web, 130 api)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean)
+- Evaluator Rubric Score: 5.0 / 5.0 -> PASS. Log: `.harness/reviews/F005-review.md`.
+
+---
+
 ## 2026-09-26 — F004 — Workspaces
 
 Status: COMPLETE

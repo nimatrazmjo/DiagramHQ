@@ -1,4 +1,30 @@
 import type { ArchitectureId, ObjectId, OrgId, VersionId } from './ids';
+import type { MemberRole } from './types';
+
+export class RolePermissionDeniedError extends Error {
+  constructor(message = 'Role permission denied') {
+    super(message);
+    this.name = 'RolePermissionDeniedError';
+  }
+}
+
+export function canWrite(role: MemberRole): boolean {
+  return role === 'owner' || role === 'admin' || role === 'editor';
+}
+
+export function canAdmin(role: MemberRole): boolean {
+  return role === 'owner' || role === 'admin';
+}
+
+export function canDeleteOrg(role: MemberRole): boolean {
+  return role === 'owner';
+}
+
+export function assertRoleCanWrite(role: MemberRole): void {
+  if (!canWrite(role)) {
+    throw new RolePermissionDeniedError('Viewer role does not have write permissions');
+  }
+}
 
 export class InvariantViolationError extends Error {
   constructor(

@@ -1,9 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { createId } from './ids';
 import {
+  assertRoleCanWrite,
   assertTenantAccess,
+  canAdmin,
   canConnect,
+  canDeleteOrg,
+  canWrite,
   hasParentCycle,
+  RolePermissionDeniedError,
   TenantAccessDeniedError,
   validateConnection,
   validateViewObject,
@@ -129,6 +134,59 @@ describe('Domain Invariants', () => {
       const org1 = createId('org');
       const org2 = createId('org');
       expect(() => assertTenantAccess(org1, org2)).toThrow(TenantAccessDeniedError);
+    });
+  });
+
+  describe('Role Invariants', () => {
+    describe('viewer', () => {
+      it('cannot write', () => {
+        expect(canWrite('viewer')).toBe(false);
+      });
+
+      it('assertRoleCanWrite throws RolePermissionDeniedError', () => {
+        expect(() => assertRoleCanWrite('viewer')).toThrow(RolePermissionDeniedError);
+        expect(() => assertRoleCanWrite('viewer')).toThrow(
+          'Viewer role does not have write permissions',
+        );
+      });
+
+      it('cannot admin or delete org', () => {
+        expect(canAdmin('viewer')).toBe(false);
+        expect(canDeleteOrg('viewer')).toBe(false);
+      });
+    });
+
+    describe('editor', () => {
+      it('can write and assertRoleCanWrite does not throw', () => {
+        expect(canWrite('editor')).toBe(true);
+        expect(() => assertRoleCanWrite('editor')).not.toThrow();
+      });
+
+      it('cannot admin or delete org', () => {
+        expect(canAdmin('editor')).toBe(false);
+        expect(canDeleteOrg('editor')).toBe(false);
+      });
+    });
+
+    describe('admin', () => {
+      it('can write and admin', () => {
+        expect(canWrite('admin')).toBe(true);
+        expect(canAdmin('admin')).toBe(true);
+        expect(() => assertRoleCanWrite('admin')).not.toThrow();
+      });
+
+      it('cannot delete org', () => {
+        expect(canDeleteOrg('admin')).toBe(false);
+      });
+    });
+
+    describe('owner', () => {
+      it('can write, admin, and delete org', () => {
+        expect(canWrite('owner')).toBe(true);
+        expect(canAdmin('owner')).toBe(true);
+        expect(canDeleteOrg('owner')).toBe(true);
+        expect(() => assertRoleCanWrite('owner')).not.toThrow();
+      });
     });
   });
 });

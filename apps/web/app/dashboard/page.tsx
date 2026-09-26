@@ -5,6 +5,7 @@ import { fetchUserOrganizations } from './actions';
 import { fetchOrgWorkspaces } from './workspace-actions';
 import { WorkspaceList } from './workspace-list';
 import { CreateWorkspaceForm } from './create-workspace-form';
+import { RoleBadge } from './role-badge';
 
 export const metadata = {
   title: 'Dashboard — DiagramHQ',
@@ -79,9 +80,7 @@ export default async function DashboardPage(): Promise<JSX.Element> {
                         <span>ID: <code className="text-gray-400">{org.id}</code></span>
                       </div>
                     </div>
-                    <span className="text-xs font-medium px-2.5 py-1 rounded bg-blue-100 text-blue-800 uppercase tracking-wide">
-                      {org.role}
-                    </span>
+                    <RoleBadge role={org.role} />
                   </div>
 
                   <div>
@@ -96,7 +95,7 @@ export default async function DashboardPage(): Promise<JSX.Element> {
                       + Create Workspace
                     </summary>
                     <div className="mt-3 p-3 bg-white border rounded">
-                      <CreateWorkspaceForm orgId={org.id} />
+                      <CreateWorkspaceForm orgId={org.id} userRole={org.role} />
                     </div>
                   </details>
                 </div>

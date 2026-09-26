@@ -13,35 +13,35 @@ Phase Name: Foundation
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F004
-Feature Name: Workspaces
+Feature ID: F005
+Feature Name: User roles
 Status: COMPLETE (ready for PR review loop)
 
 ## Overall Progress
 Total Features: 135
-Completed: 6
+Completed: 7
 In Progress: 0
 Blocked: 0
-Not Started: 129
-Progress: 4.4%
+Not Started: 128
+Progress: 5.2%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F004 — Workspaces. Workspace entity under an organization, organization scoping, architecture containment, workspace CRUD, and strict tenant isolation. API `WorkspacesModule` (`POST/GET /organizations/:orgId/workspaces`, `GET/PATCH/DELETE /workspaces/:id`, `GET /workspaces/:id/architectures`), per-org unique slug handling, role-based mutation guards, architecture containment queries, and Next.js web dashboard integration. Verified: 147 tests green across workspace (15 domain, 17 web, 115 api), typecheck/lint/build/check-architecture clean. Evaluator score 5.0/5.0. Log: `.harness/reviews/F004-review.md`.
+F005 — User roles. Basic role model (owner, admin, editor, viewer), write gating, and member role management. Domain invariants (`canWrite`, `canAdmin`, `assertRoleCanWrite`), API `RolesGuard`, `@RequireRoles` decorator, `PATCH /organizations/:id/members/:memberId` endpoint, and Next.js web dashboard integration. Verified: 176 tests green across workspace (23 domain, 23 web, 130 api), typecheck/lint/build/check-architecture clean. Evaluator score 5.0/5.0. Log: `.harness/reviews/F005-review.md`.
 
-Prior: F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
+Prior: F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
 
 ## Current Work
-F004 PR review loop in progress.
+F005 PR review loop in progress.
 
 ## Next Task
-F005 — User roles (or F008 — Application shell). See `CURRENT_TASK.md`.
+F008 — Application shell. See `CURRENT_TASK.md`.
 
 ## Last Verified
-F004 @ feat/F004-workspaces — pnpm verify (typecheck / lint / test x147 / check-architecture) + pnpm build all green. PostgreSQL 16 container healthy.
+F005 @ feat/F005-user-roles — pnpm verify (typecheck / lint / test x176 / check-architecture) + pnpm build all green. PostgreSQL 16 container healthy.
 
 ## Current Git Commit
-Branch `feat/F004-workspaces`. Working tree clean.
+Branch `feat/F005-user-roles`. Working tree clean.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.

@@ -11,7 +11,11 @@ import {
 import type { AuthTokenPayload } from '@diagramhq/domain';
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
-import { CreateOrganizationDto, UpdateOrganizationDto } from './organizations.dto';
+import {
+  CreateOrganizationDto,
+  UpdateMemberRoleDto,
+  UpdateOrganizationDto,
+} from './organizations.dto';
 import { OrganizationsService, type OrganizationWithRole } from './organizations.service';
 
 @UseGuards(AuthGuard)
@@ -70,5 +74,30 @@ export class OrganizationsController {
   ): Promise<{ members: Array<{ id: string; userId: string; role: string; createdAt: Date }> }> {
     const members = await this.organizationsService.listMembers(user.sub, id);
     return { members };
+  }
+
+  @Patch(':id/members/:memberId')
+  async updateMemberRole(
+    @CurrentUser() user: AuthTokenPayload,
+    @Param('id') orgId: string,
+    @Param('memberId') memberId: string,
+    @Body() body: UpdateMemberRoleDto,
+  ): Promise<{
+    member: {
+      id: string;
+      orgId: string;
+      userId: string;
+      role: string;
+      createdAt: Date;
+      updatedAt: Date;
+    };
+  }> {
+    const member = await this.organizationsService.updateMemberRole(
+      user.sub,
+      orgId,
+      memberId,
+      body.role,
+    );
+    return { member };
   }
 }
