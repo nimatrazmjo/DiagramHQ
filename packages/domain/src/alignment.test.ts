@@ -86,6 +86,18 @@ describe('Alignment Domain Functions (F014)', () => {
       expect(result.map((p) => p.x)).toEqual([0, 50, 300]);
     });
 
+    it('does not throw on very large selections (avoids Math.min/max argument-spread limits)', () => {
+      // Spreading >~65536 args into Math.min/Math.max throws a RangeError in
+      // most JS engines; alignNodes must reduce instead of spreading.
+      const big: AlignableNode[] = Array.from({ length: 70_000 }, (_, i) => ({
+        id: `n${i}`,
+        position: { x: i, y: 0 },
+        width: 10,
+      }));
+      expect(() => alignNodes(big, 'right')).not.toThrow();
+      expect(() => alignNodes(big, 'left')).not.toThrow();
+    });
+
     it('treats missing width/height as zero-dimension', () => {
       const noDims: AlignableNode[] = [
         { id: 'a', position: { x: 0, y: 0 } },

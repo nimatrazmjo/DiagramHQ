@@ -24,11 +24,12 @@ Implemented:
 Verification:
 - TypeScript: PASS (`pnpm typecheck` clean across monorepo)
 - Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
-- Tests: PASS (331 tests: 48 domain, 138 web, 145 api)
+- Tests: PASS (333 tests: 49 domain, 139 web, 145 api)
 - Architecture: PASS (`./scripts/check-architecture.sh` clean)
 - Build: PASS (`pnpm build` clean — domain, api, web)
 - PR Review, round 1: `code-review` skill found 1 high + 2 medium + 2 low findings (React Flow `measured` vs top-level `width`/`height`, an async optimistic-update race, a missing `.catch`, duplicated handlers, O(n·m) lookups); all fixed in a follow-up commit.
-- PR Review, round 2: re-review of the round-1 fix found 1 high (per-node snap-to-grid distorting group-drag relative offsets — fixed with a shared-delta `snapGroupPositions` helper), 1 medium (no rollback on persist failure — fixed), 1 low (reintroduced O(n·m) lookup — fixed), 1 low deferred with rationale (closure-staleness on back-to-back clicks, pre-existing pattern shared with F012/F013 handlers, no realistic single-user trigger). Verdict: CLEAN. Log: `.harness/reviews/F014-review.md`.
+- PR Review, round 2: found 1 high (per-node snap-to-grid distorting group-drag relative offsets — fixed with a shared-delta `snapGroupPositions` helper), 1 medium (no rollback on persist failure — fixed), 1 low (reintroduced O(n·m) lookup — fixed), 1 low deferred with rationale (closure-staleness on back-to-back clicks, pre-existing pattern, no realistic single-user trigger).
+- PR Review, round 3: 1 finding investigated and not reproduced (single-node snap does correctly update, per direct code walkthrough), 2 medium fixed (group-drag move had no failure rollback unlike the align path added in the same diff; overlapping align/distribute calls could stomp each other's rollback — fixed with an in-flight guard that also disables the toolbar buttons), 1 low fixed (`Math.min`/`Math.max` argument-spread would `RangeError` on very large selections — replaced with `reduce`). Verdict: CLEAN. Full history: `.harness/reviews/F014-review.md`.
 - PR: https://github.com/nimatrazmjo/DiagramHQ/pull/15
 
 ## 2026-09-26 — F013 — Multi-select

@@ -55,3 +55,30 @@ Re-ran `/code-review 15 --level high` against the round-1 fix commit. 4 new find
 - Build: PASS
 
 **Verdict: CLEAN.** 3 of 4 round-2 findings fixed; #3 explicitly deferred with rationale (pre-existing pattern, no realistic trigger, risky speculative fix). No further PR round required.
+
+## Round 3 — Findings
+
+Re-ran `/code-review 15 --level high` against the round-2 fix commit.
+
+1. **[NOT REPRODUCED]** "Single-node drag with snap-to-grid never updates the visible node position to match it, sits off-grid all session." Investigated directly against `createNodeDragStopHandler` (`infinite-canvas.tsx`): `onPositionChange(node.id, newPosition)` is called with the **snapped** `newPosition` (line 98-100, 119-121) and the call site's `onPositionChange` does `setNodes(...)` with that snapped value (line 250-254). The node does end up snapped, contrary to the finding's literal claim. What *is* real: this update only lands after `await defaultCommandDispatcher.dispatch(command)` resolves (a persist round-trip), so there's a brief visual lag from raw to snapped position, and if that promise *rejects* the function throws before reaching `onPositionChange` — but that failure-handling gap predates F014 (this code path existed for plain moves since F012; F014 only added the two optional snap params) and is out of this feature's scope. Recorded here rather than silently dropped.
+2. **[CONFIRMED, medium]** `handleSelectionDragStop` (group drag, touched by this diff to add snap-to-grid) dispatches with no `.catch`/rollback, unlike the align path added right below it in the same diff — an inconsistency within the PR's own diff.
+3. **[CONFIRMED, medium]** `dispatchAlignOperation`'s failure-rollback (added in round 2) could stomp a second, still-in-flight or already-succeeded align/distribute if two operations overlapped, since each capture s its own "previous positions" snapshot independently.
+4. **[CONFIRMED, low]** `alignNodes`'s `left`/`right`/`top`/`bottom` branches used `Math.min(...arr)`/`Math.max(...arr)`, which throws `RangeError` past ~65k-125k spread arguments (engine-dependent) — a latent crash for a very large multi-select.
+
+### Fixes applied (same branch, third follow-up commit)
+
+- `handleSelectionDragStop` now has the same `.catch` + revert-to-`prevPosition` pattern as `dispatchAlignOperation`. Fixes #2.
+- Added an `isAligningRef`/`isAligning` guard: `dispatchAlignOperation` no-ops while a previous align/distribute is still persisting (ref checked synchronously, so no same-tick race), and the toolbar's align/distribute buttons are visually disabled during that window (`AlignmentToolbar` gained a `disabled` prop). This also happens to close round 2's deferred finding #3 (closure staleness on back-to-back clicks) for the align/distribute path specifically. Fixes #3.
+- `packages/domain/src/alignment.ts`: replaced the four `Math.min(...)`/`Math.max(...)` spreads with `reduce`-based `minOf`/`maxOf` helpers. Fixes #4.
+- #1 recorded as investigated/not reproduced, with the exact code path cited above.
+- Added regression tests: `alignNodes` on a 70,000-node selection (`packages/domain/src/alignment.test.ts`) for #4; `AlignmentToolbar`'s `disabled` prop disabling align+distribute but not the snap toggle (`apps/web/alignment.spec.ts`) for #3's UI half. 49 domain tests (was 48), 139 web tests (was 138).
+
+### Re-verification after round-3 fixes
+
+- TypeScript: PASS
+- Lint: PASS
+- Tests: PASS (333 tests: 49 domain, 139 web, 145 api)
+- Architecture: PASS
+- Build: PASS
+
+**Verdict: CLEAN.** All actionable round-3 findings fixed; #1 investigated and not reproduced (documented); round-2's #3 remains deferred for the group-drag path only (align/distribute path is now guarded). No further PR round required.

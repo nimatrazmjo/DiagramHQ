@@ -263,6 +263,25 @@ describe('AlignmentToolbar', () => {
     expect(html).toMatch(/data-testid="distribute-vertical-btn"[^>]*disabled/);
   });
 
+  it('disables align buttons (not the snap toggle) while `disabled` is set', () => {
+    const html = renderToString(
+      React.createElement(AlignmentToolbar, {
+        onAlign: noop,
+        onDistribute: noop,
+        canDistribute: true,
+        disabled: true,
+        snapEnabled: false,
+        onToggleSnap: noop,
+      }),
+    );
+    for (const axis of ['left', 'right', 'top', 'bottom', 'centerH', 'centerV']) {
+      expect(html).toMatch(new RegExp(`data-testid="align-${axis}-btn"[^>]*disabled`));
+    }
+    expect(html).toMatch(/data-testid="distribute-horizontal-btn"[^>]*disabled/);
+    expect(html).toMatch(/data-testid="distribute-vertical-btn"[^>]*disabled/);
+    expect(html).not.toMatch(/data-testid="snap-to-grid-btn"[^>]*disabled/);
+  });
+
   it('reflects the snap-enabled state visually', () => {
     const enabledHtml = renderToString(
       React.createElement(AlignmentToolbar, {

@@ -1,6 +1,6 @@
 # CURRENT TASK: F014 — Alignment
 
-## Status: COMPLETE (pending PR review loop)
+## Status: COMPLETE
 
 ## Feature
 **F014 — Alignment Tools**
@@ -29,8 +29,9 @@ Provides snapping and layout-alignment operations for selected canvas objects:
 - `alignment.spec.ts`: Component + command tests
 
 ## Verification
-- TypeScript: PASS · Lint: PASS · Tests: PASS (324: 48 domain, 131 web, 145 api) · Build: PASS · check-architecture: PASS
-- Evidence: `.harness/CHANGELOG.md` — "2026-09-26 — F014 — Alignment"
+- TypeScript: PASS · Lint: PASS · Tests: PASS (333: 49 domain, 139 web, 145 api) · Build: PASS · check-architecture: PASS
+- PR #15, 3 review rounds, verdict CLEAN.
+- Evidence: `.harness/CHANGELOG.md` — "2026-09-26 — F014 — Alignment"; `.harness/reviews/F014-PR.md`, `.harness/reviews/F014-review.md`.
 
 ## Owner
 Control plane (this agent)
@@ -39,7 +40,7 @@ Control plane (this agent)
 2026-09-26
 
 ## Completed
-2026-09-26 — implementation + local verification done. Next: push branch, open PR, run code-review skill, fix findings, then move to F015 per `loops/pr-review-loop.md`.
+2026-09-26 — implementation, local verification, and PR #15 review loop (3 rounds, CLEAN) all done. PR open awaiting merge; branch not yet merged to `main`.
 
 ## Next Task
-F015 — Auto-layout (not started).
+F015 — Auto-layout (not started). Per `loops/pr-review-loop.md`, do not start it until PR #15 is merged.

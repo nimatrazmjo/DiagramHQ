@@ -36,6 +36,14 @@ export function snapToGrid(
   return { x: snap(position.x), y: snap(position.y) };
 }
 
+function minOf(values: number[]): number {
+  return values.reduce((a, b) => (b < a ? b : a));
+}
+
+function maxOf(values: number[]): number {
+  return values.reduce((a, b) => (b > a ? b : a));
+}
+
 // ----------------------------------------------------------------
 // alignNodes
 // ----------------------------------------------------------------
@@ -64,13 +72,13 @@ export function alignNodes(
 
   switch (axis) {
     case 'left': {
-      const targetX = Math.min(...nodes.map((n) => n.position.x));
+      const targetX = minOf(nodes.map((n) => n.position.x));
       return nodes.map((n) => ({ x: targetX, y: n.position.y }));
     }
 
     case 'right': {
-      const targetRight = Math.max(
-        ...nodes.map((n, i) => n.position.x + (ws[i] ?? 0)),
+      const targetRight = maxOf(
+        nodes.map((n, i) => n.position.x + (ws[i] ?? 0)),
       );
       return nodes.map((n, i) => ({
         x: targetRight - (ws[i] ?? 0),
@@ -79,13 +87,13 @@ export function alignNodes(
     }
 
     case 'top': {
-      const targetY = Math.min(...nodes.map((n) => n.position.y));
+      const targetY = minOf(nodes.map((n) => n.position.y));
       return nodes.map((n) => ({ x: n.position.x, y: targetY }));
     }
 
     case 'bottom': {
-      const targetBottom = Math.max(
-        ...nodes.map((n, i) => n.position.y + (hs[i] ?? 0)),
+      const targetBottom = maxOf(
+        nodes.map((n, i) => n.position.y + (hs[i] ?? 0)),
       );
       return nodes.map((n, i) => ({
         x: n.position.x,

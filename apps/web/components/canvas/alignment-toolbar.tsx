@@ -7,6 +7,8 @@ export interface AlignmentToolbarProps {
   onAlign: (axis: AlignAxis) => void;
   onDistribute: (axis: 'horizontal' | 'vertical') => void;
   canDistribute: boolean;
+  /** Disables the align + distribute buttons, e.g. while a previous op is still persisting. */
+  disabled?: boolean;
   snapEnabled: boolean;
   onToggleSnap: () => void;
 }
@@ -28,6 +30,7 @@ export function AlignmentToolbar({
   onAlign,
   onDistribute,
   canDistribute,
+  disabled = false,
   snapEnabled,
   onToggleSnap,
 }: AlignmentToolbarProps): JSX.Element {
@@ -42,8 +45,9 @@ export function AlignmentToolbar({
           type="button"
           data-testid={`align-${axis}-btn`}
           onClick={() => onAlign(axis)}
+          disabled={disabled}
           title={title}
-          className="w-7 h-7 flex items-center justify-center rounded hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+          className="w-7 h-7 flex items-center justify-center rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800 text-slate-300 hover:text-white"
         >
           {label}
         </button>
@@ -55,7 +59,7 @@ export function AlignmentToolbar({
         type="button"
         data-testid="distribute-horizontal-btn"
         onClick={() => onDistribute('horizontal')}
-        disabled={!canDistribute}
+        disabled={disabled || !canDistribute}
         title="Distribute Horizontally"
         className="px-2 h-7 flex items-center justify-center rounded text-[11px] font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800 text-slate-300 hover:text-white"
       >
@@ -65,7 +69,7 @@ export function AlignmentToolbar({
         type="button"
         data-testid="distribute-vertical-btn"
         onClick={() => onDistribute('vertical')}
-        disabled={!canDistribute}
+        disabled={disabled || !canDistribute}
         title="Distribute Vertically"
         className="px-2 h-7 flex items-center justify-center rounded text-[11px] font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-800 text-slate-300 hover:text-white"
       >

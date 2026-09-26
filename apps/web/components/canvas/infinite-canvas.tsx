@@ -291,7 +291,6 @@ function InfiniteCanvasContent({
       if (onCommandDispatched) {
         onCommandDispatched(command);
       }
-      void defaultCommandDispatcher.dispatch(command);
 
       // Sync local node positions after group move
       setNodes((nds) =>
@@ -300,22 +299,45 @@ function InfiniteCanvasContent({
           return move ? { ...n, position: move.newPosition } : n;
         }),
       );
+
+      // Revert the optimistic update if persistence fails, so the canvas
+      // never shows positions the server didn't accept.
+      void defaultCommandDispatcher.dispatch(command).catch((error) => {
+        console.error('Failed to persist group move:', error);
+        setNodes((nds) =>
+          nds.map((n) => {
+            const move = moves.find((m) => m.objectId === n.id);
+            return move ? { ...n, position: move.prevPosition } : n;
+          }),
+        );
+      });
     },
     [nodes, viewId, batchPersistFn, onCommandDispatched, isSnapToGridEnabled],
   );
 
+  // Guards against overlapping align/distribute calls: a second click while
+  // one is still persisting could have its rollback-on-failure handler stomp
+  // on the second operation's (possibly successful) positions.
+  const isAligningRef = React.useRef(false);
+  const [isAligning, setIsAligning] = useState(false);
+
   /**
    * Align/distribute the current multi-selection along an axis (F014).
    * Positions are computed synchronously (pure domain functions) and applied
-   * to local node state immediately so rapid successive clicks don't race on
-   * an in-flight persist; `batchPersistFn` runs in the background via the
-   * command for undo history + server sync.
+   * to local node state immediately so the UI doesn't wait on an in-flight
+   * persist; `batchPersistFn` runs in the background via the command for
+   * undo history + server sync, and is reverted on failure.
    */
   const dispatchAlignOperation = useCallback(
     (operation: AlignOperation, minNodes: number) => {
+      if (isAligningRef.current) return;
+
       const selectedIdSet = new Set(selectedNodeIds);
       const selected = nodes.filter((n) => selectedIdSet.has(n.id));
       if (selected.length < minNodes) return;
+
+      isAligningRef.current = true;
+      setIsAligning(true);
 
       const alignableNodes: AlignableNode[] = selected.map(toAlignableNode);
       const previousPositionById = new Map(
@@ -350,15 +372,21 @@ function InfiniteCanvasContent({
 
       // Revert the optimistic update if persistence fails, so the canvas
       // never shows positions the server didn't accept.
-      void defaultCommandDispatcher.dispatch(command).catch((error) => {
-        console.error('Failed to persist alignment:', error);
-        setNodes((nds) =>
-          nds.map((n) => {
-            const position = previousPositionById.get(n.id);
-            return position ? { ...n, position } : n;
-          }),
-        );
-      });
+      void defaultCommandDispatcher
+        .dispatch(command)
+        .catch((error) => {
+          console.error('Failed to persist alignment:', error);
+          setNodes((nds) =>
+            nds.map((n) => {
+              const position = previousPositionById.get(n.id);
+              return position ? { ...n, position } : n;
+            }),
+          );
+        })
+        .finally(() => {
+          isAligningRef.current = false;
+          setIsAligning(false);
+        });
     },
     [nodes, selectedNodeIds, viewId, batchPersistFn, onCommandDispatched],
   );
@@ -661,6 +689,7 @@ function InfiniteCanvasContent({
               onAlign={handleAlign}
               onDistribute={handleDistribute}
               canDistribute={selectedNodeIds.length >= 3}
+              disabled={isAligning}
               snapEnabled={isSnapToGridEnabled}
               onToggleSnap={() => useCanvasStore.getState().toggleSnapToGrid()}
             />
