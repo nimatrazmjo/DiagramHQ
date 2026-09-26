@@ -73,7 +73,7 @@ Test: integration: org CRUD; data of another org is not visible.
 
 ### F004 — Workspaces
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Workspace under an organization; contains architectures.
 
