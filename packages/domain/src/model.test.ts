@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createId } from './ids';
-import { canConnect } from './model';
+import { canConnect } from './invariants';
 
 describe('canConnect', () => {
   it('allows a connection between two distinct objects', () => {

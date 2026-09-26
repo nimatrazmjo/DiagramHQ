@@ -1,0 +1,349 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum VersionKind {
+  main
+  branch
+  fork
+  future
+}
+
+enum VersionStatus {
+  draft
+  open
+  approved
+  merged
+}
+
+enum ObjectKind {
+  system
+  application
+  store
+  component
+  actor
+  group
+}
+
+enum ConnectionKind {
+  sync
+  async
+  data
+  dependency
+  deploys_to
+}
+
+enum ViewKind {
+  context
+  container
+  component
+  security
+  data
+  ownership
+  technology
+  custom
+}
+
+enum MemberRole {
+  owner
+  admin
+  editor
+  viewer
+}
+
+model Organization {
+  id        String      @id
+  name      String
+  slug      String      @unique
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+  workspaces Workspace[]
+  members    Member[]
+
+  @@map("organizations")
+}
+
+model Workspace {
+  id             String         @id
+  orgId          String         @map("org_id")
+  organization   Organization   @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  name           String
+  slug           String
+  settings       Json?
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+  architectures  Architecture[]
+
+  @@unique([orgId, slug])
+  @@map("workspaces")
+}
+
+model Architecture {
+  id               String            @id
+  workspaceId      String            @map("workspace_id")
+  workspace        Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  name             String
+  description      String?
+  defaultVersionId String?           @map("default_version_id")
+  defaultVersion   Version?          @relation("ArchitectureDefaultVersion", fields: [defaultVersionId], references: [id], onDelete: SetNull)
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  versions         Version[]
+  modelObjects     ModelObject[]
+  modelConnections ModelConnection[]
+  tags             Tag[]
+  views            View[]
+  flows            Flow[]
+  decisions        Decision[]
+  environments     Environment[]
+  phases           Phase[]
+
+  @@map("architectures")
+}
+
+model Version {
+  id               String            @id
+  architectureId   String            @map("architecture_id")
+  architecture     Architecture      @relation(fields: [architectureId], references: [id], onDelete: Cascade)
+  parentVersionId  String?           @map("parent_version_id")
+  parentVersion    Version?          @relation("VersionHierarchy", fields: [parentVersionId], references: [id], onDelete: SetNull)
+  childVersions    Version[]         @relation("VersionHierarchy")
+  name             String
+  kind             VersionKind       @default(main)
+  status           VersionStatus     @default(draft)
+  createdBy        String?           @map("created_by")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  modelObjects     ModelObject[]
+  modelConnections ModelConnection[]
+  phases           Phase[]
+  defaultForArchitectures Architecture[] @relation("ArchitectureDefaultVersion")
+
+  @@map("versions")
+}
+
+model ModelObject {
+  id                 String             @id
+  architectureId     String             @map("architecture_id")
+  architecture       Architecture       @relation(fields: [architectureId], references: [id], onDelete: Cascade)
+  versionId          String             @map("version_id")
+  version            Version            @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  parentId           String?            @map("parent_id")
+  parent             ModelObject?       @relation("ObjectHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children           ModelObject[]      @relation("ObjectHierarchy")
+  kind               ObjectKind
+  name               String
+  description        String?
+  metadata           Json?
+  position           Json?
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+  sourceConnections  ModelConnection[]  @relation("SourceConnections")
+  targetConnections  ModelConnection[]  @relation("TargetConnections")
+  objectTags         ObjectTag[]
+  objectTechnologies ObjectTechnology[]
+  repositories       Repository[]
+  viewObjects        ViewObject[]
+  decisionObjects    DecisionObject[]
+
+  @@index([architectureId, versionId])
+  @@map("model_objects")
+}
+
+model ModelConnection {
+  id             String       @id
+  architectureId String       @map("architecture_id")
+  architecture   Architecture @relation(fields: [architectureId], references: [id], onDelete: Cascade)
+  versionId      String       @map("version_id")
+  version        Version      @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  sourceObjectId String       @map("source_object_id")
+  sourceObject   ModelObject  @relation("SourceConnections", fields: [sourceObjectId], references: [id], onDelete: Cascade)
+  targetObjectId String       @map("target_object_id")
+  targetObject   ModelObject  @relation("TargetConnections", fields: [targetObjectId], references: [id], onDelete: Cascade)
+  kind           ConnectionKind @default(sync)
+  label          String?
+  description    String?
+  metadata       Json?
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  flowSteps      FlowStep[]
+
+  @@index([architectureId, versionId])
+  @@index([sourceObjectId])
+  @@index([targetObjectId])
+  @@map("model_connections")
+}
+
+model Tag {
+  id             String       @id
+  architectureId String       @map("architecture_id")
+  architecture   Architecture @relation(fields: [architectureId], references: [id], onDelete: Cascade)
+  name           String
+  color          String?
+  objectTags     ObjectTag[]
+
+  @@unique([architectureId, name])
+  @@map("tags")
+}
+
+model ObjectTag {
+  objectId String      @map("object_id")
+  object   ModelObject @relation(fields: [objectId], references: [id], onDelete: Cascade)
+  tagId    String      @map("tag_id")
+  tag      Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([objectId, tagId])
+  @@map("object_tags")
+}
+
+model Technology {
+  id                 String             @id
+  name               String             @unique
+  category           String?
+  objectTechnologies ObjectTechnology[]
+
+  @@map("technologies")
+}
+
+model ObjectTechnology {
+  objectId     String      @map("object_id")
+  object       ModelObject @relation(fields: [objectId], references: [id], onDelete: Cascade)
+  technologyId String      @map("technology_id")
+  technology   Technology  @relation(fields: [technologyId], references: [id], onDelete: Cascade)
+
+  @@id([objectId, technologyId])
+  @@map("object_technologies")
+}
+
+model Repository {
+  id            String      @id
+  objectId      String      @map("object_id")
+  object        ModelObject @relation(fields: [objectId], references: [id], onDelete: Cascade)
+  provider      String
+  url           String
+  defaultBranch String      @default("main") @map("default_branch")
+  lastSyncedAt  DateTime?   @map("last_synced_at")
+
+  @@map("repositories")
+}
+
+model View {
+  id             String       @id
+  architectureId String       @map("architecture_id")
+  architecture   Architecture @relation(fields: [architectureId], references: [id], onDelete: Cascade)
+  name           String
+  kind           ViewKind     @default(context)
+  filter         Json?
+  level          Int          @default(1)
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  viewObjects    ViewObject[]
+
+  @@map("views")
+}
+
+model ViewObject {
+  viewId    String      @map("view_id")
+  view      View        @relation(fields: [viewId], references: [id], onDelete: Cascade)
+  objectId  String      @map("object_id")
+  object    ModelObject @relation(fields: [objectId], references: [id], onDelete: Cascade)
+  position  Json?
+  collapsed Boolean     @default(false)
+  hidden    Boolean     @default(false)
+  style     Json?
+
+  @@id([viewId, objectId])
+  @@map("view_objects")
+}
+
+model Flow {
+  id             String       @id
+  architectureId String       @map("architecture_id")
+  architecture   Architecture @relation(fields: [architectureId], references: [id], onDelete: Cascade)
+  name           String
+  description    String?
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  steps          FlowStep[]
+
+  @@map("flows")
+}
+
+model FlowStep {
+  id           String          @id
+  flowId       String          @map("flow_id")
+  flow         Flow            @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  stepIndex    Int             @map("step_index")
+  connectionId String          @map("connection_id")
+  connection   ModelConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  note         String?
+
+  @@unique([flowId, stepIndex])
+  @@map("flow_steps")
+}
+
+model Decision {
+  id              String           @id
+  architectureId  String           @map("architecture_id")
+  architecture    Architecture     @relation(fields: [architectureId], references: [id], onDelete: Cascade)
+  number          Int
+  title           String
+  status          String           @default("proposed")
+  context         String?
+  decision        String?
+  consequences    String?
+  createdAt       DateTime         @default(now()) @map("created_at")
+  decisionObjects DecisionObject[]
+
+  @@unique([architectureId, number])
+  @@map("decisions")
+}
+
+model DecisionObject {
+  decisionId String      @map("decision_id")
+  decision   Decision    @relation(fields: [decisionId], references: [id], onDelete: Cascade)
+  objectId   String      @map("object_id")
+  object     ModelObject @relation(fields: [objectId], references: [id], onDelete: Cascade)
+
+  @@id([decisionId, objectId])
+  @@map("decision_objects")
+}
+
+model Environment {
+  id             String       @id
+  architectureId String       @map("architecture_id")
+  architecture   Architecture @relation(fields: [architectureId], references: [id], onDelete: Cascade)
+  name           String
+
+  @@unique([architectureId, name])
+  @@map("environments")
+}
+
+model Phase {
+  id             String       @id
+  architectureId String       @map("architecture_id")
+  architecture   Architecture @relation(fields: [architectureId], references: [id], onDelete: Cascade)
+  name           String
+  versionId      String?      @map("version_id")
+  version        Version?     @relation(fields: [versionId], references: [id], onDelete: SetNull)
+
+  @@unique([architectureId, name])
+  @@map("phases")
+}
+
+model Member {
+  id           String       @id
+  orgId        String       @map("org_id")
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  userId       String       @map("user_id")
+  role         MemberRole   @default(viewer)
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  @@unique([orgId, userId])
+  @@map("members")
+}

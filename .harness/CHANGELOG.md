@@ -2,6 +2,31 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F006 — Database foundation
+
+Status: COMPLETE
+
+Implemented:
+- PostgreSQL + Prisma ORM in `apps/api` with full data model schema per `DATA_MODEL.md` (organizations, workspaces, architectures, versions, model_objects, model_connections, tags, technologies, views, view_objects, flows, decisions, environments, phases, members).
+- Initial SQL migration `20260926000000_init` applied cleanly to live PostgreSQL 16 instance.
+- `packages/domain` pure invariants (`canConnect`, `validateConnection`, `hasParentCycle`, `validateViewObject`, `assertTenantAccess`) with branded types and comprehensive unit test coverage.
+- Query-layer tenant isolation via `TenantContext` in `apps/api/src/database/tenant.context.ts` guaranteeing strict organization boundary enforcement.
+- Local dev seed script (`apps/api/prisma/seed.ts`) populating organization, workspace, architecture, 4 model objects, 2 connections, and 1 view.
+- Architectural boundary enforcement via `scripts/check-architecture.sh` wired into `init.sh` and `pnpm verify`.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` green across all 5 workspace projects)
+- Lint: PASS (`pnpm lint` green, 0 errors/warnings)
+- Tests: PASS (20 tests passed: 15 domain invariant tests, 5 API tests including entity round-trip, cross-tenant denial, and connection invariant tests)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` green)
+- Database: PASS (migration applied to PostgreSQL 16 container, seed script executed successfully)
+- Evaluator Rubric Score: 5.0 / 5.0 (acceptance=5, correctness=5, boundaries=5, modularity=5, evidence=5) -> PASS. Log: `.harness/reviews/F006-review.md`.
+
+PR Review: pushed to PR #1 (`feat/F006-database-foundation` -> `main`), taken through 3 rounds of the new `loops/pr-review-loop.md` (code-review skill). 22 correctness/efficiency findings fixed across the 3 rounds (build ordering, layer-boundary regex gaps, cross-tenant/cross-architecture/cross-version integrity gaps on `versionId`/`parentId`, a missing FK, unwired domain invariants (`hasParentCycle`, `validateViewObject`), CI gaps, stale docs); 2 structural findings (TenantContext's per-model isolation pattern, `architecture.create`'s non-transactional `defaultVersionId` set) logged as open decisions in `BLOCKERS.md` rather than fixed mid-PR. Stopped at round 3 by user decision (diminishing severity; not all `MAX_PR_ROUNDS`=4 exhausted). Re-verified after every round: 21 tests green, typecheck/lint/build/check-architecture clean. Log: `.harness/reviews/F006-review.md`. Not yet merged.
+
+---
+
 ## 2026-09-26 — Runtime continuity protocol (harness tooling)
 
 Status: COMPLETE (tooling; not a product feature)

@@ -8,6 +8,22 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: diagramhq
+          POSTGRES_PASSWORD: diagramhq
+          POSTGRES_DB: diagramhq
+        ports:
+          - '5433:5432'
+        options: >-
+          --health-cmd "pg_isready -U diagramhq"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://diagramhq:diagramhq@localhost:5433/diagramhq
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -18,7 +34,10 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @diagramhq/api prisma:generate
+      - run: pnpm --filter @diagramhq/api prisma:migrate:deploy
       - run: pnpm lint
+      - run: pnpm build
       - run: pnpm typecheck
       - run: pnpm test
-      - run: pnpm build
+      - run: pnpm check-architecture

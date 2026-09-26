@@ -105,7 +105,7 @@ Test: unit: a viewer cannot write; an editor can.
 
 ### F006 — Database foundation
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Postgres + Prisma + migrations; the model schema with tenant isolation.
 

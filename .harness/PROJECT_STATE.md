@@ -13,34 +13,33 @@ Phase Name: Foundation
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F006
-Feature Name: Database foundation (next; F007 also unblocked)
+Feature ID: F007
+Feature Name: API foundation
 Status: NOT STARTED (details in CURRENT_TASK.md)
 
 ## Overall Progress
 Total Features: 135
-Completed: 1
+Completed: 2
 In Progress: 0
 Blocked: 0
-Not Started: 134
-Progress: 0.7%
+Not Started: 133
+Progress: 1.5%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F001 — Project architecture. pnpm monorepo (web/api/domain/config) + Docker + CI. Verified: typecheck/lint/test(4)/build green; independent subagent review passed after fixes. Lives on branch `feat/F001-project-architecture` (commits 1e817c4 + 6fc63c4). NOT yet merged or pushed.
+F006 — Database foundation. Postgres + Prisma + migrations for core model schema, tenant isolation, and domain invariants. Verified: migration applied, 21 tests green (15 domain, 6 api), seed script executed, typecheck/lint/build/check-architecture green. Evaluator score 5.0/5.0. Pushed to PR #1 (`feat/F006-database-foundation` -> `main`) and taken through 3 rounds of PR review (`loops/pr-review-loop.md`); every correctness finding fixed, 2 structural items (TenantContext's per-model isolation pattern, `architecture.create`'s non-transactional defaultVersionId set) logged as open decisions in `BLOCKERS.md` rather than fixed. Not yet merged — awaiting human merge of PR #1.
 
 ## Current Work
-None in progress. Session paused after F001 (user continues in Claude Code).
+None in progress. F006 done pending PR #1 merge; ready to start F007 (API foundation) once merged.
 
 ## Next Task
-F006 — Database foundation (F007 also unblocked). Merge F001 to main first. See CURRENT_TASK.md.
+Merge PR #1 (F006), then F007 — API foundation (NestJS skeleton, validation, error envelope, health). See CURRENT_TASK.md.
 
 ## Last Verified
-F001 @ 6fc63c4 — pnpm typecheck / lint / test (4) / build all green. Docker NOT built (no Docker in the sandbox; run `docker compose build` on a machine with Docker).
+F006 @ feat/F006-database-foundation — pnpm verify (typecheck / lint / test x21 / check-architecture) + pnpm build all green. PostgreSQL 16 container healthy.
 
 ## Current Git Commit
-main @ f2e3e5f (harness). Branch feat/F001-project-architecture @ 6fc63c4 (F001). Working tree CLEAN.
-Merge + push are pending — do them from Claude Code with your GitHub credentials.
+main @ 4b709a3 (unchanged; PR #1 not yet merged). Branch feat/F006-database-foundation @ a3886f6. Working tree CLEAN on this branch — a stashed, unrelated F007 WIP (from a concurrent session) sits in `git stash list`, not yet popped.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.
@@ -55,7 +54,7 @@ None. See BLOCKERS.md.
 NOT STARTED. Target layers + boundaries defined in `architecture/ARCHITECTURE.md` and `rules/layer-boundaries.md`.
 
 ## Database Status
-NOT STARTED. Schema designed in `architecture/DATA_MODEL.md` (Postgres + Prisma; tenant-isolated; model_objects + model_connections adjacency, ADR-0003). Lands in F006.
+Foundation COMPLETE (F006, pending PR #1 merge). Postgres + Prisma schema matching `architecture/DATA_MODEL.md`, tenant-isolated via `TenantContext` (`apps/api/src/database/tenant.context.ts`), model_objects + model_connections adjacency (ADR-0003).
 
 ## API Status
 Scaffolded (NestJS 10 + health endpoint). Full surface from F007. Not yet wired to the domain/DB.
@@ -67,7 +66,7 @@ Scaffolded (Next.js 14 standalone shell). React Flow canvas in Phase 02. Tailwin
 NOT STARTED. NestJS + Prisma + Redis. Foundation in Phase 01.
 
 ## Testing Status
-Vitest wired; 4 tests passing (domain + api). GitHub Actions CI runs lint/typecheck/test/build.
+Vitest wired; 21 tests passing (15 domain, 6 api). GitHub Actions CI runs lint/build/typecheck/test/check-architecture (see `.github/workflows/ci.yml`).
 
 ## Integration Status
 NOT STARTED. Code integrations Phase 09; infrastructure Phase 10. None connected.

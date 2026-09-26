@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
 
 /**
@@ -6,6 +7,6 @@ import { HealthModule } from './health/health.module';
  * so the app grows by adding modules rather than editing a monolith.
  */
 @Module({
-  imports: [HealthModule],
+  imports: [DatabaseModule, HealthModule],
 })
 export class AppModule {}

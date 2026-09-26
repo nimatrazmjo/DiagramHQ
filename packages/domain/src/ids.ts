@@ -4,12 +4,41 @@
  * (see .harness/rules/conventions.md). The brand stops an ObjectId from
  * being used where a ConnectionId is expected, without any runtime cost.
  */
-export type IdPrefix = 'sys' | 'app' | 'sto' | 'cmp' | 'act' | 'grp' | 'con';
+export type IdPrefix =
+  | 'org'
+  | 'ws'
+  | 'arch'
+  | 'ver'
+  | 'sys'
+  | 'app'
+  | 'sto'
+  | 'cmp'
+  | 'act'
+  | 'grp'
+  | 'con'
+  | 'vw'
+  | 'flw'
+  | 'dec'
+  | 'env'
+  | 'ph'
+  | 'tag'
+  | 'tech';
 
 export type Id<P extends IdPrefix> = string & { readonly __brand: P };
 
+export type OrgId = Id<'org'>;
+export type WorkspaceId = Id<'ws'>;
+export type ArchitectureId = Id<'arch'>;
+export type VersionId = Id<'ver'>;
 export type ObjectId = Id<'sys' | 'app' | 'sto' | 'cmp' | 'act' | 'grp'>;
 export type ConnectionId = Id<'con'>;
+export type ViewId = Id<'vw'>;
+export type FlowId = Id<'flw'>;
+export type DecisionId = Id<'dec'>;
+export type EnvironmentId = Id<'env'>;
+export type PhaseId = Id<'ph'>;
+export type TagId = Id<'tag'>;
+export type TechnologyId = Id<'tech'>;
 
 let sequence = 0;
 
