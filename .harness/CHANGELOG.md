@@ -24,9 +24,11 @@ Implemented:
 Verification:
 - TypeScript: PASS (`pnpm typecheck` clean across monorepo)
 - Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
-- Tests: PASS (358 tests: 63 domain, 150 web, 145 api)
+- Tests: PASS (360 tests: 64 domain, 151 web, 145 api)
 - Architecture: PASS (`./scripts/check-architecture.sh` clean)
 - Build: PASS (`pnpm build` clean — domain, api, web)
+- PR Review, round 1: `code-review` skill found 1 high (align and apply-layout used independent busy-guards, so the two whole-graph mutations could race and clobber each other) + 2 medium (`ApplyLayoutCommand` recomputed the layout a second time on persist, doubling cost for `forceDirected`; `resolveOverlaps`' fixed pass count wasn't guaranteed to converge for larger graphs) + 1 low (`LayoutNode` duplicated `AlignableNode`'s shape); all fixed in a follow-up commit. Full log: `.harness/reviews/F015-review.md`.
+- PR: https://github.com/nimatrazmjo/DiagramHQ/pull/16
 
 ## 2026-09-26 — F014 — Alignment
 

@@ -324,11 +324,14 @@ function InfiniteCanvasContent({
     [nodes, viewId, batchPersistFn, onCommandDispatched, isSnapToGridEnabled],
   );
 
-  // Guards against overlapping align/distribute calls: a second click while
-  // one is still persisting could have its rollback-on-failure handler stomp
-  // on the second operation's (possibly successful) positions.
-  const isAligningRef = React.useRef(false);
-  const [isAligning, setIsAligning] = useState(false);
+  // Shared guard across every whole-graph position mutation (align,
+  // distribute, apply-layout): a second op firing while one is still
+  // persisting could have its rollback-on-failure handler stomp on the
+  // other's (possibly successful, possibly still-selected) positions. One
+  // ref+state pair serializes all of them rather than letting align and
+  // apply-layout race each other via independent guards.
+  const isMutatingGraphRef = React.useRef(false);
+  const [isMutatingGraph, setIsMutatingGraph] = useState(false);
 
   /**
    * Align/distribute the current multi-selection along an axis (F014).
@@ -339,14 +342,14 @@ function InfiniteCanvasContent({
    */
   const dispatchAlignOperation = useCallback(
     (operation: AlignOperation, minNodes: number) => {
-      if (isAligningRef.current) return;
+      if (isMutatingGraphRef.current) return;
 
       const selectedIdSet = new Set(selectedNodeIds);
       const selected = nodes.filter((n) => selectedIdSet.has(n.id));
       if (selected.length < minNodes) return;
 
-      isAligningRef.current = true;
-      setIsAligning(true);
+      isMutatingGraphRef.current = true;
+      setIsMutatingGraph(true);
 
       const alignableNodes: AlignableNode[] = selected.map(toAlignableNode);
       const previousPositionById = new Map(
@@ -393,8 +396,8 @@ function InfiniteCanvasContent({
           );
         })
         .finally(() => {
-          isAligningRef.current = false;
-          setIsAligning(false);
+          isMutatingGraphRef.current = false;
+          setIsMutatingGraph(false);
         });
     },
     [nodes, selectedNodeIds, viewId, batchPersistFn, onCommandDispatched],
@@ -411,25 +414,22 @@ function InfiniteCanvasContent({
     [dispatchAlignOperation],
   );
 
-  // Guards against overlapping apply-layout calls the same way alignment
-  // does (see dispatchAlignOperation): a second click while one is still
-  // persisting could have its rollback stomp on the second op's positions.
-  const isApplyingLayoutRef = React.useRef(false);
-  const [isApplyingLayout, setIsApplyingLayout] = useState(false);
-
   /**
    * Apply a registered layout engine (F015) to the whole graph. Positions
-   * are computed synchronously (pure domain function) and applied to local
-   * node state immediately; `batchPersistFn` runs in the background via the
-   * command for undo history + server sync, and is reverted on failure.
+   * are computed synchronously (pure domain function), once, and applied to
+   * local node state immediately; the same precomputed positions are handed
+   * to `ApplyLayoutCommand` so persistence never re-runs the (potentially
+   * expensive, e.g. force-directed) layout math a second time. Shares
+   * `isMutatingGraphRef`/`isMutatingGraph` with `dispatchAlignOperation` so
+   * the two whole-graph mutations can't race each other.
    */
   const handleApplyLayout = useCallback(
     (engine: LayoutEngineName) => {
-      if (isApplyingLayoutRef.current) return;
+      if (isMutatingGraphRef.current) return;
       if (nodes.length === 0) return;
 
-      isApplyingLayoutRef.current = true;
-      setIsApplyingLayout(true);
+      isMutatingGraphRef.current = true;
+      setIsMutatingGraph(true);
 
       const layoutNodes = nodes.map(toAlignableNode);
       const layoutEdges: LayoutEdge[] = edges.map((e) => ({ source: e.source, target: e.target }));
@@ -448,8 +448,7 @@ function InfiniteCanvasContent({
       const command = new ApplyLayoutCommand({
         viewId,
         nodes: layoutNodes,
-        edges: layoutEdges,
-        engine,
+        positions,
         persistFn: batchPersistFn,
       });
 
@@ -469,8 +468,8 @@ function InfiniteCanvasContent({
           );
         })
         .finally(() => {
-          isApplyingLayoutRef.current = false;
-          setIsApplyingLayout(false);
+          isMutatingGraphRef.current = false;
+          setIsMutatingGraph(false);
         });
     },
     [nodes, edges, viewId, batchPersistFn, onCommandDispatched],
@@ -763,7 +762,7 @@ function InfiniteCanvasContent({
               onAlign={handleAlign}
               onDistribute={handleDistribute}
               canDistribute={selectedNodeIds.length >= 3}
-              disabled={isAligning}
+              disabled={isMutatingGraph}
               snapEnabled={isSnapToGridEnabled}
               onToggleSnap={() => useCanvasStore.getState().toggleSnapToGrid()}
             />
@@ -776,7 +775,7 @@ function InfiniteCanvasContent({
             <LayoutMenu
               engines={listLayoutEngines()}
               onApply={handleApplyLayout}
-              disabled={isApplyingLayout}
+              disabled={isMutatingGraph}
             />
           </Panel>
         )}

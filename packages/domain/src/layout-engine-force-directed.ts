@@ -104,7 +104,13 @@ function resolveOverlaps(
   const halfWidths = nodes.map((n) => (n.width ?? fallbackWidth) / 2);
   const halfHeights = nodes.map((n) => (n.height ?? fallbackHeight) / 2);
 
-  for (let pass = 0; pass < nodes.length; pass++) {
+  // A relaxation pass can un-overlap one pair while nudging two others back
+  // into overlap, so a handful of passes isn't reliably enough to converge
+  // as node count grows. This cap is generous (this only runs once per
+  // "Apply Layout" click, not per frame) — verified empirically in
+  // layout-builtins.test.ts with a densely-overlapping 40-node graph.
+  const maxPasses = Math.max(nodes.length * 8, 200);
+  for (let pass = 0; pass < maxPasses; pass++) {
     let moved = false;
     for (let i = 0; i < pos.length; i++) {
       for (let j = i + 1; j < pos.length; j++) {

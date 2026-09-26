@@ -182,4 +182,18 @@ describe('forceDirectedLayout', () => {
     const distAC = Math.hypot(a!.x - c!.x, a!.y - c!.y);
     expect(distAB).toBeLessThan(distAC);
   });
+
+  it('resolves overlaps for a large, densely-seeded graph (regression: fixed-pass-count convergence)', () => {
+    const count = 40;
+    const nodes: LayoutNode[] = Array.from({ length: count }, (_, i) => ({
+      id: `n${i}`,
+      position: { x: 0, y: 0 },
+      width: 160,
+      height: 80,
+    }));
+    // A tiny seed radius (far smaller than node size) starts every node
+    // heavily overlapping, forcing the resolution pass to do real work.
+    const positions = forceDirectedLayout(nodes, [], { spacingX: 10 });
+    assertNoOverlap(nodes, positions);
+  });
 });

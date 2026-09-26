@@ -1,19 +1,15 @@
-import {
-  applyLayout,
-  type CanvasPosition,
-  type LayoutEdge,
-  type LayoutEngineName,
-  type LayoutNode,
-  type LayoutOptions,
-} from '@diagramhq/domain';
+import type { CanvasPosition, LayoutNode } from '@diagramhq/domain';
 import type { Command } from './command';
 
 export interface ApplyLayoutCommandParams {
   viewId?: string;
   nodes: LayoutNode[];
-  edges: LayoutEdge[];
-  engine: LayoutEngineName;
-  options?: LayoutOptions;
+  /** Precomputed positions, same order as `nodes`. Computed once by the
+   * caller (e.g. for an immediate optimistic UI update) — the command only
+   * persists/reverts them, it never re-runs the layout engine. Layout math
+   * can be expensive (e.g. force-directed's O(n^2) iterations), so it must
+   * not be paid for twice per click. */
+  positions: CanvasPosition[];
   persistFn?: (
     viewId: string,
     positions: Array<{ objectId: string; x: number; y: number }>,
@@ -45,15 +41,9 @@ export class ApplyLayoutCommand implements Command<LayoutNodeResult[]> {
   }
 
   async execute(): Promise<LayoutNodeResult[]> {
-    const positions = applyLayout(
-      this.params.nodes,
-      this.params.edges,
-      this.params.engine,
-      this.params.options,
-    );
     const results = this.params.nodes.map((n, i) => ({
       objectId: n.id,
-      position: positions[i]!,
+      position: this.params.positions[i]!,
     }));
     await this.persist(results);
     return results;

@@ -1,4 +1,5 @@
 import type { CanvasPosition } from './canvas';
+import type { AlignableNode } from './alignment';
 
 // ----------------------------------------------------------------
 // Layout-engine registry (MODULES.md #6): new engines register()
@@ -6,12 +7,11 @@ import type { CanvasPosition } from './canvas';
 // registry instead of switching on engine names.
 // ----------------------------------------------------------------
 
-export interface LayoutNode {
-  id: string;
-  position: CanvasPosition;
-  width?: number;
-  height?: number;
-}
+/**
+ * Same shape as `AlignableNode` (id + position + optional width/height) —
+ * aliased rather than redeclared so the two domain areas can't drift apart.
+ */
+export type LayoutNode = AlignableNode;
 
 export interface LayoutEdge {
   source: string;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { renderToString } from 'react-dom/server';
-import type { LayoutEdge, LayoutEngineName, LayoutNode } from '@diagramhq/domain';
+import { applyLayout, type LayoutEdge, type LayoutEngineName, type LayoutNode } from '@diagramhq/domain';
 import { ApplyLayoutCommand } from './lib/commands/apply-layout-command';
 import { CommandDispatcher } from './lib/commands/dispatcher';
 import { LayoutMenu } from './components/canvas/layout-menu';
@@ -15,20 +15,21 @@ describe('ApplyLayoutCommand', () => {
     { id: 'b', position: { x: 500, y: 500 }, width: 100, height: 50 },
   ];
   const edges: LayoutEdge[] = [{ source: 'a', target: 'b' }];
+  const gridPositions = applyLayout(nodes, edges, 'grid');
 
   it('has name "ApplyLayout"', () => {
-    const cmd = new ApplyLayoutCommand({ nodes, edges, engine: 'grid' });
+    const cmd = new ApplyLayoutCommand({ nodes, positions: gridPositions });
     expect(cmd.name).toBe('ApplyLayout');
   });
 
   it('has a unique id', () => {
-    const cmd1 = new ApplyLayoutCommand({ nodes, edges, engine: 'grid' });
-    const cmd2 = new ApplyLayoutCommand({ nodes, edges, engine: 'grid' });
+    const cmd1 = new ApplyLayoutCommand({ nodes, positions: gridPositions });
+    const cmd2 = new ApplyLayoutCommand({ nodes, positions: gridPositions });
     expect(cmd1.id).not.toBe(cmd2.id);
   });
 
-  it('execute lays out nodes with the chosen engine and returns objectId/position pairs', async () => {
-    const cmd = new ApplyLayoutCommand({ nodes, edges, engine: 'grid' });
+  it('execute applies the precomputed positions and returns objectId/position pairs', async () => {
+    const cmd = new ApplyLayoutCommand({ nodes, positions: gridPositions });
     const result = await cmd.execute();
     expect(result.map((r) => r.objectId)).toEqual(['a', 'b']);
     // Grid layout with 2 nodes and default columns = ceil(sqrt(2)) = 2 -> both in row 0.
@@ -36,8 +37,18 @@ describe('ApplyLayoutCommand', () => {
     expect(result[1]!.position.x).toBeGreaterThan(0);
   });
 
+  it('does not recompute the layout — it only ever returns the positions it was given', async () => {
+    const customPositions = [{ x: 111, y: 222 }, { x: 333, y: 444 }];
+    const cmd = new ApplyLayoutCommand({ nodes, positions: customPositions });
+    const result = await cmd.execute();
+    expect(result).toEqual([
+      { objectId: 'a', position: { x: 111, y: 222 } },
+      { objectId: 'b', position: { x: 333, y: 444 } },
+    ]);
+  });
+
   it('undo restores original positions', async () => {
-    const cmd = new ApplyLayoutCommand({ nodes, edges, engine: 'grid' });
+    const cmd = new ApplyLayoutCommand({ nodes, positions: gridPositions });
     await cmd.execute();
     const result = await cmd.undo();
     expect(result).toEqual([
@@ -48,7 +59,7 @@ describe('ApplyLayoutCommand', () => {
 
   it('execute calls persistFn with new positions when viewId is set', async () => {
     const persistFn = vi.fn().mockResolvedValue(undefined);
-    const cmd = new ApplyLayoutCommand({ viewId: 'vw_1', nodes, edges, engine: 'grid', persistFn });
+    const cmd = new ApplyLayoutCommand({ viewId: 'vw_1', nodes, positions: gridPositions, persistFn });
     const result = await cmd.execute();
     expect(persistFn).toHaveBeenCalledWith(
       'vw_1',
@@ -58,12 +69,12 @@ describe('ApplyLayoutCommand', () => {
 
   it('does NOT call persistFn when viewId is absent', async () => {
     const persistFn = vi.fn().mockResolvedValue(undefined);
-    const cmd = new ApplyLayoutCommand({ nodes, edges, engine: 'grid', persistFn });
+    const cmd = new ApplyLayoutCommand({ nodes, positions: gridPositions, persistFn });
     await cmd.execute();
     expect(persistFn).not.toHaveBeenCalled();
   });
 
-  it('supports every registered engine name without throwing', async () => {
+  it('supports positions computed by every registered engine without throwing', async () => {
     const engineNames: LayoutEngineName[] = [
       'grid',
       'radial',
@@ -75,7 +86,8 @@ describe('ApplyLayoutCommand', () => {
       'TB',
     ];
     for (const engine of engineNames) {
-      const cmd = new ApplyLayoutCommand({ nodes, edges, engine });
+      const positions = applyLayout(nodes, edges, engine);
+      const cmd = new ApplyLayoutCommand({ nodes, positions });
       await expect(cmd.execute()).resolves.toHaveLength(2);
     }
   });
@@ -91,7 +103,7 @@ describe('CommandDispatcher with ApplyLayoutCommand', () => {
       { id: 'a', position: { x: 0, y: 0 } },
       { id: 'b', position: { x: 40, y: 40 } },
     ];
-    const cmd = new ApplyLayoutCommand({ nodes, edges: [], engine: 'grid' });
+    const cmd = new ApplyLayoutCommand({ nodes, positions: applyLayout(nodes, [], 'grid') });
     await dispatcher.dispatch(cmd);
     expect(dispatcher.getHistory()).toHaveLength(1);
     expect(dispatcher.getHistory()[0]!.name).toBe('ApplyLayout');
@@ -104,7 +116,12 @@ describe('CommandDispatcher with ApplyLayoutCommand', () => {
       { id: 'a', position: { x: 0, y: 0 } },
       { id: 'b', position: { x: 40, y: 40 } },
     ];
-    const cmd = new ApplyLayoutCommand({ viewId: 'vw_x', nodes, edges: [], engine: 'grid', persistFn });
+    const cmd = new ApplyLayoutCommand({
+      viewId: 'vw_x',
+      nodes,
+      positions: applyLayout(nodes, [], 'grid'),
+      persistFn,
+    });
     await dispatcher.dispatch(cmd);
     persistFn.mockClear();
     await dispatcher.undo();
