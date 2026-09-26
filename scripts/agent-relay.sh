@@ -17,12 +17,6 @@ LEDGER="$REPO/.harness/RUNTIME-SWITCHES.md"
 SONNET_MODEL="${AGY_SONNET_MODEL:-claude-sonnet}"   # set to the exact id from: agy -> /model
 BOOTSTRAP="Resume DiagramHQ. Read .harness/PROJECT_STATE.md, then CURRENT_TASK.md, then follow .harness/AGENTS.md. Work only the one active feature. Do NOT restart from Phase 1."
 
-# Keep the Mac awake for as long as the relay runs (macOS only; no-op elsewhere).
-CAFFEINATE_PID=""
-if command -v caffeinate >/dev/null 2>&1; then
-  caffeinate -dimsu &
-  CAFFEINATE_PID=$!
-fi
 # RUNTIME_PID is deliberately NOT run in its own process group (no `set -m`):
 # claude/agy need real terminal ownership for interactive input, and job
 # control would make the kernel stop a backgrounded group on tty access
@@ -31,6 +25,7 @@ fi
 # relying on claude/agy to clean up their own subtree on SIGINT/SIGTERM, same
 # as a plain Ctrl-C at an interactive prompt would.
 RUNTIME_PID=""
+CAFFEINATE_PID=""
 CLEANED_UP=""
 cleanup() {
   [ -n "$CLEANED_UP" ] && return
@@ -38,16 +33,34 @@ cleanup() {
   if [ -n "$RUNTIME_PID" ]; then
     # SIGINT first: many TUIs only special-case SIGINT to restore the
     # terminal (echo/cooked mode) before exiting -- a bare SIGTERM can skip
-    # that and leave the tty broken. Give it a moment, then escalate.
+    # that. Poll for exit instead of a blind sleep, so a slow-but-graceful
+    # shutdown isn't cut off mid-teardown, then escalate TERM -> KILL if it
+    # genuinely hangs.
     kill -INT "$RUNTIME_PID" 2>/dev/null
-    sleep 0.3
-    kill -TERM "$RUNTIME_PID" 2>/dev/null
+    for _ in $(seq 1 25); do   # ~5s at 0.2s each
+      kill -0 "$RUNTIME_PID" 2>/dev/null || break
+      sleep 0.2
+    done
+    if kill -0 "$RUNTIME_PID" 2>/dev/null; then
+      kill -TERM "$RUNTIME_PID" 2>/dev/null
+      sleep 1
+      kill -0 "$RUNTIME_PID" 2>/dev/null && kill -KILL "$RUNTIME_PID" 2>/dev/null
+    fi
   fi
   [ -n "$CAFFEINATE_PID" ] && kill "$CAFFEINATE_PID" 2>/dev/null
   echo; echo "relay stopped."
   exit 0
 }
+# Trap installed BEFORE starting caffeinate below: a signal arriving in that
+# gap would otherwise exit under the default disposition, skipping cleanup()
+# and orphaning caffeinate.
 trap cleanup INT TERM HUP EXIT
+
+# Keep the Mac awake for as long as the relay runs (macOS only; no-op elsewhere).
+if command -v caffeinate >/dev/null 2>&1; then
+  caffeinate -dimsu &
+  CAFFEINATE_PID=$!
+fi
 
 log() { printf -- '- %s — %s\n' "$(date -u +%FT%TZ)" "$1" >> "$LEDGER"; }
 
