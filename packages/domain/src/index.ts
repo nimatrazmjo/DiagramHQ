@@ -12,3 +12,4 @@ export * from './c4-component';
 export * from './person';
 export * from './system';
 export * from './application';
+export * from './component';

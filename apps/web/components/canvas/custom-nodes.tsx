@@ -8,6 +8,7 @@ import { C4ContainerBoundaryNode } from './c4-container-boundary-node';
 import { PersonNode } from './person-node';
 import { SystemNode } from './system-node';
 import { AppNode } from './app-node';
+import { ComponentNode } from './component-node';
 
 export { C4ContextNode } from './c4-context-node';
 export { C4ContainerNode } from './c4-container-node';
@@ -17,6 +18,7 @@ export { C4ContainerBoundaryNode } from './c4-container-boundary-node';
 export { PersonNode } from './person-node';
 export { SystemNode } from './system-node';
 export { AppNode } from './app-node';
+export { ComponentNode } from './component-node';
 
 export interface CustomNodeData {
   label: string;
@@ -101,7 +103,7 @@ export const nodeTypes = {
   system: SystemNode,
   application: AppNode,
   store: StoreNode,
-  component: C4ComponentNode,
+  component: ComponentNode,
   c4Context: C4ContextNode,
   actor: PersonNode,
   person: PersonNode,
