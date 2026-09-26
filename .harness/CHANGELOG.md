@@ -2,6 +2,57 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F014 — Alignment
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/alignment.ts`):
+  - `snapToGrid(position, gridSize = 20)`: rounds a position to the nearest grid point.
+  - `alignNodes(nodes, axis)`: pure alignment for `'left' | 'right' | 'top' | 'bottom' | 'centerH' | 'centerV'`, treating missing width/height as zero-dimension.
+  - `distributeNodes(nodes, axis)`: even-gap distribution along `'horizontal' | 'vertical'`, no-op below 3 nodes, returns positions in original input order.
+  - 14 unit tests with exact coordinate assertions in `alignment.test.ts`.
+- Web command layer (`apps/web/lib/commands/align-nodes-command.ts`):
+  - `AlignNodesCommand` implements `Command<AlignedNodeResult[]>`, wrapping the domain `alignNodes`/`distributeNodes` functions; captures prev positions at construction for `undo()`; calls `batchPersistFn` when `viewId` is set (same batch-persist contract as `MoveNodesCommand`, Layer Boundary Rule 3).
+- Web canvas UI (`apps/web/components/canvas/`):
+  - `alignment-toolbar.tsx`: new `AlignmentToolbar` component — 6 align buttons + 2 distribute buttons (disabled below 3 selected nodes) + a snap-to-grid toggle.
+  - `infinite-canvas.tsx`: mounts the toolbar in a bottom-center `Panel` when `selectedNodeIds.length > 1`; `handleAlign`/`handleDistribute` build `AlignableNode[]` from the current React Flow node state and dispatch `AlignNodesCommand` through `defaultCommandDispatcher`, then sync local node positions from the result.
+  - Snap-to-grid wired into both single-node (`createNodeDragStopHandler`, new optional `snapToGridEnabled`/`gridSize` params, default off — existing callers unaffected) and group (`handleSelectionDragStop`) drag-stop paths, applying `snapToGrid` to the final position before the move command is built.
+  - `canvas-store.ts`: added transient `isSnapToGridEnabled` + `toggleSnapToGrid`/`setSnapToGrid` (Layer Boundary Rule 4 — boolean UI flag, no domain entities).
+- Tests: `apps/web/alignment.spec.ts` — 15 tests covering `AlignNodesCommand` (execute/undo/persist/no-persist/distribute), `CommandDispatcher` history + undo, snap-to-grid store state, and `AlignmentToolbar` SSR-rendered markup (button test-ids, disabled distribute state, snap-enabled styling). Updated `canvas.spec.ts`'s Layer-Boundary-Rule-4 allowlist for the 3 new store keys.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (324 tests: 48 domain, 131 web, 145 api)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean — domain, api, web)
+
+## 2026-09-26 — F013 — Multi-select
+
+Status: COMPLETE (backfilled — merged as PR #14 / commit `c8f1ac1`, entry omitted by prior session before it hit quota)
+
+Implemented:
+- Web canvas multi-select (`apps/web`):
+  - Shift-click toggles individual objects into/out of multi-selection; toggleable Box Select mode (`data-testid="box-select-btn"`) enables marquee drag-selection via `selectionOnDrag`.
+  - Multi-select badge (`data-testid="multi-select-badge"`) shown when >1 node selected.
+  - `MoveNodesCommand` (`apps/web/lib/commands/move-nodes-command.ts`) with `execute()`/`undo()` for group moves; `onSelectionDragStop` in `InfiniteCanvas` builds per-node prev/new positions and dispatches through `defaultCommandDispatcher` (Layer Boundary Rule 3 — no direct fetch in canvas components).
+  - `canvas-store.ts`: added `isBoxSelectMode`, `toggleBoxSelectMode`, `setBoxSelectMode`, `toggleNodeSelection`, `toggleEdgeSelection`.
+  - 18 new tests in `apps/web/multi-select.spec.ts`.
+- API batch layout persistence (`apps/api`):
+  - `PATCH /views/:viewId/objects/positions` atomically upserts multiple object positions in one Prisma `$transaction`, with multi-tenant auth + `canWrite` role guard.
+  - `updateMultipleObjectPositions` in `views.service.ts` + 4 new unit tests in `views.service.spec.ts`.
+
+Verification (from PR #14 description):
+- Tests: PASS (295 tests: 34 domain, 116 web, 145 api)
+- TypeScript: PASS (0 errors)
+- Lint: PASS (0 errors, 0 warnings)
+- Architecture: PASS
+- Build: PASS (Next.js + NestJS)
+- PR: https://github.com/nimatrazmjo/DiagramHQ/pull/14 (squash-merged to `main`)
+
+Notes: No `.harness/reviews/F013-*.md` was written before merge — the session that built this feature was interrupted by a quota limit immediately after merging and branching to F014, before it could backfill this entry or the review log. Recorded now for an accurate history; no functional gap.
+
 ## 2026-09-26 — F012 — Drag and Drop
 
 Status: COMPLETE

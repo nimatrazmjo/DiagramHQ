@@ -21,7 +21,8 @@ import {
   type SelectionMode,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import type { CanvasEdge, CanvasNode } from '@diagramhq/domain';
+import type { AlignAxis, AlignableNode, CanvasEdge, CanvasNode } from '@diagramhq/domain';
+import { snapToGrid } from '@diagramhq/domain';
 import {
   useCanvasStore,
   MIN_ZOOM,
@@ -31,11 +32,13 @@ import {
 import {
   MoveNodeCommand,
   MoveNodesCommand,
+  AlignNodesCommand,
   defaultCommandDispatcher,
   type Command,
   type NodeMoveItem,
 } from '../../lib/commands';
 import { nodeTypes } from './custom-nodes';
+import { AlignmentToolbar } from './alignment-toolbar';
 
 export interface InfiniteCanvasProps {
   initialNodes?: CanvasNode[];
@@ -62,6 +65,8 @@ export interface NodeDragStopHandlerOptions {
   onNodeDragStop?: (nodeId: string, position: { x: number; y: number }) => void;
   onPositionChange?: (nodeId: string, position: { x: number; y: number }) => void;
   dragStartPositions?: Map<string, { x: number; y: number }>;
+  snapToGridEnabled?: boolean;
+  gridSize?: number;
 }
 
 export function createNodeDragStopHandler({
@@ -72,6 +77,8 @@ export function createNodeDragStopHandler({
   onNodeDragStop,
   onPositionChange,
   dragStartPositions,
+  snapToGridEnabled = false,
+  gridSize,
 }: NodeDragStopHandlerOptions): (_event: unknown, node: Node) => Promise<{ x: number; y: number }> {
   return async (_event: unknown, node: Node) => {
     const currentNodes = getNodes();
@@ -87,7 +94,9 @@ export function createNodeDragStopHandler({
         ? { x: prevNode.position.x, y: prevNode.position.y }
         : { x: node.position.x, y: node.position.y });
 
-    const newPosition = { x: node.position.x, y: node.position.y };
+    const newPosition = snapToGridEnabled
+      ? snapToGrid({ x: node.position.x, y: node.position.y }, gridSize)
+      : { x: node.position.x, y: node.position.y };
 
     const command = new MoveNodeCommand({
       viewId,
@@ -174,6 +183,7 @@ function InfiniteCanvasContent({
   const storeSelectedNodeIds = useCanvasStore((s) => s.selectedNodeIds);
   const storeSelectedEdgeIds = useCanvasStore((s) => s.selectedEdgeIds);
   const isBoxSelectMode = useCanvasStore((s) => s.isBoxSelectMode);
+  const isSnapToGridEnabled = useCanvasStore((s) => s.isSnapToGridEnabled);
   const selectedNodeIds = propSelectedNodeIds ?? storeSelectedNodeIds;
   const selectedEdgeIds = propSelectedEdgeIds ?? storeSelectedEdgeIds;
   const totalSelected = selectedNodeIds.length + selectedEdgeIds.length;
@@ -203,8 +213,9 @@ function InfiniteCanvasContent({
         );
       },
       dragStartPositions: dragStartPositions.current,
+      snapToGridEnabled: isSnapToGridEnabled,
     }),
-    [nodes, viewId, persistFn, onCommandDispatched, onNodeDragStop]
+    [nodes, viewId, persistFn, onCommandDispatched, onNodeDragStop, isSnapToGridEnabled]
   );
 
   /** Group drag stop: fired when a multi-selection is dragged and released. */
@@ -216,10 +227,11 @@ function InfiniteCanvasContent({
         const startPos = dragStartPositions.current.get(draggedNode.id);
         dragStartPositions.current.delete(draggedNode.id);
         const prevPosition = startPos ?? { x: draggedNode.position.x, y: draggedNode.position.y };
+        const rawPosition = { x: draggedNode.position.x, y: draggedNode.position.y };
         return {
           objectId: draggedNode.id,
           prevPosition,
-          newPosition: { x: draggedNode.position.x, y: draggedNode.position.y },
+          newPosition: isSnapToGridEnabled ? snapToGrid(rawPosition) : rawPosition,
         };
       });
 
@@ -242,7 +254,78 @@ function InfiniteCanvasContent({
         }),
       );
     },
-    [nodes, viewId, batchPersistFn, onCommandDispatched],
+    [nodes, viewId, batchPersistFn, onCommandDispatched, isSnapToGridEnabled],
+  );
+
+  /** Align/distribute the current multi-selection along an axis (F014). */
+  const handleAlign = useCallback(
+    (axis: AlignAxis) => {
+      const selected = nodes.filter((n) => selectedNodeIds.includes(n.id));
+      if (selected.length < 2) return;
+
+      const alignableNodes: AlignableNode[] = selected.map((n) => ({
+        id: n.id,
+        position: { x: n.position.x, y: n.position.y },
+        width: n.width ?? undefined,
+        height: n.height ?? undefined,
+      }));
+
+      const command = new AlignNodesCommand({
+        viewId,
+        nodes: alignableNodes,
+        operation: { type: 'align', axis },
+        persistFn: batchPersistFn,
+      });
+
+      if (onCommandDispatched) {
+        onCommandDispatched(command);
+      }
+
+      void defaultCommandDispatcher.dispatch(command).then((results) => {
+        setNodes((nds) =>
+          nds.map((n) => {
+            const result = results.find((r) => r.objectId === n.id);
+            return result ? { ...n, position: result.position } : n;
+          }),
+        );
+      });
+    },
+    [nodes, selectedNodeIds, viewId, batchPersistFn, onCommandDispatched],
+  );
+
+  const handleDistribute = useCallback(
+    (axis: 'horizontal' | 'vertical') => {
+      const selected = nodes.filter((n) => selectedNodeIds.includes(n.id));
+      if (selected.length < 3) return;
+
+      const alignableNodes: AlignableNode[] = selected.map((n) => ({
+        id: n.id,
+        position: { x: n.position.x, y: n.position.y },
+        width: n.width ?? undefined,
+        height: n.height ?? undefined,
+      }));
+
+      const command = new AlignNodesCommand({
+        viewId,
+        nodes: alignableNodes,
+        operation: { type: 'distribute', axis },
+        persistFn: batchPersistFn,
+      });
+
+      if (onCommandDispatched) {
+        onCommandDispatched(command);
+      }
+
+      void defaultCommandDispatcher.dispatch(command).then((results) => {
+        setNodes((nds) =>
+          nds.map((n) => {
+            const result = results.find((r) => r.objectId === n.id);
+            return result ? { ...n, position: result.position } : n;
+          }),
+        );
+      });
+    },
+    [nodes, selectedNodeIds, viewId, batchPersistFn, onCommandDispatched],
   );
 
   if (dragStopHandlerRef) {
@@ -524,6 +607,19 @@ function InfiniteCanvasContent({
             )}
           </div>
         </Panel>
+
+        {/* Bottom-Center Alignment Toolbar — shown for multi-selection (F014) */}
+        {selectedNodeIds.length > 1 && (
+          <Panel position="bottom-center" className="mb-3">
+            <AlignmentToolbar
+              onAlign={handleAlign}
+              onDistribute={handleDistribute}
+              canDistribute={selectedNodeIds.length >= 3}
+              snapEnabled={isSnapToGridEnabled}
+              onToggleSnap={() => useCanvasStore.getState().toggleSnapToGrid()}
+            />
+          </Panel>
+        )}
       </ReactFlow>
     </div>
   );

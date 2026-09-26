@@ -1,33 +1,45 @@
-# Current Task
+# CURRENT TASK: F014 — Alignment
 
-Feature ID: F013
-Feature: Multi-select (Shift-click, marquee box-select, group move preserving relative positions)
-Status: IN PROGRESS
-Phase: Phase 02 — Canvas
+## Status: COMPLETE (pending PR review loop)
 
-## Objective
-Enable multi-object selection (via Shift-click, marquee box-select) and group dragging that preserves relative positions of all selected objects, persisted through the client-model command layer (`MoveNodesCommand`) and atomic API batch endpoint.
+## Feature
+**F014 — Alignment Tools**
 
-## Prerequisite
-F012 (Drag and drop) is COMPLETE and merged to `main` (PR #13). Branch `feat/F013-multi-select` is active.
+Provides snapping and layout-alignment operations for selected canvas objects:
+- Snap to grid (configurable grid size, default 20px)
+- Align selected nodes: left, right, top, bottom, center-horizontal, center-vertical
+- Distribute selected nodes: horizontal (even x-gap), vertical (even y-gap)
 
-## Steps
-- [ ] Implement batch position updates in `apps/api/src/views/` (`BatchUpdateObjectPositionsDto`, `updateMultipleObjectPositions`, `PATCH /views/:viewId/objects/positions`)
-- [ ] Add unit and E2E integration tests in `apps/api/src/views/views.service.spec.ts` and `views.e2e.spec.ts`
-- [ ] Implement `MoveNodesCommand` in `apps/web/lib/commands/move-nodes-command.ts` and export from `apps/web/lib/commands/index.ts`
-- [ ] Enhance `InfiniteCanvas` to support marquee box-selection (`selectionMode="partial"`, `selectionKeyCode="Shift"`, `selectionOnDrag` toggle mode, `multiSelectionKeyCode`) and group dragging preserving relative offsets
-- [ ] Implement comprehensive tests in `apps/web/multi-select.spec.ts`
-- [ ] Run full verification suite (`pnpm verify` + `pnpm build`)
+## Scope
+
+### Domain layer (`packages/domain/src/`)
+- `alignment.ts`: Pure, framework-free functions
+  - `snapToGrid(position: CanvasPosition, gridSize?: number): CanvasPosition`
+  - `alignNodes(nodes: AlignableNode[], axis: AlignAxis): CanvasPosition[]`
+    - `AlignAxis`: `'left' | 'right' | 'top' | 'bottom' | 'centerH' | 'centerV'`
+  - `distributeNodes(nodes: AlignableNode[], axis: 'horizontal' | 'vertical'): CanvasPosition[]`
+  - `AlignableNode`: `{ id: string; position: CanvasPosition; width?: number; height?: number }`
+- `alignment.test.ts`: Unit tests with exact coordinate assertions
+
+### Web layer (`apps/web/`)
+- `lib/commands/align-nodes-command.ts`: `AlignNodesCommand` implementing `Command<...>` — calls batch persist
+- `lib/commands/index.ts`: re-export
+- `components/canvas/alignment-toolbar.tsx`: Toolbar component (6 align + 2 distribute + snap toggle)
+- `components/canvas/infinite-canvas.tsx`: Mount toolbar when `selectedNodeIds.length > 1`
+- `alignment.spec.ts`: Component + command tests
 
 ## Verification
-- [ ] TypeScript: PASS · Lint: PASS · Unit/Integration: PASS · Build: PASS · check-architecture: PASS
+- TypeScript: PASS · Lint: PASS · Tests: PASS (324: 48 domain, 131 web, 145 api) · Build: PASS · check-architecture: PASS
+- Evidence: `.harness/CHANGELOG.md` — "2026-09-26 — F014 — Alignment"
 
-## Do Not
-- Store domain entity models inside Zustand stores (layer-boundaries rule 4).
-- Call fetch directly from canvas components (layer-boundaries rule 3).
+## Owner
+Control plane (this agent)
+
+## Started
+2026-09-26
+
+## Completed
+2026-09-26 — implementation + local verification done. Next: push branch, open PR, run code-review skill, fix findings, then move to F015 per `loops/pr-review-loop.md`.
 
 ## Next Task
-F014 — Alignment.
-
-## Last Updated
-2026-09-26
+F015 — Auto-layout (not started).

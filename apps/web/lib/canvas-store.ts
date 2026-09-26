@@ -22,6 +22,7 @@ export interface CanvasStoreState {
   hoveredNodeId: string | null;
   isSpacePanning: boolean;
   isBoxSelectMode: boolean;
+  isSnapToGridEnabled: boolean;
 
   setViewport: (viewport: CanvasViewport) => void;
   setSelectedNodes: (ids: string[]) => void;
@@ -37,6 +38,8 @@ export interface CanvasStoreState {
   setIsSpacePanning: (isPanning: boolean) => void;
   toggleBoxSelectMode: () => void;
   setBoxSelectMode: (enabled: boolean) => void;
+  toggleSnapToGrid: () => void;
+  setSnapToGrid: (enabled: boolean) => void;
   zoomIn: (step?: number) => void;
   zoomOut: (step?: number) => void;
   resetZoom: () => void;
@@ -49,6 +52,7 @@ export const useCanvasStore = create<CanvasStoreState>((set, get) => ({
   hoveredNodeId: null,
   isSpacePanning: false,
   isBoxSelectMode: false,
+  isSnapToGridEnabled: false,
 
   setViewport: (viewport: CanvasViewport) =>
     set({
@@ -116,6 +120,9 @@ export const useCanvasStore = create<CanvasStoreState>((set, get) => ({
   toggleBoxSelectMode: () =>
     set((state) => ({ isBoxSelectMode: !state.isBoxSelectMode })),
   setBoxSelectMode: (enabled: boolean) => set({ isBoxSelectMode: enabled }),
+  toggleSnapToGrid: () =>
+    set((state) => ({ isSnapToGridEnabled: !state.isSnapToGridEnabled })),
+  setSnapToGrid: (enabled: boolean) => set({ isSnapToGridEnabled: enabled }),
 
   zoomIn: (step = 0.2) =>
     set((state) => ({
