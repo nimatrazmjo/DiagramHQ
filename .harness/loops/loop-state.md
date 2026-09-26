@@ -3,7 +3,7 @@
 Live state for the maker-checker loop. Overwrite the "Current" block each round; append finished features to History. A cold agent reads this to know which round it is on. The active feature also lives in `../CURRENT_TASK.md`; keep them consistent.
 
 ## Parameters (current feature)
-- Feature: F009 — Infinite canvas
+- Feature: F013 — Multi-select
 - REQUIRED_PASSES: 2
 - MAX_ROUNDS: 6
 
@@ -13,7 +13,7 @@ Live state for the maker-checker loop. Overwrite the "Current" block each round;
 - Last Maker change: none (sprint contract established)
 - Last Checker verdict: none
 - Standing defects: none
-- Next action: Decomposition & parallel worker dispatch for F009
+- Next action: Decomposition & parallel worker dispatch for F013
 
 ## History
 ```
@@ -29,6 +29,7 @@ F008 | 1 | PASS | 2026-09-26
 F009 | 1 | PASS | 2026-09-26
 F010 | 1 | PASS | 2026-09-26
 F011 | 1 | PASS | 2026-09-26
+F012 | 1 | PASS | 2026-09-26
 ```
 
 ## Escalations

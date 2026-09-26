@@ -58,7 +58,7 @@ Test: component test for selection state.
 
 ### F012 — Drag and drop
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Reposition objects; persist layout.
 
