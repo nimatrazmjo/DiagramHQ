@@ -23,12 +23,26 @@ if command -v caffeinate >/dev/null 2>&1; then
   caffeinate -dimsu &
   CAFFEINATE_PID=$!
 fi
+# RUNTIME_PID is deliberately NOT run in its own process group (no `set -m`):
+# claude/agy need real terminal ownership for interactive input, and job
+# control would make the kernel stop a backgrounded group on tty access
+# (SIGTTIN), breaking that. The tradeoff: cleanup() below can only signal the
+# immediate child, not any grandchildren it spawns (e.g. MCP subprocesses) --
+# relying on claude/agy to clean up their own subtree on SIGINT/SIGTERM, same
+# as a plain Ctrl-C at an interactive prompt would.
 RUNTIME_PID=""
 CLEANED_UP=""
 cleanup() {
   [ -n "$CLEANED_UP" ] && return
   CLEANED_UP=1
-  [ -n "$RUNTIME_PID" ] && kill "$RUNTIME_PID" 2>/dev/null
+  if [ -n "$RUNTIME_PID" ]; then
+    # SIGINT first: many TUIs only special-case SIGINT to restore the
+    # terminal (echo/cooked mode) before exiting -- a bare SIGTERM can skip
+    # that and leave the tty broken. Give it a moment, then escalate.
+    kill -INT "$RUNTIME_PID" 2>/dev/null
+    sleep 0.3
+    kill -TERM "$RUNTIME_PID" 2>/dev/null
+  fi
   [ -n "$CAFFEINATE_PID" ] && kill "$CAFFEINATE_PID" 2>/dev/null
   echo; echo "relay stopped."
   exit 0
@@ -37,22 +51,29 @@ trap cleanup INT TERM HUP EXIT
 
 log() { printf -- '- %s — %s\n' "$(date -u +%FT%TZ)" "$1" >> "$LEDGER"; }
 
+# Runs "$@" backgrounded so its PID is capturable (see RUNTIME_PID comment
+# above), waits for it, then clears RUNTIME_PID. Shared by both branches below
+# so a future fix to this pattern can't drift out of sync between them.
+run_and_wait() {
+  "$@" &
+  RUNTIME_PID=$!
+  wait "$RUNTIME_PID" || true      # returns on session limit or manual quit
+  # Narrow TOCTOU: a signal landing between `wait` returning and this line
+  # could in theory hit a recycled PID. Accepted for a single-operator local
+  # dev script; not worth the ps-based liveness check for how rare that is.
+  RUNTIME_PID=""
+}
+
 turn="${1:-claude}"
 
 while true; do
   if [ "$turn" = "claude" ]; then
     log "start Claude Code (active feature per CURRENT_TASK.md)"
-    claude "$BOOTSTRAP" &     # backgrounded so a signal to this script's PID (e.g. SIGTERM,
-    RUNTIME_PID=$!            # not just terminal Ctrl-C) can still reach it via cleanup()
-    wait "$RUNTIME_PID" || true      # returns on session limit or manual quit
-    RUNTIME_PID=""
+    run_and_wait claude "$BOOTSTRAP"
     turn="agy"
   else
     log "start Antigravity agy (model=$SONNET_MODEL)"
-    agy -m "$SONNET_MODEL" "$BOOTSTRAP" &
-    RUNTIME_PID=$!
-    wait "$RUNTIME_PID" || true
-    RUNTIME_PID=""
+    run_and_wait agy -m "$SONNET_MODEL" "$BOOTSTRAP"
     turn="claude"
   fi
   echo
