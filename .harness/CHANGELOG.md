@@ -2,6 +2,36 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F008 — Application Shell
+
+Status: COMPLETE
+
+Implemented:
+- Shell components (`apps/web/components/shell/`):
+  - `LeftNavigator`: Renders all 7 required navigation sections (Overview, Systems, Apps, Data, Flows, Views, Decisions) with active pathname styling, SVG icons, and mobile overlay drawer.
+  - `TopBar`: Header bar featuring workspace breadcrumbs, search input with `⌘K` shortcut badge, "Ask AI" assistant trigger button, user session info, sign-out button, and inspector toggle.
+  - `InspectorPanel`: Collapsible right-hand inspector slot with tabs for Properties, Hierarchy, and Metadata, empty selection state, and custom children slot.
+  - `AppShell`: Master responsive 3-pane layout holding at narrow phone viewports with collapsible panels.
+  - `index.ts`: Unified export of shell components and types.
+- Studio Routes (`apps/web/app/workspace/`):
+  - `[workspaceId]/layout.tsx`: Layout wrapping pages in `<AppShell>`.
+  - `page.tsx`: Workspace Overview page with model statistics and quick access links.
+  - Subroute pages for `systems`, `apps`, `data`, `flows`, `views`, `decisions`.
+- Route protection & integration:
+  - Updated `middleware.ts` to protect `/workspace/*` routes.
+  - Added "Open Studio →" link in `workspace-list.tsx`.
+- Automated test suite (`apps/web/shell.spec.ts`, 11 tests) verifying navigator sections, top bar controls, inspector slot, responsive attributes, and middleware routing.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (197 tests: 23 domain, 44 web, 130 api)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean)
+- Evaluator Rubric Score: 5.0 / 5.0 -> PASS. Log: `.harness/reviews/F008-review.md`.
+
+---
+
 ## 2026-09-26 — F005 — User Roles
 
 Status: COMPLETE
