@@ -54,7 +54,7 @@ Status: IN PROGRESS  ·  Depends on: Phase 01  ·  File: `phases/PHASE-02-CANVAS
 - [x] F013 — Multi-select
 - [x] F014 — Alignment
 - [x] F015 — Auto-layout
-- [ ] F016 — Undo/redo
+- [x] F016 — Undo/redo
 - [ ] F017 — Minimap
 - [ ] F109 — Command palette
 - [ ] F110 — Global search

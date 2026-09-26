@@ -15,30 +15,30 @@ Status: IN PROGRESS
 ## Current Feature
 Feature ID: F016
 Feature Name: Undo/redo
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Overall Progress
 Total Features: 135
-Completed: 15
-In Progress: 1
+Completed: 16
+In Progress: 0
 Blocked: 0
 Not Started: 119
-Progress: 11.1%
+Progress: 11.9%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F015 — Auto-layout. Layout-engine registry (MODULES.md §6) with 8 built-in engines (grid, radial, forceDirected, hierarchical, tree, layered, LR, TB); bbox non-overlap verification; whole-graph ApplyLayoutCommand with optimistic updates and safe rollback; 366 tests passing monorepo-wide. Evaluator score 5.0/5.0. PR #16 merged.
+F016 — Undo/redo. Reversible command layer on canvas (Command<T>, CommandDispatcher with error stack restoration), covering create, delete with cascade edge restoration, connect, metadata edit, move, align, and layout. Reactive toolbar buttons with disabled state and keyboard shortcuts (Cmd/Ctrl+Z, Cmd/Ctrl+Shift+Z, Ctrl+Y) with concurrency guard. 25 tests in undo-redo.spec.ts. PR #17.
 
-Prior: F014 — Alignment (PR #15 merged). F013 — Multi-select (PR #14 merged). F012 — Drag and drop (PR #13 merged). F011 — Object selection (PR #12 merged). F010 — Pan and zoom (PR #11 merged). F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
+Prior: F015 — Auto-layout (PR #16 merged). F014 — Alignment (PR #15 merged). F013 — Multi-select (PR #14 merged). F012 — Drag and drop (PR #13 merged). F011 — Object selection (PR #12 merged). F010 — Pan and zoom (PR #11 merged). F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
 
 ## Current Work
-F016 — Undo/redo implementation; reversible command layer across canvas operations.
+F016 complete and verified. Moving to F017 (Minimap).
 
 ## Next Task
-F016 — Undo/redo. See `CURRENT_TASK.md`.
+F017 — Minimap. See `CURRENT_TASK.md`.
 
 ## Last Verified
-F015 @ main — pnpm verify (typecheck / lint / test x366 / check-architecture) + pnpm build all green.
+F016 @ feat/F016-undo-redo — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green.
 
 ## Current Git Commit
 Branch `feat/F016-undo-redo`. Working tree clean.

@@ -1,6 +1,6 @@
 # CURRENT TASK: F016 — Undo/redo
 
-## Status: IN PROGRESS
+## Status: COMPLETE
 
 ## Feature
 **F016 — Undo/redo**
