@@ -34,6 +34,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm build:domain
       - run: pnpm --filter @diagramhq/api prisma:generate
       - run: pnpm --filter @diagramhq/api prisma:migrate:deploy
       - run: pnpm lint
