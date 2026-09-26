@@ -23,7 +23,16 @@ module.exports = {
       // NestJS DI resolves injected providers from runtime class references
       // (emitDecoratorMetadata). Type-only imports would elide those references
       // and break injection, so the type-import rule does not apply to Nest files.
-      files: ['**/*.controller.ts', '**/*.module.ts', '**/*.service.ts', '**/*.resolver.ts'],
+      files: [
+        '**/*.controller.ts',
+        '**/*.module.ts',
+        '**/*.service.ts',
+        '**/*.resolver.ts',
+        '**/*.guard.ts',
+        '**/*.filter.ts',
+        '**/*.pipe.ts',
+        '**/*.interceptor.ts',
+      ],
       rules: { '@typescript-eslint/consistent-type-imports': 'off' },
     },
   ],

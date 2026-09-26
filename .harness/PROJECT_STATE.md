@@ -13,34 +13,32 @@ Phase Name: Foundation
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F007
-Feature Name: API foundation
-Status: COMPLETE (PR #4 taken through 4 rounds of `loops/pr-review-loop.md`, verdict CLEAN; ready to merge to main)
+Feature ID: F002
+Feature Name: Authentication
+Status: COMPLETE (pending PR review loop)
 
 ## Overall Progress
 Total Features: 135
-Completed: 3
+Completed: 4
 In Progress: 0
 Blocked: 0
-Not Started: 132
-Progress: 2.2%
+Not Started: 131
+Progress: 3.0%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F007 — API foundation. Global `ValidationPipe` (class-validator/class-transformer), global `AllExceptionsFilter` producing the typed `{ error: { code, message, details } }` envelope with no stack-trace/DB-error leakage, `/health` checking Postgres via `PrismaService`. Verified: 51 tests green (15 domain, 36 api — including a real HTTP-level integration suite, `apps/api/src/app.e2e.spec.ts`), typecheck/lint/build/check-architecture green, plus a live smoke test against the running server + real Postgres (`curl /health` -> 200 ok/up; `curl /does-not-exist` -> 404 typed envelope). Evaluator score 5.0/5.0. PR #4 taken through 4 review rounds (vitest root env loading, in-flight probe deduplication, cache testing, withTimeout testing, structured logger testing, headersSent guard, custom details extraction), verdict: CLEAN. Log: `.harness/reviews/F007-review.md`.
+F002 — Authentication. Auth.js (NextAuth v5) in `apps/web` with route protection middleware (`middleware.ts`), login page (`/login`), and JWT session handling. Stateless token verification in `apps/api` via `AuthModule`, `AuthGuard`, `@CurrentUser()`, `@Public()`, and `/auth/me` returning standard typed error envelopes (`UNAUTHORIZED`). Shared domain user/session types in `packages/domain`. Verified: 57 tests green across workspace (15 domain, 5 web, 37 api), typecheck/lint/build/check-architecture clean. Evaluator score 5.0/5.0. Log: `.harness/reviews/F002-review.md`.
 
-Implementation was recovered from a concurrent (Antigravity/Cowork) session's uncommitted WIP that had been stashed mid-session rather than lost; completing it surfaced a real bug the unit tests alone had missed — Vitest's default esbuild transform doesn't emit the `design:paramtypes` metadata NestJS's DI/`ValidationPipe` need, silently breaking both constructor injection and DTO validation. Fixed via `unplugin-swc` + `apps/api/vitest.config.ts` (see `F007-review.md` for detail).
-
-Also landed since the last update to this file: F006 merged (PR #1, 3 review rounds); harness `pr-review-loop.md` docs merged (PR #2, 4 rounds); `scripts/agent-relay.sh` keep-awake/signal-handling cleanup + `RUNTIME-CONTINUITY.md` platform notes merged (PR #3, 4 rounds).
+Prior: F007 — API foundation (PR #4 merged to main). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
 
 ## Current Work
-None in progress. F007 review loop complete (PR #4 clean), awaiting merge to `main`.
+None in progress. F002 PR review loop in progress.
 
 ## Next Task
-Merge PR #4 to `main`. Then F002 — Authentication (next unchecked item in ROADMAP order; F006/F007 were worked ahead of it with no recorded reason). See `CURRENT_TASK.md`.
+F003 — Organizations. See `CURRENT_TASK.md`.
 
 ## Last Verified
-F007 @ feat/F007-api-foundation — pnpm verify (typecheck / lint / test x51 / check-architecture) + pnpm build all green. Live smoke test against real Postgres green. GitHub CI green. PostgreSQL 16 container healthy.
+F002 @ feat/F002-authentication — pnpm verify (typecheck / lint / test x57 / check-architecture) + pnpm build all green. PostgreSQL 16 container healthy.
 
 ## Current Git Commit
 main @ a9fa586 (F006, harness docs, and agent-relay cleanup all merged). Branch `feat/F007-api-foundation`, branched fresh from main after those merges. Working tree CLEAN — the stashed F007 WIP mentioned in earlier versions of this file has been popped and built on; `git stash list` is empty.

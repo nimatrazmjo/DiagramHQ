@@ -22,7 +22,8 @@ export type IdPrefix =
   | 'env'
   | 'ph'
   | 'tag'
-  | 'tech';
+  | 'tech'
+  | 'usr';
 
 export type Id<P extends IdPrefix> = string & { readonly __brand: P };
 
@@ -39,6 +40,7 @@ export type EnvironmentId = Id<'env'>;
 export type PhaseId = Id<'ph'>;
 export type TagId = Id<'tag'>;
 export type TechnologyId = Id<'tech'>;
+export type UserId = Id<'usr'>;
 
 let sequence = 0;
 

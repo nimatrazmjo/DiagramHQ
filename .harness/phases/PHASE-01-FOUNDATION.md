@@ -38,7 +38,7 @@ Notes: This is the current task. See CURRENT_TASK.md.
 
 ### F002 — Authentication
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: A single auth provider gates the app.
 
