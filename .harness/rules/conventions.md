@@ -30,6 +30,7 @@ Structured logs (json) with `level`, `event`, `correlationId`, and relevant ids.
 3. Rewrite `PROJECT_STATE.md` for a cold reader.
 4. Run `state/clean-state-checklist.md`. Leave the tree clean.
 5. Commit with the feature id.
+6. If the feature (or harness-only change) just went complete: push, open/reuse the PR, review it, and fix findings until clean (`loops/pr-review-loop.md`).
 
 ## Comments & docs
 Comment *why*, not *what*. Update the affected `.harness` doc in the same change that makes it stale (e.g. new endpoint -> update API_SURFACE.md). Stale docs are worse than none.

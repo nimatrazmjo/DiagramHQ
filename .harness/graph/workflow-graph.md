@@ -28,7 +28,7 @@ flowchart TD
     ROLLBACK --> IMPL
     EVAL -->|max rounds hit / hard-stop| HUMAN[[escalate to human]]
     PLAN -->|scope ambiguous| HUMAN
-    PRREVIEW -->|max PR rounds hit| HUMAN
+    PRREVIEW -->|issues, max PR rounds hit| HUMAN
     HUMAN --> STOP
 ```
 
@@ -69,7 +69,7 @@ flowchart TD
 | pr-fix | push | standard | fixes committed (loop) |
 | pr-review | plan | conditional | clean and more features remain in slice |
 | pr-review | handoff | conditional | clean and slice complete |
-| pr-review | escalate | conditional | prRound >= MAX_PR_ROUNDS (checked before pr-fix; wins if findings are also present) |
+| pr-review | escalate | conditional | findings present and prRound >= MAX_PR_ROUNDS (checked before pr-fix; a clean review never escalates, no matter what prRound is) |
 | handoff | stop | standard | always |
 | escalate | stop | standard | always |
 
@@ -98,7 +98,7 @@ if evaluate == REVISE                     -> implement (round++)
 if evaluate == PASS and passes <  required -> implement (round++)
 if evaluate == PASS and passes >= required -> record
 if record                                 -> push -> open-pr -> pr-review
-if pr-review and prRound >= MAX_PR_ROUNDS -> escalate (checked first: wins even if findings are also present)
+if pr-review has findings and prRound >= MAX_PR_ROUNDS -> escalate (checked first)
 if pr-review finds findings               -> pr-fix -> push (prRound++)
 if pr-review clean and more features left -> plan (next feature)
 if pr-review clean and slice complete     -> handoff

@@ -39,7 +39,7 @@
     { "from": "record",     "to": "push",      "when": "always" },
     { "from": "push",       "to": "open-pr",   "when": "always" },
     { "from": "open-pr",    "to": "pr-review", "when": "always" },
-    { "from": "pr-review",  "to": "escalate",  "when": "max_pr_rounds", "priority": 1, "note": "checked before pr-fix; wins even if findings are also present" },
+    { "from": "pr-review",  "to": "escalate",  "when": "findings_present_and_max_pr_rounds", "priority": 1, "note": "checked before pr-fix; a clean review never escalates, no matter what prRound is" },
     { "from": "pr-review",  "to": "pr-fix",    "when": "findings_present_and_below_max_pr_rounds", "kind": "rollback" },
     { "from": "pr-fix",     "to": "push",      "when": "fixes_committed", "kind": "rollback" },
     { "from": "pr-review",  "to": "plan",      "when": "clean_and_more_features_in_slice" },
