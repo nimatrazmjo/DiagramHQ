@@ -12,7 +12,7 @@ None
 
 ### F001 — Project architecture
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: pnpm monorepo scaffold + a clean, reproducible baseline.
 

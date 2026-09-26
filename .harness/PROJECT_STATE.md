@@ -13,34 +13,34 @@ Phase Name: Foundation
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F001
-Feature Name: Project architecture (monorepo scaffold + clean baseline)
-Status: NOT STARTED (queued — first task; details in CURRENT_TASK.md)
+Feature ID: F006
+Feature Name: Database foundation (next; F007 also unblocked)
+Status: NOT STARTED (details in CURRENT_TASK.md)
 
 ## Overall Progress
 Total Features: 135
-Completed: 0
+Completed: 1
 In Progress: 0
 Blocked: 0
-Not Started: 135
-Progress: 0.0%
+Not Started: 134
+Progress: 0.7%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-None. No application code has been written yet. The repository currently contains only the `.harness/` tracking + rules system.
+F001 — Project architecture. pnpm monorepo (web/api/domain/config) + Docker + CI. Verified: typecheck/lint/test(4)/build green; independent subagent review passed after fixes. Lives on branch `feat/F001-project-architecture` (commits 1e817c4 + 6fc63c4). NOT yet merged or pushed.
 
 ## Current Work
-Persistent tracking system established (this file + ROADMAP.md + CURRENT_TASK.md + CHANGELOG.md + DECISIONS.md + BLOCKERS.md + phases/). No feature implementation has begun.
+None in progress. Session paused after F001 (user continues in Claude Code).
 
 ## Next Task
-F001 — Project architecture. Stand up the pnpm monorepo (apps/web, apps/api, packages/domain, packages/config) and make `init` green. See CURRENT_TASK.md.
+F006 — Database foundation (F007 also unblocked). Merge F001 to main first. See CURRENT_TASK.md.
 
 ## Last Verified
-N/A — no application code exists to verify. `init` will be the first verification once F001 begins.
+F001 @ 6fc63c4 — pnpm typecheck / lint / test (4) / build all green. Docker NOT built (no Docker in the sandbox; run `docker compose build` on a machine with Docker).
 
 ## Current Git Commit
-None — the repository is not yet a git repo. First build session should run `git init`, then record branch + commit here every session (see `rules/conventions.md`).
-Working tree: N/A.
+main @ f2e3e5f (harness). Branch feat/F001-project-architecture @ 6fc63c4 (F001). Working tree CLEAN.
+Merge + push are pending — do them from Claude Code with your GitHub credentials.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.
@@ -58,16 +58,16 @@ NOT STARTED. Target layers + boundaries defined in `architecture/ARCHITECTURE.md
 NOT STARTED. Schema designed in `architecture/DATA_MODEL.md` (Postgres + Prisma; tenant-isolated; model_objects + model_connections adjacency, ADR-0003). Lands in F006.
 
 ## API Status
-NOT STARTED. Target surface in `architecture/API_SURFACE.md`. NestJS skeleton lands in F007.
+Scaffolded (NestJS 10 + health endpoint). Full surface from F007. Not yet wired to the domain/DB.
 
 ## Frontend Status
-NOT STARTED. Next.js + React Flow (behind CanvasRenderer, ADR-0002). Shell lands in F008; canvas in Phase 02.
+Scaffolded (Next.js 14 standalone shell). React Flow canvas in Phase 02. Tailwind/shadcn deferred to the UI phase.
 
 ## Backend Status
 NOT STARTED. NestJS + Prisma + Redis. Foundation in Phase 01.
 
 ## Testing Status
-NOT STARTED. Per-feature tests required (contract in `verification/acceptance-evidence.md`). CI wired during Phase 01.
+Vitest wired; 4 tests passing (domain + api). GitHub Actions CI runs lint/typecheck/test/build.
 
 ## Integration Status
 NOT STARTED. Code integrations Phase 09; infrastructure Phase 10. None connected.
