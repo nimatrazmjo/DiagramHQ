@@ -1,71 +1,73 @@
-# Sprint Contract — F008 (Application Shell)
+# Sprint Contract — F009 (Infinite Canvas)
 
 Written by the Planner before any code. It fixes "done" so the Generator cannot drift and the Evaluator has something objective to grade against.
 
 ## Feature
-- Id: F008
-- Title: Application shell
-- Phase / slice: Phase 01 — Foundation
+- Id: F009
+- Title: Infinite canvas
+- Phase / slice: Phase 02 — Canvas
 
 ## Goal (one sentence)
-A responsive Next.js application shell providing a left navigator (Overview, Systems, Apps, Data, Flows, Views, Decisions), a top bar (search, AI trigger, user session), a right inspector slot, and active subrouting that adapts seamlessly to narrow phone viewports.
+An interactive infinite canvas mounted behind a framework-agnostic CanvasRenderer interface that projects domain objects and connections into canvas nodes and edges, keeping UI interaction state decoupled from domain state.
 
 ## Acceptance -> checks
-Map each acceptance item from `PHASE-01-FOUNDATION.md` to how it will be verified.
+Map each acceptance item from `PHASE-02-CANVAS.md` to how it will be verified.
 | Acceptance item | How verified (command / test / screenshot) |
 |---|---|
-| Left navigator (Overview, Systems, Apps, Data, Flows, Views, Decisions) | Automated component/unit tests verifying all 7 navigation items render with correct routes and active state |
-| Top bar (search, AI, user) | Automated tests verifying search input, AI trigger button, and user session badge / sign out control |
-| Right inspector slot | Automated tests verifying right inspector panel renders slotted content, collapsible toggles |
-| Routing + responsive to phone width | Automated tests verifying responsive layout styles, mobile drawer/toggle holding at phone width (<768px), and subroute navigation |
-| Test: e2e: shell renders; navigation routes; layout holds at narrow width | Unit & integration tests in `apps/web/shell.spec.ts` |
+| Infinite canvas mounts and renders nodes/edges | Component test in `apps/web/canvas.spec.ts` rendering the canvas with nodes and edges; snapshot / DOM verification |
+| CanvasRenderer interface isolates the renderer (ADR-0002, MODULES.md §7) | Pure TypeScript interface in `packages/domain/src/canvas.ts` implemented by `ReactFlowCanvasRenderer` in `apps/web/components/canvas/react-flow-renderer.ts`, swappable for PixiJS/WebGL |
+| Canvas holds no domain data in Zustand (layer-boundaries rule 4) | UI store (`apps/web/lib/canvas-store.ts`) stores only viewport (`{ x, y, zoom }`) and transient selection (`selectedIds: string[]`), with no domain entities mirrored |
+| Test: component test + screenshot / DOM structure of a rendered graph | Comprehensive tests in `apps/web/canvas.spec.ts` verifying mounting, projection, and isolation |
 
 ## Plan (steps)
-1. In `apps/web`:
-   - Create `components/shell/`:
-     - `left-navigator.tsx`: Navigation items (Overview, Systems, Apps, Data, Flows, Views, Decisions) with active path highlighting and collapse/expand.
-     - `top-bar.tsx`: Search input with keyboard shortcut cue, AI assistant trigger button, and user session info with sign-out.
-     - `inspector-panel.tsx`: Right inspector slot with collapsible toggle and tabbed inspector placeholder (properties, details).
-     - `app-shell.tsx`: Main layout grid combining TopBar, LeftNavigator, main canvas/content area, and RightInspector, with responsive CSS styles/drawers for phone viewports.
-   - Add workspace studio route in `apps/web/app/workspace/[workspaceId]/`:
-     - `layout.tsx`: Wraps children in `<AppShell>`.
-     - `page.tsx`: Workspace default view (Overview).
-     - Subroutes for `systems`, `apps`, `data`, `flows`, `views`, `decisions`.
-   - Update `middleware.ts` to protect `/workspace` routes.
-   - Update `apps/web/app/dashboard/workspace-list.tsx` to link each workspace directly to its studio route `/workspace/${ws.id}`.
-2. Automated tests:
-   - Comprehensive test suite in `apps/web/shell.spec.ts` testing:
-     - Rendering of LeftNavigator with all 7 required navigation links.
-     - TopBar with search, AI button, and user display.
-     - Inspector slot visibility and collapse behavior.
-     - Responsive behavior / mobile drawer toggle for narrow screens.
-3. Verification:
+1. In `packages/domain`:
+   - Create `src/canvas.ts`:
+     - Define `CanvasNode`, `CanvasEdge`, `CanvasViewport`, `CanvasInteractionHandler`.
+     - Define `CanvasRenderer` interface (`name`, `mount`, `unmount`, `render`, `setViewport`, `getViewport`, `fitView`).
+     - Define pure projection function: `projectViewModelToCanvas(view, objects, connections): { nodes: CanvasNode[]; edges: CanvasEdge[] }`.
+     - Re-export from `packages/domain/src/index.ts`.
+   - Unit tests in `packages/domain/src/canvas.test.ts`.
+2. In `apps/web`:
+   - Create `lib/canvas-store.ts` (Zustand):
+     - Stores only transient UI state: `viewport` (`x, y, zoom`), `selectedNodeIds`, `selectedEdgeIds`, `hoveredNodeId`. No domain entities stored (layer-boundaries rule 4).
+   - Create `components/canvas/`:
+     - `canvas-renderer.ts`: Concrete implementation of `CanvasRenderer` adapting React Flow.
+     - `infinite-canvas.tsx`: Client component rendering React Flow with controls, background grid, minimap placeholder, custom architecture node types (SystemNode, AppNode, StoreNode), and edge types.
+     - `canvas-nodes.tsx`: Node components for architectural objects (systems, apps, stores).
+     - `index.ts`: Unified export.
+   - Integrate into `/workspace/[workspaceId]` studio page:
+     - Provide a toggle or dedicated tab to view the live Interactive Canvas.
+3. Automated tests:
+   - `apps/web/canvas.spec.ts`: Component & unit tests for `CanvasRenderer`, `projectViewModelToCanvas`, React Flow canvas mounting, node rendering, and Zustand store boundary verification.
+4. Verification:
    - Run `pnpm verify` (`typecheck`, `lint`, `test`, `check-architecture`) and `pnpm build`.
 
 ## In scope
-- Next.js application shell components and layout in `apps/web`.
-- 7 navigation items: Overview, Systems, Apps, Data, Flows, Views, Decisions.
-- Top bar with search input, AI action trigger, and user account.
-- Right inspector panel slot.
-- Subroute navigation under `/workspace/[workspaceId]`.
-- Responsive behavior for mobile / narrow viewports.
+- `CanvasRenderer` interface in `packages/domain`.
+- React Flow canvas mounting behind `CanvasRenderer` interface in `apps/web`.
+- Pure model projection (`projectViewModelToCanvas`).
+- Transient UI store (`canvas-store.ts`) adhering to layer boundaries (no domain data in store).
+- Architecture node components (systems, apps, stores) and edge rendering.
 
 ## Explicitly out of scope (parked)
-- Interactive canvas rendering (React Flow nodes/edges) -> Phase 02 Canvas (F009).
-- Pan/zoom gesture engine -> F010.
-- Live AI streaming endpoint backend -> Phase 08 (AI Copilot).
+- Advanced pan/zoom gesture physics (F010).
+- Drag and drop layout persistence to `view_objects` table (F012).
+- Multi-select marquee box (F013).
+- Auto-layout dagre/elk engine (F015).
 
 ## New dependencies
-None. Pure React / Next.js and CSS modules / inline styles without breaking existing builds.
+- `@xyflow/react` in `apps/web` (React Flow).
+- `zustand` in `apps/web` (transient UI state).
 
 ## Boundaries touched
-- `apps/web`: `components/shell/*`, `app/workspace/*`, `middleware.ts`, `app/dashboard/workspace-list.tsx`, `shell.spec.ts`.
+- `packages/domain`: `src/canvas.ts`, `src/canvas.test.ts`, `src/index.ts`.
+- `apps/web`: `components/canvas/*`, `lib/canvas-store.ts`, `app/workspace/*`, `canvas.spec.ts`.
 
 ## Definition of done
 - All acceptance checks green + evidence recorded.
 - `check-architecture` passes.
 - Evaluator score >= 4.0, no criterion at 1.
-- State + handoff updated, committed on `feat/F008-application-shell`.
+- State + handoff updated, committed on `feat/F009-infinite-canvas`.
 
 ---
 Signed off (Planner) before build: [x]
