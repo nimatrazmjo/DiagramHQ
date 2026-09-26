@@ -1,6 +1,8 @@
-import { createId, type ArchitectureId, type ModelObject, type VersionId } from './';
+import { createId, type ArchitectureId, type VersionId } from './ids';
 import type { CanvasEdge, CanvasNode, ProjectViewModelViewObject } from './canvas';
-import type { ModelConnection } from './types';
+import type { ModelConnection, ModelObject } from './types';
+import { isPerson } from './person';
+export { isPerson };
 
 export type C4ContextElementKind = 'person' | 'system' | 'external_system';
 
@@ -13,13 +15,6 @@ export interface C4ContextNodeData {
   systemId?: string;
   canDrillDown?: boolean;
   [key: string]: unknown;
-}
-
-/**
- * Returns true if the ModelObject represents a Person / Actor in C4 Context.
- */
-export function isPerson(obj: ModelObject): boolean {
-  return obj.kind === 'actor';
 }
 
 /**

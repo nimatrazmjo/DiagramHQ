@@ -13,29 +13,29 @@ Phase Name: Architecture Model
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F021
-Feature Name: C4 Component
-Status: COMPLETE
+Feature ID: F022
+Feature Name: Person
+Status: IN PROGRESS
 
 ## Overall Progress
 Total Features: 135
 Completed: 21
-In Progress: 0
+In Progress: 1
 Blocked: 0
-Not Started: 114
+Not Started: 113
 Progress: 15.6%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F021 — C4 Component. Level 3 components inside a container (`parentId = container.id`) with technology tags, L4 code mapping stubs (`codeMappingStub`), enclosing container boundary, and component connections. 7 API e2e tests, 4 domain tests, 7 web tests. PR ready.
+F021 — C4 Component. Level 3 components inside a container (`parentId = container.id`) with technology tags, L4 code mapping stubs (`codeMappingStub`), enclosing container boundary, and component connections. 7 API e2e tests, 4 domain tests, 7 web tests. PR #22 merged.
 
 Prior: F020 — C4 Container (PR #21 merged). F019 — C4 Context (PR #20 merged). F018 — Architecture model (PR #19 merged). F017 — Minimap (PR #18 merged). F016 — Undo/redo (PR #17 merged). F015 — Auto-layout (PR #16 merged). F014 — Alignment (PR #15 merged). F013 — Multi-select (PR #14 merged). F012 — Drag and drop (PR #13 merged). F011 — Object selection (PR #12 merged). F010 — Pan and zoom (PR #11 merged). F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
 
 ## Current Work
-F021 — C4 Component: verification complete, merging to main.
+F022 — Person: Object type person CRUD, rendering, role/department/external metadata, and canvas projection.
 
 ## Next Task
-F022 — Person. Object type: person CRUD and render.
+F023 — System. Object type: system CRUD and render (internal vs external).
 
 ## Last Verified
 F016 @ main — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green.
