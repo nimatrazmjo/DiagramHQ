@@ -88,7 +88,7 @@ prRound                # current PR review round; guarded by MAX_PR_ROUNDS
 prFindings             # open findings from the last PR review
 prVerdict              # CLEAN | ISSUES
 ```
-Concrete values live across `ROADMAP.md`, `verification/sprint-contract.md`, `loops/loop-state.md`, and `loops/pr-review-loop.md`. The graph does not add a new store; it names the fields those files already hold.
+Concrete values live across `ROADMAP.md`, `verification/sprint-contract.md`, and `loops/loop-state.md` (round, consecutivePasses, standingDefects). The graph does not add a new store for those. `prRound`/`prFindings`/`prVerdict` are the one exception: nothing tracks them as structured fields today — in practice they live as prose in each round's `## PR Review — round N` section of `.harness/reviews/<FID>-review.md` (see F006's, which ran 3 rounds). Move them into `loop-state.md` if a cold agent ever needs to resume mid-PR-round without re-reading that prose.
 
 ## Routing rules (plain if-then, the execution logic)
 ```

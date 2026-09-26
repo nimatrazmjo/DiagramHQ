@@ -12,7 +12,7 @@ Strict mode on. No `any` without a `// why:` comment. Domain types live in `pack
 Follow `architecture/ARCHITECTURE.md` §repository shape. One module per domain area. Colocate tests with code (`*.test.ts`). No file over ~400 lines without a reason.
 
 ## Git
-- One feature per branch: `feat/<feature-id>` matching the `id` in `ROADMAP.md`.
+- One feature per branch: `feat/<feature-id>` matching the `id` in `ROADMAP.md`. For harness-only tooling/docs not tied to a ROADMAP feature id (e.g. this repo's `docs/pr-review-loop`), use a descriptive `docs/<slug>` or `chore/<slug>` branch instead of forcing a fake `feat/<FID>` — same PR-review-loop discipline still applies.
 - Conventional commits: `feat(model): add connection CRUD`, `fix(canvas): stop drag from mutating store`. Reference the feature id in the body.
 - Commit only when the feature (or a coherent sub-step) is green and has evidence. No "wip" on main.
 - Never commit secrets, `.env`, or generated artifacts.
