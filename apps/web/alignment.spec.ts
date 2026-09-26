@@ -1,11 +1,13 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderToString } from 'react-dom/server';
+import type { Node } from '@xyflow/react';
 import type { AlignableNode } from '@diagramhq/domain';
 import { AlignNodesCommand, type AlignOperation } from './lib/commands/align-nodes-command';
 import { CommandDispatcher } from './lib/commands/dispatcher';
 import { useCanvasStore } from './lib/canvas-store';
 import { AlignmentToolbar } from './components/canvas/alignment-toolbar';
+import { toAlignableNode } from './components/canvas/infinite-canvas';
 
 // ----------------------------------------------------------------
 // AlignNodesCommand unit tests
@@ -122,6 +124,43 @@ describe('CommandDispatcher with AlignNodesCommand', () => {
       { objectId: 'a', x: 0, y: 0 },
       { objectId: 'b', x: 40, y: 40 },
     ]);
+  });
+});
+
+// ----------------------------------------------------------------
+// toAlignableNode: React Flow measured-size mapping
+// ----------------------------------------------------------------
+describe('toAlignableNode', () => {
+  const baseNode = { id: 'n1', position: { x: 10, y: 20 } } as Node;
+
+  it('prefers auto-measured dimensions over top-level width/height', () => {
+    const node = { ...baseNode, width: 999, height: 999, measured: { width: 120, height: 60 } } as Node;
+    expect(toAlignableNode(node)).toEqual({
+      id: 'n1',
+      position: { x: 10, y: 20 },
+      width: 120,
+      height: 60,
+    });
+  });
+
+  it('falls back to top-level width/height when unmeasured', () => {
+    const node = { ...baseNode, width: 80, height: 40 } as Node;
+    expect(toAlignableNode(node)).toEqual({
+      id: 'n1',
+      position: { x: 10, y: 20 },
+      width: 80,
+      height: 40,
+    });
+  });
+
+  it('is undefined for both when neither is present', () => {
+    const node = { ...baseNode } as Node;
+    expect(toAlignableNode(node)).toEqual({
+      id: 'n1',
+      position: { x: 10, y: 20 },
+      width: undefined,
+      height: undefined,
+    });
   });
 });
 

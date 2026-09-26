@@ -24,9 +24,11 @@ Implemented:
 Verification:
 - TypeScript: PASS (`pnpm typecheck` clean across monorepo)
 - Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
-- Tests: PASS (324 tests: 48 domain, 131 web, 145 api)
+- Tests: PASS (327 tests: 48 domain, 134 web, 145 api)
 - Architecture: PASS (`./scripts/check-architecture.sh` clean)
 - Build: PASS (`pnpm build` clean — domain, api, web)
+- PR Review: `code-review` skill found 1 high + 2 medium + 2 low findings (React Flow `measured` vs top-level `width`/`height`, an async optimistic-update race, a missing `.catch`, duplicated handlers, O(n·m) lookups); all fixed in a follow-up commit on the same branch. Log: `.harness/reviews/F014-review.md`.
+- PR: https://github.com/nimatrazmjo/DiagramHQ/pull/15
 
 ## 2026-09-26 — F013 — Multi-select
 

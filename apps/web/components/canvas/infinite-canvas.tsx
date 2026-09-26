@@ -22,7 +22,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import type { AlignAxis, AlignableNode, CanvasEdge, CanvasNode } from '@diagramhq/domain';
-import { snapToGrid } from '@diagramhq/domain';
+import { alignNodes, distributeNodes, snapToGrid } from '@diagramhq/domain';
 import {
   useCanvasStore,
   MIN_ZOOM,
@@ -36,6 +36,7 @@ import {
   defaultCommandDispatcher,
   type Command,
   type NodeMoveItem,
+  type AlignOperation,
 } from '../../lib/commands';
 import { nodeTypes } from './custom-nodes';
 import { AlignmentToolbar } from './alignment-toolbar';
@@ -120,6 +121,21 @@ export function createNodeDragStopHandler({
     }
 
     return result;
+  };
+}
+
+/**
+ * Maps a React Flow node to the domain's `AlignableNode` shape. React Flow
+ * only reflects auto-measured node size on `node.measured`; the top-level
+ * `width`/`height` fields stay undefined unless a node explicitly pins a
+ * fixed size, so `measured` must be preferred for align/distribute math.
+ */
+export function toAlignableNode(node: Node): AlignableNode {
+  return {
+    id: node.id,
+    position: { x: node.position.x, y: node.position.y },
+    width: node.measured?.width ?? node.width ?? undefined,
+    height: node.measured?.height ?? node.height ?? undefined,
   };
 }
 
@@ -257,23 +273,39 @@ function InfiniteCanvasContent({
     [nodes, viewId, batchPersistFn, onCommandDispatched, isSnapToGridEnabled],
   );
 
-  /** Align/distribute the current multi-selection along an axis (F014). */
-  const handleAlign = useCallback(
-    (axis: AlignAxis) => {
+  /**
+   * Align/distribute the current multi-selection along an axis (F014).
+   * Positions are computed synchronously (pure domain functions) and applied
+   * to local node state immediately so rapid successive clicks don't race on
+   * an in-flight persist; `batchPersistFn` runs in the background via the
+   * command for undo history + server sync.
+   */
+  const dispatchAlignOperation = useCallback(
+    (operation: AlignOperation, minNodes: number) => {
       const selected = nodes.filter((n) => selectedNodeIds.includes(n.id));
-      if (selected.length < 2) return;
+      if (selected.length < minNodes) return;
 
-      const alignableNodes: AlignableNode[] = selected.map((n) => ({
-        id: n.id,
-        position: { x: n.position.x, y: n.position.y },
-        width: n.width ?? undefined,
-        height: n.height ?? undefined,
-      }));
+      const alignableNodes: AlignableNode[] = selected.map(toAlignableNode);
+
+      const positions =
+        operation.type === 'align'
+          ? alignNodes(alignableNodes, operation.axis)
+          : distributeNodes(alignableNodes, operation.axis);
+      const positionById = new Map(
+        alignableNodes.map((n, i) => [n.id, positions[i]!]),
+      );
+
+      setNodes((nds) =>
+        nds.map((n) => {
+          const position = positionById.get(n.id);
+          return position ? { ...n, position } : n;
+        }),
+      );
 
       const command = new AlignNodesCommand({
         viewId,
         nodes: alignableNodes,
-        operation: { type: 'align', axis },
+        operation,
         persistFn: batchPersistFn,
       });
 
@@ -281,51 +313,22 @@ function InfiniteCanvasContent({
         onCommandDispatched(command);
       }
 
-      void defaultCommandDispatcher.dispatch(command).then((results) => {
-        setNodes((nds) =>
-          nds.map((n) => {
-            const result = results.find((r) => r.objectId === n.id);
-            return result ? { ...n, position: result.position } : n;
-          }),
-        );
+      void defaultCommandDispatcher.dispatch(command).catch((error) => {
+        console.error('Failed to persist alignment:', error);
       });
     },
     [nodes, selectedNodeIds, viewId, batchPersistFn, onCommandDispatched],
   );
 
+  const handleAlign = useCallback(
+    (axis: AlignAxis) => dispatchAlignOperation({ type: 'align', axis }, 2),
+    [dispatchAlignOperation],
+  );
+
   const handleDistribute = useCallback(
-    (axis: 'horizontal' | 'vertical') => {
-      const selected = nodes.filter((n) => selectedNodeIds.includes(n.id));
-      if (selected.length < 3) return;
-
-      const alignableNodes: AlignableNode[] = selected.map((n) => ({
-        id: n.id,
-        position: { x: n.position.x, y: n.position.y },
-        width: n.width ?? undefined,
-        height: n.height ?? undefined,
-      }));
-
-      const command = new AlignNodesCommand({
-        viewId,
-        nodes: alignableNodes,
-        operation: { type: 'distribute', axis },
-        persistFn: batchPersistFn,
-      });
-
-      if (onCommandDispatched) {
-        onCommandDispatched(command);
-      }
-
-      void defaultCommandDispatcher.dispatch(command).then((results) => {
-        setNodes((nds) =>
-          nds.map((n) => {
-            const result = results.find((r) => r.objectId === n.id);
-            return result ? { ...n, position: result.position } : n;
-          }),
-        );
-      });
-    },
-    [nodes, selectedNodeIds, viewId, batchPersistFn, onCommandDispatched],
+    (axis: 'horizontal' | 'vertical') =>
+      dispatchAlignOperation({ type: 'distribute', axis }, 3),
+    [dispatchAlignOperation],
   );
 
   if (dragStopHandlerRef) {
