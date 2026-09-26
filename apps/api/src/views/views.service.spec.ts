@@ -16,6 +16,7 @@ describe('ViewsService', () => {
       upsert: ReturnType<typeof vi.fn>;
       findMany: ReturnType<typeof vi.fn>;
     };
+    $transaction: ReturnType<typeof vi.fn>;
   };
 
   const mockView = {
@@ -44,6 +45,7 @@ describe('ViewsService', () => {
         upsert: vi.fn(),
         findMany: vi.fn(),
       },
+      $transaction: vi.fn(),
     };
 
     service = new ViewsService(prismaMock as unknown as PrismaService);
@@ -149,6 +151,76 @@ describe('ViewsService', () => {
 
       expect(prismaMock.member.findUnique).not.toHaveBeenCalled();
       expect(prismaMock.viewObject.upsert).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('updateMultipleObjectPositions', () => {
+    const batchDto = {
+      positions: [
+        { objectId: 'obj_1', x: 100, y: 200 },
+        { objectId: 'obj_2', x: 300, y: 400 },
+      ],
+    };
+
+    it('successfully batches position updates in a transaction for owner', async () => {
+      prismaMock.view.findUnique.mockResolvedValue(mockView);
+      prismaMock.member.findUnique.mockResolvedValue({
+        id: 'mem_1',
+        orgId: 'org_test',
+        userId: 'usr_owner',
+        role: 'owner',
+      });
+      prismaMock.viewObject.upsert.mockResolvedValue({});
+      prismaMock.$transaction.mockResolvedValue([{}, {}]);
+
+      const result = await service.updateMultipleObjectPositions('usr_owner', 'vw_test', batchDto);
+
+      expect(result).toEqual({
+        viewId: 'vw_test',
+        count: 2,
+        positions: [
+          { objectId: 'obj_1', x: 100, y: 200 },
+          { objectId: 'obj_2', x: 300, y: 400 },
+        ],
+      });
+      expect(prismaMock.$transaction).toHaveBeenCalledOnce();
+    });
+
+    it('throws ForbiddenException (403) when viewer tries batch update', async () => {
+      prismaMock.view.findUnique.mockResolvedValue(mockView);
+      prismaMock.member.findUnique.mockResolvedValue({
+        id: 'mem_2',
+        orgId: 'org_test',
+        userId: 'usr_viewer',
+        role: 'viewer',
+      });
+
+      await expect(
+        service.updateMultipleObjectPositions('usr_viewer', 'vw_test', batchDto),
+      ).rejects.toThrow(new ForbiddenException('Viewer role does not have write permissions'));
+
+      expect(prismaMock.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException (404) when user is not a member', async () => {
+      prismaMock.view.findUnique.mockResolvedValue(mockView);
+      prismaMock.member.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.updateMultipleObjectPositions('usr_non_member', 'vw_test', batchDto),
+      ).rejects.toThrow(new NotFoundException('View not found'));
+
+      expect(prismaMock.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException (404) when view does not exist', async () => {
+      prismaMock.view.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.updateMultipleObjectPositions('usr_owner', 'vw_missing', batchDto),
+      ).rejects.toThrow(new NotFoundException('View not found'));
+
+      expect(prismaMock.$transaction).not.toHaveBeenCalled();
     });
   });
 

@@ -1,33 +1,33 @@
 # Current Task
 
-Feature ID: F012
-Feature: Drag and drop (Reposition objects, position persists to view_objects, command layer mutations)
-Status: COMPLETE
+Feature ID: F013
+Feature: Multi-select (Shift-click, marquee box-select, group move preserving relative positions)
+Status: IN PROGRESS
 Phase: Phase 02 — Canvas
 
 ## Objective
-Reposition objects on the canvas via drag-and-drop and persist per-view layout coordinates to `view_objects` through a decoupled client-model command layer adhering to Layer Boundaries Rule 3.
+Enable multi-object selection (via Shift-click, marquee box-select) and group dragging that preserves relative positions of all selected objects, persisted through the client-model command layer (`MoveNodesCommand`) and atomic API batch endpoint.
 
 ## Prerequisite
-F011 (Object selection) is COMPLETE and merged to `main`. Branch `feat/F012-drag-and-drop` is active.
+F012 (Drag and drop) is COMPLETE and merged to `main` (PR #13). Branch `feat/F013-multi-select` is active.
 
 ## Steps
-- [x] Implement `ViewsModule` in `apps/api/src/views/` (`PATCH /views/:viewId/objects/:objectId/position`, `GET /views/:viewId/objects`)
-- [x] Add unit and E2E integration tests in `apps/api/src/views/views.service.spec.ts` and `views.e2e.spec.ts`
-- [x] Implement client-model command layer in `apps/web/lib/commands/` (`Command`, `MoveNodeCommand`, `CommandDispatcher`)
-- [x] Connect `onNodeDragStop` in `InfiniteCanvas` to dispatch `MoveNodeCommand`
-- [x] Implement tests in `apps/web/drag-drop.spec.ts`
-- [x] Run full verification suite (`pnpm verify` + `pnpm build`)
+- [ ] Implement batch position updates in `apps/api/src/views/` (`BatchUpdateObjectPositionsDto`, `updateMultipleObjectPositions`, `PATCH /views/:viewId/objects/positions`)
+- [ ] Add unit and E2E integration tests in `apps/api/src/views/views.service.spec.ts` and `views.e2e.spec.ts`
+- [ ] Implement `MoveNodesCommand` in `apps/web/lib/commands/move-nodes-command.ts` and export from `apps/web/lib/commands/index.ts`
+- [ ] Enhance `InfiniteCanvas` to support marquee box-selection (`selectionMode="partial"`, `selectionKeyCode="Shift"`, `selectionOnDrag` toggle mode, `multiSelectionKeyCode`) and group dragging preserving relative offsets
+- [ ] Implement comprehensive tests in `apps/web/multi-select.spec.ts`
+- [ ] Run full verification suite (`pnpm verify` + `pnpm build`)
 
 ## Verification
-- [x] TypeScript: PASS · Lint: PASS · Unit/Integration: PASS · Build: PASS · check-architecture: PASS
+- [ ] TypeScript: PASS · Lint: PASS · Unit/Integration: PASS · Build: PASS · check-architecture: PASS
 
 ## Do Not
 - Store domain entity models inside Zustand stores (layer-boundaries rule 4).
 - Call fetch directly from canvas components (layer-boundaries rule 3).
 
 ## Next Task
-F013 — Multi-select.
+F014 — Alignment.
 
 ## Last Updated
 2026-09-26

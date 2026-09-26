@@ -4,9 +4,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import type { ViewObject } from '@prisma/client';
-import { canWrite } from '@diagramhq/domain';
+import { canWrite, type MemberRole } from '@diagramhq/domain';
 import { PrismaService } from '../database/prisma.service';
-import type { UpdateObjectPositionDto } from './views.dto';
+import type { UpdateObjectPositionDto, BatchUpdateObjectPositionsDto } from './views.dto';
 
 export interface ViewObjectPosition {
   viewId: string;
@@ -17,16 +17,20 @@ export interface ViewObjectPosition {
   };
 }
 
+export interface BatchUpdateResult {
+  viewId: string;
+  count: number;
+  positions: Array<{ objectId: string; x: number; y: number }>;
+}
+
 @Injectable()
 export class ViewsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async updateObjectPosition(
+  private async resolveViewMember(
     userId: string,
     viewId: string,
-    objectId: string,
-    dto: UpdateObjectPositionDto,
-  ): Promise<ViewObjectPosition> {
+  ): Promise<{ orgId: string; role: MemberRole }> {
     const view = await this.prisma.view.findUnique({
       where: { id: viewId },
       include: {
@@ -56,7 +60,18 @@ export class ViewsService {
       throw new NotFoundException('View not found');
     }
 
-    if (!canWrite(member.role)) {
+    return { orgId, role: member.role as MemberRole };
+  }
+
+  async updateObjectPosition(
+    userId: string,
+    viewId: string,
+    objectId: string,
+    dto: UpdateObjectPositionDto,
+  ): Promise<ViewObjectPosition> {
+    const { role } = await this.resolveViewMember(userId, viewId);
+
+    if (!canWrite(role)) {
       throw new ForbiddenException('Viewer role does not have write permissions');
     }
 
@@ -84,36 +99,36 @@ export class ViewsService {
     };
   }
 
+  async updateMultipleObjectPositions(
+    userId: string,
+    viewId: string,
+    dto: BatchUpdateObjectPositionsDto,
+  ): Promise<BatchUpdateResult> {
+    const { role } = await this.resolveViewMember(userId, viewId);
+
+    if (!canWrite(role)) {
+      throw new ForbiddenException('Viewer role does not have write permissions');
+    }
+
+    await this.prisma.$transaction(
+      dto.positions.map((item) =>
+        this.prisma.viewObject.upsert({
+          where: { viewId_objectId: { viewId, objectId: item.objectId } },
+          update: { position: { x: item.x, y: item.y } },
+          create: { viewId, objectId: item.objectId, position: { x: item.x, y: item.y } },
+        }),
+      ),
+    );
+
+    return {
+      viewId,
+      count: dto.positions.length,
+      positions: dto.positions.map((p) => ({ objectId: p.objectId, x: p.x, y: p.y })),
+    };
+  }
+
   async getViewObjects(userId: string, viewId: string): Promise<ViewObject[]> {
-    const view = await this.prisma.view.findUnique({
-      where: { id: viewId },
-      include: {
-        architecture: {
-          include: {
-            workspace: true,
-          },
-        },
-      },
-    });
-
-    if (!view) {
-      throw new NotFoundException('View not found');
-    }
-
-    const orgId = view.architecture.workspace.orgId;
-    const member = await this.prisma.member.findUnique({
-      where: {
-        orgId_userId: {
-          orgId,
-          userId,
-        },
-      },
-    });
-
-    if (!member) {
-      throw new NotFoundException('View not found');
-    }
-
+    await this.resolveViewMember(userId, viewId);
     return this.prisma.viewObject.findMany({
       where: { viewId },
     });

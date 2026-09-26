@@ -10,8 +10,8 @@ import type { ViewObject } from '@prisma/client';
 import type { AuthTokenPayload } from '@diagramhq/domain';
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
-import { UpdateObjectPositionDto } from './views.dto';
-import { ViewsService, type ViewObjectPosition } from './views.service';
+import { UpdateObjectPositionDto, BatchUpdateObjectPositionsDto } from './views.dto';
+import { ViewsService, type ViewObjectPosition, type BatchUpdateResult } from './views.service';
 
 @UseGuards(AuthGuard)
 @Controller('views')
@@ -32,6 +32,20 @@ export class ViewsController {
       body,
     );
     return { viewObject };
+  }
+
+  @Patch(':viewId/objects/positions')
+  async updateMultipleObjectPositions(
+    @CurrentUser() user: AuthTokenPayload,
+    @Param('viewId') viewId: string,
+    @Body() body: BatchUpdateObjectPositionsDto,
+  ): Promise<{ result: BatchUpdateResult }> {
+    const result = await this.viewsService.updateMultipleObjectPositions(
+      user.sub,
+      viewId,
+      body,
+    );
+    return { result };
   }
 
   @Get(':viewId/objects')

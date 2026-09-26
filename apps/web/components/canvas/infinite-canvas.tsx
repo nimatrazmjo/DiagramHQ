@@ -17,6 +17,8 @@ import {
   type EdgeChange,
   type Viewport,
   type OnSelectionChangeParams,
+  type SelectionDragHandler,
+  type SelectionMode,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import type { CanvasEdge, CanvasNode } from '@diagramhq/domain';
@@ -28,8 +30,10 @@ import {
 } from '../../lib/canvas-store';
 import {
   MoveNodeCommand,
+  MoveNodesCommand,
   defaultCommandDispatcher,
   type Command,
+  type NodeMoveItem,
 } from '../../lib/commands';
 import { nodeTypes } from './custom-nodes';
 
@@ -45,6 +49,7 @@ export interface InfiniteCanvasProps {
   onNodeDragStop?: (nodeId: string, position: { x: number; y: number }) => void;
   onCommandDispatched?: (command: Command) => void;
   persistFn?: (viewId: string, objectId: string, position: { x: number; y: number }) => Promise<void>;
+  batchPersistFn?: (viewId: string, positions: Array<{ objectId: string; x: number; y: number }>) => Promise<void>;
   dragStopHandlerRef?: React.MutableRefObject<((event: unknown, node: Node) => void) | null>;
   onDragStopReady?: (handler: (event: unknown, node: Node) => void) => void;
 }
@@ -158,6 +163,7 @@ function InfiniteCanvasContent({
   onNodeDragStop,
   onCommandDispatched,
   persistFn,
+  batchPersistFn,
   dragStopHandlerRef,
   onDragStopReady,
 }: InfiniteCanvasProps): JSX.Element {
@@ -167,6 +173,7 @@ function InfiniteCanvasContent({
   const isSpacePanning = propIsSpacePanning ?? storeIsSpacePanning;
   const storeSelectedNodeIds = useCanvasStore((s) => s.selectedNodeIds);
   const storeSelectedEdgeIds = useCanvasStore((s) => s.selectedEdgeIds);
+  const isBoxSelectMode = useCanvasStore((s) => s.isBoxSelectMode);
   const selectedNodeIds = propSelectedNodeIds ?? storeSelectedNodeIds;
   const selectedEdgeIds = propSelectedEdgeIds ?? storeSelectedEdgeIds;
   const totalSelected = selectedNodeIds.length + selectedEdgeIds.length;
@@ -198,6 +205,44 @@ function InfiniteCanvasContent({
       dragStartPositions: dragStartPositions.current,
     }),
     [nodes, viewId, persistFn, onCommandDispatched, onNodeDragStop]
+  );
+
+  /** Group drag stop: fired when a multi-selection is dragged and released. */
+  const handleSelectionDragStop: SelectionDragHandler = useCallback(
+    (_event, draggedNodes) => {
+      if (draggedNodes.length === 0) return;
+
+      const moves: NodeMoveItem[] = draggedNodes.map((draggedNode) => {
+        const startPos = dragStartPositions.current.get(draggedNode.id);
+        dragStartPositions.current.delete(draggedNode.id);
+        const prevPosition = startPos ?? { x: draggedNode.position.x, y: draggedNode.position.y };
+        return {
+          objectId: draggedNode.id,
+          prevPosition,
+          newPosition: { x: draggedNode.position.x, y: draggedNode.position.y },
+        };
+      });
+
+      const command = new MoveNodesCommand({
+        viewId,
+        moves,
+        persistFn: batchPersistFn,
+      });
+
+      if (onCommandDispatched) {
+        onCommandDispatched(command);
+      }
+      void defaultCommandDispatcher.dispatch(command);
+
+      // Sync local node positions after group move
+      setNodes((nds) =>
+        nds.map((n) => {
+          const move = moves.find((m) => m.objectId === n.id);
+          return move ? { ...n, position: move.newPosition } : n;
+        }),
+      );
+    },
+    [nodes, viewId, batchPersistFn, onCommandDispatched],
   );
 
   if (dragStopHandlerRef) {
@@ -348,6 +393,11 @@ function InfiniteCanvasContent({
         onNodeMouseLeave={onNodeMouseLeave}
         onNodeDragStart={handleNodeDragStart}
         onNodeDragStop={handleNodeDragStop}
+        onSelectionDragStop={handleSelectionDragStop}
+        selectionMode={'partial' as SelectionMode}
+        selectionKeyCode="Shift"
+        multiSelectionKeyCode={['Shift', 'Meta', 'Control']}
+        selectionOnDrag={isBoxSelectMode}
         minZoom={MIN_ZOOM}
         maxZoom={MAX_ZOOM}
         panActivationKeyCode="Space"
@@ -382,12 +432,20 @@ function InfiniteCanvasContent({
                 PAN MODE (SPACE)
               </span>
             )}
-            {totalSelected > 0 && (
+            {totalSelected > 1 && (
+              <span
+                data-testid="multi-selection-badge"
+                className="ml-2 px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-300 border border-violet-500/40 text-[10px]"
+              >
+                MULTI-SELECT ({selectedNodeIds.length} OBJECTS)
+              </span>
+            )}
+            {totalSelected === 1 && (
               <span
                 data-testid="selection-badge"
                 className="ml-2 px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px]"
               >
-                {totalSelected} SELECTED (ESC TO CLEAR)
+                1 SELECTED (ESC TO CLEAR)
               </span>
             )}
           </div>
@@ -435,6 +493,20 @@ function InfiniteCanvasContent({
               title="Fit to content (F)"
             >
               Fit (F)
+            </button>
+            <div className="w-px h-4 bg-slate-700 mx-0.5" />
+            <button
+              type="button"
+              data-testid="box-select-btn"
+              onClick={() => useCanvasStore.getState().toggleBoxSelectMode()}
+              className={`px-2 h-7 flex items-center justify-center rounded text-[11px] font-medium transition-colors ${
+                isBoxSelectMode
+                  ? 'bg-violet-600 hover:bg-violet-700 text-white border border-violet-500'
+                  : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white'
+              }`}
+              title="Toggle Box Select (drag to marquee-select objects)"
+            >
+              {isBoxSelectMode ? '✦ BOX SELECT' : '⬚ Box Select'}
             </button>
             {totalSelected > 0 && (
               <>
