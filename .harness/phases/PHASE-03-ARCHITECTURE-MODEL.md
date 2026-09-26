@@ -131,7 +131,7 @@ Test: application CRUD + render.
 
 ### F025 — Component
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Object type: component.
 

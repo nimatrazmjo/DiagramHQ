@@ -2,6 +2,30 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F025 — Component
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `component.ts`: Component domain model, `ComponentKind`, `ComponentMetadata` interface (componentKind, technology, interfaces, codeRef), `ComponentNodeData` interface, helper `createComponent`, predicate `isComponent`, and canvas projection `projectComponentToCanvas`.
+  - `component.test.ts`: 4 unit tests verifying component creation, technology/interfaces metadata, parent application linkage (`parentId`), and canvas projection.
+  - `c4-component.ts`: refactored options to `CreateC4ComponentOptions` and shared predicate to resolve barrel export collisions.
+- API layer (`apps/api/src/architectures/`):
+  - `component.e2e.spec.ts`: 6 E2E tests verifying creation of Component under a parent Application (`parentId`), creation of Repository Component, inter-component connections (Service -> Repository), metadata PATCH update, model snapshot reload identity, and cascade deletion.
+- Web client layer (`apps/web/`):
+  - `ComponentNode` component (`components/canvas/component-node.tsx`) rendering component kind icons, kind badge (`[Component: ...]`), technology badge (`[...]`), interfaces list, code reference link and inspect button, and 4-way handles.
+  - Registration in `components/canvas/custom-nodes.tsx` for `component`.
+  - `component.spec.ts`: 7 tests covering SSR node rendering, code reference inspect callback invocation, canvas mounting with `InfiniteCanvas`, and `ArchitectureModelClient` reload identity.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (all monorepo tests passing: 210 API tests, 113 domain tests, 240 web tests. Total: 563 tests)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean — domain, api, web)
+- PR Review: Round 1 clean across all 8 angles. Verdict: CLEAN. Full log: `.harness/reviews/F025-review.md`.
+
 ## 2026-09-26 — F024 — Application
 
 Status: COMPLETE

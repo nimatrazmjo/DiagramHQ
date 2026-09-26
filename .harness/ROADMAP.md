@@ -75,7 +75,7 @@ Status: IN PROGRESS  ·  Depends on: Phase 01, Phase 02  ·  File: `phases/PHASE
 - [x] F022 — Person
 - [x] F023 — System
 - [x] F024 — Application
-- [~] F025 — Component
+- [x] F025 — Component
 - [ ] F026 — Database
 - [ ] F027 — Queue
 - [ ] F028 — Group
