@@ -13,35 +13,35 @@ Phase Name: Canvas
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F012
-Feature Name: Drag and drop
-Status: COMPLETE
+Feature ID: F016
+Feature Name: Undo/redo
+Status: IN PROGRESS
 
 ## Overall Progress
 Total Features: 135
-Completed: 12
-In Progress: 0
+Completed: 15
+In Progress: 1
 Blocked: 0
-Not Started: 123
-Progress: 8.9%
+Not Started: 119
+Progress: 11.1%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F012 — Drag and drop. Reposition objects on canvas with `onNodeDragStop` event handler; client-model command layer (`MoveNodeCommand`, `CommandDispatcher`) decoupling canvas components from direct HTTP calls (strictly enforcing Layer Boundary Rule 3); layout position updates persist to PostgreSQL `view_objects` via `PATCH /views/:viewId/objects/:objectId/position` with multi-tenancy and `canWrite` role guard; 273 automated tests passing monorepo-wide (34 domain, 98 web, 141 api), typecheck/lint/build/check-architecture clean. Evaluator score 5.0/5.0.
+F015 — Auto-layout. Layout-engine registry (MODULES.md §6) with 8 built-in engines (grid, radial, forceDirected, hierarchical, tree, layered, LR, TB); bbox non-overlap verification; whole-graph ApplyLayoutCommand with optimistic updates and safe rollback; 366 tests passing monorepo-wide. Evaluator score 5.0/5.0. PR #16 merged.
 
-Prior: F011 — Object selection (PR #12 merged). F010 — Pan and zoom (PR #11 merged). F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
+Prior: F014 — Alignment (PR #15 merged). F013 — Multi-select (PR #14 merged). F012 — Drag and drop (PR #13 merged). F011 — Object selection (PR #12 merged). F010 — Pan and zoom (PR #11 merged). F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
 
 ## Current Work
-F012 review and PR merge; next feature: F013 — Multi-select.
+F016 — Undo/redo implementation; reversible command layer across canvas operations.
 
 ## Next Task
-F013 — Multi-select. See `CURRENT_TASK.md`.
+F016 — Undo/redo. See `CURRENT_TASK.md`.
 
 ## Last Verified
-F012 @ feat/F012-drag-and-drop — pnpm verify (typecheck / lint / test x273 / check-architecture) + pnpm build all green. PostgreSQL 16 container healthy.
+F015 @ main — pnpm verify (typecheck / lint / test x366 / check-architecture) + pnpm build all green.
 
 ## Current Git Commit
-Branch `feat/F012-drag-and-drop`. Working tree clean.
+Branch `feat/F016-undo-redo`. Working tree clean.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.

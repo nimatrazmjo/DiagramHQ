@@ -1,4 +1,4 @@
-export type { Command } from './command';
+export type { Command, StateSetFn } from './command';
 export { MoveNodeCommand, type MoveNodeCommandParams } from './move-node-command';
 export { MoveNodesCommand, type NodeMoveItem, type MoveNodesCommandParams } from './move-nodes-command';
 export {
@@ -12,4 +12,12 @@ export {
   type ApplyLayoutCommandParams,
   type LayoutNodeResult,
 } from './apply-layout-command';
+export { CreateNodeCommand, type CreateNodeCommandParams } from './create-node-command';
+export { DeleteNodeCommand, type DeleteNodeCommandParams } from './delete-node-command';
+export { ConnectNodesCommand, type ConnectNodesCommandParams } from './connect-nodes-command';
+export {
+  UpdateNodeMetadataCommand,
+  type UpdateNodeMetadataCommandParams,
+} from './update-metadata-command';
 export { CommandDispatcher, defaultCommandDispatcher } from './dispatcher';
+

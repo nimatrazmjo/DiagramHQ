@@ -5,7 +5,8 @@ import {
   type AlignAxis,
   type CanvasPosition,
 } from '@diagramhq/domain';
-import type { Command } from './command';
+import type { Node, Edge } from '@xyflow/react';
+import type { Command, StateSetFn } from './command';
 import { persistPositions, type PersistPositionsFn } from './persist-positions';
 
 export type AlignOperation =
@@ -61,4 +62,22 @@ export class AlignNodesCommand implements Command<AlignedNodeResult[]> {
     await persistPositions(this.params.viewId, this.params.persistFn, results);
     return results;
   }
+
+  applyCanvasUpdate(
+    setNodes: StateSetFn<Node>,
+    _setEdges: StateSetFn<Edge>,
+    mode: 'execute' | 'undo',
+  ): void {
+    const positions =
+      mode === 'undo'
+        ? this.prevPositions
+        : new Map(this.params.nodes.map((n, i) => [n.id, this.computePositions()[i]!]));
+    setNodes((nds) =>
+      nds.map((n) => {
+        const pos = positions.get(n.id);
+        return pos ? { ...n, position: pos } : n;
+      }),
+    );
+  }
 }
+

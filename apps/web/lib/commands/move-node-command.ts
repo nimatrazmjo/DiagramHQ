@@ -1,4 +1,5 @@
-import type { Command } from './command';
+import type { Node, Edge } from '@xyflow/react';
+import type { Command, StateSetFn } from './command';
 
 export interface MoveNodeCommandParams {
   id?: string;
@@ -44,4 +45,14 @@ export class MoveNodeCommand implements Command<{ x: number; y: number }> {
     }
     return this.prevPosition;
   }
+
+  applyCanvasUpdate(
+    setNodes: StateSetFn<Node>,
+    _setEdges: StateSetFn<Edge>,
+    mode: 'execute' | 'undo',
+  ): void {
+    const pos = mode === 'undo' ? this.prevPosition : this.newPosition;
+    setNodes((nds) => nds.map((n) => (n.id === this.objectId ? { ...n, position: pos } : n)));
+  }
 }
+
