@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { BadRequestException, HttpStatus } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, ServiceUnavailableException } from '@nestjs/common';
 import type { ArgumentsHost } from '@nestjs/common';
 import { AllExceptionsFilter } from './http-exception.filter';
 
@@ -28,5 +28,24 @@ describe('AllExceptionsFilter', () => {
     new AllExceptionsFilter().catch(new Error('secret connection string'), host);
     expect(status).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
     expect(json).toHaveBeenCalledWith({ error: { code: 'INTERNAL', message: 'Internal server error' } });
+  });
+
+  it('maps a deliberately-thrown 5xx to a stable code, not the generic ERROR fallback', () => {
+    const { host, status, json } = mockHost();
+    new AllExceptionsFilter().catch(new ServiceUnavailableException('maintenance'), host);
+    expect(status).toHaveBeenCalledWith(HttpStatus.SERVICE_UNAVAILABLE);
+    expect(json).toHaveBeenCalledWith({
+      error: { code: 'SERVICE_UNAVAILABLE', message: 'maintenance', details: undefined },
+    });
+  });
+
+  it('does not throw when an HttpException carries a null response body', () => {
+    const { host, status, json } = mockHost();
+    const exception = new HttpException(null as unknown as string, HttpStatus.BAD_REQUEST);
+    expect(() => new AllExceptionsFilter().catch(exception, host)).not.toThrow();
+    expect(status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
+    expect(json).toHaveBeenCalledWith({
+      error: { code: 'BAD_REQUEST', message: exception.message, details: undefined },
+    });
   });
 });

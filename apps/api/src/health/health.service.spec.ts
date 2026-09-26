@@ -39,4 +39,17 @@ describe('HealthService', () => {
       vi.useRealTimers();
     }
   });
+
+  it('clears its timeout timer once the query resolves, instead of leaking it', async () => {
+    vi.useFakeTimers();
+    try {
+      expect(vi.getTimerCount()).toBe(0);
+      await new HealthService(prismaUp).getStatus();
+      // A leaked timer (the bug: no clearTimeout on the fast path) would
+      // leave this at 1 until the 3s timeout it was scheduled for fires.
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

@@ -35,20 +35,25 @@ export class HealthService {
   }
 
   private async checkDatabase(): Promise<'up' | 'down'> {
+    let timer: ReturnType<typeof setTimeout> | undefined;
     try {
-      await Promise.race([
-        this.prisma.$queryRaw`SELECT 1`,
-        new Promise((_, reject) =>
-          setTimeout(
-            () => reject(new Error(`timed out after ${DATABASE_CHECK_TIMEOUT_MS}ms`)),
-            DATABASE_CHECK_TIMEOUT_MS,
-          ),
-        ),
-      ]);
+      const timeout = new Promise((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error(`timed out after ${DATABASE_CHECK_TIMEOUT_MS}ms`)),
+          DATABASE_CHECK_TIMEOUT_MS,
+        );
+      });
+      await Promise.race([this.prisma.$queryRaw`SELECT 1`, timeout]);
       return 'up';
     } catch (error) {
       this.logger.warn(`database health check failed: ${error instanceof Error ? error.message : String(error)}`);
       return 'down';
+    } finally {
+      // Without this, every call (e.g. a probe polling every few seconds)
+      // leaves its timer running for up to DATABASE_CHECK_TIMEOUT_MS even
+      // after the query already resolved, holding the event loop open and
+      // delaying graceful shutdown.
+      clearTimeout(timer);
     }
   }
 }

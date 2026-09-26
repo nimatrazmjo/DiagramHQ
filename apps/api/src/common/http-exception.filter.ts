@@ -22,6 +22,11 @@ const CODE_BY_STATUS: Record<number, string> = {
   409: 'CONFLICT',
   422: 'UNPROCESSABLE_ENTITY',
   429: 'RATE_LIMITED',
+  500: 'INTERNAL',
+  501: 'NOT_IMPLEMENTED',
+  502: 'BAD_GATEWAY',
+  503: 'SERVICE_UNAVAILABLE',
+  504: 'GATEWAY_TIMEOUT',
 };
 
 /**
@@ -55,7 +60,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         status,
         body: {
           error: {
-            code: CODE_BY_STATUS[status] ?? 'ERROR',
+            code: CODE_BY_STATUS[status] ?? (status >= 500 ? 'INTERNAL' : 'ERROR'),
             message: this.extractMessage(raw, exception.message),
             details: this.extractDetails(raw),
           },
@@ -68,18 +73,18 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
   }
 
-  private extractMessage(raw: string | object, fallback: string): string {
+  private extractMessage(raw: unknown, fallback: string): string {
     if (typeof raw === 'string') return raw;
+    if (raw == null || typeof raw !== 'object') return fallback;
     const message = (raw as { message?: unknown }).message;
     if (typeof message === 'string') return message;
     if (Array.isArray(message) && message.length > 0) return 'Validation failed';
     return fallback;
   }
 
-  private extractDetails(raw: string | object): unknown {
-    if (typeof raw === 'object' && Array.isArray((raw as { message?: unknown }).message)) {
-      return (raw as { message: unknown[] }).message;
-    }
-    return undefined;
+  private extractDetails(raw: unknown): unknown {
+    if (raw == null || typeof raw !== 'object') return undefined;
+    const message = (raw as { message?: unknown }).message;
+    return Array.isArray(message) ? message : undefined;
   }
 }
