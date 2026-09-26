@@ -29,6 +29,7 @@ const RESULT_TTL_MS = 2000;
 @Injectable()
 export class HealthService {
   private cached?: { result: HealthStatus; checkedAt: number };
+  private inFlight?: Promise<HealthStatus>;
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -36,6 +37,16 @@ export class HealthService {
     if (this.cached && Date.now() - this.cached.checkedAt < RESULT_TTL_MS) {
       return this.cached.result;
     }
+    if (this.inFlight) {
+      return this.inFlight;
+    }
+    this.inFlight = this.performCheck().finally(() => {
+      this.inFlight = undefined;
+    });
+    return this.inFlight;
+  }
+
+  private async performCheck(): Promise<HealthStatus> {
     const database = await this.checkDatabase();
     const result: HealthStatus = {
       status: database === 'up' ? 'ok' : 'degraded',

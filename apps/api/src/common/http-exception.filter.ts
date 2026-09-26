@@ -19,13 +19,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost): void {
     const http = host.switchToHttp();
     const response = http.getResponse<Response>();
+    if (response?.headersSent) {
+      return;
+    }
     const request = http.getRequest<Request>();
     const { status, body } = this.toEnvelope(exception);
 
     if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
       logError('http.unhandled_error', {
-        method: request.method,
-        url: request.url,
+        method: request?.method,
+        url: request?.url,
         status,
         cause: exception instanceof Error ? exception.stack ?? exception.message : String(exception),
       });
@@ -56,9 +59,18 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
   private classify(exception: unknown): { status: number; message: string; details?: unknown } {
     if (exception instanceof HttpException) {
-      const rawMessage = this.extractRawMessage(exception.getResponse());
-      const details = Array.isArray(rawMessage) ? rawMessage : undefined;
-      const message = details ? 'Validation failed' : typeof rawMessage === 'string' ? rawMessage : exception.message;
+      const responseBody = exception.getResponse();
+      const rawMessage = this.extractRawMessage(responseBody);
+      const customDetails =
+        responseBody != null && typeof responseBody === 'object' && 'details' in responseBody
+          ? (responseBody as { details?: unknown }).details
+          : undefined;
+      const details = Array.isArray(rawMessage) ? rawMessage : customDetails;
+      const message = Array.isArray(rawMessage)
+        ? 'Validation failed'
+        : typeof rawMessage === 'string'
+          ? rawMessage
+          : exception.message;
       return { status: exception.getStatus(), message, details };
     }
     // Not every thrown error is a NestJS HttpException -- e.g. Express's

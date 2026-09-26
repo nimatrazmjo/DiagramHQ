@@ -65,4 +65,33 @@ describe('AllExceptionsFilter', () => {
       error: { code: 'BAD_REQUEST', message: exception.message, details: undefined },
     });
   });
+
+  it('no-ops without writing if response headers were already sent', () => {
+    const json = vi.fn();
+    const status = vi.fn().mockReturnValue({ json });
+    const host = {
+      switchToHttp: () => ({
+        getResponse: () => ({ status, headersSent: true }),
+        getRequest: () => ({ method: 'GET', url: '/x' }),
+      }),
+    } as unknown as ArgumentsHost;
+
+    new AllExceptionsFilter().catch(new BadRequestException('late error'), host);
+    expect(status).not.toHaveBeenCalled();
+    expect(json).not.toHaveBeenCalled();
+  });
+
+  it('preserves custom details provided in an HttpException response', () => {
+    const { host, status, json } = mockHost();
+    const custom = { message: 'Invalid payload', details: [{ field: 'slug', error: 'must be unique' }] };
+    new AllExceptionsFilter().catch(new BadRequestException(custom), host);
+    expect(status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
+    expect(json).toHaveBeenCalledWith({
+      error: {
+        code: 'BAD_REQUEST',
+        message: 'Invalid payload',
+        details: [{ field: 'slug', error: 'must be unique' }],
+      },
+    });
+  });
 });
