@@ -12,7 +12,7 @@ Phase 01, Phase 02
 
 ### F018 — Architecture model
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 Description: The model entity: objects + connections persisted independently of any diagram.
 
