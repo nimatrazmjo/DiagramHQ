@@ -138,6 +138,50 @@ describe('F016 — Undo/redo: CommandDispatcher', () => {
     await dispatcher.dispatch(dummyCmd);
     expect(listener).toHaveBeenCalledTimes(4);
   });
+
+  it('restores command to history if command.undo() fails', async () => {
+    const failingCmd: Command = {
+      id: 'fail-undo',
+      name: 'FailingUndo',
+      execute: vi.fn().mockResolvedValue('ok'),
+      undo: vi.fn().mockRejectedValue(new Error('Network error on revert')),
+    };
+
+    await dispatcher.dispatch(failingCmd);
+    expect(dispatcher.canUndo()).toBe(true);
+
+    await expect(dispatcher.undo()).rejects.toThrow('Network error on revert');
+    expect(dispatcher.canUndo()).toBe(true);
+    expect(dispatcher.canRedo()).toBe(false);
+    expect(dispatcher.getHistory()).toHaveLength(1);
+    expect(dispatcher.getUndone()).toHaveLength(0);
+  });
+
+  it('restores command to undone if command.execute() fails during redo', async () => {
+    let callCount = 0;
+    const failingRedoCmd: Command = {
+      id: 'fail-redo',
+      name: 'FailingRedo',
+      execute: vi.fn().mockImplementation(() => {
+        callCount++;
+        if (callCount > 1) {
+          return Promise.reject(new Error('Network error on redo'));
+        }
+        return Promise.resolve('ok');
+      }),
+      undo: vi.fn().mockResolvedValue('ok'),
+    };
+
+    await dispatcher.dispatch(failingRedoCmd);
+    await dispatcher.undo();
+    expect(dispatcher.canRedo()).toBe(true);
+
+    await expect(dispatcher.redo()).rejects.toThrow('Network error on redo');
+    expect(dispatcher.canRedo()).toBe(true);
+    expect(dispatcher.canUndo()).toBe(false);
+    expect(dispatcher.getHistory()).toHaveLength(0);
+    expect(dispatcher.getUndone()).toHaveLength(1);
+  });
 });
 
 describe('F016 — Reversible Canvas Commands', () => {

@@ -45,21 +45,33 @@ export class CommandDispatcher {
   async undo(): Promise<Command | undefined> {
     const command = this.history.pop();
     if (!command) return undefined;
-    if (command.undo) {
-      await command.undo();
+    try {
+      if (command.undo) {
+        await command.undo();
+      }
+      this.undone.push(command);
+      this.notify();
+      return command;
+    } catch (error) {
+      this.history.push(command);
+      this.notify();
+      throw error;
     }
-    this.undone.push(command);
-    this.notify();
-    return command;
   }
 
   async redo(): Promise<Command | undefined> {
     const command = this.undone.pop();
     if (!command) return undefined;
-    await command.execute();
-    this.history.push(command);
-    this.notify();
-    return command;
+    try {
+      await command.execute();
+      this.history.push(command);
+      this.notify();
+      return command;
+    } catch (error) {
+      this.undone.push(command);
+      this.notify();
+      throw error;
+    }
   }
 
   clearHistory(): void {

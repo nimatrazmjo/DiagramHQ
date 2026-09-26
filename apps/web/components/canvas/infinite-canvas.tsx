@@ -532,6 +532,8 @@ function InfiniteCanvasContent({
     if (isMutatingGraphRef.current) return;
     const cmd = defaultCommandDispatcher.peekUndo();
     if (!cmd) return;
+    isMutatingGraphRef.current = true;
+    setIsMutatingGraph(true);
     try {
       await defaultCommandDispatcher.undo();
       if ('applyCanvasUpdate' in cmd && typeof cmd.applyCanvasUpdate === 'function') {
@@ -539,6 +541,9 @@ function InfiniteCanvasContent({
       }
     } catch (error) {
       console.error('Failed to undo command:', error);
+    } finally {
+      isMutatingGraphRef.current = false;
+      setIsMutatingGraph(false);
     }
   }, []);
 
@@ -546,6 +551,8 @@ function InfiniteCanvasContent({
     if (isMutatingGraphRef.current) return;
     const cmd = defaultCommandDispatcher.peekRedo();
     if (!cmd) return;
+    isMutatingGraphRef.current = true;
+    setIsMutatingGraph(true);
     try {
       await defaultCommandDispatcher.redo();
       if ('applyCanvasUpdate' in cmd && typeof cmd.applyCanvasUpdate === 'function') {
@@ -553,6 +560,9 @@ function InfiniteCanvasContent({
       }
     } catch (error) {
       console.error('Failed to redo command:', error);
+    } finally {
+      isMutatingGraphRef.current = false;
+      setIsMutatingGraph(false);
     }
   }, []);
 
