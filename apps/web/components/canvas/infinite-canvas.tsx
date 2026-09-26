@@ -21,7 +21,8 @@ import {
   type SelectionMode,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import type { CanvasEdge, CanvasNode } from '@diagramhq/domain';
+import type { AlignAxis, AlignableNode, CanvasEdge, CanvasNode } from '@diagramhq/domain';
+import { alignNodes, distributeNodes, snapToGrid } from '@diagramhq/domain';
 import {
   useCanvasStore,
   MIN_ZOOM,
@@ -31,11 +32,14 @@ import {
 import {
   MoveNodeCommand,
   MoveNodesCommand,
+  AlignNodesCommand,
   defaultCommandDispatcher,
   type Command,
   type NodeMoveItem,
+  type AlignOperation,
 } from '../../lib/commands';
 import { nodeTypes } from './custom-nodes';
+import { AlignmentToolbar } from './alignment-toolbar';
 
 export interface InfiniteCanvasProps {
   initialNodes?: CanvasNode[];
@@ -62,6 +66,8 @@ export interface NodeDragStopHandlerOptions {
   onNodeDragStop?: (nodeId: string, position: { x: number; y: number }) => void;
   onPositionChange?: (nodeId: string, position: { x: number; y: number }) => void;
   dragStartPositions?: Map<string, { x: number; y: number }>;
+  snapToGridEnabled?: boolean;
+  gridSize?: number;
 }
 
 export function createNodeDragStopHandler({
@@ -72,6 +78,8 @@ export function createNodeDragStopHandler({
   onNodeDragStop,
   onPositionChange,
   dragStartPositions,
+  snapToGridEnabled = false,
+  gridSize,
 }: NodeDragStopHandlerOptions): (_event: unknown, node: Node) => Promise<{ x: number; y: number }> {
   return async (_event: unknown, node: Node) => {
     const currentNodes = getNodes();
@@ -87,7 +95,9 @@ export function createNodeDragStopHandler({
         ? { x: prevNode.position.x, y: prevNode.position.y }
         : { x: node.position.x, y: node.position.y });
 
-    const newPosition = { x: node.position.x, y: node.position.y };
+    const newPosition = snapToGridEnabled
+      ? snapToGrid({ x: node.position.x, y: node.position.y }, gridSize)
+      : { x: node.position.x, y: node.position.y };
 
     const command = new MoveNodeCommand({
       viewId,
@@ -112,6 +122,45 @@ export function createNodeDragStopHandler({
 
     return result;
   };
+}
+
+/**
+ * Maps a React Flow node to the domain's `AlignableNode` shape. React Flow
+ * only reflects auto-measured node size on `node.measured`; the top-level
+ * `width`/`height` fields stay undefined unless a node explicitly pins a
+ * fixed size, so `measured` must be preferred for align/distribute math.
+ */
+export function toAlignableNode(node: Node): AlignableNode {
+  return {
+    id: node.id,
+    position: { x: node.position.x, y: node.position.y },
+    width: node.measured?.width ?? node.width ?? undefined,
+    height: node.measured?.height ?? node.height ?? undefined,
+  };
+}
+
+/**
+ * Snaps a dragged group to the grid as a rigid body: the delta is derived
+ * from a single anchor node and applied uniformly to every node, so the
+ * relative offsets within the group are preserved (snapping each node's
+ * position independently would distort them).
+ */
+export function snapGroupPositions(
+  positions: Array<{ id: string; position: { x: number; y: number } }>,
+  gridSize?: number,
+): Map<string, { x: number; y: number }> {
+  const result = new Map<string, { x: number; y: number }>();
+  if (positions.length === 0) return result;
+
+  const anchor = positions[0]!;
+  const snappedAnchor = snapToGrid(anchor.position, gridSize);
+  const dx = snappedAnchor.x - anchor.position.x;
+  const dy = snappedAnchor.y - anchor.position.y;
+
+  for (const { id, position } of positions) {
+    result.set(id, { x: position.x + dx, y: position.y + dy });
+  }
+  return result;
 }
 
 function toFlowNode(node: CanvasNode): Node {
@@ -174,6 +223,7 @@ function InfiniteCanvasContent({
   const storeSelectedNodeIds = useCanvasStore((s) => s.selectedNodeIds);
   const storeSelectedEdgeIds = useCanvasStore((s) => s.selectedEdgeIds);
   const isBoxSelectMode = useCanvasStore((s) => s.isBoxSelectMode);
+  const isSnapToGridEnabled = useCanvasStore((s) => s.isSnapToGridEnabled);
   const selectedNodeIds = propSelectedNodeIds ?? storeSelectedNodeIds;
   const selectedEdgeIds = propSelectedEdgeIds ?? storeSelectedEdgeIds;
   const totalSelected = selectedNodeIds.length + selectedEdgeIds.length;
@@ -203,8 +253,9 @@ function InfiniteCanvasContent({
         );
       },
       dragStartPositions: dragStartPositions.current,
+      snapToGridEnabled: isSnapToGridEnabled,
     }),
-    [nodes, viewId, persistFn, onCommandDispatched, onNodeDragStop]
+    [nodes, viewId, persistFn, onCommandDispatched, onNodeDragStop, isSnapToGridEnabled]
   );
 
   /** Group drag stop: fired when a multi-selection is dragged and released. */
@@ -212,14 +263,22 @@ function InfiniteCanvasContent({
     (_event, draggedNodes) => {
       if (draggedNodes.length === 0) return;
 
+      const snappedById = isSnapToGridEnabled
+        ? snapGroupPositions(
+            draggedNodes.map((n) => ({ id: n.id, position: { x: n.position.x, y: n.position.y } })),
+          )
+        : null;
+
       const moves: NodeMoveItem[] = draggedNodes.map((draggedNode) => {
         const startPos = dragStartPositions.current.get(draggedNode.id);
         dragStartPositions.current.delete(draggedNode.id);
         const prevPosition = startPos ?? { x: draggedNode.position.x, y: draggedNode.position.y };
+        const rawPosition = { x: draggedNode.position.x, y: draggedNode.position.y };
+        const newPosition = snappedById?.get(draggedNode.id) ?? rawPosition;
         return {
           objectId: draggedNode.id,
           prevPosition,
-          newPosition: { x: draggedNode.position.x, y: draggedNode.position.y },
+          newPosition,
         };
       });
 
@@ -232,7 +291,6 @@ function InfiniteCanvasContent({
       if (onCommandDispatched) {
         onCommandDispatched(command);
       }
-      void defaultCommandDispatcher.dispatch(command);
 
       // Sync local node positions after group move
       setNodes((nds) =>
@@ -241,8 +299,107 @@ function InfiniteCanvasContent({
           return move ? { ...n, position: move.newPosition } : n;
         }),
       );
+
+      // Revert the optimistic update if persistence fails, so the canvas
+      // never shows positions the server didn't accept.
+      void defaultCommandDispatcher.dispatch(command).catch((error) => {
+        console.error('Failed to persist group move:', error);
+        setNodes((nds) =>
+          nds.map((n) => {
+            const move = moves.find((m) => m.objectId === n.id);
+            return move ? { ...n, position: move.prevPosition } : n;
+          }),
+        );
+      });
     },
-    [nodes, viewId, batchPersistFn, onCommandDispatched],
+    [nodes, viewId, batchPersistFn, onCommandDispatched, isSnapToGridEnabled],
+  );
+
+  // Guards against overlapping align/distribute calls: a second click while
+  // one is still persisting could have its rollback-on-failure handler stomp
+  // on the second operation's (possibly successful) positions.
+  const isAligningRef = React.useRef(false);
+  const [isAligning, setIsAligning] = useState(false);
+
+  /**
+   * Align/distribute the current multi-selection along an axis (F014).
+   * Positions are computed synchronously (pure domain functions) and applied
+   * to local node state immediately so the UI doesn't wait on an in-flight
+   * persist; `batchPersistFn` runs in the background via the command for
+   * undo history + server sync, and is reverted on failure.
+   */
+  const dispatchAlignOperation = useCallback(
+    (operation: AlignOperation, minNodes: number) => {
+      if (isAligningRef.current) return;
+
+      const selectedIdSet = new Set(selectedNodeIds);
+      const selected = nodes.filter((n) => selectedIdSet.has(n.id));
+      if (selected.length < minNodes) return;
+
+      isAligningRef.current = true;
+      setIsAligning(true);
+
+      const alignableNodes: AlignableNode[] = selected.map(toAlignableNode);
+      const previousPositionById = new Map(
+        alignableNodes.map((n) => [n.id, n.position]),
+      );
+
+      const positions =
+        operation.type === 'align'
+          ? alignNodes(alignableNodes, operation.axis)
+          : distributeNodes(alignableNodes, operation.axis);
+      const positionById = new Map(
+        alignableNodes.map((n, i) => [n.id, positions[i]!]),
+      );
+
+      setNodes((nds) =>
+        nds.map((n) => {
+          const position = positionById.get(n.id);
+          return position ? { ...n, position } : n;
+        }),
+      );
+
+      const command = new AlignNodesCommand({
+        viewId,
+        nodes: alignableNodes,
+        operation,
+        persistFn: batchPersistFn,
+      });
+
+      if (onCommandDispatched) {
+        onCommandDispatched(command);
+      }
+
+      // Revert the optimistic update if persistence fails, so the canvas
+      // never shows positions the server didn't accept.
+      void defaultCommandDispatcher
+        .dispatch(command)
+        .catch((error) => {
+          console.error('Failed to persist alignment:', error);
+          setNodes((nds) =>
+            nds.map((n) => {
+              const position = previousPositionById.get(n.id);
+              return position ? { ...n, position } : n;
+            }),
+          );
+        })
+        .finally(() => {
+          isAligningRef.current = false;
+          setIsAligning(false);
+        });
+    },
+    [nodes, selectedNodeIds, viewId, batchPersistFn, onCommandDispatched],
+  );
+
+  const handleAlign = useCallback(
+    (axis: AlignAxis) => dispatchAlignOperation({ type: 'align', axis }, 2),
+    [dispatchAlignOperation],
+  );
+
+  const handleDistribute = useCallback(
+    (axis: 'horizontal' | 'vertical') =>
+      dispatchAlignOperation({ type: 'distribute', axis }, 3),
+    [dispatchAlignOperation],
   );
 
   if (dragStopHandlerRef) {
@@ -524,6 +681,20 @@ function InfiniteCanvasContent({
             )}
           </div>
         </Panel>
+
+        {/* Bottom-Center Alignment Toolbar — shown for multi-selection (F014) */}
+        {selectedNodeIds.length > 1 && (
+          <Panel position="bottom-center" className="mb-3">
+            <AlignmentToolbar
+              onAlign={handleAlign}
+              onDistribute={handleDistribute}
+              canDistribute={selectedNodeIds.length >= 3}
+              disabled={isAligning}
+              snapEnabled={isSnapToGridEnabled}
+              onToggleSnap={() => useCanvasStore.getState().toggleSnapToGrid()}
+            />
+          </Panel>
+        )}
       </ReactFlow>
     </div>
   );

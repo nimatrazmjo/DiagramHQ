@@ -13,12 +13,12 @@ Statuses (use ONLY these): NOT STARTED · IN PROGRESS · BLOCKED · IN REVIEW ·
 _Computed from this file. Update on every status change. Contract for an auto-counter: `scripts/SCRIPTS.md` -> progress-counter._
 
 - Total features: **135**
-- Complete: 12
+- Complete: 14
 - In Progress: 0
 - In Review: 0
 - Blocked: 0
-- Not Started: 123
-- **Progress: 8.9%**
+- Not Started: 121
+- **Progress: 10.4%**
 
 Feature IDs are permanent. Never reuse or repurpose an ID. Split a large feature into new IDs (e.g. F018 -> F018 + F135) and keep the history. F001–F108 follow the reference roadmap; F109+ cover master-spec items not in the reference list.
 
@@ -51,8 +51,8 @@ Status: IN PROGRESS  ·  Depends on: Phase 01  ·  File: `phases/PHASE-02-CANVAS
 - [x] F010 — Pan and zoom
 - [x] F011 — Object selection
 - [x] F012 — Drag and drop
-- [ ] F013 — Multi-select
-- [ ] F014 — Alignment
+- [x] F013 — Multi-select
+- [x] F014 — Alignment
 - [ ] F015 — Auto-layout
 - [ ] F016 — Undo/redo
 - [ ] F017 — Minimap
