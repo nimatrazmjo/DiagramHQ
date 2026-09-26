@@ -2,6 +2,33 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F012 — Drag and Drop
+
+Status: COMPLETE
+
+Implemented:
+- API view layout persistence (`apps/api`):
+  - Created `ViewsModule`, `ViewsService`, and `ViewsController` in `apps/api/src/views/`.
+  - Added `PATCH /views/:viewId/objects/:objectId/position` to persist and upsert per-view object coordinates (`{ x, y }`) to the `view_objects` table in PostgreSQL.
+  - Added `GET /views/:viewId/objects` to retrieve layout positions for a view.
+  - Enforced multi-tenancy and role checks using `canWrite` from `@diagramhq/domain`; viewer roles receive 403 Forbidden, cross-tenant requests receive 404 Not Found.
+  - Added 7 unit tests in `views.service.spec.ts` and 4 integration tests in `views.e2e.spec.ts`.
+- Web command layer & drag-and-drop (`apps/web`):
+  - Created client-model command layer in `apps/web/lib/commands/` (`Command<T>`, `MoveNodeCommand`, `CommandDispatcher`, `defaultCommandDispatcher`).
+  - Integrated `MoveNodeCommand` with `execute()` and `undo()` capabilities, maintaining undo/redo stacks.
+  - Integrated `onNodeDragStop` in `InfiniteCanvas` to capture start and finish coordinates and dispatch `MoveNodeCommand` to the command dispatcher, strictly adhering to Layer Boundaries Rule 3 (no direct HTTP requests in canvas components).
+  - Added 17 unit and component tests in `apps/web/drag-drop.spec.ts` verifying command execution, undo/redo, command history, and canvas drag events.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (273 tests: 34 domain, 98 web, 141 api)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean)
+- Evaluator Rubric Score: 5.0 / 5.0 -> PASS. Log: `.harness/reviews/F012-review.md`.
+
+---
+
 ## 2026-09-26 — F011 — Object Selection
 
 Status: COMPLETE

@@ -13,35 +13,35 @@ Phase Name: Canvas
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F011
-Feature Name: Object selection
+Feature ID: F012
+Feature Name: Drag and drop
 Status: COMPLETE
 
 ## Overall Progress
 Total Features: 135
-Completed: 11
+Completed: 12
 In Progress: 0
 Blocked: 0
-Not Started: 124
-Progress: 8.1%
+Not Started: 123
+Progress: 8.9%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F011 — Object selection. Single-click node and edge selection on the canvas with active visual styling rings on CustomNodes (`SystemNode`, `AppNode`, `StoreNode`), Escape key clearing, pane click deselect, selection badge (`N SELECTED (ESC TO CLEAR)`), and toolbar `Clear` action. Synchronized with `useCanvasStore` (`selectNode`, `selectEdge`, `isNodeSelected`, `isEdgeSelected`, `clearSelection`) with zero domain entity models stored (Layer Boundaries Rule 4). Verified: 245 tests green across monorepo (34 domain, 81 web, 130 api), typecheck/lint/build/check-architecture clean. Evaluator score 5.0/5.0.
+F012 — Drag and drop. Reposition objects on canvas with `onNodeDragStop` event handler; client-model command layer (`MoveNodeCommand`, `CommandDispatcher`) decoupling canvas components from direct HTTP calls (strictly enforcing Layer Boundary Rule 3); layout position updates persist to PostgreSQL `view_objects` via `PATCH /views/:viewId/objects/:objectId/position` with multi-tenancy and `canWrite` role guard; 273 automated tests passing monorepo-wide (34 domain, 98 web, 141 api), typecheck/lint/build/check-architecture clean. Evaluator score 5.0/5.0.
 
-Prior: F010 — Pan and zoom (PR #11 merged). F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
+Prior: F011 — Object selection (PR #12 merged). F010 — Pan and zoom (PR #11 merged). F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
 
 ## Current Work
-F011 review and PR merge; next feature: F012 — Drag and drop.
+F012 review and PR merge; next feature: F013 — Multi-select.
 
 ## Next Task
-F012 — Drag and drop. See `CURRENT_TASK.md`.
+F013 — Multi-select. See `CURRENT_TASK.md`.
 
 ## Last Verified
-F011 @ feat/F011-object-selection — pnpm verify (typecheck / lint / test x245 / check-architecture) + pnpm build all green. PostgreSQL 16 container healthy.
+F012 @ feat/F012-drag-and-drop — pnpm verify (typecheck / lint / test x273 / check-architecture) + pnpm build all green. PostgreSQL 16 container healthy.
 
 ## Current Git Commit
-Branch `feat/F011-object-selection`. Working tree clean.
+Branch `feat/F012-drag-and-drop`. Working tree clean.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.

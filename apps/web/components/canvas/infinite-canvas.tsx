@@ -26,6 +26,11 @@ import {
   MAX_ZOOM,
   DEFAULT_ZOOM,
 } from '../../lib/canvas-store';
+import {
+  MoveNodeCommand,
+  defaultCommandDispatcher,
+  type Command,
+} from '../../lib/commands';
 import { nodeTypes } from './custom-nodes';
 
 export interface InfiniteCanvasProps {
@@ -36,6 +41,72 @@ export interface InfiniteCanvasProps {
   selectedNodeIds?: string[];
   selectedEdgeIds?: string[];
   className?: string;
+  viewId?: string;
+  onNodeDragStop?: (nodeId: string, position: { x: number; y: number }) => void;
+  onCommandDispatched?: (command: Command) => void;
+  persistFn?: (viewId: string, objectId: string, position: { x: number; y: number }) => Promise<void>;
+  dragStopHandlerRef?: React.MutableRefObject<((event: unknown, node: Node) => void) | null>;
+  onDragStopReady?: (handler: (event: unknown, node: Node) => void) => void;
+}
+
+export interface NodeDragStopHandlerOptions {
+  getNodes: () => Node[];
+  viewId?: string;
+  persistFn?: (viewId: string, objectId: string, position: { x: number; y: number }) => Promise<void>;
+  onCommandDispatched?: (command: Command) => void;
+  onNodeDragStop?: (nodeId: string, position: { x: number; y: number }) => void;
+  onPositionChange?: (nodeId: string, position: { x: number; y: number }) => void;
+  dragStartPositions?: Map<string, { x: number; y: number }>;
+}
+
+export function createNodeDragStopHandler({
+  getNodes,
+  viewId,
+  persistFn,
+  onCommandDispatched,
+  onNodeDragStop,
+  onPositionChange,
+  dragStartPositions,
+}: NodeDragStopHandlerOptions): (_event: unknown, node: Node) => Promise<{ x: number; y: number }> {
+  return async (_event: unknown, node: Node) => {
+    const currentNodes = getNodes();
+    const prevNode = currentNodes.find((n) => n.id === node.id);
+    const startPos = dragStartPositions?.get(node.id);
+    if (dragStartPositions) {
+      dragStartPositions.delete(node.id);
+    }
+
+    const prevPosition =
+      startPos ??
+      (prevNode
+        ? { x: prevNode.position.x, y: prevNode.position.y }
+        : { x: node.position.x, y: node.position.y });
+
+    const newPosition = { x: node.position.x, y: node.position.y };
+
+    const command = new MoveNodeCommand({
+      viewId,
+      objectId: node.id,
+      prevPosition,
+      newPosition,
+      persistFn,
+    });
+
+    if (onCommandDispatched) {
+      onCommandDispatched(command);
+    }
+    const result = await defaultCommandDispatcher.dispatch(command);
+
+    if (onNodeDragStop) {
+      onNodeDragStop(node.id, newPosition);
+    }
+
+    if (onPositionChange) {
+      onPositionChange(node.id, newPosition);
+    }
+
+    return result;
+  };
 }
 
 function toFlowNode(node: CanvasNode): Node {
@@ -83,6 +154,12 @@ function InfiniteCanvasContent({
   selectedNodeIds: propSelectedNodeIds,
   selectedEdgeIds: propSelectedEdgeIds,
   className = '',
+  viewId,
+  onNodeDragStop,
+  onCommandDispatched,
+  persistFn,
+  dragStopHandlerRef,
+  onDragStopReady,
 }: InfiniteCanvasProps): JSX.Element {
   const [nodes, setNodes] = useState<Node[]>(() => initialNodes.map(toFlowNode));
   const [edges, setEdges] = useState<Edge[]>(() => initialEdges.map(toFlowEdge));
@@ -95,6 +172,40 @@ function InfiniteCanvasContent({
   const totalSelected = selectedNodeIds.length + selectedEdgeIds.length;
   const currentZoom = useCanvasStore((s) => s.viewport.zoom);
   const reactFlow = useReactFlow();
+
+  const dragStartPositions = React.useRef<Map<string, { x: number; y: number }>>(new Map());
+
+  const handleNodeDragStart = useCallback((_event: unknown, node: Node) => {
+    const currentInState = nodes.find((n) => n.id === node.id);
+    dragStartPositions.current.set(node.id, {
+      x: currentInState ? currentInState.position.x : node.position.x,
+      y: currentInState ? currentInState.position.y : node.position.y,
+    });
+  }, [nodes]);
+
+  const handleNodeDragStop = useCallback(
+    createNodeDragStopHandler({
+      getNodes: () => nodes,
+      viewId,
+      persistFn,
+      onCommandDispatched,
+      onNodeDragStop,
+      onPositionChange: (nodeId, newPosition) => {
+        setNodes((nds) =>
+          nds.map((n) => (n.id === nodeId ? { ...n, position: newPosition } : n))
+        );
+      },
+      dragStartPositions: dragStartPositions.current,
+    }),
+    [nodes, viewId, persistFn, onCommandDispatched, onNodeDragStop]
+  );
+
+  if (dragStopHandlerRef) {
+    dragStopHandlerRef.current = handleNodeDragStop;
+  }
+  if (onDragStopReady) {
+    onDragStopReady(handleNodeDragStop);
+  }
 
   useEffect(() => {
     setNodes(initialNodes.map(toFlowNode));
@@ -210,6 +321,20 @@ function InfiniteCanvasContent({
         isSpacePanning ? 'cursor-grab active:cursor-grabbing' : ''
       } ${className}`}
     >
+      {/* Node position indicators for SSR verification & inspection */}
+      <div data-testid="canvas-nodes-data" className="hidden" aria-hidden="true">
+        {nodes.map((node) => (
+          <div
+            key={node.id}
+            data-testid={`node-pos-${node.id}`}
+            data-x={node.position.x}
+            data-y={node.position.y}
+          >
+            {node.id}: ({node.position.x}, {node.position.y})
+          </div>
+        ))}
+      </div>
+
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -221,6 +346,8 @@ function InfiniteCanvasContent({
         onMoveEnd={onMoveEnd}
         onNodeMouseEnter={onNodeMouseEnter}
         onNodeMouseLeave={onNodeMouseLeave}
+        onNodeDragStart={handleNodeDragStart}
+        onNodeDragStop={handleNodeDragStop}
         minZoom={MIN_ZOOM}
         maxZoom={MAX_ZOOM}
         panActivationKeyCode="Space"
