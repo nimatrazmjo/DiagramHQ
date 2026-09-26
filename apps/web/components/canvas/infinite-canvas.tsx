@@ -21,8 +21,15 @@ import {
   type SelectionMode,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import type { AlignAxis, AlignableNode, CanvasEdge, CanvasNode } from '@diagramhq/domain';
-import { alignNodes, distributeNodes, snapToGrid } from '@diagramhq/domain';
+import type {
+  AlignAxis,
+  AlignableNode,
+  CanvasEdge,
+  CanvasNode,
+  LayoutEdge,
+  LayoutEngineName,
+} from '@diagramhq/domain';
+import { alignNodes, applyLayout, distributeNodes, listLayoutEngines, snapToGrid } from '@diagramhq/domain';
 import {
   useCanvasStore,
   MIN_ZOOM,
@@ -33,6 +40,7 @@ import {
   MoveNodeCommand,
   MoveNodesCommand,
   AlignNodesCommand,
+  ApplyLayoutCommand,
   defaultCommandDispatcher,
   type Command,
   type NodeMoveItem,
@@ -40,6 +48,7 @@ import {
 } from '../../lib/commands';
 import { nodeTypes } from './custom-nodes';
 import { AlignmentToolbar } from './alignment-toolbar';
+import { LayoutMenu } from './layout-menu';
 
 export interface InfiniteCanvasProps {
   initialNodes?: CanvasNode[];
@@ -402,6 +411,71 @@ function InfiniteCanvasContent({
     [dispatchAlignOperation],
   );
 
+  // Guards against overlapping apply-layout calls the same way alignment
+  // does (see dispatchAlignOperation): a second click while one is still
+  // persisting could have its rollback stomp on the second op's positions.
+  const isApplyingLayoutRef = React.useRef(false);
+  const [isApplyingLayout, setIsApplyingLayout] = useState(false);
+
+  /**
+   * Apply a registered layout engine (F015) to the whole graph. Positions
+   * are computed synchronously (pure domain function) and applied to local
+   * node state immediately; `batchPersistFn` runs in the background via the
+   * command for undo history + server sync, and is reverted on failure.
+   */
+  const handleApplyLayout = useCallback(
+    (engine: LayoutEngineName) => {
+      if (isApplyingLayoutRef.current) return;
+      if (nodes.length === 0) return;
+
+      isApplyingLayoutRef.current = true;
+      setIsApplyingLayout(true);
+
+      const layoutNodes = nodes.map(toAlignableNode);
+      const layoutEdges: LayoutEdge[] = edges.map((e) => ({ source: e.source, target: e.target }));
+      const previousPositionById = new Map(layoutNodes.map((n) => [n.id, n.position]));
+
+      const positions = applyLayout(layoutNodes, layoutEdges, engine);
+      const positionById = new Map(layoutNodes.map((n, i) => [n.id, positions[i]!]));
+
+      setNodes((nds) =>
+        nds.map((n) => {
+          const position = positionById.get(n.id);
+          return position ? { ...n, position } : n;
+        }),
+      );
+
+      const command = new ApplyLayoutCommand({
+        viewId,
+        nodes: layoutNodes,
+        edges: layoutEdges,
+        engine,
+        persistFn: batchPersistFn,
+      });
+
+      if (onCommandDispatched) {
+        onCommandDispatched(command);
+      }
+
+      void defaultCommandDispatcher
+        .dispatch(command)
+        .catch((error) => {
+          console.error('Failed to persist layout:', error);
+          setNodes((nds) =>
+            nds.map((n) => {
+              const position = previousPositionById.get(n.id);
+              return position ? { ...n, position } : n;
+            }),
+          );
+        })
+        .finally(() => {
+          isApplyingLayoutRef.current = false;
+          setIsApplyingLayout(false);
+        });
+    },
+    [nodes, edges, viewId, batchPersistFn, onCommandDispatched],
+  );
+
   if (dragStopHandlerRef) {
     dragStopHandlerRef.current = handleNodeDragStop;
   }
@@ -692,6 +766,17 @@ function InfiniteCanvasContent({
               disabled={isAligning}
               snapEnabled={isSnapToGridEnabled}
               onToggleSnap={() => useCanvasStore.getState().toggleSnapToGrid()}
+            />
+          </Panel>
+        )}
+
+        {/* Bottom-Left Auto-Layout Menu — always available, whole-graph (F015) */}
+        {nodes.length > 1 && (
+          <Panel position="bottom-left" className="m-3">
+            <LayoutMenu
+              engines={listLayoutEngines()}
+              onApply={handleApplyLayout}
+              disabled={isApplyingLayout}
             />
           </Panel>
         )}
