@@ -1,24 +1,25 @@
-# Sprint Contract — F018: Architecture model
+# Sprint Contract — F019: C4 Context
 
-Feature: F018 — Architecture model
+Feature: F019 — C4 Context
 Phase: Phase 03 — Architecture Model
 Date: 2026-09-26
 
 ## 1. Scope & Acceptance Criteria
-- [x] Architecture holds objects + connections independent of diagrams:
-  - Domain types and model snapshot interface (`ArchitectureModel`) in `packages/domain`.
-  - Architecture entity persists independently from views/diagrams; views only contain projection layouts.
-- [x] CRUD via API; save/load; reload yields an identical model:
-  - API endpoints for Architecture, ModelObject, and ModelConnection lifecycle.
-  - Invariants strictly enforced: `canConnect`, `validateConnection`, `hasParentCycle`, RBAC `canWrite`.
-  - Saving objects & connections and reloading the architecture model yields an identical model structure (`isModelIdentical`).
-- [x] Optimistic writes with rollback on error:
-  - Client-side model manager applies optimistic writes to local state immediately.
-  - If backend mutation fails/rejects, rollback cleanly restores the previous model snapshot without data loss or inconsistency.
-- [x] Layer Boundary Invariants:
-  - Rule 1: Dependency direction strictly packages/domain <- apps/api and packages/domain <- apps/web.
+- [ ] User can create a Person, a System, and an External System:
+  - C4 Context models and helpers in domain layer (`packages/domain`).
+  - Person/Actor (`kind: 'actor'`), System (`kind: 'system'`), External System (`kind: 'system'`, `metadata: { external: true }`).
+- [ ] User can connect Person -> System:
+  - Valid connection between Person and System with relationship description (e.g. "Uses").
+- [ ] Objects persist after reload; render correctly; can be edited and deleted:
+  - Render with distinct C4 Context visual styling.
+  - CRUD operations persist to backend architecture model and survive reload.
+  - Can be edited (name, description, external tag) and deleted.
+- [ ] Drill from a system to its containers:
+  - System nodes support drill-down action leading into container view (Level 2).
+- [ ] Layer Boundary Invariants:
+  - Rule 1: Dependency direction strictly inward to `packages/domain`.
   - Rule 3: Canvas code mutates ONLY via client-model command layer.
   - Rule 4: Canvas holds no domain entity models in Zustand (transient UI/viewport/selection flags only).
-  - Zero `any` types across all changes.
-- [x] Monorepo verification:
+  - Zero `any` types.
+- [ ] Monorepo verification:
   - `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm check-architecture`, `pnpm build` pass with zero errors.
