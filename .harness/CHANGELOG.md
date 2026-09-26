@@ -2,6 +2,20 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — Runtime continuity protocol (harness tooling)
+
+Status: COMPLETE (tooling; not a product feature)
+
+Added:
+- `.harness/RUNTIME-CONTINUITY.md` — fail over between Claude Code (`claude`) and Antigravity (`agy`, Claude Sonnet) when a runtime hits its usage/session limit; resume from PROJECT_STATE.md.
+- `.harness/RUNTIME-SWITCHES.md` — switch ledger.
+- `scripts/agent-relay.sh` — optional relay that alternates the two runtimes across limits.
+- AGENTS.md gained a "Usage / session limits" rule; README layout updated.
+
+Notes: `agy` model id for Sonnet is set via `AGY_SONNET_MODEL` / `agy` -> `/model` (list includes Claude Sonnet). Relay switches on any runtime exit; tune to a limit-message grep if you want limit-only switching.
+
+---
+
 ## 2026-09-26 — F001 — Project architecture
 
 Status: COMPLETE

@@ -56,6 +56,9 @@ The explicit version, with routing rules, is `graph/workflow-graph.md`.
 7. Record git branch/commit (or `Working tree: DIRTY`) in `PROJECT_STATE.md`.
 8. Clearly set the next task in `CURRENT_TASK.md`.
 
+## Usage / session limits
+When you hit a usage or session limit, do not just stop: run the Session-completion protocol above (commit + update the tracker), then fail over to the other runtime per `RUNTIME-CONTINUITY.md` (Claude Code ⇄ Antigravity running Sonnet). The next runtime resumes from `PROJECT_STATE.md`.
+
 ## Hard stops (ask a human)
 - A change would delete user data or break a public API contract.
 - Scope/acceptance is ambiguous and the files don't resolve it.

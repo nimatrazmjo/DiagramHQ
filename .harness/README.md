@@ -22,6 +22,8 @@ This is the **harness** for building DiagramHQ, a model-first architecture intel
 ├── BLOCKERS.md              # known blockers
 ├── AGENTS.md                # operating contract (the rules)
 ├── CLAUDE.md                # session bootstrap checklist
+├── RUNTIME-CONTINUITY.md    # Claude Code <-> Antigravity failover on session limits
+├── RUNTIME-SWITCHES.md      # runtime switch ledger
 ├── phases/                  # PHASE-01..13 — feature defs + acceptance criteria
 ├── product/                 # PRODUCT.md, PERSONAS.md (the vision)
 ├── architecture/            # ARCHITECTURE, DATA_MODEL, API_SURFACE, MODULES + decisions/ (ADRs)
