@@ -1,6 +1,6 @@
 # Phase 03 — Architecture Model
 
-Status: NOT STARTED
+Status: IN PROGRESS
 
 ## Description
 The model-first core: C4 objects, the extensible object-type catalog, first-class connections, metadata, and lifecycle. The model is authoritative; diagrams (Phase 04) are projections of it (DEC-001 / ADR-0001).
@@ -12,7 +12,7 @@ Phase 01, Phase 02
 
 ### F018 — Architecture model
 
-Status: NOT STARTED
+Status: IN PROGRESS
 
 Description: The model entity: objects + connections persisted independently of any diagram.
 

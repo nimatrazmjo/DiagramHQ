@@ -8,21 +8,21 @@ Name: DiagramHQ
 Description: Model-first architecture intelligence platform (a "better than IcePanel" Architecture OS). The model — objects + connections — is the product; diagrams are projections of it. Full spec: `product/PRODUCT.md`. CLI: `dhq`.
 
 ## Current Phase
-Phase: 02
-Phase Name: Canvas
+Phase: 03
+Phase Name: Architecture Model
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F017
-Feature Name: Minimap
+Feature ID: F018
+Feature Name: Architecture model
 Status: IN PROGRESS
 
 ## Overall Progress
 Total Features: 135
 Completed: 17
-In Progress: 0
+In Progress: 1
 Blocked: 0
-Not Started: 118
+Not Started: 117
 Progress: 12.6%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
@@ -32,10 +32,10 @@ F017 — Minimap. Embedded canvas minimap with category-tinted nodes and blue se
 Prior: F016 — Undo/redo (PR #17 merged). F015 — Auto-layout (PR #16 merged). F014 — Alignment (PR #15 merged). F013 — Multi-select (PR #14 merged). F012 — Drag and drop (PR #13 merged). F011 — Object selection (PR #12 merged). F010 — Pan and zoom (PR #11 merged). F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
 
 ## Current Work
-F017 — Minimap, fullscreen, and focus mode implementation.
+F018 — Architecture model: model entities, objects + connections independent of diagrams, CRUD API, load/save, and optimistic updates with rollback.
 
 ## Next Task
-F017 — Minimap. See `CURRENT_TASK.md`.
+F018 — Architecture model. See `CURRENT_TASK.md`.
 
 ## Last Verified
 F016 @ main — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green.

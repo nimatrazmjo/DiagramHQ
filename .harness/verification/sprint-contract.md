@@ -1,32 +1,24 @@
-# Sprint Contract — F017: Minimap
+# Sprint Contract — F018: Architecture model
 
-Feature: F017 — Minimap
-Phase: Phase 02 — Canvas
+Feature: F018 — Architecture model
+Phase: Phase 03 — Architecture Model
 Date: 2026-09-26
 
 ## 1. Scope & Acceptance Criteria
-- [x] Minimap:
-  - MiniMap component rendered on canvas (`data-testid="minimap"`).
-  - Reflects graph nodes with styled colors by node category and highlights selected nodes.
-  - Click-to-navigate and pannable viewport mask.
-  - Toggle button in toolbar (`data-testid="toggle-minimap-btn"`) to show/hide minimap, backed by `useCanvasStore.isMinimapVisible`.
-- [x] Fullscreen mode:
-  - Fullscreen toggle button in toolbar (`data-testid="fullscreen-btn"`).
-  - Integrates with HTML5 Fullscreen API (`element.requestFullscreen` / `document.exitFullscreen`) with error handling.
-  - State in `useCanvasStore`: `isFullscreen`, `toggleFullscreen`, `setIsFullscreen`.
-  - Keyboard shortcut: <kbd>Shift</kbd>+<kbd>F</kbd> toggles fullscreen.
-- [x] Focus mode:
-  - Focus mode toggle button in toolbar (`data-testid="focus-mode-btn"`).
-  - When active (`isFocusMode: true`), isolates selection:
-    - Nodes not in the active selection are visually dimmed / subdued (opacity 0.15, grayscale).
-    - Edges not connected between selected nodes are visually dimmed / subdued (opacity 0.08).
-    - Active selection remains fully opaque with prominent styling.
-  - Focus badge rendered on canvas when focus mode is active: `data-testid="focus-mode-badge"`.
-  - <kbd>Escape</kbd> exits focus mode if no selection remains.
-  - State in `useCanvasStore`: `isFocusMode`, `toggleFocusMode`, `setIsFocusMode`.
-  - Keyboard shortcut: <kbd>Alt</kbd>+<kbd>F</kbd> or toolbar button.
+- [x] Architecture holds objects + connections independent of diagrams:
+  - Domain types and model snapshot interface (`ArchitectureModel`) in `packages/domain`.
+  - Architecture entity persists independently from views/diagrams; views only contain projection layouts.
+- [x] CRUD via API; save/load; reload yields an identical model:
+  - API endpoints for Architecture, ModelObject, and ModelConnection lifecycle.
+  - Invariants strictly enforced: `canConnect`, `validateConnection`, `hasParentCycle`, RBAC `canWrite`.
+  - Saving objects & connections and reloading the architecture model yields an identical model structure (`isModelIdentical`).
+- [x] Optimistic writes with rollback on error:
+  - Client-side model manager applies optimistic writes to local state immediately.
+  - If backend mutation fails/rejects, rollback cleanly restores the previous model snapshot without data loss or inconsistency.
 - [x] Layer Boundary Invariants:
-  - Strictly conforms to Rule 4: `useCanvasStore` manages only transient UI flags (`isMinimapVisible`, `isFullscreen`, `isFocusMode`), zero domain entity models.
-  - Zero `any` types.
+  - Rule 1: Dependency direction strictly packages/domain <- apps/api and packages/domain <- apps/web.
+  - Rule 3: Canvas code mutates ONLY via client-model command layer.
+  - Rule 4: Canvas holds no domain entity models in Zustand (transient UI/viewport/selection flags only).
+  - Zero `any` types across all changes.
 - [x] Monorepo verification:
   - `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm check-architecture`, `pnpm build` pass with zero errors.
