@@ -38,10 +38,10 @@ None. Ready to start F030 — Object metadata.
 F030 — Object metadata. Custom attributes, tags, and links on objects.
 
 ## Last Verified
-F029 @ feat/F029-connections — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green (232 tests passing).
+F029 @ main — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green (232 tests passing).
 
 ## Current Git Commit
-Branch `feat/F029-connections`. Ready for PR.
+Branch `main`. Working tree clean.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.
