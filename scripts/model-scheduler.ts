@@ -411,13 +411,13 @@ export class ModelScheduler {
 
       if (this.currentModelType === 'primary') {
         cmd = this.primaryRunner;
-        args = ['--model', this.primaryModel, '--dangerously-skip-permissions', prompt];
+        args = ['--model', this.primaryModel, '--dangerously-skip-permissions', '-p', prompt];
       } else {
         cmd = this.sonnetRunner;
         if (cmd === 'claude') {
           args = ['--dangerously-skip-permissions', '-p', prompt];
         } else {
-          args = ['--model', this.sonnetModel, '--dangerously-skip-permissions', prompt];
+          args = ['--model', this.sonnetModel, '--dangerously-skip-permissions', '-p', prompt];
         }
       }
 
