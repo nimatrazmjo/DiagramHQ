@@ -2,8 +2,10 @@ import { describe, it, expect } from 'vitest';
 import {
   createContextViewOptions,
   createContainerViewOptions,
+  createComponentViewOptions,
   isContextView,
   isContainerView,
+  isComponentView,
   getViewLevelLabel,
 } from './view';
 
@@ -21,20 +23,32 @@ describe('View Domain Helpers', () => {
     expect(opts.filter).toEqual({ app: 1 });
   });
 
+  it('createComponentViewOptions produces correct options', () => {
+    const opts = createComponentViewOptions('Auth Service Components', { containerId: 'app-1' });
+    expect(opts.kind).toBe('component');
+    expect(opts.name).toBe('Auth Service Components');
+    expect(opts.filter).toEqual({ containerId: 'app-1' });
+  });
+
   it('detects view kinds correctly', () => {
     const ctx = { kind: 'context' };
     const cnt = { kind: 'container' };
+    const cmp = { kind: 'component' };
     
     expect(isContextView(ctx)).toBe(true);
     expect(isContextView(cnt)).toBe(false);
     
     expect(isContainerView(cnt)).toBe(true);
     expect(isContainerView(ctx)).toBe(false);
+
+    expect(isComponentView(cmp)).toBe(true);
+    expect(isComponentView(cnt)).toBe(false);
   });
 
   it('getViewLevelLabel returns correct labels', () => {
     expect(getViewLevelLabel('context')).toBe('Level 1 — Context');
     expect(getViewLevelLabel('container')).toBe('Level 2 — Container');
+    expect(getViewLevelLabel('component')).toBe('Level 3 — Component');
     expect(getViewLevelLabel('custom')).toBe('Custom View');
   });
 });

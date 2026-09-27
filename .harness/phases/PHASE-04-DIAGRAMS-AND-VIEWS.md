@@ -37,7 +37,7 @@ Test: container diagram renders from the model.
 
 ### F034 — Component diagrams
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Component-level diagram.
 
