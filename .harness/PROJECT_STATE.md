@@ -13,35 +13,35 @@ Phase Name: Architecture Model
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F026
-Feature Name: Database
+Feature ID: F027
+Feature Name: Queue
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 25
+Completed: 26
 In Progress: 0
 Blocked: 0
-Not Started: 110
-Progress: 18.5%
+Not Started: 109
+Progress: 19.3%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F025 — Component. Object type component CRUD, rendering, container parent linkage, interface/technology metadata, and canvas projection. 6 API e2e tests, 4 domain tests, 7 web tests. PR #26 merged.
+F026 — Database. Object type database CRUD, rendering, container parent linkage, technology/schema/version metadata, and canvas projection. 6 API e2e tests, 4 domain tests, 5 web tests. PR #27.
 
-Prior: F024 — Application (PR #25 merged). F023 — System (PR #24 merged). F022 — Person (PR #23 merged). F021 — C4 Component (PR #22 merged). F020 — C4 Container (PR #21 merged). F019 — C4 Context (PR #20 merged). F018 — Architecture model (PR #19 merged). F017 — Minimap (PR #18 merged). F016 — Undo/redo (PR #17 merged). F015 — Auto-layout (PR #16 merged). F014 — Alignment (PR #15 merged). F013 — Multi-select (PR #14 merged). F012 — Drag and drop (PR #13 merged). F011 — Object selection (PR #12 merged). F010 — Pan and zoom (PR #11 merged). F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
+Prior: F025 — Component (PR #26 merged). F024 — Application (PR #25 merged). F023 — System (PR #24 merged). F022 — Person (PR #23 merged). F021 — C4 Component (PR #22 merged). F020 — C4 Container (PR #21 merged). F019 — C4 Context (PR #20 merged). F018 — Architecture model (PR #19 merged). F017 — Minimap (PR #18 merged). F016 — Undo/redo (PR #17 merged). F015 — Auto-layout (PR #16 merged). F014 — Alignment (PR #15 merged). F013 — Multi-select (PR #14 merged). F012 — Drag and drop (PR #13 merged). F011 — Object selection (PR #12 merged). F010 — Pan and zoom (PR #11 merged). F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
 
 ## Current Work
-None. Ready to start F026 — Database.
+None. Ready to start F027 — Queue.
 
 ## Next Task
-F026 — Database. Object type: database CRUD and render.
+F027 — Queue. Object type: queue/topic CRUD and render.
 
 ## Last Verified
-F025 @ main — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green (563 tests passing).
+F026 @ feat/F026-database — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green (216 tests passing).
 
 ## Current Git Commit
-Branch `main`. Working tree clean.
+Branch `feat/F026-database`. Ready for PR.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.

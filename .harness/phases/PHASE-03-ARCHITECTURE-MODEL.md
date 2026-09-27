@@ -143,7 +143,7 @@ Test: component CRUD + render.
 
 ### F026 — Database
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Object type: store/database.
 
