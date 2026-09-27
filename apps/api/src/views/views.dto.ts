@@ -25,6 +25,9 @@ export class CreateViewDto {
   @IsOptional()
   @IsObject()
   filter?: Record<string, unknown>;
+
+  @IsOptional()
+  isStarred?: boolean;
 }
 
 export class UpdateViewDto {
@@ -41,6 +44,9 @@ export class UpdateViewDto {
   @IsOptional()
   @IsObject()
   filter?: Record<string, unknown>;
+
+  @IsOptional()
+  isStarred?: boolean;
 }
 
 export class AddViewObjectDto {

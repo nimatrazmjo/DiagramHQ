@@ -6,7 +6,7 @@ import {
 import type { View, ViewObject } from '@prisma/client';
 import { canWrite, createId, matchesViewFilter, type MemberRole, type ViewFilter } from '@diagramhq/domain';
 import { PrismaService } from '../database/prisma.service';
-import type { UpdateObjectPositionDto, BatchUpdateObjectPositionsDto, CreateViewDto, AddViewObjectDto } from './views.dto';
+import type { UpdateObjectPositionDto, BatchUpdateObjectPositionsDto, CreateViewDto, AddViewObjectDto, UpdateViewDto } from './views.dto';
 
 export interface ViewObjectPosition {
   viewId: string;
@@ -292,6 +292,7 @@ export class ViewsService {
         name: dto.name,
         kind: dto.kind,
         filter: dto.filter ? (dto.filter as object) : undefined,
+        isStarred: dto.isStarred ?? false,
       },
     });
     return { view };
@@ -314,6 +315,27 @@ export class ViewsService {
     viewId: string,
   ): Promise<{ view: View }> {
     const { view } = await this.resolveViewMember(userId, viewId);
+    return { view };
+  }
+
+  async updateView(
+    userId: string,
+    viewId: string,
+    dto: UpdateViewDto,
+  ): Promise<{ view: View }> {
+    const { role } = await this.resolveViewMember(userId, viewId);
+    if (!canWrite(role)) {
+      throw new ForbiddenException('Viewer role does not have write permissions');
+    }
+    const view = await this.prisma.view.update({
+      where: { id: viewId },
+      data: {
+        ...(dto.name !== undefined ? { name: dto.name } : {}),
+        ...(dto.kind !== undefined ? { kind: dto.kind } : {}),
+        ...(dto.filter !== undefined ? { filter: dto.filter as object } : {}),
+        ...(dto.isStarred !== undefined ? { isStarred: dto.isStarred } : {}),
+      },
+    });
     return { view };
   }
 

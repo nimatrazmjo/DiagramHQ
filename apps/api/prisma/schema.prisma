@@ -239,6 +239,7 @@ model View {
   kind           ViewKind     @default(context)
   filter         Json?
   level          Int          @default(1)
+  isStarred      Boolean      @default(false) @map("is_starred")
   createdAt      DateTime     @default(now()) @map("created_at")
   updatedAt      DateTime     @updatedAt @map("updated_at")
   viewObjects    ViewObject[]

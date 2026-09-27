@@ -986,3 +986,6 @@ Implemented (before the tracking system):
 Verification: harness tree present; no application code.
 
 Notes: Retained for history. The 6-phase feature_list.json from this work is archived under `_archive/`.
+
+### 2026-09-27
+- **F037** (Saved views): COMPLETE. Updated `View` Prisma model and domain type to include `isStarred: Boolean`. Modified `createView` and added `updateView` endpoint `PATCH /views/:viewId` to support starring/unstarring a view. Validated via `saved-views.e2e.spec.ts` tests `F037: should save and star a named view` and `F037: should update an existing view to star it`. Tests passed locally via `pnpm verify`.

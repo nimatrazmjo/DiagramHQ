@@ -98,7 +98,7 @@ Status: IN PROGRESS  ·  Depends on: Phase 03  ·  File: `phases/PHASE-04-DIAGRA
 - [x] F034 — Component diagrams
 - [x] F035 — Dynamic views
 - [x] F036 — Filters
-- [ ] F037 — Saved views
+- [x] F037 — Saved views
 - [ ] F038 — Security views
 - [ ] F039 — Data views
 - [ ] F040 — Ownership views

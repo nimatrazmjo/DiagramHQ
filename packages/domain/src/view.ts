@@ -4,6 +4,7 @@ export interface CreateViewOptions {
   name: string;
   kind: ViewKind;
   filter?: Record<string, unknown>;
+  isStarred?: boolean;
 }
 
 /**

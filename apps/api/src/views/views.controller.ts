@@ -16,6 +16,7 @@ import {
   UpdateObjectPositionDto,
   BatchUpdateObjectPositionsDto,
   CreateViewDto,
+  UpdateViewDto,
   AddViewObjectDto,
 } from './views.dto';
 import { ViewsService, type ViewObjectPosition, type BatchUpdateResult } from './views.service';
@@ -48,6 +49,15 @@ export class ViewsController {
     @Param('viewId') viewId: string,
   ): Promise<{ view: View }> {
     return this.viewsService.getView(user.sub, viewId);
+  }
+
+  @Patch('views/:viewId')
+  async updateView(
+    @CurrentUser() user: AuthTokenPayload,
+    @Param('viewId') viewId: string,
+    @Body() body: UpdateViewDto,
+  ): Promise<{ view: View }> {
+    return this.viewsService.updateView(user.sub, viewId, body);
   }
 
   @Delete('views/:viewId')

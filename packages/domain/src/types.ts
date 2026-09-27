@@ -116,6 +116,7 @@ export interface View {
   kind: ViewKind;
   filter?: Record<string, unknown>;
   level?: number;
+  isStarred?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

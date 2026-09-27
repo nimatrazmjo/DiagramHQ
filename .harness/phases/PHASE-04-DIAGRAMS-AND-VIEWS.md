@@ -74,7 +74,7 @@ Test: a composed filter resolves to the expected set.
 
 ### F037 — Saved views
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Save + star named views.
 
