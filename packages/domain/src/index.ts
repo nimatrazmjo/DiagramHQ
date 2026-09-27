@@ -26,3 +26,4 @@ export * from './data-view';
 export * from './ownership-view';
 export * from './technology-view';
 export * from './persona-view';
+export * from './architecture-template';
