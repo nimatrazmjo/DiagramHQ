@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import type { View, ViewObject } from '@prisma/client';
-import { canWrite, createId, type MemberRole } from '@diagramhq/domain';
+import { canWrite, createId, matchesViewFilter, type MemberRole, type ViewFilter } from '@diagramhq/domain';
 import { PrismaService } from '../database/prisma.service';
 import type { UpdateObjectPositionDto, BatchUpdateObjectPositionsDto, CreateViewDto, AddViewObjectDto } from './views.dto';
 
@@ -187,10 +187,93 @@ export class ViewsService {
   }
 
   async getViewObjects(userId: string, viewId: string): Promise<ViewObject[]> {
-    await this.resolveViewMember(userId, viewId);
-    return this.prisma.viewObject.findMany({
+    const { view } = await this.resolveViewMember(userId, viewId);
+
+    const existingViewObjects = await this.prisma.viewObject.findMany({
       where: { viewId },
     });
+
+    // If the view has a dynamic filter defined, project live objects matching filter
+    if (view.filter && typeof view.filter === 'object' && Object.keys(view.filter).length > 0) {
+      const modelObjects = await this.prisma.modelObject.findMany({
+        where: { architectureId: view.architectureId },
+      });
+
+      const matchingObjects = modelObjects.filter((obj) =>
+        matchesViewFilter(
+          {
+            id: obj.id,
+            name: obj.name,
+            kind: obj.kind,
+            parentId: obj.parentId,
+            metadata: obj.metadata as Record<string, unknown> | null,
+          },
+          view.filter as ViewFilter,
+        ),
+      );
+
+      const positionMap = new Map(existingViewObjects.map((vo) => [vo.objectId, vo]));
+      const objectIdSet = new Set(matchingObjects.map((o) => o.id));
+
+      const combined: ViewObject[] = matchingObjects.map((obj) => {
+        const existing = positionMap.get(obj.id);
+        return {
+          viewId,
+          objectId: obj.id,
+          position: existing?.position ?? (obj.position as object | null) ?? null,
+          collapsed: existing?.collapsed ?? false,
+          hidden: existing?.hidden ?? false,
+          style: existing?.style ?? null,
+        } as ViewObject;
+      });
+
+      for (const evo of existingViewObjects) {
+        if (!objectIdSet.has(evo.objectId)) {
+          combined.push(evo);
+        }
+      }
+
+      return combined;
+    }
+
+    // Static/manual saved view
+    return existingViewObjects;
+  }
+
+  async getViewProjection(userId: string, viewId: string): Promise<{
+    view: View;
+    objects: Array<{
+      id: string;
+      name: string;
+      kind: string;
+      metadata: Record<string, unknown> | null;
+      position: { x: number; y: number } | null;
+    }>;
+  }> {
+    const { view } = await this.resolveViewMember(userId, viewId);
+    const viewObjects = await this.getViewObjects(userId, viewId);
+    const objectIds = viewObjects.map((vo) => vo.objectId);
+
+    const modelObjects = await this.prisma.modelObject.findMany({
+      where: { id: { in: objectIds } },
+    });
+
+    const voMap = new Map(viewObjects.map((vo) => [vo.objectId, vo]));
+
+    return {
+      view,
+      objects: modelObjects.map((obj) => {
+        const vo = voMap.get(obj.id);
+        const pos = vo?.position as { x: number; y: number } | null | undefined;
+        return {
+          id: obj.id,
+          name: obj.name,
+          kind: obj.kind,
+          metadata: obj.metadata as Record<string, unknown> | null,
+          position: pos ?? null,
+        };
+      }),
+    };
   }
 
   async createView(

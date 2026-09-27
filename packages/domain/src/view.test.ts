@@ -3,9 +3,11 @@ import {
   createContextViewOptions,
   createContainerViewOptions,
   createComponentViewOptions,
+  createDynamicViewOptions,
   isContextView,
   isContainerView,
   isComponentView,
+  isDynamicView,
   getViewLevelLabel,
 } from './view';
 
@@ -50,5 +52,22 @@ describe('View Domain Helpers', () => {
     expect(getViewLevelLabel('container')).toBe('Level 2 — Container');
     expect(getViewLevelLabel('component')).toBe('Level 3 — Component');
     expect(getViewLevelLabel('custom')).toBe('Custom View');
+  });
+
+  it('createDynamicViewOptions and isDynamicView work correctly', () => {
+    const opts = createDynamicViewOptions('Production AWS Services', {
+      environment: 'production',
+      cloud: 'AWS',
+    });
+    expect(opts.name).toBe('Production AWS Services');
+    expect(opts.kind).toBe('custom');
+    expect(opts.filter).toEqual({
+      environment: 'production',
+      cloud: 'AWS',
+    });
+
+    expect(isDynamicView(opts)).toBe(true);
+    expect(isDynamicView({ filter: {} })).toBe(false);
+    expect(isDynamicView({})).toBe(false);
   });
 });
