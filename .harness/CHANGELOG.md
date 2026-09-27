@@ -2,8 +2,23 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
-## 2026-09-27 — F035 — Dynamic views
 
+## 2026-09-27 — F038 — Security views
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `security-view.ts`: Implemented `projectSecurityViewToCanvas` to inject security data properties into model objects and dynamically project them into `GroupNode` elements representing `trustZone` boundaries.
+  - `view.ts`: Registered `security` ViewKind labeling support.
+- UI components (`apps/web/components/canvas/`):
+  - `security-badges.tsx`: Implemented a standalone overlay rendering SVG badges for public endpoints, auth, secrets, encryption, and compliance.
+  - Updated `app-node.tsx`, `system-node.tsx`, `database-node.tsx`, and `component-node.tsx` to display `SecurityBadges` conditional on `securityView` metadata.
+- Validation (`apps/web/security-views.spec.ts`):
+  - Unit tests verifying the proper mapping of the model into group boundary wrappers and extraction of the correct security flags to the canvas node props.
+
+
+## 2026-09-27 — F035 — Dynamic views
 Status: COMPLETE
 
 Implemented:
@@ -27,8 +42,21 @@ Verification:
 - Build: PASS (`pnpm build` clean — domain, api, web)
 - PR Review: Round 1 clean across all 8 angles. Verdict: APPROVED. Full log: `.harness/reviews/F035-review.md`.
 
-## 2026-09-27 — F034 — Component diagrams
 
+## 2026-09-27 — F038 — Security views
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `security-view.ts`: Implemented `projectSecurityViewToCanvas` to inject security data properties into model objects and dynamically project them into `GroupNode` elements representing `trustZone` boundaries.
+  - `view.ts`: Registered `security` ViewKind labeling support.
+- UI components (`apps/web/components/canvas/`):
+  - `security-badges.tsx`: Implemented a standalone overlay rendering SVG badges for public endpoints, auth, secrets, encryption, and compliance.
+  - Updated `app-node.tsx`, `system-node.tsx`, `database-node.tsx`, and `component-node.tsx` to display `SecurityBadges` conditional on `securityView` metadata.
+- Validation (`apps/web/security-views.spec.ts`):
+  - Unit tests verifying the proper mapping of the model into group boundary wrappers and extraction of the correct security flags to the canvas node props.
+## 2026-09-27 — F034 — Component diagrams
 Status: COMPLETE
 
 Implemented:
@@ -48,8 +76,21 @@ Verification:
 - Build: PASS (`pnpm build` clean — domain, api, web)
 - PR Review: Round 1 clean across all 8 angles. Verdict: APPROVED. Full log: `.harness/reviews/F034-review.md`.
 
-## 2026-09-27 — F033 — Container diagrams
 
+## 2026-09-27 — F038 — Security views
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `security-view.ts`: Implemented `projectSecurityViewToCanvas` to inject security data properties into model objects and dynamically project them into `GroupNode` elements representing `trustZone` boundaries.
+  - `view.ts`: Registered `security` ViewKind labeling support.
+- UI components (`apps/web/components/canvas/`):
+  - `security-badges.tsx`: Implemented a standalone overlay rendering SVG badges for public endpoints, auth, secrets, encryption, and compliance.
+  - Updated `app-node.tsx`, `system-node.tsx`, `database-node.tsx`, and `component-node.tsx` to display `SecurityBadges` conditional on `securityView` metadata.
+- Validation (`apps/web/security-views.spec.ts`):
+  - Unit tests verifying the proper mapping of the model into group boundary wrappers and extraction of the correct security flags to the canvas node props.
+## 2026-09-27 — F033 — Container diagrams
 Status: COMPLETE
 
 Implemented:
@@ -68,8 +109,21 @@ Verification:
 - Build: PASS (`pnpm build` clean — domain, api, web)
 - PR Review: Round 1 clean across all 8 angles. Verdict: APPROVED. Full log: `.harness/reviews/F033-review.md`.
 
-## 2026-09-27 — F032 — Context diagrams
 
+## 2026-09-27 — F038 — Security views
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `security-view.ts`: Implemented `projectSecurityViewToCanvas` to inject security data properties into model objects and dynamically project them into `GroupNode` elements representing `trustZone` boundaries.
+  - `view.ts`: Registered `security` ViewKind labeling support.
+- UI components (`apps/web/components/canvas/`):
+  - `security-badges.tsx`: Implemented a standalone overlay rendering SVG badges for public endpoints, auth, secrets, encryption, and compliance.
+  - Updated `app-node.tsx`, `system-node.tsx`, `database-node.tsx`, and `component-node.tsx` to display `SecurityBadges` conditional on `securityView` metadata.
+- Validation (`apps/web/security-views.spec.ts`):
+  - Unit tests verifying the proper mapping of the model into group boundary wrappers and extraction of the correct security flags to the canvas node props.
+## 2026-09-27 — F032 — Context diagrams
 Status: COMPLETE
 
 Implemented:
@@ -92,8 +146,21 @@ Verification:
 - Build: PASS (`pnpm build` clean — domain, api, web)
 - PR Review: Round 1 clean across all 8 angles. Verdict: APPROVED. Full log: `.harness/reviews/F032-review.md`.
 
-## 2026-09-27 — F031 — Object lifecycle
 
+## 2026-09-27 — F038 — Security views
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `security-view.ts`: Implemented `projectSecurityViewToCanvas` to inject security data properties into model objects and dynamically project them into `GroupNode` elements representing `trustZone` boundaries.
+  - `view.ts`: Registered `security` ViewKind labeling support.
+- UI components (`apps/web/components/canvas/`):
+  - `security-badges.tsx`: Implemented a standalone overlay rendering SVG badges for public endpoints, auth, secrets, encryption, and compliance.
+  - Updated `app-node.tsx`, `system-node.tsx`, `database-node.tsx`, and `component-node.tsx` to display `SecurityBadges` conditional on `securityView` metadata.
+- Validation (`apps/web/security-views.spec.ts`):
+  - Unit tests verifying the proper mapping of the model into group boundary wrappers and extraction of the correct security flags to the canvas node props.
+## 2026-09-27 — F031 — Object lifecycle
 Status: COMPLETE
 
 Implemented:
@@ -614,8 +681,21 @@ Verification:
 - Evaluator Rubric Score: 5.0 / 5.0 -> PASS. Log: `.harness/reviews/F012-review.md`.
 
 
-## 2026-09-27 — F036 — Filters
 
+## 2026-09-27 — F038 — Security views
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `security-view.ts`: Implemented `projectSecurityViewToCanvas` to inject security data properties into model objects and dynamically project them into `GroupNode` elements representing `trustZone` boundaries.
+  - `view.ts`: Registered `security` ViewKind labeling support.
+- UI components (`apps/web/components/canvas/`):
+  - `security-badges.tsx`: Implemented a standalone overlay rendering SVG badges for public endpoints, auth, secrets, encryption, and compliance.
+  - Updated `app-node.tsx`, `system-node.tsx`, `database-node.tsx`, and `component-node.tsx` to display `SecurityBadges` conditional on `securityView` metadata.
+- Validation (`apps/web/security-views.spec.ts`):
+  - Unit tests verifying the proper mapping of the model into group boundary wrappers and extraction of the correct security flags to the canvas node props.
+## 2026-09-27 — F036 — Filters
 Status: COMPLETE
 
 Implemented:
@@ -987,5 +1067,18 @@ Verification: harness tree present; no application code.
 
 Notes: Retained for history. The 6-phase feature_list.json from this work is archived under `_archive/`.
 
-### 2026-09-27
-- **F037** (Saved views): COMPLETE. Updated `View` Prisma model and domain type to include `isStarred: Boolean`. Modified `createView` and added `updateView` endpoint `PATCH /views/:viewId` to support starring/unstarring a view. Validated via `saved-views.e2e.spec.ts` tests `F037: should save and star a named view` and `F037: should update an existing view to star it`. Tests passed locally via `pnpm verify`.
+
+## 2026-09-27 — F038 — Security views
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `security-view.ts`: Implemented `projectSecurityViewToCanvas` to inject security data properties into model objects and dynamically project them into `GroupNode` elements representing `trustZone` boundaries.
+  - `view.ts`: Registered `security` ViewKind labeling support.
+- UI components (`apps/web/components/canvas/`):
+  - `security-badges.tsx`: Implemented a standalone overlay rendering SVG badges for public endpoints, auth, secrets, encryption, and compliance.
+  - Updated `app-node.tsx`, `system-node.tsx`, `database-node.tsx`, and `component-node.tsx` to display `SecurityBadges` conditional on `securityView` metadata.
+- Validation (`apps/web/security-views.spec.ts`):
+  - Unit tests verifying the proper mapping of the model into group boundary wrappers and extraction of the correct security flags to the canvas node props.
+### 2026-09-27- **F037** (Saved views): COMPLETE. Updated `View` Prisma model and domain type to include `isStarred: Boolean`. Modified `createView` and added `updateView` endpoint `PATCH /views/:viewId` to support starring/unstarring a view. Validated via `saved-views.e2e.spec.ts` tests `F037: should save and star a named view` and `F037: should update an existing view to star it`. Tests passed locally via `pnpm verify`.

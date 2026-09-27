@@ -21,3 +21,4 @@ export * from './object-metadata';
 export * from './lifecycle';
 export * from './view';
 export * from './view-filter';
+export * from './security-view';

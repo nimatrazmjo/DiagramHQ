@@ -86,7 +86,7 @@ Test: save a view; reopen restores filter + layout.
 
 ### F038 — Security views
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Security overlay.
 

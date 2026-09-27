@@ -1,16 +1,11 @@
-# CURRENT TASK: F037 — Saved views (COMPLETE)
+# CURRENT TASK: F039 — Data views (IN PROGRESS)
 
-## Status: COMPLETE
+## Status: IN PROGRESS
 
-## Completed Feature
-**F037 — Saved views** (Phase 04 — Diagrams and Views)
-- Updated `View` Prisma model and domain type to include `isStarred: Boolean`.
-- Modified `createView` and added `updateView` endpoint `PATCH /views/:viewId` to support starring/unstarring a view.
-- Handled filtering and saving a view via UI endpoints.
-- Validated via `saved-views.e2e.spec.ts` passing.
-
-## Pull Request
-- PR to be merged cleanly across test suites, linters, and builds, squashed merged into main.
+## Current Feature
+**F039 — Data views** (Phase 04 — Diagrams and Views)
+- Perspective by data classification and data movement.
+- Validate data view highlights classified data + flows.
 
 ## Next Feature
-- **F038 — Security views** (Phase 04 — Diagrams and Views)
+- **F040 — Ownership views** (Phase 04 — Diagrams and Views)

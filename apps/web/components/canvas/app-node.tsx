@@ -1,6 +1,7 @@
 import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { ApplicationNodeData } from '@diagramhq/domain';
+import { SecurityBadges } from './security-badges';
 
 function AppIcon(): JSX.Element {
   return (
@@ -127,6 +128,9 @@ export function AppNode({ id, data, selected }: NodeProps): JSX.Element {
           {description}
         </div>
       )}
+
+      {/* Security Overlays */}
+      <SecurityBadges {...(nodeData as unknown as React.ComponentProps<typeof SecurityBadges>)} />
 
       {/* Drill-down action to Components */}
       {canDrillDown && (

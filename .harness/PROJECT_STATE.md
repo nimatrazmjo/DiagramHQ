@@ -15,35 +15,37 @@ Status: IN PROGRESS
 ## Current Feature
 Feature ID: F038
 Feature Name: Security views
-Status: NOT STARTED
+Status: COMPLETE
 
 ## Overall Progress
 Total Features: 135
-Completed: 37
+Completed: 38
 In Progress: 0
 Blocked: 0
-Not Started: 98
-Progress: 27.4%
+Not Started: 97
+Progress: 28.1%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F037 — Saved views. Added `isStarred` property to views, with `PATCH /views/:viewId` endpoint. Validated by 2 new e2e tests in `saved-views.e2e.spec.ts`.
+F038 — Security views. Added projection wrappers and custom badge components for trust boundaries, endpoints, auth, compliance, secrets, and encryption.
+
+Prior: F037 — Saved views. Added `isStarred` property to views, with `PATCH /views/:viewId` endpoint. Validated by 2 new e2e tests in `saved-views.e2e.spec.ts`.
 
 Prior: F036 — Filters. FilterBuilder React component allowing composition of multi-attribute filters. Validated via renderToString tests and mapped to evaluateDynamicView. PR #37 merged.
 
 Prior: F035 — Dynamic views. Live filtered projections across 12 criteria (team, technology, environment, domain, owner, status, tag, criticality, data-classification, cloud, region, repository). View projection updates immediately on object metadata modifications. 4 API e2e tests, 1 web test, 3 domain tests. PR #36.
 
 ## Current Work
-None. Ready to start F038 — Security views.
+F039 — Data views. Perspective by data classification and data movement.
 
 ## Next Task
-F038 — Security views. Overlay trust boundaries, public endpoints, auth, encryption, secrets, PII/PCI/HIPAA/SOC2.
+F039 — Data views. Perspective by data classification and data movement.
 
 ## Last Verified
 F037 @ feat/F037-saved-views — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green.
 
 ## Current Git Commit
-Working tree: DIRTY on branch `feat/F037-saved-views`.
+Working tree: DIRTY on branch `feat/F038-security-views`.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { SystemNodeData } from '@diagramhq/domain';
+import { SecurityBadges } from './security-badges';
 
 function SystemIcon({ external }: { external?: boolean }): JSX.Element {
   return (
@@ -124,6 +125,9 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
             {description}
           </div>
         )}
+
+        {/* Security Overlays */}
+        <SecurityBadges {...(nodeData as unknown as React.ComponentProps<typeof SecurityBadges>)} />
       </div>
     );
   }
@@ -197,6 +201,9 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
           {description}
         </div>
       )}
+
+      {/* Security Overlays */}
+      <SecurityBadges {...(nodeData as unknown as React.ComponentProps<typeof SecurityBadges>)} />
 
       {/* Drill-down action to Containers */}
       {canDrillDown && (
