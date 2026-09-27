@@ -13,6 +13,11 @@ export default defineConfig(({ mode }) => ({
   plugins: [swc.vite()],
   test: {
     fileParallelism: false,
+    poolOptions: {
+      forks: {
+        singleFork: true,
+      },
+    },
     env: loadEnv(mode, path.resolve(__dirname, '../..'), ''),
   },
 }));
