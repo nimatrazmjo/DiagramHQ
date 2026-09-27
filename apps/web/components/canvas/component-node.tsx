@@ -2,6 +2,7 @@ import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { ComponentNodeData } from '@diagramhq/domain';
 import { SecurityBadges } from './security-badges';
+import { DataBadges } from './data-badges';
 
 function ControllerIcon(): JSX.Element {
   return (
@@ -287,6 +288,9 @@ export function ComponentNode({ id, data, selected }: NodeProps): JSX.Element {
 
       {/* Security Overlays */}
       <SecurityBadges {...(nodeData as unknown as React.ComponentProps<typeof SecurityBadges>)} />
+      
+      {/* Data Views Overlays */}
+      <DataBadges {...(nodeData as unknown as React.ComponentProps<typeof DataBadges>)} />
     </div>
   );
 }

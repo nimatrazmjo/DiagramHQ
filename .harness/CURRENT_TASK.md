@@ -1,11 +1,11 @@
-# CURRENT TASK: F039 — Data views (IN PROGRESS)
+# CURRENT TASK: F040 — Ownership views (NOT STARTED)
 
-## Status: IN PROGRESS
+## Status: NOT STARTED
 
 ## Current Feature
-**F039 — Data views** (Phase 04 — Diagrams and Views)
-- Perspective by data classification and data movement.
-- Validate data view highlights classified data + flows.
+**F040 — Ownership views** (Phase 04 — Diagrams and Views)
+- Color objects by team/owner; filter by owner
+- Test: ownership view colors by team correctly.
 
 ## Next Feature
-- **F040 — Ownership views** (Phase 04 — Diagrams and Views)
+- **F114 — Technology catalog** (Phase 04 — Diagrams and Views)

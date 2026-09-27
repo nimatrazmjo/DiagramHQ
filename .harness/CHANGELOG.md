@@ -1082,3 +1082,18 @@ Implemented:
 - Validation (`apps/web/security-views.spec.ts`):
   - Unit tests verifying the proper mapping of the model into group boundary wrappers and extraction of the correct security flags to the canvas node props.
 ### 2026-09-27- **F037** (Saved views): COMPLETE. Updated `View` Prisma model and domain type to include `isStarred: Boolean`. Modified `createView` and added `updateView` endpoint `PATCH /views/:viewId` to support starring/unstarring a view. Validated via `saved-views.e2e.spec.ts` tests `F037: should save and star a named view` and `F037: should update an existing view to star it`. Tests passed locally via `pnpm verify`.
+
+## 2026-09-27 — F039 — Data views
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `data-view.ts`: Implemented `projectDataViewToCanvas` to inject `dataClassification` into model objects and animate connections that represent data flow (`kind='data'` or possessing `dataClassification`).
+  - Exported `projectDataViewToCanvas` in `index.ts`.
+- UI components (`apps/web/components/canvas/`):
+  - `data-badges.tsx`: Implemented an overlay rendering color-coded SVG badges for public/internal/confidential/restricted data classifications.
+  - Updated `app-node.tsx`, `system-node.tsx`, `database-node.tsx`, and `component-node.tsx` to render `DataBadges` conditionally based on `dataView` and `dataClassification` props.
+- Validation (`apps/web/data-views.spec.ts`):
+  - Unit tests verifying proper mapping of the model into canvas node properties and edge animation for data flows.
+  - Tests successfully passed locally (`pnpm verify`).

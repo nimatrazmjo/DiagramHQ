@@ -2,6 +2,7 @@ import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { DatabaseNodeData } from '@diagramhq/domain';
 import { SecurityBadges } from './security-badges';
+import { DataBadges } from './data-badges';
 
 function DatabaseIcon(): JSX.Element {
   return (
@@ -143,6 +144,9 @@ export function DatabaseNode({ id: _id, data, selected }: NodeProps): JSX.Elemen
 
       {/* Security Overlays */}
       <SecurityBadges {...(nodeData as unknown as React.ComponentProps<typeof SecurityBadges>)} />
+      
+      {/* Data Views Overlays */}
+      <DataBadges {...(nodeData as unknown as React.ComponentProps<typeof DataBadges>)} />
     </div>
   );
 }

@@ -98,7 +98,7 @@ Test: security view renders boundaries + flags public endpoints.
 
 ### F039 — Data views
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Data-flow / classification perspective.
 

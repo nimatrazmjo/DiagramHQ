@@ -13,39 +13,39 @@ Phase Name: Diagrams and Views
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F038
-Feature Name: Security views
+Feature ID: F039
+Feature Name: Data views
 Status: COMPLETE
 
 ## Overall Progress
 Total Features: 135
-Completed: 38
+Completed: 39
 In Progress: 0
 Blocked: 0
-Not Started: 97
-Progress: 28.1%
+Not Started: 96
+Progress: 28.9%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F038 — Security views. Added projection wrappers and custom badge components for trust boundaries, endpoints, auth, compliance, secrets, and encryption.
+F039 — Data views. Added `projectDataViewToCanvas` projection and `<DataBadges />` component to highlight data classification and animate data movement flows.
+
+Prior: F038 — Security views. Added projection wrappers and custom badge components for trust boundaries, endpoints, auth, compliance, secrets, and encryption.
 
 Prior: F037 — Saved views. Added `isStarred` property to views, with `PATCH /views/:viewId` endpoint. Validated by 2 new e2e tests in `saved-views.e2e.spec.ts`.
 
 Prior: F036 — Filters. FilterBuilder React component allowing composition of multi-attribute filters. Validated via renderToString tests and mapped to evaluateDynamicView. PR #37 merged.
 
-Prior: F035 — Dynamic views. Live filtered projections across 12 criteria (team, technology, environment, domain, owner, status, tag, criticality, data-classification, cloud, region, repository). View projection updates immediately on object metadata modifications. 4 API e2e tests, 1 web test, 3 domain tests. PR #36.
-
 ## Current Work
-F039 — Data views. Perspective by data classification and data movement.
+F040 — Ownership views. Color by team/owner.
 
 ## Next Task
-F039 — Data views. Perspective by data classification and data movement.
+F040 — Ownership views. Color by team/owner.
 
 ## Last Verified
-F037 @ feat/F037-saved-views — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green.
+F039 @ feat/F039-data-views — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green.
 
 ## Current Git Commit
-Working tree: DIRTY on branch `feat/F038-security-views`.
+Working tree: CLEAN on branch `main`.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.
