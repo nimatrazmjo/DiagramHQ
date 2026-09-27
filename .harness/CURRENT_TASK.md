@@ -1,18 +1,18 @@
-# CURRENT TASK: F027 — Queue (COMPLETE)
+# CURRENT TASK: F028 — Group (COMPLETE)
 
 ## Status: COMPLETE
 
 ## Completed Feature
-**F027 — Queue** (Phase 03 — Architecture Model)
-- Model object with `kind = 'store'`, `metadata.storeKind = 'queue'`, and ID prefix `sto_`.
-- Queue kinds: `kafka`, `rabbitmq`, `sqs`, `eventbridge`, `pubsub`, `nats`, `queue`.
-- Queue-specific properties: `queueKind`, `technology`, `topics`, `partitions`, `retentionPolicy`, `description`, and optional parent application linkage (`parentId`).
-- Renders with dedicated Queue styling (message blocks icon, theme gradient borders and accents for brokers, kind badge `[Queue: ...]`, technology tag, topic chips).
-- Inter-entity async connections (Application -> Queue) and reload verification.
-- Full CRUD operations persist in the architecture model independently of any diagram, reload accurately, and cascade cleanly upon deletion.
+**F028 — Group** (Phase 03 — Architecture Model)
+- Model object with `kind = 'group'` and ID prefix `grp_`.
+- Group kinds: `boundary`, `zone`, `team`, `domain`, `namespace`, `group`.
+- Group-specific properties: `groupKind`, `color`, `collapsed`, `childCount`, `description`, and nesting via `parentId`.
+- Cycle prevention enforced on `parentId` assignments: attempting to nest a group inside its own descendant is rejected with HTTP 400.
+- Renders with dedicated Group styling (dashed boundary border, theme accents per kind, kind badge `[Group: ...]`, child count indicator, and 4-way handles).
+- Full CRUD operations persist in the architecture model independently of any diagram, reload accurately, and preserve children via `SetNull` on parent deletion.
 
 ## Pull Request
-- PR #28 created and reviewed clean.
+- PR #29 created and reviewed clean.
 
 ## Next Feature
-- **F028 — Group** (Phase 03 — Architecture Model)
+- **F029 — Connections** (Phase 03 — Architecture Model)
