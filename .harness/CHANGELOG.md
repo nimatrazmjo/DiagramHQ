@@ -2,6 +2,29 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F026 — Database
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `database.ts`: Database domain model, `DatabaseKind` ('postgresql' | 'mysql' | 'mongodb' | 'redis' | 'elasticsearch' | 'dynamodb' | 'sqlite' | 'cassandra' | 'store'), `DatabaseMetadata` interface (databaseKind, technology, schema, version, host, replication), `DatabaseNodeData` interface, helper `createDatabase`, predicate `isDatabase`, and canvas projection `projectDatabaseToCanvas`.
+  - `database.test.ts`: 4 unit tests verifying database creation, technology/schema/version metadata, standalone and parent linkage, and canvas projection.
+- API layer (`apps/api/src/architectures/`):
+  - `database.e2e.spec.ts`: 6 E2E tests verifying creation of Database under a parent Application (`parentId`), standalone Redis cache creation, data connection between Application and Database, metadata PATCH update, model snapshot reload verification, and cascade deletion.
+- Web client layer (`apps/web/`):
+  - `DatabaseNode` component (`components/canvas/database-node.tsx`) rendering cylinder icon, theme gradient styling, kind badge (`[Database: ...]`), technology tag, schema badge, and 4-way handles.
+  - Registration in `components/canvas/custom-nodes.tsx` for `database`.
+  - `database.spec.ts`: 5 tests covering SSR node rendering, redis variant styling, selection ring, and canvas projection.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (all monorepo tests passing: 216 tests passing across 27 test files)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean — domain, api, web)
+- PR Review: Round 1 clean across all 8 angles. Verdict: CLEAN. Full log: `.harness/reviews/F026-review.md`.
+
 ## 2026-09-26 — F025 — Component
 
 Status: COMPLETE
