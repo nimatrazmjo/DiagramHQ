@@ -49,7 +49,7 @@ F135 — Architecture templates. Starter templates.
 F115 @ feat/F115-persona-modes — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green.
 
 ## Current Git Commit
-Working tree: DIRTY on branch `feat/F115-persona-modes` (squash merge to main pending).
+Working tree: CLEAN on branch `main`. Squash merged from `feat/F115-persona-modes` at commit `a9f1988`.
 
 
 ## Important Notes
