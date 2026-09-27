@@ -3,6 +3,7 @@ import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { SystemNodeData } from '@diagramhq/domain';
 import { SecurityBadges } from './security-badges';
 import { DataBadges } from './data-badges';
+import { OwnershipBadges } from './ownership-badges';
 
 function SystemIcon({ external }: { external?: boolean }): JSX.Element {
   return (
@@ -132,6 +133,9 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
         
         {/* Data Views Overlays */}
         <DataBadges {...(nodeData as unknown as React.ComponentProps<typeof DataBadges>)} />
+        
+        {/* Ownership Views Overlays */}
+        <OwnershipBadges {...(nodeData as unknown as React.ComponentProps<typeof OwnershipBadges>)} />
       </div>
     );
   }
@@ -211,6 +215,9 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
       
       {/* Data Views Overlays */}
       <DataBadges {...(nodeData as unknown as React.ComponentProps<typeof DataBadges>)} />
+
+      {/* Ownership Views Overlays */}
+      <OwnershipBadges {...(nodeData as unknown as React.ComponentProps<typeof OwnershipBadges>)} />
 
       {/* Drill-down action to Containers */}
       {canDrillDown && (

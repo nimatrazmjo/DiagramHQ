@@ -23,3 +23,4 @@ export * from './view';
 export * from './view-filter';
 export * from './security-view';
 export * from './data-view';
+export * from './ownership-view';

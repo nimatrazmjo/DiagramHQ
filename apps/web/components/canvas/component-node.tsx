@@ -3,6 +3,7 @@ import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { ComponentNodeData } from '@diagramhq/domain';
 import { SecurityBadges } from './security-badges';
 import { DataBadges } from './data-badges';
+import { OwnershipBadges } from './ownership-badges';
 
 function ControllerIcon(): JSX.Element {
   return (
@@ -291,6 +292,9 @@ export function ComponentNode({ id, data, selected }: NodeProps): JSX.Element {
       
       {/* Data Views Overlays */}
       <DataBadges {...(nodeData as unknown as React.ComponentProps<typeof DataBadges>)} />
+
+      {/* Ownership Views Overlays */}
+      <OwnershipBadges {...(nodeData as unknown as React.ComponentProps<typeof OwnershipBadges>)} />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { ApplicationNodeData } from '@diagramhq/domain';
 import { SecurityBadges } from './security-badges';
 import { DataBadges } from './data-badges';
+import { OwnershipBadges } from './ownership-badges';
 
 function AppIcon(): JSX.Element {
   return (
@@ -135,6 +136,9 @@ export function AppNode({ id, data, selected }: NodeProps): JSX.Element {
       
       {/* Data Views Overlays */}
       <DataBadges {...(nodeData as unknown as React.ComponentProps<typeof DataBadges>)} />
+
+      {/* Ownership Views Overlays */}
+      <OwnershipBadges {...(nodeData as unknown as React.ComponentProps<typeof OwnershipBadges>)} />
 
       {/* Drill-down action to Components */}
       {canDrillDown && (
