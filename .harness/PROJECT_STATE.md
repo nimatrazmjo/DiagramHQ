@@ -41,7 +41,7 @@ F034 — Component diagrams. Component-level diagram.
 F033 @ feat/F033-container-diagrams — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green (266 web tests, 246 api tests, 139 domain tests).
 
 ## Current Git Commit
-Branch `feat/F033-container-diagrams`.
+Branch `main`. Working tree clean.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.
