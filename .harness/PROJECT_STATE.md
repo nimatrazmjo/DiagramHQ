@@ -38,10 +38,10 @@ None. Ready to start F027 — Queue.
 F027 — Queue. Object type: queue/topic CRUD and render.
 
 ## Last Verified
-F026 @ feat/F026-database — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green (216 tests passing).
+F026 @ main — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green (216 tests passing).
 
 ## Current Git Commit
-Branch `feat/F026-database`. Ready for PR.
+Branch `main`. Working tree clean.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.
