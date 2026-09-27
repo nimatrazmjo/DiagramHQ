@@ -41,7 +41,7 @@ F033 — Container diagrams. Container-level diagram.
 F032 @ feat/F032-context-diagrams — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green (263 web tests, 242 api tests, 139 domain tests).
 
 ## Current Git Commit
-Branch `feat/F032-context-diagrams`. Working tree clean.
+Branch `main`. Working tree clean.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.
