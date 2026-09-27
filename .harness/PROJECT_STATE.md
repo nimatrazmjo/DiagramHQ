@@ -41,7 +41,7 @@ F032 — Context diagrams. First diagram type from the model.
 F031 @ feat/F031-object-lifecycle — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green (260 web tests, 236 api tests, 135 domain tests).
 
 ## Current Git Commit
-Branch `feat/F031-object-lifecycle`. Working tree clean.
+Branch `main`. Working tree clean.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.
