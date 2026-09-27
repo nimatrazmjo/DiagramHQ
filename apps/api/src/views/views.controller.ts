@@ -4,21 +4,79 @@ import {
   Get,
   Param,
   Patch,
+  Post,
+  Delete,
   UseGuards,
 } from '@nestjs/common';
-import type { ViewObject } from '@prisma/client';
+import type { View, ViewObject } from '@prisma/client';
 import type { AuthTokenPayload } from '@diagramhq/domain';
 import { AuthGuard } from '../auth/auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
-import { UpdateObjectPositionDto, BatchUpdateObjectPositionsDto } from './views.dto';
+import {
+  UpdateObjectPositionDto,
+  BatchUpdateObjectPositionsDto,
+  CreateViewDto,
+  AddViewObjectDto,
+} from './views.dto';
 import { ViewsService, type ViewObjectPosition, type BatchUpdateResult } from './views.service';
 
 @UseGuards(AuthGuard)
-@Controller('views')
+@Controller()
 export class ViewsController {
   constructor(private readonly viewsService: ViewsService) {}
 
-  @Patch(':viewId/objects/:objectId/position')
+  @Post('architectures/:architectureId/views')
+  async createView(
+    @CurrentUser() user: AuthTokenPayload,
+    @Param('architectureId') architectureId: string,
+    @Body() body: CreateViewDto,
+  ): Promise<{ view: View }> {
+    return this.viewsService.createView(user.sub, architectureId, body);
+  }
+
+  @Get('architectures/:architectureId/views')
+  async listViews(
+    @CurrentUser() user: AuthTokenPayload,
+    @Param('architectureId') architectureId: string,
+  ): Promise<{ views: View[] }> {
+    return this.viewsService.listViews(user.sub, architectureId);
+  }
+
+  @Get('views/:viewId')
+  async getView(
+    @CurrentUser() user: AuthTokenPayload,
+    @Param('viewId') viewId: string,
+  ): Promise<{ view: View }> {
+    return this.viewsService.getView(user.sub, viewId);
+  }
+
+  @Delete('views/:viewId')
+  async deleteView(
+    @CurrentUser() user: AuthTokenPayload,
+    @Param('viewId') viewId: string,
+  ): Promise<{ success: boolean; id: string }> {
+    return this.viewsService.deleteView(user.sub, viewId);
+  }
+
+  @Post('views/:viewId/objects')
+  async addObjectToView(
+    @CurrentUser() user: AuthTokenPayload,
+    @Param('viewId') viewId: string,
+    @Body() body: AddViewObjectDto,
+  ): Promise<{ viewObject: { viewId: string; objectId: string; position?: { x: number; y: number } } }> {
+    return this.viewsService.addObjectToView(user.sub, viewId, body);
+  }
+
+  @Delete('views/:viewId/objects/:objectId')
+  async removeObjectFromView(
+    @CurrentUser() user: AuthTokenPayload,
+    @Param('viewId') viewId: string,
+    @Param('objectId') objectId: string,
+  ): Promise<{ success: boolean }> {
+    return this.viewsService.removeObjectFromView(user.sub, viewId, objectId);
+  }
+
+  @Patch('views/:viewId/objects/:objectId/position')
   async updateObjectPosition(
     @CurrentUser() user: AuthTokenPayload,
     @Param('viewId') viewId: string,
@@ -34,7 +92,7 @@ export class ViewsController {
     return { viewObject };
   }
 
-  @Patch(':viewId/objects/positions')
+  @Patch('views/:viewId/objects/positions')
   async updateMultipleObjectPositions(
     @CurrentUser() user: AuthTokenPayload,
     @Param('viewId') viewId: string,
@@ -48,7 +106,7 @@ export class ViewsController {
     return { result };
   }
 
-  @Get(':viewId/objects')
+  @Get('views/:viewId/objects')
   async getViewObjects(
     @CurrentUser() user: AuthTokenPayload,
     @Param('viewId') viewId: string,

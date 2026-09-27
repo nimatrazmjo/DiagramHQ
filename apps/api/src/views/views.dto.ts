@@ -1,5 +1,57 @@
-import { IsArray, IsNumber, IsString, IsNotEmpty, ArrayMinSize, ValidateNested } from 'class-validator';
+import { IsArray, IsEnum, IsNumber, IsObject, IsOptional, IsString, IsNotEmpty, ArrayMinSize, ValidateNested, MaxLength, MinLength } from 'class-validator';
 import { Type } from 'class-transformer';
+
+export enum ViewKindDto {
+  context = 'context',
+  container = 'container',
+  component = 'component',
+  security = 'security',
+  data = 'data',
+  ownership = 'ownership',
+  technology = 'technology',
+  custom = 'custom',
+}
+
+export class CreateViewDto {
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(1)
+  @MaxLength(100)
+  name!: string;
+
+  @IsEnum(ViewKindDto)
+  kind!: ViewKindDto;
+
+  @IsOptional()
+  @IsObject()
+  filter?: Record<string, unknown>;
+}
+
+export class UpdateViewDto {
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(100)
+  name?: string;
+
+  @IsOptional()
+  @IsEnum(ViewKindDto)
+  kind?: ViewKindDto;
+
+  @IsOptional()
+  @IsObject()
+  filter?: Record<string, unknown>;
+}
+
+export class AddViewObjectDto {
+  @IsString()
+  @IsNotEmpty()
+  objectId!: string;
+
+  @IsOptional()
+  @IsObject()
+  position?: { x: number; y: number };
+}
 
 export class UpdateObjectPositionDto {
   @IsNumber()
