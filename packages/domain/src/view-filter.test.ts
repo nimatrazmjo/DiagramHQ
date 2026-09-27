@@ -118,4 +118,26 @@ describe('Dynamic View Filtering (F035)', () => {
     expect(evaluateDynamicView(list, null)).toEqual(list);
     expect(evaluateDynamicView(list, undefined)).toEqual(list);
   });
+
+  it('filters by technology lifecycle from technologies object array (F114)', () => {
+    const objWithUnsupported: FilterableObject = {
+      id: 'obj-3',
+      name: 'Legacy Service',
+      kind: 'application',
+      metadata: {
+        technologies: [
+          { name: 'Node.js', version: '10', lifecycle: 'unsupported' },
+          { name: 'Redis', lifecycle: 'active' }
+        ]
+      }
+    };
+    
+    expect(matchesViewFilter(objWithUnsupported, { technologyLifecycle: 'unsupported' })).toBe(true);
+    expect(matchesViewFilter(objWithUnsupported, { technologyLifecycle: 'active' })).toBe(true);
+    expect(matchesViewFilter(objWithUnsupported, { technologyLifecycle: 'evaluate' })).toBe(false);
+
+    expect(matchesViewFilter(objWithUnsupported, { technology: 'Node.js' })).toBe(true);
+    expect(matchesViewFilter(objWithUnsupported, { technology: 'Redis' })).toBe(true);
+    expect(matchesViewFilter(objWithUnsupported, { technology: 'Java' })).toBe(false);
+  });
 });

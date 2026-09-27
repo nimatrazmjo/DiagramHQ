@@ -1,9 +1,10 @@
 import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import type { DatabaseNodeData } from '@diagramhq/domain';
+import type { DatabaseNodeData, Technology } from '@diagramhq/domain';
 import { SecurityBadges } from './security-badges';
 import { DataBadges } from './data-badges';
 import { OwnershipBadges } from './ownership-badges';
+import { TechnologyBadges } from './technology-badges';
 
 function DatabaseIcon(): JSX.Element {
   return (
@@ -151,6 +152,7 @@ export function DatabaseNode({ id: _id, data, selected }: NodeProps): JSX.Elemen
 
       {/* Ownership Views Overlays */}
       <OwnershipBadges {...(nodeData as unknown as React.ComponentProps<typeof OwnershipBadges>)} />
+        <TechnologyBadges technologyView={nodeData.technologyView as boolean | undefined} technologies={nodeData.technologies as Technology[] | undefined} />
     </div>
   );
 }

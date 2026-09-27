@@ -13,8 +13,8 @@ Phase Name: Diagrams and Views
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F040
-Feature Name: Ownership views
+Feature ID: F115
+Feature Name: Persona modes
 Status: COMPLETE
 
 ## Overall Progress
@@ -27,7 +27,9 @@ Progress: 29.6%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F040 — Ownership views. Added `projectOwnershipViewToCanvas` projection and `<OwnershipBadges />` component to color objects by team/owner.
+F114 — Technology catalog. Added Technology model properties, technology view projection, UI badges, and view filter lifecycle evaluation.
+
+Prior: F040 — Ownership views. Added `projectOwnershipViewToCanvas` projection and `<OwnershipBadges />` component to color objects by team/owner.
 
 Prior: F039 — Data views. Added `projectDataViewToCanvas` projection and `<DataBadges />` component to highlight data classification and animate data movement flows.
 
@@ -36,13 +38,13 @@ Prior: F038 — Security views. Added projection wrappers and custom badge compo
 Prior: F037 — Saved views. Added `isStarred` property to views, with `PATCH /views/:viewId` endpoint. Validated by 2 new e2e tests in `saved-views.e2e.spec.ts`.
 
 ## Current Work
-F114 — Technology catalog. Technology library + tech view.
+F115 — Persona modes. Same model, different lens.
 
 ## Next Task
-F114 — Technology catalog. Technology library + tech view.
+F115 — Persona modes. Same model, different lens.
 
 ## Last Verified
-F040 @ feat/F040-ownership-views — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green.
+F114 @ feat/F114-technology-catalog — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green.
 
 ## Current Git Commit
 Working tree: CLEAN on branch `main`.

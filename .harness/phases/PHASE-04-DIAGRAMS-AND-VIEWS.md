@@ -122,7 +122,7 @@ Test: ownership view colors by team correctly.
 
 ### F114 — Technology catalog
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Technology library + tech view.
 

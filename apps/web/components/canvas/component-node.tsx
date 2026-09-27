@@ -1,9 +1,10 @@
 import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import type { ComponentNodeData } from '@diagramhq/domain';
+import type { ComponentNodeData, Technology } from '@diagramhq/domain';
 import { SecurityBadges } from './security-badges';
 import { DataBadges } from './data-badges';
 import { OwnershipBadges } from './ownership-badges';
+import { TechnologyBadges } from './technology-badges';
 
 function ControllerIcon(): JSX.Element {
   return (
@@ -295,6 +296,7 @@ export function ComponentNode({ id, data, selected }: NodeProps): JSX.Element {
 
       {/* Ownership Views Overlays */}
       <OwnershipBadges {...(nodeData as unknown as React.ComponentProps<typeof OwnershipBadges>)} />
+        <TechnologyBadges technologyView={nodeData.technologyView as boolean | undefined} technologies={nodeData.technologies as Technology[] | undefined} />
     </div>
   );
 }

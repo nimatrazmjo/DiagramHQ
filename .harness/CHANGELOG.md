@@ -2,6 +2,22 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-27 — F114 — Technology catalog
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `types.ts`: Extended `Technology` interface with `version`, `vendor`, `lifecycle`, `securityStatus`, `owner`, and `docs`.
+  - `technology-view.ts`: Implemented `projectTechnologyViewToCanvas` to inject `technologies` metadata into nodes.
+  - `view-filter.ts`: Enhanced `matchesViewFilter` to evaluate `meta.technologies` array and added the `technologyLifecycle` criterion to support finding systems with unsupported technologies.
+  - `view-filter.test.ts`: Added unit tests verifying F114 technology lifecycle filtering ("unsupported").
+- API layer (`apps/api/prisma/schema.prisma`):
+  - Added new fields `version`, `vendor`, `lifecycle`, `securityStatus`, `owner`, and `docs` to the `Technology` model.
+- UI components (`apps/web/components/canvas/`):
+  - `technology-badges.tsx`: Implemented standalone SVG badges for rendering technologies and color-coding by lifecycle.
+  - Updated `app-node.tsx`, `system-node.tsx`, `database-node.tsx`, and `component-node.tsx` to display `<TechnologyBadges />`.
+
 
 ## 2026-09-27 — F038 — Security views
 

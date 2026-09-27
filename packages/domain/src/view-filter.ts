@@ -75,9 +75,40 @@ export function matchesViewFilter(
         break;
       }
 
+      case 'technologyLifecycle': {
+        let isMatch = false;
+        if (Array.isArray(meta.technologies)) {
+          for (const tech of meta.technologies) {
+            if (typeof tech === 'object' && tech !== null && 'lifecycle' in tech) {
+              if (matchesSingleOrArray(tech.lifecycle, expected)) {
+                isMatch = true;
+                break;
+              }
+            }
+          }
+        }
+        if (!isMatch) return false;
+        break;
+      }
+
       case 'technology': {
-        const actual = meta.technology;
-        if (!matchesSingleOrArray(actual, expected)) return false;
+        let isMatch = false;
+        if (matchesSingleOrArray(meta.technology, expected)) {
+          isMatch = true;
+        } else if (Array.isArray(meta.technologies)) {
+          for (const tech of meta.technologies) {
+            if (typeof tech === 'string' && matchesSingleOrArray(tech, expected)) {
+              isMatch = true;
+              break;
+            } else if (typeof tech === 'object' && tech !== null && 'name' in tech) {
+              if (matchesSingleOrArray(tech.name, expected)) {
+                isMatch = true;
+                break;
+              }
+            }
+          }
+        }
+        if (!isMatch) return false;
         break;
       }
 

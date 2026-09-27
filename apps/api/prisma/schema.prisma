@@ -204,6 +204,12 @@ model Technology {
   id                 String             @id
   name               String             @unique
   category           String?
+  version            String?
+  vendor             String?
+  lifecycle          String?
+  securityStatus     String?            @map("security_status")
+  owner              String?
+  docs               String?
   objectTechnologies ObjectTechnology[]
 
   @@map("technologies")

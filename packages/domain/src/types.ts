@@ -150,6 +150,12 @@ export interface Technology {
   readonly id: TechnologyId;
   name: string;
   category?: string | null;
+  version?: string | null;
+  vendor?: string | null;
+  lifecycle?: string | null;
+  securityStatus?: string | null;
+  owner?: string | null;
+  docs?: string | null;
 }
 
 export interface Flow {
