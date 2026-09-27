@@ -41,7 +41,7 @@ F036 — Filters. Filter controls and operations.
 F035 @ feat/F035-dynamic-views — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green (271 web tests, 254 api tests, 144 domain tests).
 
 ## Current Git Commit
-Branch `feat/F035-dynamic-views`.
+Branch `main`. Working tree clean.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.
