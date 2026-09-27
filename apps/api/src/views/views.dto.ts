@@ -1,4 +1,4 @@
-import { IsArray, IsEnum, IsNumber, IsObject, IsOptional, IsString, IsNotEmpty, ArrayMinSize, ValidateNested, MaxLength, MinLength } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsNumber, IsObject, IsOptional, IsString, IsNotEmpty, ArrayMinSize, ValidateNested, MaxLength, MinLength } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export enum ViewKindDto {
@@ -27,6 +27,7 @@ export class CreateViewDto {
   filter?: Record<string, unknown>;
 
   @IsOptional()
+  @IsBoolean()
   isStarred?: boolean;
 }
 
@@ -46,6 +47,7 @@ export class UpdateViewDto {
   filter?: Record<string, unknown>;
 
   @IsOptional()
+  @IsBoolean()
   isStarred?: boolean;
 }
 
