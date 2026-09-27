@@ -23,6 +23,14 @@ export function createContainerViewOptions(name: string, filter?: Record<string,
 }
 
 /**
+ * Component diagram view (Level 3) — F034.
+ * Shows components inside an application/container.
+ */
+export function createComponentViewOptions(name: string, filter?: Record<string, unknown>): CreateViewOptions {
+  return { name, kind: 'component', filter };
+}
+
+/**
  * Checks if a view is a Context diagram (L1).
  */
 export function isContextView(view: { kind: string }): boolean {
@@ -34,6 +42,13 @@ export function isContextView(view: { kind: string }): boolean {
  */
 export function isContainerView(view: { kind: string }): boolean {
   return view.kind === 'container';
+}
+
+/**
+ * Checks if a view is a Component diagram (L3).
+ */
+export function isComponentView(view: { kind: string }): boolean {
+  return view.kind === 'component';
 }
 
 /**

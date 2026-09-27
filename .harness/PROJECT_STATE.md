@@ -13,35 +13,35 @@ Phase Name: Diagrams and Views
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F034
-Feature Name: Component diagrams
+Feature ID: F035
+Feature Name: Dynamic views
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 33
+Completed: 34
 In Progress: 0
 Blocked: 0
-Not Started: 102
-Progress: 24.4%
+Not Started: 101
+Progress: 25.2%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F033 — Container diagrams. Container-level diagram (Level 2). Saved view rendering applications, stores, and queues with coordinate layout persistence and deletion isolation. 4 API e2e tests, 3 web tests. PR #34.
+F034 — Component diagrams. Component-level diagram (Level 3). Saved view rendering components with coordinate layout persistence and deletion isolation. 4 API e2e tests, 3 web tests. PR #35.
 
-Prior: F032 — Context diagrams (PR #33 merged). F031 — Object lifecycle (PR #32 merged). F030 — Object metadata (PR #31 merged). F029 — Connections (PR #30 merged). F028 — Group (PR #29 merged). F027 — Queue (PR #28 merged). F026 — Database (PR #27 merged). F025 — Component (PR #26 merged). F024 — Application (PR #25 merged). F023 — System (PR #24 merged). F022 — Person (PR #23 merged). F021 — C4 Component (PR #22 merged). F020 — C4 Container (PR #21 merged). F019 — C4 Context (PR #20 merged). F018 — Architecture model (PR #19 merged). F017 — Minimap (PR #18 merged). F016 — Undo/redo (PR #17 merged). F015 — Auto-layout (PR #16 merged). F014 — Alignment (PR #15 merged). F013 — Multi-select (PR #14 merged). F012 — Drag and drop (PR #13 merged). F011 — Object selection (PR #12 merged). F010 — Pan and zoom (PR #11 merged). F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
+Prior: F033 — Container diagrams (PR #34 merged). F032 — Context diagrams (PR #33 merged). F031 — Object lifecycle (PR #32 merged). F030 — Object metadata (PR #31 merged). F029 — Connections (PR #30 merged). F028 — Group (PR #29 merged). F027 — Queue (PR #28 merged). F026 — Database (PR #27 merged). F025 — Component (PR #26 merged). F024 — Application (PR #25 merged). F023 — System (PR #24 merged). F022 — Person (PR #23 merged). F021 — C4 Component (PR #22 merged). F020 — C4 Container (PR #21 merged). F019 — C4 Context (PR #20 merged). F018 — Architecture model (PR #19 merged). F017 — Minimap (PR #18 merged). F016 — Undo/redo (PR #17 merged). F015 — Auto-layout (PR #16 merged). F014 — Alignment (PR #15 merged). F013 — Multi-select (PR #14 merged). F012 — Drag and drop (PR #13 merged). F011 — Object selection (PR #12 merged). F010 — Pan and zoom (PR #11 merged). F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
 
 ## Current Work
-None. Ready to start F034 — Component diagrams.
+None. Ready to start F035 — Dynamic views.
 
 ## Next Task
-F034 — Component diagrams. Component-level diagram.
+F035 — Dynamic views. Live filtered projections.
 
 ## Last Verified
-F033 @ feat/F033-container-diagrams — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green (266 web tests, 246 api tests, 139 domain tests).
+F034 @ feat/F034-component-diagrams — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green (269 web tests, 250 api tests, 140 domain tests).
 
 ## Current Git Commit
-Branch `main`. Working tree clean.
+Branch `feat/F034-component-diagrams`.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.

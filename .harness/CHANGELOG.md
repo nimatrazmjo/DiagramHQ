@@ -2,6 +2,27 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-27 — F034 — Component diagrams
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `view.ts`: Added `createComponentViewOptions`, `isComponentView`, and Level 3 component label handling in `getViewLevelLabel`.
+  - `view.test.ts`: Added unit tests for component view options creation, level 3 label mapping, and type discrimination.
+- API layer (`apps/api/src/views/`):
+  - `component-diagram.e2e.spec.ts`: 4 E2E integration tests verifying component diagram creation (kind: component), layout rendering of components with positions, updating positions via endpoint, and deletion isolation preserving all underlying model entities.
+- Web client layer (`apps/web/`):
+  - `component-diagram.spec.ts`: 3 unit tests verifying component view options creation, level 3 labelling, and kind detection.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (all monorepo tests passing: 250 tests in API across 34 test files, 269 tests in web across 29 test files, 140 tests in domain across 21 test files)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean — domain, api, web)
+- PR Review: Round 1 clean across all 8 angles. Verdict: APPROVED. Full log: `.harness/reviews/F034-review.md`.
+
 ## 2026-09-27 — F033 — Container diagrams
 
 Status: COMPLETE
