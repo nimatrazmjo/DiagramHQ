@@ -41,7 +41,7 @@ F035 — Dynamic views. Live filtered projections.
 F034 @ feat/F034-component-diagrams — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green (269 web tests, 250 api tests, 140 domain tests).
 
 ## Current Git Commit
-Branch `feat/F034-component-diagrams`.
+Branch `main`. Working tree clean.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.
