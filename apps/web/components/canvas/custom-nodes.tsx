@@ -10,6 +10,7 @@ import { SystemNode } from './system-node';
 import { AppNode } from './app-node';
 import { ComponentNode } from './component-node';
 import { DatabaseNode } from './database-node';
+import { QueueNode } from './queue-node';
 
 export { C4ContextNode } from './c4-context-node';
 export { C4ContainerNode } from './c4-container-node';
@@ -21,6 +22,7 @@ export { SystemNode } from './system-node';
 export { AppNode } from './app-node';
 export { ComponentNode } from './component-node';
 export { DatabaseNode } from './database-node';
+export { QueueNode } from './queue-node';
 
 export interface CustomNodeData {
   label: string;
@@ -107,6 +109,7 @@ export const nodeTypes = {
   store: StoreNode,
   component: ComponentNode,
   database: DatabaseNode,
+  queue: QueueNode,
   c4Context: C4ContextNode,
   actor: PersonNode,
   person: PersonNode,

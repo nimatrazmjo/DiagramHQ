@@ -155,7 +155,7 @@ Test: database CRUD + render.
 
 ### F027 — Queue
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Object type: queue/topic.
 

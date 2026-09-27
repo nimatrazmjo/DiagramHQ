@@ -2,6 +2,29 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F027 — Queue
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `queue.ts`: Queue domain model, `QueueKind` ('kafka' | 'rabbitmq' | 'sqs' | 'eventbridge' | 'pubsub' | 'nats' | 'queue'), `QueueMetadata` interface (storeKind: 'queue', queueKind, technology, topics, partitions, retentionPolicy), `QueueNodeData` interface, helper `createQueue`, predicate `isQueue`, and canvas projection `projectQueueToCanvas`.
+  - `queue.test.ts`: 4 unit tests verifying queue creation, topics list, technology metadata, standalone and parent linkage, and canvas projection.
+- API layer (`apps/api/src/architectures/`):
+  - `queue.e2e.spec.ts`: 6 E2E tests verifying creation of Queue under a parent Application (`parentId`), standalone Kafka cluster creation, async connection between Application and Queue, metadata PATCH update, model snapshot reload verification, and cascade deletion.
+- Web client layer (`apps/web/`):
+  - `QueueNode` component (`components/canvas/queue-node.tsx`) rendering queue icon, theme gradient styling, kind badge (`[Queue: ...]`), technology tag, topic chips, and 4-way handles.
+  - Registration in `components/canvas/custom-nodes.tsx` for `queue`.
+  - `queue.spec.ts`: 4 tests covering SSR node rendering, kafka variant styling, and canvas projection.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (all monorepo tests passing: 222 tests passing across 28 test files)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean — domain, api, web)
+- PR Review: Round 1 clean across all 8 angles. Verdict: CLEAN. Full log: `.harness/reviews/F027-review.md`.
+
 ## 2026-09-26 — F026 — Database
 
 Status: COMPLETE
