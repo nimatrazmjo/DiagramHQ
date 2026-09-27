@@ -9,8 +9,9 @@ COPY packages/domain/package.json packages/domain/
 COPY apps/web/package.json apps/web/
 RUN pnpm install --frozen-lockfile --filter @diagramhq/web...
 COPY tsconfig.base.json ./
+COPY packages/domain packages/domain
 COPY apps/web apps/web
-RUN pnpm --filter @diagramhq/web build
+RUN pnpm --filter @diagramhq/domain build && pnpm --filter @diagramhq/web build
 
 FROM node:22-alpine AS runtime
 WORKDIR /app
