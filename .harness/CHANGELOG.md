@@ -2,6 +2,26 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-27 — F033 — Container diagrams
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `view.ts`: Container diagram helpers (`createContainerViewOptions`, `isContainerView`, `getViewLevelLabel` Level 2 formatting).
+- API layer (`apps/api/src/views/`):
+  - `container-diagram.e2e.spec.ts`: 4 E2E integration tests verifying container diagram creation (kind: container), layout rendering for applications, stores, and queues with coordinate persistence, position updates via `PATCH /views/:viewId/objects/:objectId/position`, and diagram deletion isolation without affecting the underlying architecture model entities.
+- Web client layer (`apps/web/`):
+  - `container-diagram.spec.ts`: 3 unit tests verifying container view options creation, level 2 labelling, and kind detection.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (all monorepo tests passing: 246 tests in API across 33 test files, 266 tests in web across 28 test files, 139 tests in domain across 21 test files)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean — domain, api, web)
+- PR Review: Round 1 clean across all 8 angles. Verdict: APPROVED. Full log: `.harness/reviews/F033-review.md`.
+
 ## 2026-09-27 — F032 — Context diagrams
 
 Status: COMPLETE
