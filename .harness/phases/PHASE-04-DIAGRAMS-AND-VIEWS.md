@@ -25,7 +25,7 @@ Test: object in two diagrams; delete from one keeps it in the other.
 
 ### F033 — Container diagrams
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Container-level diagram.
 
