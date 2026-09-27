@@ -38,10 +38,10 @@ None. Ready to start F029 — Connections.
 F029 — Connections. First-class connections with rich properties.
 
 ## Last Verified
-F028 @ feat/F028-group — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green (227 tests passing).
+F028 @ main — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green (227 tests passing).
 
 ## Current Git Commit
-Branch `feat/F028-group`. Ready for PR.
+Branch `main`. Working tree clean.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.
