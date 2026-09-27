@@ -1,6 +1,6 @@
 # Phase 04 — Diagrams and Views
 
-Status: NOT STARTED
+Status: IN PROGRESS
 
 ## Description
 Diagrams as saved views over the model, plus dynamic filtered views and persona modes. A view stores a filter + layout, never objects.
@@ -12,7 +12,7 @@ Phase 03
 
 ### F032 — Context diagrams
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Diagram = saved view (L1).
 

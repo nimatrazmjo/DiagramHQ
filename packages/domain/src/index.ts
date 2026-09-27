@@ -19,3 +19,4 @@ export * from './group';
 export * from './connection';
 export * from './object-metadata';
 export * from './lifecycle';
+export * from './view';
