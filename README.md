@@ -11,6 +11,7 @@ Most architecture tools are drawing tools: you draw boxes, they rot, and six mon
 
 ## Table of contents
 
+- [Docs](docs/README.md)
 - [Status](#status)
 - [Core concepts](#core-concepts)
 - [Features](#features)
@@ -198,10 +199,10 @@ cp .env.example .env
 # 3. Start Postgres + Redis
 docker compose up -d postgres redis
 
-# 4. Generate Prisma client, apply migrations, (optionally) seed
+# 4. Generate Prisma client, apply migrations, load demo data
 pnpm prisma:generate
-pnpm --filter @diagramhq/api prisma:migrate:deploy
-pnpm --filter @diagramhq/api prisma:seed      # optional sample data
+pnpm db:migrate
+pnpm db:seed
 
 # 5. Run web + api in watch mode (builds the domain package first)
 pnpm dev
@@ -210,7 +211,9 @@ pnpm dev
 - Web: <http://localhost:3000>
 - API: <http://localhost:4000> (health: <http://localhost:4000/health>)
 
-Sign in at `/login` with any valid email and a password of 6+ characters (dev auth stub).
+Sign in at `/login` as `admin@diagramhq.com` / `adminpassword` (more demo accounts in [docs/authentication.md](docs/authentication.md)), then run `./scripts/smoke-test.sh`.
+
+📘 **Full testing guide:** [`docs/`](docs/README.md) — setup, login & registration, seed data, manual test scenarios, automated tests, troubleshooting.
 
 ### Option B — everything in Docker
 
@@ -280,6 +283,9 @@ Root `package.json`:
 | `pnpm build` | Build every package |
 | `pnpm build:domain` | Build `@diagramhq/domain` only |
 | `pnpm prisma:generate` | Generate the Prisma client |
+| `pnpm db:migrate` | Apply Prisma migrations |
+| `pnpm db:seed` | Load / reset demo data (see [docs/seed-data.md](docs/seed-data.md)) |
+| `pnpm smoke` | API smoke test against a running, seeded stack |
 | `pnpm typecheck` | `tsc --noEmit` across the workspace |
 | `pnpm lint` / `pnpm lint:fix` | ESLint |
 | `pnpm format` / `pnpm format:check` | Prettier |
