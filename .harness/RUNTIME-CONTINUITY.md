@@ -42,7 +42,20 @@ cd <repo> && claude "<resume bootstrap>"
 ```
 Find the exact Sonnet id from `agy` → `/model` (the list includes Claude Sonnet). `/model` persists, so you normally set it once.
 
-## Automated relay (optional)
+## Autonomous Scheduler (`scripts/scheduler.sh`)
+An automated runner that manages the entire remaining queue (from `F036` to the end of `ROADMAP.md`), automatically failing over between the Primary model (Gemini / Antigravity) and Claude Sonnet (`claude-sonnet-4-6` / `claude` CLI):
+- **Single-Feature Isolation**: Runs one feature at a time according to `ROADMAP.md` and `CURRENT_TASK.md`.
+- **Session Limit Detection**: Continuously inspects stderr/stdout for rate-limits, session quotas, and reset timestamps.
+- **Automatic Failover**: When the primary model reaches its session limit, immediately resumes the active feature with Claude Sonnet.
+- **Dual Limit Cooldown Calculation**: If both models are exhausted, computes which model resets sooner (`min(resetTimeA, resetTimeB)`), sleeps until that exact time with a countdown, and resumes automatically.
+- **Run continuously**:
+```bash
+./scripts/scheduler.sh                       # runs F036 through end
+./scripts/scheduler.sh --start=F036 --end=F040
+./scripts/scheduler.sh --dry-run             # inspects queue without executing
+```
+
+## Automated relay (optional interactive)
 `scripts/agent-relay.sh` alternates between the two: it launches one runtime, and when that runtime exits (e.g. on a limit) it launches the other, looping. It pauses for a keypress before each switch so a normal quit doesn't ping-pong. Set the exact Sonnet id via `AGY_SONNET_MODEL`.
 ```
 ./scripts/agent-relay.sh          # start with Claude Code
