@@ -38,10 +38,10 @@ None. Ready to start F028 — Group.
 F028 — Group. Object type: group/boundary + nesting.
 
 ## Last Verified
-F027 @ feat/F027-queue — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green (222 tests passing).
+F027 @ main — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green (222 tests passing).
 
 ## Current Git Commit
-Branch `feat/F027-queue`. Ready for PR.
+Branch `main`. Working tree clean.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.
