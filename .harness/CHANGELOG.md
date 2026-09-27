@@ -2,6 +2,29 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-27 — F031 — Object lifecycle
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `lifecycle.ts`: Defined `LifecycleState` ('future' | 'live' | 'deprecated' | 'removed'), `LifecycleTransition` interface (from, to, at, by, reason), state machine transition table and validator `isValidLifecycleTransition`, transition factory `createLifecycleTransition` with error throwing on invalid transition, semantic UI styling `getLifecycleBadgeColor`, and array `LIFECYCLE_STATES`.
+  - `lifecycle.test.ts`: 4 unit tests verifying transition rules, invalid transition throwing, badge color mappings, and states array.
+  - `index.ts`: exported lifecycle module.
+- API layer (`apps/api/src/`):
+  - `vitest.config.ts`: configured `poolOptions: { forks: { singleFork: true } }` ensuring robust, contention-free sequential integration test execution across database suites.
+  - `architectures/lifecycle.e2e.spec.ts`: 4 E2E integration tests verifying lifecycle state assignment (`future`) via `PATCH /objects/:id`, transition recording (`future` -> `live`) in `metadata.lifecycleTransitions`, persistence verification on `GET /objects/:id`, and architecture model snapshot reload verification on `GET /architectures/:id/model`.
+- Web client layer (`apps/web/`):
+  - `lifecycle.spec.ts`: 3 unit tests verifying badge color, valid/invalid state transitions, and transition creation within the web application environment.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (all monorepo tests passing: 236 tests in API across 31 test files, 260 tests in web across 26 test files, 135 tests in domain across 20 test files)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean — domain, api, web)
+- PR Review: Round 1 clean across all 8 angles. Verdict: APPROVED. Full log: `.harness/reviews/F031-review.md`.
+
 ## 2026-09-26 — F030 — Object metadata
 
 Status: COMPLETE

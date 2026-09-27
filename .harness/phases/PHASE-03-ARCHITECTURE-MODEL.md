@@ -220,7 +220,7 @@ Test: edit a field; it persists and reflects on canvas.
 
 ### F031 — Object lifecycle
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Lifecycle states.
 
