@@ -62,7 +62,7 @@ Test: filter by team returns matches; adding a matching object updates the view.
 
 ### F036 — Filters
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Filter builder UI.
 

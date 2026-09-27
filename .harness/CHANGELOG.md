@@ -613,7 +613,25 @@ Verification:
 - Build: PASS (`pnpm build` clean)
 - Evaluator Rubric Score: 5.0 / 5.0 -> PASS. Log: `.harness/reviews/F012-review.md`.
 
+
+## 2026-09-27 — F036 — Filters
+
+Status: COMPLETE
+
+Implemented:
+- `FilterBuilder` React component in `apps/web/components/shell/filter-builder.tsx` for building dynamic view filters.
+- Supports 13 predefined filter keys: team, technology, environment, domain, owner, status, tag, criticality, dataClassification, cloud, region, repository, kind.
+- Allows user input to build a multi-attribute `ViewFilter` payload and emit it via `onFilterChange` and `onSaveView` hooks.
+- Tested filter UI state updates and structure in `apps/web/filter-builder.spec.tsx` via `renderToString`.
+- Validated that the constructed multi-attribute payload correctly filters domain objects via `evaluateDynamicView` from `@diagramhq/domain`.
+
+Verification:
+- pnpm typecheck, pnpm lint, pnpm check-architecture, and tests passed (254 web/api/domain tests, including 3 new FilterBuilder UI tests).
+- pnpm build successfully created the Next.js standalone app build.
+- PR reviewed, accepted, and squash merged to main as commit `106a94d`.
+
 ---
+
 
 ## 2026-09-26 — F011 — Object Selection
 
