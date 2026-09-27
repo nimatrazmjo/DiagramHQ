@@ -2,7 +2,34 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-27 — F115 — Persona modes
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `persona-view.ts`: Implemented `projectPersonaViewToCanvas()` — wraps the base canvas projection and stamps `personaMode` + `personaView: true` onto all node and edge data objects. Supports all 8 modes: architect, developer, security, sre, data, product, executive, auditor. Default mode: `architect`.
+  - `persona-view.test.ts`: Unit test — verifies `personaMode: 'security'` and `personaView: true` are stamped on nodes after projection.
+  - `index.ts`: `projectPersonaViewToCanvas` and `PersonaMode` already exported (no change needed).
+- UI components (`apps/web/components/canvas/`):
+  - `persona-badges.tsx`: `<PersonaBadges />` renders an icon + label badge for the active persona mode. 8 distinct colours and SVG icons, one per persona. Only renders when `personaView: true`.
+  - `app-node.tsx`, `system-node.tsx` (external + internal), `database-node.tsx`, `component-node.tsx`: integrated `<PersonaBadges />` after `<TechnologyBadges />`.
+- Tests (`apps/web/persona-modes.spec.ts`):
+  - All 8 personas produce `personaView=true` + correct `personaMode` on nodes and edges.
+  - Switching persona re-scopes the render without mutating the underlying model.
+  - Default persona (no mode specified) is `architect`.
+
+Verification evidence:
+```
+pnpm verify  →  exit 0 (typecheck clean, lint clean, 280 web + 256 API tests passed, check-architecture: clean)
+pnpm build   →  exit 0 (Next.js routes all compiled)
+branch: feat/F115-persona-modes  commit: 35c4621
+```
+
+Evaluator scores: acceptance=5, correctness=5, boundaries=5, modularity=5, evidence=5 => avg 5.0 — PASS
+
 ## 2026-09-27 — F114 — Technology catalog
+
 
 Status: COMPLETE
 

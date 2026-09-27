@@ -13,21 +13,23 @@ Phase Name: Diagrams and Views
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F115
-Feature Name: Persona modes
-Status: COMPLETE
+Feature ID: F135
+Feature Name: Architecture templates
+Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 40
+Completed: 41
 In Progress: 0
 Blocked: 0
-Not Started: 95
-Progress: 29.6%
+Not Started: 94
+Progress: 30.4%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F114 — Technology catalog. Added Technology model properties, technology view projection, UI badges, and view filter lifecycle evaluation.
+F115 — Persona modes. Added `projectPersonaViewToCanvas` domain projection, `<PersonaBadges />` UI component, and `persona-modes.spec.ts` integration spec covering all 8 persona modes.
+
+Prior: F114 — Technology catalog. Added Technology model properties, technology view projection, UI badges, and view filter lifecycle evaluation.
 
 Prior: F040 — Ownership views. Added `projectOwnershipViewToCanvas` projection and `<OwnershipBadges />` component to color objects by team/owner.
 
@@ -38,16 +40,17 @@ Prior: F038 — Security views. Added projection wrappers and custom badge compo
 Prior: F037 — Saved views. Added `isStarred` property to views, with `PATCH /views/:viewId` endpoint. Validated by 2 new e2e tests in `saved-views.e2e.spec.ts`.
 
 ## Current Work
-F115 — Persona modes. Same model, different lens.
+F135 — Architecture templates. Starter templates.
 
 ## Next Task
-F115 — Persona modes. Same model, different lens.
+F135 — Architecture templates. Starter templates.
 
 ## Last Verified
-F114 @ feat/F114-technology-catalog — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green.
+F115 @ feat/F115-persona-modes — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green.
 
 ## Current Git Commit
-Working tree: CLEAN on branch `main`.
+Working tree: DIRTY on branch `feat/F115-persona-modes` (squash merge to main pending).
+
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.

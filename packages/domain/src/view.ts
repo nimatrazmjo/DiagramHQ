@@ -84,6 +84,7 @@ export function getViewLevelLabel(kind: ViewKind | string): string {
     case 'data': return 'Data View';
     case 'ownership': return 'Ownership View';
     case 'technology': return 'Technology View';
+    case 'persona': return 'Persona View';
     default: return 'Custom View';
   }
 }

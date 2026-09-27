@@ -31,6 +31,7 @@ export type ViewKind =
   | 'data'
   | 'ownership'
   | 'technology'
+  | 'persona'
   | 'custom';
 
 export type MemberRole = 'owner' | 'admin' | 'editor' | 'viewer';

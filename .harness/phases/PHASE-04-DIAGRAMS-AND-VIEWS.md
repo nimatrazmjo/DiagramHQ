@@ -1,6 +1,6 @@
 # Phase 04 — Diagrams and Views
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Description
 Diagrams as saved views over the model, plus dynamic filtered views and persona modes. A view stores a filter + layout, never objects.
@@ -135,7 +135,7 @@ Test: tag with a tech; query unsupported returns them.
 
 ### F115 — Persona modes
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Same model, different lens.
 

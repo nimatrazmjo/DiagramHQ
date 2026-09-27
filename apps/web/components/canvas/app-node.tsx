@@ -1,10 +1,11 @@
 import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import type { ApplicationNodeData, Technology } from '@diagramhq/domain';
+import type { ApplicationNodeData, Technology, PersonaMode } from '@diagramhq/domain';
 import { SecurityBadges } from './security-badges';
 import { DataBadges } from './data-badges';
 import { OwnershipBadges } from './ownership-badges';
 import { TechnologyBadges } from './technology-badges';
+import { PersonaBadges } from './persona-badges';
 
 function AppIcon(): JSX.Element {
   return (
@@ -141,6 +142,9 @@ export function AppNode({ id, data, selected }: NodeProps): JSX.Element {
       {/* Ownership Views Overlays */}
       <OwnershipBadges {...(nodeData as unknown as React.ComponentProps<typeof OwnershipBadges>)} />
         <TechnologyBadges technologyView={nodeData.technologyView as boolean | undefined} technologies={nodeData.technologies as Technology[] | undefined} />
+
+      {/* Persona Mode Overlay */}
+      <PersonaBadges personaView={nodeData.personaView as boolean | undefined} personaMode={nodeData.personaMode as PersonaMode | undefined} />
 
       {/* Drill-down action to Components */}
       {canDrillDown && (

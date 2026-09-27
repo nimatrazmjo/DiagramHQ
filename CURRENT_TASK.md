@@ -1,12 +1,14 @@
-# Current Task: F115 — Persona modes
+# Current Task: F135 — Architecture templates
 
 **Status**: NOT STARTED
 
 ## Description
-Same model, different lens. Modes: architect, developer, security, SRE, data, product, executive, auditor. A persona re-scopes the render without changing the model.
+Starter templates. Templates: SaaS, e-commerce, fintech, healthcare, microservices, monolith, serverless, event-driven, data-platform, Kubernetes, AWS/Azure/GCP. Instantiate a template into a new architecture.
 
 ## Next Steps
-1. Review `PHASE-04-DIAGRAMS-AND-VIEWS.md` for F115 acceptance criteria.
-2. Implement persona mode state and toggles in the UI.
-3. Update projection logic to respect the active persona.
-4. Verify with `pnpm verify`.
+1. Review `PHASE-04-DIAGRAMS-AND-VIEWS.md` for F135 acceptance criteria.
+2. Define a `ArchitectureTemplate` type in the domain layer with objects + connections.
+3. Implement template registry and pre-built template definitions.
+4. Wire template instantiation (create architecture from template).
+5. Add UI to list and pick templates.
+6. Verify with `pnpm verify`.
