@@ -200,7 +200,7 @@ Test: integration: create a connection with properties; an invalid endpoint is r
 
 ### F030 — Object metadata
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: The inspector + the full metadata set.
 

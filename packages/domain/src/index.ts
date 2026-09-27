@@ -17,3 +17,4 @@ export * from './database';
 export * from './queue';
 export * from './group';
 export * from './connection';
+export * from './object-metadata';

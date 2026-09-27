@@ -2,6 +2,26 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F030 — Object metadata
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `object-metadata.ts`: Full metadata schema `ObjectMetadataSchema` (identity, ownership, technical, classification, risk & compliance, SLA/RTO/RPO, documentation/repository, lifecycle transitions), option constants (`OBJECT_STATUS_OPTIONS`, `OBJECT_ENVIRONMENT_OPTIONS`, `OBJECT_CRITICALITY_OPTIONS`, `OBJECT_DATA_CLASSIFICATION_OPTIONS`), and `mergeObjectMetadata` helper.
+  - `object-metadata.test.ts`: 6 unit tests verifying schema definitions, metadata merging, empty fallback, and options arrays.
+- Web client layer (`apps/web/`):
+  - `InspectorPanel` (`components/shell/inspector-panel.tsx`): interactive object inspector panel with collapsed strip, tab headers, item header with kind badge, and comprehensive grouped inputs (Identity, Ownership, Technical, Classification, Risk & Compliance, SLA, Documentation).
+  - `inspector-panel.spec.tsx`: 4 unit tests verifying collapsed state toggle, field inputs, active object header, and `onMetadataChange` dispatching.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (all monorepo tests passing: 232 tests in API, 261 in web, 131 in domain)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean — domain, api, web)
+- PR Review: Round 1 clean across all 8 angles. Verdict: APPROVED. Full log: `.harness/reviews/F030-review.md`.
+
 ## 2026-09-26 — F029 — Connections
 
 Status: COMPLETE
