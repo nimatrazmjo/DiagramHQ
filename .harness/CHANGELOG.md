@@ -2,6 +2,26 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F029 — Connections
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `connection.ts`: Rich connection metadata types (`ConnectionProtocol`, `ConnectionDirection`, `ConnectionStatus`, `ConnectionAuth`, `ConnectionEncryption`, `RichConnectionMetadata`), constant `RICH_CONNECTION_PROTOCOLS`, predicate `isRichConnection`, and helper `createRichConnectionMetadata`.
+  - `connection.test.ts`: Unit tests verifying metadata construction, protocol lists, and rich connection discrimination.
+- API layer (`apps/api/src/architectures/`):
+  - `connection.e2e.spec.ts`: 5 E2E tests verifying connection creation with rich metadata (protocol, auth, encryption, port), strict endpoint validation (cross-architecture / cross-version pairs rejected with HTTP 400), self-connection rejection (HTTP 400), metadata patching (latency, errorBehavior), and model snapshot reload verification.
+  - `apps/api/vitest.config.ts`: disabled `fileParallelism` to eliminate PostgreSQL connection contention during concurrent E2E test runs.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (all monorepo tests passing: 232 tests in API, 253 in web, 125 in domain)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean — domain, api, web)
+- PR Review: Round 1 clean across all 8 angles. Verdict: CLEAN. Full log: `.harness/reviews/F029-review.md`.
+
 ## 2026-09-26 — F028 — Group
 
 Status: COMPLETE

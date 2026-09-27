@@ -12,6 +12,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig(({ mode }) => ({
   plugins: [swc.vite()],
   test: {
+    fileParallelism: false,
     env: loadEnv(mode, path.resolve(__dirname, '../..'), ''),
   },
 }));
