@@ -148,7 +148,7 @@ Test: switching persona re-scopes the render.
 
 ### F135 — Architecture templates
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Starter templates.
 
