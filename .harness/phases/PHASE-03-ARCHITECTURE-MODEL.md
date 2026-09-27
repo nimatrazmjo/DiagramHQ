@@ -179,7 +179,7 @@ Test: group/ungroup; a nesting cycle is rejected.
 
 ### F029 — Connections
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: First-class connections with rich properties.
 

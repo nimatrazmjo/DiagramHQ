@@ -13,35 +13,35 @@ Phase Name: Architecture Model
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F029
-Feature Name: Connections
+Feature ID: F030
+Feature Name: Object metadata
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 28
+Completed: 29
 In Progress: 0
 Blocked: 0
-Not Started: 107
-Progress: 20.7%
+Not Started: 106
+Progress: 21.5%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F028 — Group. Object type group/boundary CRUD, rendering, nesting via parent_id, cycle prevention, and canvas projection. 5 API e2e tests, 4 domain tests, 4 web tests. PR #29.
+F029 — Connections. First-class connections with rich properties, endpoint validation across same architecture and version, cycle/self-connection prevention, and model persistence. 5 API e2e tests, 3 domain tests. PR #30.
 
-Prior: F027 — Queue (PR #28 merged). F026 — Database (PR #27 merged). F025 — Component (PR #26 merged). F024 — Application (PR #25 merged). F023 — System (PR #24 merged). F022 — Person (PR #23 merged). F021 — C4 Component (PR #22 merged). F020 — C4 Container (PR #21 merged). F019 — C4 Context (PR #20 merged). F018 — Architecture model (PR #19 merged). F017 — Minimap (PR #18 merged). F016 — Undo/redo (PR #17 merged). F015 — Auto-layout (PR #16 merged). F014 — Alignment (PR #15 merged). F013 — Multi-select (PR #14 merged). F012 — Drag and drop (PR #13 merged). F011 — Object selection (PR #12 merged). F010 — Pan and zoom (PR #11 merged). F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
+Prior: F028 — Group (PR #29 merged). F027 — Queue (PR #28 merged). F026 — Database (PR #27 merged). F025 — Component (PR #26 merged). F024 — Application (PR #25 merged). F023 — System (PR #24 merged). F022 — Person (PR #23 merged). F021 — C4 Component (PR #22 merged). F020 — C4 Container (PR #21 merged). F019 — C4 Context (PR #20 merged). F018 — Architecture model (PR #19 merged). F017 — Minimap (PR #18 merged). F016 — Undo/redo (PR #17 merged). F015 — Auto-layout (PR #16 merged). F014 — Alignment (PR #15 merged). F013 — Multi-select (PR #14 merged). F012 — Drag and drop (PR #13 merged). F011 — Object selection (PR #12 merged). F010 — Pan and zoom (PR #11 merged). F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
 
 ## Current Work
-None. Ready to start F029 — Connections.
+None. Ready to start F030 — Object metadata.
 
 ## Next Task
-F029 — Connections. First-class connections with rich properties.
+F030 — Object metadata. Custom attributes, tags, and links on objects.
 
 ## Last Verified
-F028 @ main — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green (227 tests passing).
+F029 @ feat/F029-connections — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green (232 tests passing).
 
 ## Current Git Commit
-Branch `main`. Working tree clean.
+Branch `feat/F029-connections`. Ready for PR.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.
