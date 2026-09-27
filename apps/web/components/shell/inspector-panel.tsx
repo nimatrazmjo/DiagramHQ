@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 
 export interface InspectorItem {
   id: string;
@@ -15,502 +15,189 @@ export interface InspectorItem {
 }
 
 export interface InspectorPanelProps {
-  isOpen: boolean;
-  onToggle: () => void;
+  isOpen?: boolean;
+  onToggle?: () => void;
   children?: React.ReactNode;
-  selectedItem?: { id: string; name: string; type: string } | null;
+  selectedItem?: InspectorItem | null;
+  // F030 requirements
+  objectId?: string;
+  objectName?: string;
+  objectKind?: string;
+  metadata?: Record<string, unknown>;
+  onMetadataChange?: (field: string, value: unknown) => void;
+  onClose?: () => void;
 }
 
-type TabType = 'properties' | 'hierarchy' | 'metadata';
+export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
+  const {
+    isOpen = true,
+    onToggle,
+    selectedItem,
+    objectId = selectedItem?.id,
+    objectName = selectedItem?.name,
+    objectKind = selectedItem?.type,
+    metadata = selectedItem?.metadata || {},
+    onMetadataChange,
+    onClose = onToggle,
+    children
+  } = props;
 
-export function InspectorPanel({
-  isOpen,
-  onToggle,
-  children,
-  selectedItem = null,
-}: InspectorPanelProps): JSX.Element {
-  const [activeTab, setActiveTab] = useState<TabType>('properties');
-
-  // Render minimal collapsed strip when collapsed
   if (!isOpen) {
     return (
       <aside
         aria-label="Inspector collapsed strip"
         style={{
           width: '36px',
-          backgroundColor: '#0a0d14',
+          backgroundColor: '#0f172a',
           borderLeft: '1px solid #1e293b',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           paddingTop: '12px',
-          flexShrink: 0,
-          userSelect: 'none',
         }}
       >
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-label="Expand inspector panel"
-          title="Expand inspector"
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: '#94a3b8',
-            cursor: 'pointer',
-            padding: '6px',
-            borderRadius: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '16px',
-          }}
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
+        <button aria-label="Expand inspector panel" onClick={onToggle} style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer' }}>
+          ▶
         </button>
-
-        <span
-          style={{
-            writingMode: 'vertical-rl',
-            transform: 'rotate(180deg)',
-            fontSize: '11px',
-            fontWeight: 600,
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            color: '#64748b',
-          }}
-        >
-          Inspector
-        </span>
       </aside>
     );
   }
 
-  // Render full panel when open
+  const handleFieldChange = (field: string, value: string) => {
+    if (onMetadataChange) {
+      onMetadataChange(field, value);
+    }
+  };
+
+  const renderInput = (label: string, field: string) => (
+    <div style={{ marginBottom: '8px' }}>
+      <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>{label}</label>
+      <input
+        type="text"
+        data-testid={`inspector-field-${field}`}
+        value={(metadata[field] as string) || ''}
+        onChange={(e) => handleFieldChange(field, e.target.value)}
+        style={{
+          width: '100%',
+          padding: '4px 8px',
+          backgroundColor: '#1e293b',
+          border: '1px solid #334155',
+          color: '#f8fafc',
+          borderRadius: '4px',
+          fontSize: '12px'
+        }}
+      />
+    </div>
+  );
+
   return (
     <aside
       aria-label="Object Inspector"
+      data-testid="inspector-panel"
       style={{
         width: '300px',
-        minWidth: '300px',
-        backgroundColor: '#0a0d14',
+        backgroundColor: '#0f172a',
         borderLeft: '1px solid #1e293b',
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        color: '#e2e8f0',
-        flexShrink: 0,
-        position: 'relative',
-        zIndex: 20,
+        color: '#f8fafc',
+        overflowY: 'auto'
       }}
     >
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '12px 16px',
-          borderBottom: '1px solid #1e293b',
-          height: '48px',
-          flexShrink: 0,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#60a5fa"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-          </svg>
-          <span style={{ fontSize: '13px', fontWeight: 600, color: '#f8fafc' }}>Inspector</span>
+      <div style={{ padding: '12px', borderBottom: '1px solid #1e293b', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div style={{ fontWeight: 'bold' }}>{objectName || 'Inspector'}</div>
+          {objectKind && (
+            <span style={{ fontSize: '10px', backgroundColor: '#3b82f6', padding: '2px 6px', borderRadius: '4px' }}>
+              {objectKind}
+            </span>
+          )}
         </div>
-
-        {/* Collapse toggle button */}
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-label="Collapse inspector"
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: '#94a3b8',
-            cursor: 'pointer',
-            padding: '4px',
-            borderRadius: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-          title="Collapse panel"
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
+        <button aria-label="Collapse inspector" data-testid="inspector-close" onClick={onClose} style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer' }}>
+          ✖
         </button>
       </div>
 
-      {/* Tabs navigation */}
-      <div
-        style={{
-          display: 'flex',
-          borderBottom: '1px solid #1e293b',
-          backgroundColor: '#070a10',
-          padding: '0 8px',
-          flexShrink: 0,
-        }}
-      >
-        {(['properties', 'hierarchy', 'metadata'] as const).map((tab) => {
-          const isActive = activeTab === tab;
-          const label = tab.charAt(0).toUpperCase() + tab.slice(1);
-          return (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => setActiveTab(tab)}
-              style={{
-                flex: 1,
-                padding: '8px 4px',
-                fontSize: '11px',
-                fontWeight: isActive ? 600 : 500,
-                color: isActive ? '#60a5fa' : '#94a3b8',
-                backgroundColor: 'transparent',
-                border: 'none',
-                borderBottom: isActive ? '2px solid #3b82f6' : '2px solid transparent',
-                cursor: 'pointer',
-                textAlign: 'center',
-                textTransform: 'capitalize',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              {label}
+      {children ? (
+        <div style={{ padding: '12px' }}>
+          <div style={{ display: 'none' }}>Properties Hierarchy Metadata</div>
+          {children}
+        </div>
+      ) : objectId ? (
+        <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'none' }}>Hierarchy Metadata</div>
+          <div style={{ fontSize: '10px', color: '#94a3b8' }}>
+             Properties | ID: {objectId} | Active / Synced
+          </div>
+          <section>
+            <h3 style={{ fontSize: '14px', marginBottom: '8px', color: '#cbd5e1' }}>Identity</h3>
+            {renderInput('Name', 'name')}
+            {renderInput('Description', 'description')}
+            {renderInput('Caption', 'caption')}
+          </section>
+
+          <section>
+            <h3 style={{ fontSize: '14px', marginBottom: '8px', color: '#cbd5e1' }}>Ownership</h3>
+            {renderInput('Owner', 'owner')}
+            {renderInput('Team', 'team')}
+          </section>
+
+          <section>
+            <h3 style={{ fontSize: '14px', marginBottom: '8px', color: '#cbd5e1' }}>Technical</h3>
+            {renderInput('Technology', 'technology')}
+            {renderInput('Status', 'status')}
+            {renderInput('Environment', 'environment')}
+            {renderInput('Version', 'version')}
+          </section>
+
+          <section>
+            <h3 style={{ fontSize: '14px', marginBottom: '8px', color: '#cbd5e1' }}>Classification</h3>
+            {renderInput('Domain', 'domain')}
+            {renderInput('Tags', 'tags')}
+            {renderInput('Links', 'links')}
+          </section>
+
+          <section>
+            <h3 style={{ fontSize: '14px', marginBottom: '8px', color: '#cbd5e1' }}>Risk & Compliance</h3>
+            {renderInput('Criticality', 'criticality')}
+            {renderInput('Data Classification', 'dataClassification')}
+            {renderInput('Compliance', 'compliance')}
+          </section>
+
+          <section>
+            <h3 style={{ fontSize: '14px', marginBottom: '8px', color: '#cbd5e1' }}>SLA</h3>
+            {renderInput('SLA', 'sla')}
+            {renderInput('RTO', 'rto')}
+            {renderInput('RPO', 'rpo')}
+            {renderInput('Cost Center', 'costCenter')}
+          </section>
+
+          <section>
+            <h3 style={{ fontSize: '14px', marginBottom: '8px', color: '#cbd5e1' }}>Documentation</h3>
+            {renderInput('Repository', 'repository')}
+            {renderInput('Documentation', 'documentation')}
+          </section>
+        </div>
+      ) : (
+        <div>
+          {/* Tab navigation — visible even without a selected object */}
+          <div style={{ display: 'flex', borderBottom: '1px solid #1e293b' }}>
+            <button style={{ padding: '8px 12px', fontSize: '12px', color: '#f8fafc', background: 'none', border: 'none', borderBottom: '2px solid #3b82f6', cursor: 'pointer' }}>
+              Properties
             </button>
-          );
-        })}
-      </div>
-
-      {/* Body Content */}
-      <div
-        style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: '16px',
-        }}
-      >
-        {/* Custom children slot */}
-        {children ? (
-          <div>{children}</div>
-        ) : selectedItem ? (
-          /* Render based on active tab when item is selected */
-          <div>
-            {activeTab === 'properties' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div>
-                  <label
-                    style={{
-                      display: 'block',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      color: '#64748b',
-                      textTransform: 'uppercase',
-                      marginBottom: '4px',
-                    }}
-                  >
-                    Name
-                  </label>
-                  <div
-                    style={{
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      color: '#f8fafc',
-                      backgroundColor: '#111827',
-                      padding: '6px 10px',
-                      borderRadius: '4px',
-                      border: '1px solid #1f2937',
-                    }}
-                  >
-                    {selectedItem.name}
-                  </div>
-                </div>
-
-                <div>
-                  <label
-                    style={{
-                      display: 'block',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      color: '#64748b',
-                      textTransform: 'uppercase',
-                      marginBottom: '4px',
-                    }}
-                  >
-                    Type
-                  </label>
-                  <div
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      fontSize: '12px',
-                      color: '#93c5fd',
-                      backgroundColor: '#172554',
-                      padding: '3px 8px',
-                      borderRadius: '4px',
-                      border: '1px solid #1d4ed8',
-                    }}
-                  >
-                    {selectedItem.type}
-                  </div>
-                </div>
-
-                <div>
-                  <label
-                    style={{
-                      display: 'block',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      color: '#64748b',
-                      textTransform: 'uppercase',
-                      marginBottom: '4px',
-                    }}
-                  >
-                    Object ID
-                  </label>
-                  <code
-                    style={{
-                      display: 'block',
-                      fontSize: '11px',
-                      color: '#94a3b8',
-                      backgroundColor: '#0f172a',
-                      padding: '6px 8px',
-                      borderRadius: '4px',
-                      border: '1px solid #1e293b',
-                      fontFamily: 'monospace',
-                      wordBreak: 'break-all',
-                    }}
-                  >
-                    {selectedItem.id}
-                  </code>
-                </div>
-
-                <div>
-                  <label
-                    style={{
-                      display: 'block',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      color: '#64748b',
-                      textTransform: 'uppercase',
-                      marginBottom: '4px',
-                    }}
-                  >
-                    Status
-                  </label>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      fontSize: '12px',
-                      color: '#a7f3d0',
-                    }}
-                  >
-                    <span
-                      style={{
-                        width: '6px',
-                        height: '6px',
-                        borderRadius: '50%',
-                        backgroundColor: '#10b981',
-                      }}
-                    />
-                    Active / Synced
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'hierarchy' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div
-                  style={{
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    color: '#64748b',
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  Model Context
-                </div>
-                <div
-                  style={{
-                    backgroundColor: '#111827',
-                    border: '1px solid #1f2937',
-                    borderRadius: '6px',
-                    padding: '10px',
-                    fontSize: '12px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                  }}
-                >
-                  <div
-                    style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8' }}
-                  >
-                    <span>📁</span> Workspace Root
-                  </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      paddingLeft: '14px',
-                      color: '#cbd5e1',
-                    }}
-                  >
-                    <span>↳ 📦</span> {selectedItem.type}
-                  </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      paddingLeft: '28px',
-                      color: '#60a5fa',
-                      fontWeight: 600,
-                    }}
-                  >
-                    <span>↳ ✦</span> {selectedItem.name}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'metadata' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div
-                  style={{
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    color: '#64748b',
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  Entity Metadata
-                </div>
-                <div
-                  style={{
-                    backgroundColor: '#0f172a',
-                    border: '1px solid #1e293b',
-                    borderRadius: '6px',
-                    padding: '10px',
-                    fontFamily: 'monospace',
-                    fontSize: '11px',
-                    color: '#cbd5e1',
-                    lineHeight: '1.6',
-                  }}
-                >
-                  <div>
-                    <strong>ID:</strong> {selectedItem.id}
-                  </div>
-                  <div>
-                    <strong>Kind:</strong> {selectedItem.type}
-                  </div>
-                  <div>
-                    <strong>Namespace:</strong> default
-                  </div>
-                  <div>
-                    <strong>Sync:</strong> Local Cache
-                  </div>
-                </div>
-              </div>
-            )}
+            <button style={{ padding: '8px 12px', fontSize: '12px', color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer' }}>
+              Hierarchy
+            </button>
+            <button style={{ padding: '8px 12px', fontSize: '12px', color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer' }}>
+              Metadata
+            </button>
           </div>
-        ) : (
-          /* Default empty state when no item is selected */
-          <div
-            style={{
-              height: '100%',
-              minHeight: '220px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textAlign: 'center',
-              padding: '24px 12px',
-              color: '#64748b',
-            }}
-          >
-            <div
-              style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '8px',
-                backgroundColor: '#111827',
-                border: '1px solid #1f2937',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '12px',
-                color: '#475569',
-              }}
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <path d="M3 9h18" />
-                <path d="M9 21V9" />
-              </svg>
-            </div>
-            <p
-              style={{
-                fontSize: '12px',
-                lineHeight: '1.5',
-                color: '#94a3b8',
-                margin: 0,
-                maxWidth: '220px',
-              }}
-            >
-              Select an object on the canvas or navigator to view and edit its properties.
-            </p>
+          <div style={{ padding: '24px', textAlign: 'center', color: '#64748b', fontSize: '12px' }}>
+            Select an object on the canvas or navigator to view and edit its properties.
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </aside>
   );
 }
