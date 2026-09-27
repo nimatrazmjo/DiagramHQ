@@ -11,6 +11,7 @@ import { AppNode } from './app-node';
 import { ComponentNode } from './component-node';
 import { DatabaseNode } from './database-node';
 import { QueueNode } from './queue-node';
+import { GroupNode } from './group-node';
 
 export { C4ContextNode } from './c4-context-node';
 export { C4ContainerNode } from './c4-container-node';
@@ -23,6 +24,7 @@ export { AppNode } from './app-node';
 export { ComponentNode } from './component-node';
 export { DatabaseNode } from './database-node';
 export { QueueNode } from './queue-node';
+export { GroupNode } from './group-node';
 
 export interface CustomNodeData {
   label: string;
@@ -110,6 +112,7 @@ export const nodeTypes = {
   component: ComponentNode,
   database: DatabaseNode,
   queue: QueueNode,
+  group: GroupNode,
   c4Context: C4ContextNode,
   actor: PersonNode,
   person: PersonNode,

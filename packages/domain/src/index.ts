@@ -15,3 +15,4 @@ export * from './application';
 export * from './component';
 export * from './database';
 export * from './queue';
+export * from './group';

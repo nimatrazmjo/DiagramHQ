@@ -2,6 +2,29 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-09-26 — F028 — Group
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `group.ts`: Group domain model, `GroupKind` ('group' | 'boundary' | 'zone' | 'team' | 'domain' | 'namespace'), `GroupMetadata` interface (groupKind, color, collapsed), `GroupNodeData` interface, helper `createGroup`, predicate `isGroup`, and canvas projection `projectGroupToCanvas`.
+  - `group.test.ts`: 4 unit tests verifying group creation, kind, color, childCount, standalone and parent linkage, and canvas projection.
+- API layer (`apps/api/src/architectures/`):
+  - `group.e2e.spec.ts`: 5 E2E tests verifying top-level boundary group creation, nested team group creation (`parentId: boundaryId`), cycle prevention enforcement (HTTP 400 when setting ancestor cycle), model snapshot reload verification, and parent deletion with child survival via `SetNull` cascade.
+- Web client layer (`apps/web/`):
+  - `GroupNode` component (`components/canvas/group-node.tsx`) rendering dashed boundary styling, kind badge (`[Group: ...]`), child count badge, and 4-way handles.
+  - Registration in `components/canvas/custom-nodes.tsx` for `group`.
+  - `group.spec.ts`: 4 tests covering SSR node rendering, team variant styling, and canvas projection.
+
+Verification:
+- TypeScript: PASS (`pnpm typecheck` clean across monorepo)
+- Lint: PASS (`pnpm lint` clean, 0 errors/warnings)
+- Tests: PASS (all monorepo tests passing: 227 tests passing across 29 test files)
+- Architecture: PASS (`./scripts/check-architecture.sh` clean)
+- Build: PASS (`pnpm build` clean — domain, api, web)
+- PR Review: Round 1 clean across all 8 angles. Verdict: CLEAN. Full log: `.harness/reviews/F028-review.md`.
+
 ## 2026-09-26 — F027 — Queue
 
 Status: COMPLETE

@@ -167,7 +167,7 @@ Test: queue CRUD + render.
 
 ### F028 — Group
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Object type: group/boundary + nesting.
 
