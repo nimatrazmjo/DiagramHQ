@@ -1097,3 +1097,8 @@ Implemented:
 - Validation (`apps/web/data-views.spec.ts`):
   - Unit tests verifying proper mapping of the model into canvas node properties and edge animation for data flows.
   - Tests successfully passed locally (`pnpm verify`).
+
+## F040 — Ownership views
+- **Status**: COMPLETE
+- **Commit**: 684ec0f8983014ef6d40c08b5546f19af9369942
+- **Evidence**: `pnpm verify` passed. Ownership view projection and badges are implemented correctly.

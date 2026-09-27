@@ -13,36 +13,36 @@ Phase Name: Diagrams and Views
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F039
-Feature Name: Data views
+Feature ID: F040
+Feature Name: Ownership views
 Status: COMPLETE
 
 ## Overall Progress
 Total Features: 135
-Completed: 39
+Completed: 40
 In Progress: 0
 Blocked: 0
-Not Started: 96
-Progress: 28.9%
+Not Started: 95
+Progress: 29.6%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F039 — Data views. Added `projectDataViewToCanvas` projection and `<DataBadges />` component to highlight data classification and animate data movement flows.
+F040 — Ownership views. Added `projectOwnershipViewToCanvas` projection and `<OwnershipBadges />` component to color objects by team/owner.
+
+Prior: F039 — Data views. Added `projectDataViewToCanvas` projection and `<DataBadges />` component to highlight data classification and animate data movement flows.
 
 Prior: F038 — Security views. Added projection wrappers and custom badge components for trust boundaries, endpoints, auth, compliance, secrets, and encryption.
 
 Prior: F037 — Saved views. Added `isStarred` property to views, with `PATCH /views/:viewId` endpoint. Validated by 2 new e2e tests in `saved-views.e2e.spec.ts`.
 
-Prior: F036 — Filters. FilterBuilder React component allowing composition of multi-attribute filters. Validated via renderToString tests and mapped to evaluateDynamicView. PR #37 merged.
-
 ## Current Work
-F040 — Ownership views. Color by team/owner.
+F114 — Technology catalog. Technology library + tech view.
 
 ## Next Task
-F040 — Ownership views. Color by team/owner.
+F114 — Technology catalog. Technology library + tech view.
 
 ## Last Verified
-F039 @ feat/F039-data-views — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green.
+F040 @ feat/F040-ownership-views — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green.
 
 ## Current Git Commit
 Working tree: CLEAN on branch `main`.

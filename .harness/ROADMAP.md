@@ -101,7 +101,7 @@ Status: IN PROGRESS  ·  Depends on: Phase 03  ·  File: `phases/PHASE-04-DIAGRA
 - [x] F037 — Saved views
 - [x] F038 — Security views
 - [x] F039 — Data views
-- [ ] F040 — Ownership views
+- [x] F040 — Ownership views
 - [ ] F114 — Technology catalog
 - [ ] F115 — Persona modes
 - [ ] F135 — Architecture templates

@@ -110,7 +110,7 @@ Test: data view highlights classified data + flows.
 
 ### F040 — Ownership views
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Color by team/owner.
 
