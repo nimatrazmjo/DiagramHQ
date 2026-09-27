@@ -46,6 +46,7 @@ enum ViewKind {
   data
   ownership
   technology
+  persona
   custom
 }
 

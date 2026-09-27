@@ -105,6 +105,16 @@ describe('Saved Views API (F037)', () => {
     expect(reopenRes.body.objects[0].name).toBe('Payment Service');
   });
 
+  it('F115: should save a persona view', async () => {
+    const res = await request(app.getHttpServer())
+      .post(`/architectures/${architectureId}/views`)
+      .set('Authorization', `Bearer ${tokenUserA}`)
+      .send({ name: 'Security Persona', kind: 'persona' });
+
+    expect(res.status).toBe(201);
+    expect(res.body.view.kind).toBe('persona');
+  });
+
   it('F037: should update an existing view to star it', async () => {
     const createRes = await request(app.getHttpServer())
       .post(`/architectures/${architectureId}/views`)

@@ -160,7 +160,6 @@ describe('Connections API Integration — Rich Metadata (F029)', () => {
       .post(`/architectures/${arch2Id}/objects`)
       .set('Authorization', `Bearer ${token}`)
       .send({ name: 'Foreign Object', kind: 'system' });
-    if (!foreignObjRes.body.object) { console.log('ERROR:', foreignObjRes.status, foreignObjRes.body); }
     const foreignId = foreignObjRes.body.object.id;
 
     // Attempt to connect sourceId in arch1 to foreignId in arch2

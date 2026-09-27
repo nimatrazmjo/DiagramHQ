@@ -9,6 +9,7 @@ export enum ViewKindDto {
   data = 'data',
   ownership = 'ownership',
   technology = 'technology',
+  persona = 'persona',
   custom = 'custom',
 }
 
