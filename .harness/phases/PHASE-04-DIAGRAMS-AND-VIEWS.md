@@ -49,7 +49,7 @@ Test: component diagram renders from the model.
 
 ### F035 — Dynamic views
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Live filtered projections.
 

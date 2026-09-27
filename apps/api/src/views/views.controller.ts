@@ -114,4 +114,21 @@ export class ViewsController {
     const viewObjects = await this.viewsService.getViewObjects(user.sub, viewId);
     return { viewObjects };
   }
+
+  @Get('views/:viewId/projection')
+  async getViewProjection(
+    @CurrentUser() user: AuthTokenPayload,
+    @Param('viewId') viewId: string,
+  ): Promise<{
+    view: View;
+    objects: Array<{
+      id: string;
+      name: string;
+      kind: string;
+      metadata: Record<string, unknown> | null;
+      position: { x: number; y: number } | null;
+    }>;
+  }> {
+    return this.viewsService.getViewProjection(user.sub, viewId);
+  }
 }

@@ -13,35 +13,35 @@ Phase Name: Diagrams and Views
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F035
-Feature Name: Dynamic views
+Feature ID: F036
+Feature Name: Filters
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 34
+Completed: 35
 In Progress: 0
 Blocked: 0
-Not Started: 101
-Progress: 25.2%
+Not Started: 100
+Progress: 25.9%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F034 — Component diagrams. Component-level diagram (Level 3). Saved view rendering components with coordinate layout persistence and deletion isolation. 4 API e2e tests, 3 web tests. PR #35.
+F035 — Dynamic views. Live filtered projections across 12 criteria (team, technology, environment, domain, owner, status, tag, criticality, data-classification, cloud, region, repository). View projection updates immediately on object metadata modifications. 4 API e2e tests, 1 web test, 3 domain tests. PR #36.
 
-Prior: F033 — Container diagrams (PR #34 merged). F032 — Context diagrams (PR #33 merged). F031 — Object lifecycle (PR #32 merged). F030 — Object metadata (PR #31 merged). F029 — Connections (PR #30 merged). F028 — Group (PR #29 merged). F027 — Queue (PR #28 merged). F026 — Database (PR #27 merged). F025 — Component (PR #26 merged). F024 — Application (PR #25 merged). F023 — System (PR #24 merged). F022 — Person (PR #23 merged). F021 — C4 Component (PR #22 merged). F020 — C4 Container (PR #21 merged). F019 — C4 Context (PR #20 merged). F018 — Architecture model (PR #19 merged). F017 — Minimap (PR #18 merged). F016 — Undo/redo (PR #17 merged). F015 — Auto-layout (PR #16 merged). F014 — Alignment (PR #15 merged). F013 — Multi-select (PR #14 merged). F012 — Drag and drop (PR #13 merged). F011 — Object selection (PR #12 merged). F010 — Pan and zoom (PR #11 merged). F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
+Prior: F034 — Component diagrams (PR #35 merged). F033 — Container diagrams (PR #34 merged). F032 — Context diagrams (PR #33 merged). F031 — Object lifecycle (PR #32 merged). F030 — Object metadata (PR #31 merged). F029 — Connections (PR #30 merged). F028 — Group (PR #29 merged). F027 — Queue (PR #28 merged). F026 — Database (PR #27 merged). F025 — Component (PR #26 merged). F024 — Application (PR #25 merged). F023 — System (PR #24 merged). F022 — Person (PR #23 merged). F021 — C4 Component (PR #22 merged). F020 — C4 Container (PR #21 merged). F019 — C4 Context (PR #20 merged). F018 — Architecture model (PR #19 merged). F017 — Minimap (PR #18 merged). F016 — Undo/redo (PR #17 merged). F015 — Auto-layout (PR #16 merged). F014 — Alignment (PR #15 merged). F013 — Multi-select (PR #14 merged). F012 — Drag and drop (PR #13 merged). F011 — Object selection (PR #12 merged). F010 — Pan and zoom (PR #11 merged). F009 — Infinite canvas (PR #10 merged). F008 — Application shell (PR #9 merged). F005 — User roles (PR #8 merged). F004 — Workspaces (PR #7 merged). F003 — Organizations (PR #6 merged). F002 — Authentication (PR #5 merged). F007 — API foundation (PR #4 merged). F006 — Database foundation (PR #1 merged). F001 — Project architecture (merged).
 
 ## Current Work
-None. Ready to start F035 — Dynamic views.
+None. Ready to start F036 — Filters.
 
 ## Next Task
-F035 — Dynamic views. Live filtered projections.
+F036 — Filters. Filter controls and operations.
 
 ## Last Verified
-F034 @ feat/F034-component-diagrams — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green (269 web tests, 250 api tests, 140 domain tests).
+F035 @ feat/F035-dynamic-views — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green (271 web tests, 254 api tests, 144 domain tests).
 
 ## Current Git Commit
-Branch `main`. Working tree clean.
+Branch `feat/F035-dynamic-views`.
 
 ## Important Notes
 - Model-first is non-negotiable (DEC-001 / ADR-0001). Diagrams never store objects.

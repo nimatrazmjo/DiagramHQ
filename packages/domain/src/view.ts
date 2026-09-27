@@ -52,6 +52,26 @@ export function isComponentView(view: { kind: string }): boolean {
 }
 
 /**
+ * Dynamic filtered view (F035).
+ * Live projection computed from model filters.
+ */
+export function createDynamicViewOptions(
+  name: string,
+  filter: Record<string, unknown>,
+  kind: ViewKind = 'custom',
+): CreateViewOptions {
+  return { name, kind, filter };
+}
+
+/**
+ * Checks if a view is a dynamic view (has active filter criteria).
+ */
+export function isDynamicView(view: { filter?: unknown }): boolean {
+  if (!view.filter || typeof view.filter !== 'object') return false;
+  return Object.keys(view.filter as object).length > 0;
+}
+
+/**
  * Returns the display level label for a view kind.
  */
 export function getViewLevelLabel(kind: ViewKind | string): string {
