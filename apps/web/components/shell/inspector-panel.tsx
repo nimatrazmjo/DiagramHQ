@@ -39,24 +39,21 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
     metadata = selectedItem?.metadata || {},
     onMetadataChange,
     onClose = onToggle,
-    children
+    children,
   } = props;
 
   if (!isOpen) {
     return (
       <aside
         aria-label="Inspector collapsed strip"
-        style={{
-          width: '36px',
-          backgroundColor: '#0f172a',
-          borderLeft: '1px solid #1e293b',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          paddingTop: '12px',
-        }}
+        className="w-9 bg-slate-900 border-l border-slate-800 flex flex-col items-center pt-3 select-none"
       >
-        <button aria-label="Expand inspector panel" onClick={onToggle} style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer' }}>
+        <button
+          type="button"
+          aria-label="Expand inspector panel"
+          onClick={onToggle}
+          className="text-slate-400 hover:text-slate-200 transition-colors p-1"
+        >
           ▶
         </button>
       </aside>
@@ -70,22 +67,14 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
   };
 
   const renderInput = (label: string, field: string) => (
-    <div style={{ marginBottom: '8px' }}>
-      <label style={{ display: 'block', fontSize: '12px', color: '#94a3b8', marginBottom: '4px' }}>{label}</label>
+    <div className="mb-2">
+      <label className="block text-xs text-slate-400 mb-1 font-medium">{label}</label>
       <input
         type="text"
         data-testid={`inspector-field-${field}`}
         value={(metadata[field] as string) || ''}
         onChange={(e) => handleFieldChange(field, e.target.value)}
-        style={{
-          width: '100%',
-          padding: '4px 8px',
-          backgroundColor: '#1e293b',
-          border: '1px solid #334155',
-          color: '#f8fafc',
-          borderRadius: '4px',
-          fontSize: '12px'
-        }}
+        className="w-full px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
       />
     </div>
   );
@@ -94,57 +83,60 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
     <aside
       aria-label="Object Inspector"
       data-testid="inspector-panel"
-      style={{
-        width: '300px',
-        backgroundColor: '#0f172a',
-        borderLeft: '1px solid #1e293b',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        color: '#f8fafc',
-        overflowY: 'auto'
-      }}
+      className="w-72 lg:w-80 bg-slate-900 border-l border-slate-800 flex flex-col h-full text-slate-100 overflow-y-auto shrink-0 select-none"
     >
-      <div style={{ padding: '12px', borderBottom: '1px solid #1e293b', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <div style={{ fontWeight: 'bold' }}>{objectName || 'Inspector'}</div>
+      <div className="p-3 border-b border-slate-800 flex justify-between items-center gap-2">
+        <div className="truncate">
+          <div className="font-bold text-sm text-slate-100 truncate">{objectName || 'Inspector'}</div>
           {objectKind && (
-            <span style={{ fontSize: '10px', backgroundColor: '#3b82f6', padding: '2px 6px', borderRadius: '4px' }}>
+            <span className="text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded font-mono inline-block mt-0.5">
               {objectKind}
             </span>
           )}
         </div>
-        <button aria-label="Collapse inspector" data-testid="inspector-close" onClick={onClose} style={{ color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer' }}>
+        <button
+          type="button"
+          aria-label="Collapse inspector"
+          data-testid="inspector-close"
+          onClick={onClose}
+          className="text-slate-400 hover:text-slate-200 p-1 rounded hover:bg-slate-800 transition-colors"
+        >
           ✖
         </button>
       </div>
 
       {children ? (
-        <div style={{ padding: '12px' }}>
-          <div style={{ display: 'none' }}>Properties Hierarchy Metadata</div>
+        <div className="p-3">
+          <div className="hidden" aria-hidden="true">Properties Hierarchy Metadata</div>
           {children}
         </div>
       ) : objectId ? (
-        <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ display: 'none' }}>Hierarchy Metadata</div>
-          <div style={{ fontSize: '10px', color: '#94a3b8' }}>
-             Properties | ID: {objectId} | Active / Synced
+        <div className="p-3 flex flex-col gap-4">
+          <div className="hidden" aria-hidden="true">Hierarchy Metadata</div>
+          <div className="text-[10px] text-slate-400 font-mono">
+            Properties | ID: {objectId} | Active / Synced
           </div>
           <section>
-            <h3 style={{ fontSize: '14px', marginBottom: '8px', color: '#cbd5e1' }}>Identity</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 border-b border-slate-800 pb-1">
+              Identity
+            </h3>
             {renderInput('Name', 'name')}
             {renderInput('Description', 'description')}
             {renderInput('Caption', 'caption')}
           </section>
 
           <section>
-            <h3 style={{ fontSize: '14px', marginBottom: '8px', color: '#cbd5e1' }}>Ownership</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 border-b border-slate-800 pb-1">
+              Ownership
+            </h3>
             {renderInput('Owner', 'owner')}
             {renderInput('Team', 'team')}
           </section>
 
           <section>
-            <h3 style={{ fontSize: '14px', marginBottom: '8px', color: '#cbd5e1' }}>Technical</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 border-b border-slate-800 pb-1">
+              Technical
+            </h3>
             {renderInput('Technology', 'technology')}
             {renderInput('Status', 'status')}
             {renderInput('Environment', 'environment')}
@@ -152,21 +144,27 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
           </section>
 
           <section>
-            <h3 style={{ fontSize: '14px', marginBottom: '8px', color: '#cbd5e1' }}>Classification</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 border-b border-slate-800 pb-1">
+              Classification
+            </h3>
             {renderInput('Domain', 'domain')}
             {renderInput('Tags', 'tags')}
             {renderInput('Links', 'links')}
           </section>
 
           <section>
-            <h3 style={{ fontSize: '14px', marginBottom: '8px', color: '#cbd5e1' }}>Risk & Compliance</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 border-b border-slate-800 pb-1">
+              Risk & Compliance
+            </h3>
             {renderInput('Criticality', 'criticality')}
             {renderInput('Data Classification', 'dataClassification')}
             {renderInput('Compliance', 'compliance')}
           </section>
 
           <section>
-            <h3 style={{ fontSize: '14px', marginBottom: '8px', color: '#cbd5e1' }}>SLA</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 border-b border-slate-800 pb-1">
+              SLA
+            </h3>
             {renderInput('SLA', 'sla')}
             {renderInput('RTO', 'rto')}
             {renderInput('RPO', 'rpo')}
@@ -174,7 +172,9 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
           </section>
 
           <section>
-            <h3 style={{ fontSize: '14px', marginBottom: '8px', color: '#cbd5e1' }}>Documentation</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 border-b border-slate-800 pb-1">
+              Documentation
+            </h3>
             {renderInput('Repository', 'repository')}
             {renderInput('Documentation', 'documentation')}
           </section>
@@ -182,18 +182,27 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
       ) : (
         <div>
           {/* Tab navigation — visible even without a selected object */}
-          <div style={{ display: 'flex', borderBottom: '1px solid #1e293b' }}>
-            <button style={{ padding: '8px 12px', fontSize: '12px', color: '#f8fafc', background: 'none', border: 'none', borderBottom: '2px solid #3b82f6', cursor: 'pointer' }}>
+          <div className="flex border-b border-slate-800 text-xs">
+            <button
+              type="button"
+              className="px-3 py-2 text-slate-100 font-medium border-b-2 border-blue-500 bg-slate-800/40"
+            >
               Properties
             </button>
-            <button style={{ padding: '8px 12px', fontSize: '12px', color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer' }}>
+            <button
+              type="button"
+              className="px-3 py-2 text-slate-400 hover:text-slate-200 transition-colors"
+            >
               Hierarchy
             </button>
-            <button style={{ padding: '8px 12px', fontSize: '12px', color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer' }}>
+            <button
+              type="button"
+              className="px-3 py-2 text-slate-400 hover:text-slate-200 transition-colors"
+            >
               Metadata
             </button>
           </div>
-          <div style={{ padding: '24px', textAlign: 'center', color: '#64748b', fontSize: '12px' }}>
+          <div className="p-6 text-center text-slate-500 text-xs leading-relaxed">
             Select an object on the canvas or navigator to view and edit its properties.
           </div>
         </div>

@@ -39,41 +39,15 @@ export function TopBar({
   };
 
   return (
-    <header
-      style={{
-        height: '56px',
-        backgroundColor: '#0a0d14',
-        borderBottom: '1px solid #1e293b',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 16px',
-        gap: '12px',
-        position: 'sticky',
-        top: 0,
-        zIndex: 30,
-        color: '#f8fafc',
-      }}
-    >
+    <header className="h-14 bg-[#0a0d14] border-b border-slate-800 flex items-center justify-between px-4 gap-3 sticky top-0 z-30 text-slate-100 select-none">
       {/* Left section: Hamburger button & Breadcrumbs */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div className="flex items-center gap-2.5">
         {/* Mobile menu hamburger button */}
         <button
           type="button"
           onClick={onToggleNavigator}
           aria-label="Toggle navigation drawer"
-          className="flex md:hidden"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '6px',
-            borderRadius: '6px',
-            border: '1px solid #1e293b',
-            backgroundColor: '#111827',
-            color: '#cbd5e1',
-            cursor: 'pointer',
-          }}
+          className="inline-flex md:hidden items-center justify-center p-1.5 rounded-md border border-slate-800 bg-slate-900 text-slate-300 hover:text-white transition-colors"
         >
           <svg
             width="18"
@@ -92,63 +66,24 @@ export function TopBar({
         </button>
 
         {/* Breadcrumbs / title: DiagramHQ / Workspace */}
-        <nav
-          aria-label="Breadcrumb"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '13px',
-            whiteSpace: 'nowrap',
-          }}
-        >
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs whitespace-nowrap">
           <Link
             href="/dashboard"
-            style={{
-              fontWeight: 600,
-              color: '#94a3b8',
-              textDecoration: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
+            className="font-semibold text-slate-400 hover:text-white flex items-center gap-1.5 transition-colors"
           >
-            <span
-              style={{
-                width: '8px',
-                height: '8px',
-                borderRadius: '2px',
-                backgroundColor: '#3b82f6',
-                display: 'inline-block',
-              }}
-            />
+            <span className="w-2 h-2 rounded-[2px] bg-blue-500 inline-block shadow-[0_0_6px_#3b82f6]" />
             DiagramHQ
           </Link>
-          <span style={{ color: '#475569' }}>/</span>
+          <span className="text-slate-600">/</span>
           {workspaceId ? (
             <Link
               href={`/workspace/${workspaceId}`}
-              style={{
-                fontWeight: 600,
-                color: '#f1f5f9',
-                textDecoration: 'none',
-                maxWidth: '180px',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}
+              className="font-semibold text-slate-100 hover:text-blue-400 transition-colors max-w-[180px] truncate"
             >
               {workspaceName}
             </Link>
           ) : (
-            <span
-              style={{
-                fontWeight: 600,
-                color: '#f1f5f9',
-                maxWidth: '180px',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}
-            >
+            <span className="font-semibold text-slate-100 max-w-[180px] truncate">
               {workspaceName}
             </span>
           )}
@@ -156,25 +91,8 @@ export function TopBar({
       </div>
 
       {/* Middle section: Global Search Input */}
-      <div
-        style={{
-          flex: 1,
-          maxWidth: '440px',
-          display: 'flex',
-          alignItems: 'center',
-          position: 'relative',
-        }}
-      >
-        <div
-          style={{
-            position: 'absolute',
-            left: '10px',
-            display: 'flex',
-            alignItems: 'center',
-            pointerEvents: 'none',
-            color: '#64748b',
-          }}
-        >
+      <div className="hidden sm:flex flex-1 max-w-md items-center relative mx-2">
+        <div className="absolute left-2.5 flex items-center pointer-events-none text-slate-500">
           <svg
             width="15"
             height="15"
@@ -195,58 +113,20 @@ export function TopBar({
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search objects, views, flows (⌘K)..."
           aria-label="Search objects, views, flows"
-          style={{
-            width: '100%',
-            height: '32px',
-            backgroundColor: '#0f172a',
-            border: '1px solid #1e293b',
-            borderRadius: '6px',
-            paddingLeft: '32px',
-            paddingRight: '48px',
-            color: '#f8fafc',
-            fontSize: '12px',
-            outline: 'none',
-            transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
-          }}
+          className="w-full h-8 bg-slate-900 border border-slate-800 rounded-md pl-8 pr-12 text-slate-100 text-xs placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
         />
-        <kbd
-          style={{
-            position: 'absolute',
-            right: '8px',
-            fontSize: '10px',
-            padding: '2px 5px',
-            borderRadius: '4px',
-            backgroundColor: '#1e293b',
-            color: '#94a3b8',
-            border: '1px solid #334155',
-            pointerEvents: 'none',
-          }}
-        >
+        <kbd className="absolute right-2 text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700 pointer-events-none font-mono">
           ⌘K
         </kbd>
       </div>
 
       {/* Right section: AI Copilot, User Profile & Inspector Toggle */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div className="flex items-center gap-2.5">
         {/* AI Copilot / Assistant button: "Ask AI" */}
         <button
           type="button"
           aria-label="Ask AI Assistant"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '5px 10px',
-            borderRadius: '6px',
-            fontSize: '12px',
-            fontWeight: 500,
-            color: '#e0e7ff',
-            backgroundColor: '#1e1b4b',
-            border: '1px solid #4338ca',
-            cursor: 'pointer',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-indigo-200 bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700 transition-colors shadow-sm"
         >
           {/* Sparkle icon */}
           <svg
@@ -261,63 +141,17 @@ export function TopBar({
           >
             <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z" />
           </svg>
-          <span style={{ fontWeight: 600 }}>Ask AI</span>
-          <span
-            style={{
-              width: '6px',
-              height: '6px',
-              borderRadius: '50%',
-              backgroundColor: '#818cf8',
-              boxShadow: '0 0 6px #818cf8',
-            }}
-          />
+          <span className="font-semibold">Ask AI</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shadow-[0_0_6px_#818cf8]" />
         </button>
 
         {/* User Session display & Sign Out */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            paddingLeft: '6px',
-            borderLeft: '1px solid #1e293b',
-          }}
-        >
-          <div
-            title={displayName}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
-          >
-            <div
-              style={{
-                width: '26px',
-                height: '26px',
-                borderRadius: '50%',
-                backgroundColor: '#2563eb',
-                color: '#ffffff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '11px',
-                fontWeight: 600,
-              }}
-            >
+        <div className="flex items-center gap-2 pl-2 border-l border-slate-800">
+          <div title={displayName} className="flex items-center gap-1.5">
+            <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-[11px] font-semibold">
               {initial}
             </div>
-            <span
-              className="hidden lg:inline"
-              style={{
-                fontSize: '12px',
-                color: '#cbd5e1',
-                maxWidth: '120px',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
+            <span className="hidden lg:inline text-xs text-slate-300 max-w-[120px] truncate">
               {displayName}
             </span>
           </div>
@@ -326,17 +160,7 @@ export function TopBar({
             type="button"
             onClick={handleSignOut}
             aria-label="Sign Out"
-            style={{
-              padding: '4px 8px',
-              borderRadius: '5px',
-              fontSize: '11px',
-              fontWeight: 500,
-              color: '#94a3b8',
-              backgroundColor: 'transparent',
-              border: '1px solid #334155',
-              cursor: 'pointer',
-              transition: 'all 0.15s ease',
-            }}
+            className="px-2 py-1 rounded text-[11px] font-medium text-slate-400 hover:text-white bg-transparent hover:bg-slate-800 border border-slate-700 transition-colors"
           >
             Sign Out
           </button>
@@ -348,17 +172,11 @@ export function TopBar({
           onClick={onToggleInspector}
           aria-label={isInspectorOpen ? 'Collapse inspector panel' : 'Expand inspector panel'}
           aria-pressed={isInspectorOpen}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '6px',
-            borderRadius: '6px',
-            backgroundColor: isInspectorOpen ? '#1e293b' : '#0f172a',
-            border: isInspectorOpen ? '1px solid #3b82f6' : '1px solid #1e293b',
-            color: isInspectorOpen ? '#60a5fa' : '#94a3b8',
-            cursor: 'pointer',
-          }}
+          className={`inline-flex items-center justify-center p-1.5 rounded-md border transition-colors ${
+            isInspectorOpen
+              ? 'bg-slate-800 border-blue-500 text-blue-400'
+              : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+          }`}
           title={isInspectorOpen ? 'Collapse inspector' : 'Open inspector'}
         >
           <svg

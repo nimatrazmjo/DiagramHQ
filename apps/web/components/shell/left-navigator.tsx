@@ -197,45 +197,13 @@ export function LeftNavigator({
   };
 
   const navContent = (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        width: '100%',
-        backgroundColor: '#0a0d14',
-        borderRight: '1px solid #1e293b',
-        color: '#cbd5e1',
-        userSelect: 'none',
-      }}
-    >
+    <div className="flex flex-col h-full w-full bg-[#0a0d14] border-r border-slate-800 text-slate-300 select-none">
       {/* Navigator Header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '12px 16px',
-          borderBottom: '1px solid #1e293b',
-        }}
-      >
+      <div className="flex items-center justify-between p-3 border-b border-slate-800">
         <Link
           href="/dashboard"
           onClick={onClose}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '12px',
-            fontWeight: 500,
-            color: '#94a3b8',
-            textDecoration: 'none',
-            padding: '4px 8px',
-            borderRadius: '6px',
-            backgroundColor: '#111827',
-            border: '1px solid #1f2937',
-            transition: 'color 0.15s ease, background-color 0.15s ease',
-          }}
+          className="inline-flex items-center gap-2 text-xs font-medium text-slate-400 hover:text-white px-2 py-1 rounded-md bg-slate-900 border border-slate-800 transition-colors"
           title="Return to Dashboard"
         >
           <svg
@@ -260,17 +228,7 @@ export function LeftNavigator({
             type="button"
             onClick={onClose}
             aria-label="Close navigation"
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#94a3b8',
-              cursor: 'pointer',
-              padding: '4px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '4px',
-            }}
+            className="text-slate-400 hover:text-slate-200 p-1 rounded hover:bg-slate-800 transition-colors"
           >
             <svg
               width="18"
@@ -290,30 +248,14 @@ export function LeftNavigator({
       </div>
 
       {/* Navigation Section Title */}
-      <div
-        style={{
-          padding: '12px 16px 6px',
-          fontSize: '11px',
-          fontWeight: 600,
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-          color: '#64748b',
-        }}
-      >
+      <div className="px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
         Architecture Model
       </div>
 
       {/* Navigation Links */}
       <nav
         aria-label="Workspace navigation"
-        style={{
-          flex: 1,
-          padding: '4px 8px',
-          overflowY: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '2px',
-        }}
+        className="flex-1 px-2 py-1 overflow-y-auto flex flex-col gap-0.5"
       >
         {navItems.map((item) => {
           const active = isItemActive(item.pathSuffix);
@@ -324,62 +266,32 @@ export function LeftNavigator({
               key={item.id}
               href={href}
               onClick={onClose}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                fontSize: '13px',
-                fontWeight: active ? 600 : 400,
-                color: active ? '#ffffff' : '#94a3b8',
-                backgroundColor: active ? '#1e293b' : 'transparent',
-                borderLeft: active ? '3px solid #3b82f6' : '3px solid transparent',
-                textDecoration: 'none',
-                transition: 'background-color 0.15s ease, color 0.15s ease',
-              }}
+              className={`flex items-center gap-3 px-3 py-2 rounded-md text-xs font-medium transition-colors ${
+                active
+                  ? 'text-white font-semibold bg-slate-800 border-l-[3px] border-blue-500 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border-l-[3px] border-transparent'
+              }`}
             >
               <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: active ? '#60a5fa' : '#64748b',
-                }}
+                className={`inline-flex items-center justify-center ${
+                  active ? 'text-blue-400' : 'text-slate-500'
+                }`}
               >
                 {item.icon(active)}
               </span>
-              <span style={{ flex: 1 }}>{item.name}</span>
+              <span className="flex-1">{item.name}</span>
             </Link>
           );
         })}
       </nav>
 
       {/* Footer / Status Area */}
-      <div
-        style={{
-          padding: '12px 16px',
-          borderTop: '1px solid #1e293b',
-          fontSize: '11px',
-          color: '#64748b',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-          <span
-            style={{
-              width: '6px',
-              height: '6px',
-              borderRadius: '50%',
-              backgroundColor: '#10b981',
-              boxShadow: '0 0 6px #10b981',
-            }}
-          />
+      <div className="p-3 border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]" />
           Architecture OS
         </span>
-        <span style={{ opacity: 0.7 }}>v0.1</span>
+        <span className="opacity-70 font-mono">v0.1</span>
       </div>
     </div>
   );
@@ -387,28 +299,14 @@ export function LeftNavigator({
   return (
     <>
       {/* Desktop view: fixed 240px width sidebar */}
-      <aside
-        className="hidden md:flex flex-col flex-shrink-0"
-        style={{
-          width: '240px',
-          minWidth: '240px',
-          height: '100%',
-          position: 'relative',
-        }}
-      >
+      <aside className="hidden md:flex flex-col flex-shrink-0 w-60 min-w-[240px] h-full relative">
         {navContent}
       </aside>
 
       {/* Mobile drawer with backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 md:hidden"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 50,
-            display: 'flex',
-          }}
+          className="fixed inset-0 z-50 flex md:hidden"
           role="dialog"
           aria-modal="true"
           aria-label="Navigation drawer"
@@ -416,26 +314,12 @@ export function LeftNavigator({
           {/* Backdrop overlay */}
           <div
             onClick={onClose}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.65)',
-              backdropFilter: 'blur(2px)',
-            }}
+            className="fixed inset-0 bg-black/65 backdrop-blur-sm"
             aria-hidden="true"
           />
 
           {/* Drawer content */}
-          <div
-            style={{
-              position: 'relative',
-              width: '260px',
-              maxWidth: '80vw',
-              height: '100%',
-              zIndex: 51,
-              boxShadow: '4px 0 24px rgba(0, 0, 0, 0.5)',
-            }}
-          >
+          <div className="relative w-64 max-w-[80vw] h-full z-[51] shadow-2xl">
             {navContent}
           </div>
         </div>

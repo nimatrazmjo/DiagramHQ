@@ -40,17 +40,7 @@ export function AppShell({
   }, []);
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100vh',
-        width: '100%',
-        backgroundColor: '#0b0d12',
-        color: '#f8fafc',
-        overflow: 'hidden',
-      }}
-    >
+    <div className="flex flex-col min-h-screen w-full bg-slate-950 text-slate-100 overflow-hidden">
       {/* Top Bar */}
       <TopBar
         workspaceId={workspaceId}
@@ -62,15 +52,7 @@ export function AppShell({
       />
 
       {/* Body Flex Container: height calc(100vh - 56px) */}
-      <div
-        style={{
-          display: 'flex',
-          flex: 1,
-          height: 'calc(100vh - 56px)',
-          overflow: 'hidden',
-          position: 'relative',
-        }}
-      >
+      <div className="flex flex-1 h-[calc(100vh-56px)] overflow-hidden relative">
         {/* Left Navigator (240px wide on desktop, slide-over drawer on mobile) */}
         <LeftNavigator
           workspaceId={workspaceId}
@@ -79,16 +61,7 @@ export function AppShell({
         />
 
         {/* Main Content Area */}
-        <main
-          className="flex-1 overflow-auto bg-slate-900 text-slate-100 relative"
-          style={{
-            flex: 1,
-            overflow: 'auto',
-            backgroundColor: '#0f172a',
-            color: '#f1f5f9',
-            position: 'relative',
-          }}
-        >
+        <main className="flex-1 overflow-auto bg-slate-900 text-slate-100 relative">
           {children}
         </main>
 
