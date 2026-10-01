@@ -1,0 +1,64 @@
+{
+  "version": "1.0.0",
+  "total": 47,
+  "categories": [
+    "clouds",
+    "databases",
+    "languages"
+  ],
+  "icons": {
+    "clouds": [
+      "anthropic.svg",
+      "aws.svg",
+      "azure.svg",
+      "claude.svg",
+      "cloudflare.svg",
+      "digitalocean.svg",
+      "docker.svg",
+      "gcp.svg",
+      "kubernetes.svg",
+      "terraform.svg"
+    ],
+    "databases": [
+      "cassandra.svg",
+      "clickhouse.svg",
+      "couchbase.svg",
+      "dynamodb.svg",
+      "elasticsearch.svg",
+      "firebase.svg",
+      "kafka.svg",
+      "mariadb.svg",
+      "mongodb.svg",
+      "mssql.svg",
+      "mysql.svg",
+      "neo4j.svg",
+      "oracle.svg",
+      "postgresql.svg",
+      "rabbitmq.svg",
+      "redis.svg",
+      "sqlite.svg",
+      "sqlserver.svg",
+      "supabase.svg"
+    ],
+    "languages": [
+      "c.svg",
+      "cplusplus.svg",
+      "cpp.svg",
+      "csharp.svg",
+      "css3.svg",
+      "dart.svg",
+      "go.svg",
+      "html5.svg",
+      "java.svg",
+      "javascript.svg",
+      "kotlin.svg",
+      "php.svg",
+      "python.svg",
+      "ruby.svg",
+      "rust.svg",
+      "scala.svg",
+      "swift.svg",
+      "typescript.svg"
+    ]
+  }
+}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { DatabaseNodeData, Technology, PersonaMode } from '@diagramhq/domain';
+import { getTechnologyIconPath } from '../../lib/icons';
 import { SecurityBadges } from './security-badges';
 import { DataBadges } from './data-badges';
 import { OwnershipBadges } from './ownership-badges';
@@ -74,6 +75,8 @@ export function DatabaseNode({ id: _id, data, selected }: NodeProps): JSX.Elemen
     }
   };
 
+  const brandIcon = getTechnologyIconPath(databaseKind) || getTechnologyIconPath(technology);
+
   return (
     <div
       data-testid="database-node"
@@ -92,7 +95,11 @@ export function DatabaseNode({ id: _id, data, selected }: NodeProps): JSX.Elemen
 
       <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-white/10">
         <div className="flex items-center gap-1.5">
-          <DatabaseIcon />
+          {brandIcon ? (
+            <img src={brandIcon} alt="" className="w-4 h-4 flex-shrink-0 object-contain" />
+          ) : (
+            <DatabaseIcon />
+          )}
           <span
             data-testid="database-kind-badge"
             className="text-[10px] font-semibold uppercase tracking-wider text-slate-300"

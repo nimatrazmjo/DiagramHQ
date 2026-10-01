@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Technology } from '@diagramhq/domain';
+import { getTechnologyIconPath } from '../../lib/icons';
 
 export interface TechnologyBadgesProps {
   technologyView?: boolean;
@@ -23,13 +24,19 @@ export function TechnologyBadges(props: TechnologyBadgesProps): JSX.Element | nu
           badgeColor = 'text-amber-400 bg-amber-950/60 border-amber-900';
         }
 
+        const iconPath = getTechnologyIconPath(tech.name);
+
         return (
           <span 
             key={tech.id}
             className={`flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border ${badgeColor}`} 
             data-testid={`badge-tech-${tech.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
           >
-            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+            {iconPath ? (
+              <img src={iconPath} alt="" className="w-3 h-3 flex-shrink-0 object-contain" />
+            ) : (
+              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+            )}
             {tech.name}
             {tech.version && <span className="opacity-70 ml-0.5">v{tech.version}</span>}
           </span>
