@@ -13,29 +13,28 @@ export default async function HomePage(): Promise<JSX.Element> {
           arrives in Phase 02.
         </p>
 
-        <div className="flex gap-4 justify-center">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link
+            href="/studio"
+            className="py-2.5 px-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+          >
+            <span>🎨</span>
+            <span>Launch Studio (No Login Needed)</span>
+          </Link>
           {session ? (
             <Link
               href="/dashboard"
-              className="py-2 px-5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded shadow transition-colors"
+              className="py-2.5 px-5 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-lg shadow transition-colors flex items-center justify-center"
             >
               Go to Workspace
             </Link>
           ) : (
-            <>
-              <Link
-                href="/login"
-                className="py-2 px-5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded shadow transition-colors"
-              >
-                Sign in
-              </Link>
-              <Link
-                href="/dashboard"
-                className="py-2 px-5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded border transition-colors"
-              >
-                Protected Dashboard
-              </Link>
-            </>
+            <Link
+              href="/login"
+              className="py-2.5 px-5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-lg border transition-colors flex items-center justify-center"
+            >
+              Sign in
+            </Link>
           )}
         </div>
       </div>

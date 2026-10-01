@@ -13,6 +13,7 @@ import {
   applyEdgeChanges,
   type Node,
   type Edge,
+  type Connection,
   type NodeChange,
   type EdgeChange,
   type Viewport,
@@ -24,13 +25,26 @@ import '@xyflow/react/dist/style.css';
 import type {
   AlignAxis,
   AlignableNode,
+  ArchitectureId,
   CanvasEdge,
   CanvasNode,
   CanvasPosition,
+  ConnectionId,
   LayoutEdge,
   LayoutEngineName,
+  ObjectId,
+  TemplateId,
+  VersionId,
 } from '@diagramhq/domain';
-import { alignNodes, applyLayout, distributeNodes, listLayoutEngines, snapToGrid } from '@diagramhq/domain';
+import {
+  alignNodes,
+  applyLayout,
+  distributeNodes,
+  instantiateTemplate,
+  listLayoutEngines,
+  projectViewModelToCanvas,
+  snapToGrid,
+} from '@diagramhq/domain';
 import {
   useCanvasStore,
   MIN_ZOOM,
@@ -42,6 +56,9 @@ import {
   MoveNodesCommand,
   AlignNodesCommand,
   ApplyLayoutCommand,
+  CreateNodeCommand,
+  DeleteNodeCommand,
+  ConnectNodesCommand,
   defaultCommandDispatcher,
   type Command,
   type NodeMoveItem,
@@ -50,6 +67,8 @@ import {
 import { nodeTypes } from './custom-nodes';
 import { AlignmentToolbar } from './alignment-toolbar';
 import { LayoutMenu } from './layout-menu';
+import { ShapePalette, type ShapeKind } from './shape-palette';
+import { TemplatePanel } from './template-panel';
 
 export interface InfiniteCanvasProps {
   initialNodes?: CanvasNode[];
@@ -69,6 +88,11 @@ export interface InfiniteCanvasProps {
   batchPersistFn?: (viewId: string, positions: Array<{ objectId: string; x: number; y: number }>) => Promise<void>;
   dragStopHandlerRef?: React.MutableRefObject<((event: unknown, node: Node) => void) | null>;
   onDragStopReady?: (handler: (event: unknown, node: Node) => void) => void;
+  showPalette?: boolean;
+  showTemplatePicker?: boolean;
+  onEdgeConnect?: (edge: CanvasEdge) => void;
+  onNodeCreate?: (node: CanvasNode) => void;
+  onNodeDelete?: (nodeId: string) => void;
 }
 
 export interface NodeDragStopHandlerOptions {
@@ -247,6 +271,11 @@ function InfiniteCanvasContent({
   batchPersistFn,
   dragStopHandlerRef,
   onDragStopReady,
+  showPalette = true,
+  showTemplatePicker = true,
+  onEdgeConnect,
+  onNodeCreate,
+  onNodeDelete,
 }: InfiniteCanvasProps): JSX.Element {
   const [nodes, setNodes] = useState<Node[]>(() => initialNodes.map(toFlowNode));
   const [edges, setEdges] = useState<Edge[]>(() => initialEdges.map(toFlowEdge));
@@ -657,6 +686,248 @@ function InfiniteCanvasContent({
     }
   }, []);
 
+  const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
+
+  const handleAddNode = useCallback(
+    (kind: ShapeKind) => {
+      const flowBounds = containerRef.current?.getBoundingClientRect();
+      const centerX = flowBounds ? flowBounds.width / 2 : 400;
+      const centerY = flowBounds ? flowBounds.height / 2 : 300;
+
+      let flowPos = { x: 250, y: 180 };
+      try {
+        if (flowBounds && reactFlow.screenToFlowPosition) {
+          flowPos = reactFlow.screenToFlowPosition({
+            x: flowBounds.left + centerX,
+            y: flowBounds.top + centerY,
+          });
+        }
+      } catch {
+        // Fallback for SSR or mock environments
+      }
+
+      const jitterX = Math.round((Math.random() - 0.5) * 80);
+      const jitterY = Math.round((Math.random() - 0.5) * 80);
+
+      const id = `${kind}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+      const defaultLabels: Record<string, string> = {
+        system: 'New System',
+        application: 'New Service',
+        database: 'New Database',
+        queue: 'New Message Queue',
+        person: 'User / Actor',
+        component: 'New Component',
+        group: 'New Boundary Group',
+      };
+
+      const canvasNode: CanvasNode = {
+        id,
+        type: kind === 'database' ? 'database' : kind,
+        position: {
+          x: Math.round((flowPos?.x ?? 250) + jitterX),
+          y: Math.round((flowPos?.y ?? 180) + jitterY),
+        },
+        data: {
+          label: defaultLabels[kind] ?? 'New Node',
+          kind,
+          description: '',
+          status: 'active',
+        },
+      };
+
+      const command = new CreateNodeCommand({
+        viewId,
+        node: canvasNode,
+      });
+
+      if (onCommandDispatched) {
+        onCommandDispatched(command);
+      }
+      void defaultCommandDispatcher.dispatch(command);
+
+      const flowNode = toFlowNode(canvasNode);
+      setNodes((nds) => [...nds, flowNode]);
+      useCanvasStore.getState().setSelectedNodes([id]);
+      if (onNodeSelect) {
+        onNodeSelect(id);
+      }
+      if (onNodeCreate) {
+        onNodeCreate(canvasNode);
+      }
+    },
+    [viewId, onCommandDispatched, reactFlow, onNodeSelect, onNodeCreate],
+  );
+
+  const onConnect = useCallback(
+    (connection: Connection) => {
+      if (!connection.source || !connection.target) return;
+      const edgeId = `conn-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+      const canvasEdge: CanvasEdge = {
+        id: edgeId,
+        source: connection.source,
+        target: connection.target,
+        type: 'smoothstep',
+        label: '',
+        data: {
+          sourceHandle: connection.sourceHandle ?? undefined,
+          targetHandle: connection.targetHandle ?? undefined,
+        },
+      };
+
+      const command = new ConnectNodesCommand({
+        viewId,
+        edge: canvasEdge,
+      });
+
+      if (onCommandDispatched) {
+        onCommandDispatched(command);
+      }
+      void defaultCommandDispatcher.dispatch(command);
+
+      setEdges((eds) => [
+        ...eds,
+        {
+          id: edgeId,
+          source: connection.source,
+          target: connection.target,
+          sourceHandle: connection.sourceHandle,
+          targetHandle: connection.targetHandle,
+          type: 'smoothstep',
+          label: '',
+          data: canvasEdge.data,
+        },
+      ]);
+
+      if (onEdgeConnect) {
+        onEdgeConnect(canvasEdge);
+      }
+    },
+    [viewId, onCommandDispatched, onEdgeConnect],
+  );
+
+  const handleDeleteSelected = useCallback(async () => {
+    if (isMutatingGraphRef.current) return;
+    const curSelectedNodeIds = useCanvasStore.getState().selectedNodeIds;
+    const curSelectedEdgeIds = useCanvasStore.getState().selectedEdgeIds;
+
+    if (curSelectedNodeIds.length === 0 && curSelectedEdgeIds.length === 0) return;
+
+    for (const nodeId of curSelectedNodeIds) {
+      const nodeToDelete = nodes.find((n) => n.id === nodeId);
+      if (!nodeToDelete) continue;
+      const connectedEdges: CanvasEdge[] = edges
+        .filter((e) => e.source === nodeId || e.target === nodeId)
+        .map((e) => ({
+          id: e.id,
+          source: e.source,
+          target: e.target,
+          type: e.type,
+          label: typeof e.label === 'string' ? e.label : undefined,
+          animated: e.animated,
+          data: e.data as Record<string, unknown>,
+        }));
+
+      const nodeData = (nodeToDelete.data ?? {}) as Record<string, unknown>;
+      const canvasNode: CanvasNode = {
+        id: nodeToDelete.id,
+        type: nodeToDelete.type ?? 'system',
+        position: { x: nodeToDelete.position.x, y: nodeToDelete.position.y },
+        data: {
+          label: typeof nodeData.label === 'string' ? nodeData.label : nodeToDelete.id,
+          ...nodeData,
+        },
+      };
+
+      const command = new DeleteNodeCommand({
+        viewId,
+        node: canvasNode,
+        connectedEdges,
+      });
+
+      if (onCommandDispatched) {
+        onCommandDispatched(command);
+      }
+      await defaultCommandDispatcher.dispatch(command);
+
+      if (onNodeDelete) {
+        onNodeDelete(nodeId);
+      }
+    }
+
+    setNodes((nds) => nds.filter((n) => !curSelectedNodeIds.includes(n.id)));
+    setEdges((eds) =>
+      eds.filter(
+        (e) =>
+          !curSelectedEdgeIds.includes(e.id) &&
+          !curSelectedNodeIds.includes(e.source) &&
+          !curSelectedNodeIds.includes(e.target),
+      ),
+    );
+
+    useCanvasStore.getState().clearSelection();
+    if (onNodeSelect) {
+      onNodeSelect(null);
+    }
+  }, [nodes, edges, viewId, onCommandDispatched, onNodeSelect, onNodeDelete]);
+
+  const handleSelectTemplate = useCallback(
+    (templateId: TemplateId) => {
+      let objectCounter = 0;
+      let connectionCounter = 0;
+      const instantiated = instantiateTemplate({
+        templateId,
+        architectureId: 'arch-studio' as ArchitectureId,
+        versionId: 'v1' as VersionId,
+        createObjectId: () => `obj-${++objectCounter}-${Date.now().toString(36)}` as ObjectId,
+        createConnectionId: () => `conn-${++connectionCounter}-${Date.now().toString(36)}` as ConnectionId,
+      });
+
+      const { nodes: projectedNodes, edges: projectedEdges } = projectViewModelToCanvas({
+        objects: instantiated.objects,
+        connections: instantiated.connections.map((c) => ({
+          id: c.id,
+          sourceId: c.sourceObjectId,
+          targetId: c.targetObjectId,
+          kind: c.kind,
+          description: c.description,
+        })),
+      });
+
+      const layoutNodes = projectedNodes.map(toAlignableNode);
+      const layoutEdges: LayoutEdge[] = projectedEdges.map((e) => ({
+        source: e.source,
+        target: e.target,
+      }));
+
+      let positions: CanvasPosition[] = [];
+      try {
+        positions = applyLayout(layoutNodes, layoutEdges, 'layered');
+      } catch {
+        // Fallback to existing positions
+      }
+
+      const positionById = new Map(layoutNodes.map((n, i) => [n.id, positions[i] ?? n.position]));
+
+      const laidOutNodes: CanvasNode[] = projectedNodes.map((n) => ({
+        ...n,
+        position: positionById.get(n.id) ?? n.position,
+      }));
+
+      setNodes(laidOutNodes.map(toFlowNode));
+      setEdges(projectedEdges.map(toFlowEdge));
+      useCanvasStore.getState().clearSelection();
+      setIsTemplatePickerOpen(false);
+      setTimeout(() => {
+        try {
+          reactFlow.fitView({ padding: 0.2, duration: 300 });
+        } catch {
+          // ignore
+        }
+      }, 50);
+    },
+    [reactFlow],
+  );
+
   useEffect(() => {
     setNodes(initialNodes.map(toFlowNode));
   }, [initialNodes]);
@@ -665,7 +936,7 @@ function InfiniteCanvasContent({
     setEdges(initialEdges.map(toFlowEdge));
   }, [initialEdges]);
 
-  // Keyboard shortcut listener: Space for pan, 'F' for fit-to-content, Escape for clearing selection
+  // Keyboard shortcut listener: Space for pan, 'F' for fit-to-content, Escape for clearing selection, Delete/Backspace for removal
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (isTextInput(document.activeElement)) return;
@@ -695,6 +966,13 @@ function InfiniteCanvasContent({
       } else if (!event.shiftKey && !event.altKey && !isMod && (event.key === 'm' || event.key === 'M')) {
         event.preventDefault();
         useCanvasStore.getState().toggleMinimap();
+      } else if (
+        (event.key === 'Backspace' || event.key === 'Delete') &&
+        (useCanvasStore.getState().selectedNodeIds.length > 0 ||
+          useCanvasStore.getState().selectedEdgeIds.length > 0)
+      ) {
+        event.preventDefault();
+        void handleDeleteSelected();
       } else if (event.code === 'Escape') {
         event.preventDefault();
         const hasSelection =
@@ -725,7 +1003,7 @@ function InfiniteCanvasContent({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [reactFlow, onNodeSelect, handleUndo, handleRedo, handleToggleFullscreen]);
+  }, [reactFlow, onNodeSelect, handleUndo, handleRedo, handleToggleFullscreen, handleDeleteSelected]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes((nds) => applyNodeChanges(changes, nds));
@@ -819,6 +1097,7 @@ function InfiniteCanvasContent({
         nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
         onSelectionChange={onSelectionChange}
         onPaneClick={onPaneClick}
         onMoveEnd={onMoveEnd}
@@ -855,6 +1134,19 @@ function InfiniteCanvasContent({
               zoomable
             />
           </div>
+        )}
+
+        {/* Top-Center Shape Palette & Inserter Toolbar */}
+        {showPalette && (
+          <Panel position="top-center" className="m-3">
+            <ShapePalette
+              onAddShape={handleAddNode}
+              onOpenTemplates={showTemplatePicker ? () => setIsTemplatePickerOpen(true) : undefined}
+              onDeleteSelected={handleDeleteSelected}
+              hasSelection={totalSelected > 0}
+              disabled={isMutatingGraph}
+            />
+          </Panel>
         )}
 
         {/* Top-Left Canvas Badge */}
@@ -1058,6 +1350,25 @@ function InfiniteCanvasContent({
           </Panel>
         )}
       </ReactFlow>
+
+      {/* Template Picker Modal Overlay */}
+      {isTemplatePickerOpen && (
+        <div
+          data-testid="template-modal-overlay"
+          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setIsTemplatePickerOpen(false)}
+        >
+          <div
+            className="w-full max-w-2xl max-h-[85vh] h-[600px] relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <TemplatePanel
+              onSelectTemplate={handleSelectTemplate}
+              onClose={() => setIsTemplatePickerOpen(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
