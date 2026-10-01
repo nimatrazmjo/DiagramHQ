@@ -46,6 +46,7 @@ export async function authorizeUser(
 }
 
 export const authConfig: NextAuthConfig = {
+  trustHost: true,
   secret: process.env.AUTH_SECRET || 'diagramhq-dev-auth-secret-minimum-32-chars!',
   session: { strategy: 'jwt' },
   pages: {
