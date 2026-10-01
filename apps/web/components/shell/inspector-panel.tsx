@@ -119,18 +119,27 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
     }
   };
 
-  const renderInput = (label: string, field: string) => (
-    <div className="mb-2.5">
-      <label className="block text-xs text-slate-400 mb-1 font-medium">{label}</label>
-      <input
-        type="text"
-        data-testid={`inspector-field-${field}`}
-        value={(metadata[field] as string) || ''}
-        onChange={(e) => handleFieldChange(field, e.target.value)}
-        className="w-full px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-      />
-    </div>
-  );
+  const renderInput = (label: string, field: string) => {
+    let value = (metadata[field] as string) || '';
+    if (field === 'name' && !value) {
+      value = (metadata.label as string) || objectName || '';
+    } else if (field === 'description' && !value) {
+      value = (metadata.description as string) || '';
+    }
+
+    return (
+      <div className="mb-2.5">
+        <label className="block text-xs text-slate-400 mb-1 font-medium">{label}</label>
+        <input
+          type="text"
+          data-testid={`inspector-field-${field}`}
+          value={value}
+          onChange={(e) => handleFieldChange(field, e.target.value)}
+          className="w-full px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+        />
+      </div>
+    );
+  };
 
   const currentIcon =
     (metadata.icon as string) ||
@@ -257,8 +266,19 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
                   </span>
                 )}
               </button>
-              <div className="truncate">
-                <div className="font-bold text-sm text-slate-100 truncate">{objectName || 'Inspector'}</div>
+              <div className="truncate flex-1 min-w-0">
+                {objectId ? (
+                  <input
+                    type="text"
+                    value={(metadata.name as string) || (metadata.label as string) || objectName || ''}
+                    onChange={(e) => handleFieldChange('name', e.target.value)}
+                    placeholder="Object name..."
+                    className="font-bold text-sm text-slate-100 bg-transparent hover:bg-slate-800/80 focus:bg-slate-800 focus:ring-1 focus:ring-blue-500 rounded px-1.5 py-0.5 -ml-1.5 w-full truncate transition-colors outline-none"
+                    title="Click to rename object"
+                  />
+                ) : (
+                  <div className="font-bold text-sm text-slate-100 truncate">{objectName || 'Inspector'}</div>
+                )}
                 {objectKind && (
                   <span className="text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded font-mono inline-block mt-0.5">
                     {objectKind}

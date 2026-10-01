@@ -133,6 +133,7 @@ export default function StudioPage(): JSX.Element {
         const data = { ...n.data };
         if (field === 'name') {
           data.label = String(value);
+          data.name = String(value);
         } else if (field === 'description') {
           data.description = String(value);
         } else {
