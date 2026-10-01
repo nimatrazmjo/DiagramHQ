@@ -42,6 +42,14 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    develop:
+      watch:
+        - action: rebuild
+          path: ./apps/api
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: ./packages/domain
 
   web:
     build:
@@ -57,6 +65,15 @@ services:
       - '3000:3000'
     depends_on:
       - api
+    develop:
+      watch:
+        - action: rebuild
+          path: ./apps/web
+          ignore:
+            - node_modules/
+            - .next/
+        - action: rebuild
+          path: ./packages/domain
 
 volumes:
   pgdata:

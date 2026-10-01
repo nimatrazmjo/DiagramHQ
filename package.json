@@ -6,6 +6,8 @@
   "engines": { "node": ">=20" },
   "scripts": {
     "dev": "pnpm build:domain && pnpm -r --parallel --if-present dev",
+    "docker:watch": "docker compose up --watch",
+    "docker:up": "docker compose up -d --build",
     "build": "pnpm -r --if-present build",
     "build:domain": "pnpm --filter @diagramhq/domain build",
     "prisma:generate": "pnpm --filter @diagramhq/api prisma:generate",
