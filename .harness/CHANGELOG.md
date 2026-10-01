@@ -2,6 +2,39 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-01 — F041 — Flow model
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `types.ts`: Added `FlowStep` and `FlowWithSteps` interfaces.
+  - `flow.ts`: Implemented `validateFlowSteps()`, `createFlow()`, `updateFlow()`, `getFlowConnections()`, and `reorderFlowSteps()`. Enforces that every flow step must reference an existing connection in the architecture model.
+  - `flow.test.ts`: Added 8 unit tests covering flow creation, step ordering, note persistence, rejection of invalid steps, diagram independence, connection resolution, updating, and step reordering.
+  - `index.ts`: Exported `flow.ts` functions and types.
+- API layer (`apps/api/src/`):
+  - `flows/flows.dto.ts`: Implemented `FlowStepDto`, `CreateFlowDto`, and `UpdateFlowDto` with class-validator decorators.
+  - `flows/flows.service.ts`: Implemented `FlowsService` with architecture membership validation, connection validation within the architecture, and transactional flow/step persistence.
+  - `flows/flows.controller.ts`: Implemented CRUD endpoints under `/architectures/:architectureId/flows` and `/flows/:flowId`.
+  - `flows/flows.module.ts`: Created `FlowsModule` and registered in `app.module.ts`.
+  - `flows/flows.service.spec.ts`: Added 8 unit tests for all service methods and edge cases.
+- Web layer (`apps/web/`):
+  - `flow-model.spec.ts`: Added 4 integration tests verifying flow creation from connections, step ordering, rejection of invalid connections, diagram independence, and step updates.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0
+pnpm lint               → exit 0
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm --filter @diagramhq/domain test → 168 passed (25 test files)
+pnpm --filter @diagramhq/web test    → 303 passed (37 test files)
+pnpm --filter @diagramhq/api exec vitest run src/flows/flows.service.spec.ts → 8 passed
+branch: feat/F041-flow-model
+```
+
+Evaluator scores: acceptance=5, correctness=5, boundaries=5, modularity=5, evidence=5 => avg 5.0 — PASS
+
 ## 2026-09-27 — F115 — Persona modes
 
 Status: COMPLETE

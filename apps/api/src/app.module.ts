@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ArchitecturesModule } from './architectures/architectures.module';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
+import { FlowsModule } from './flows/flows.module';
 import { HealthModule } from './health/health.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { ViewsModule } from './views/views.module';
@@ -16,6 +17,7 @@ import { WorkspacesModule } from './workspaces/workspaces.module';
     ArchitecturesModule,
     AuthModule,
     DatabaseModule,
+    FlowsModule,
     HealthModule,
     OrganizationsModule,
     ViewsModule,

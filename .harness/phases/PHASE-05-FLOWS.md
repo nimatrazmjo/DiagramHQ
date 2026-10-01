@@ -1,6 +1,6 @@
 # Phase 05 — Flows
 
-Status: NOT STARTED
+Status: IN PROGRESS
 
 ## Description
 Flows: ordered sequences through existing connections, with playback. A flow is not a static line.
@@ -12,7 +12,7 @@ Phase 03, Phase 04
 
 ### F041 — Flow model
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Ordered sequence of connections.
 

@@ -1,12 +1,11 @@
-# CURRENT TASK: F114 — Technology catalog (NOT STARTED)
+# CURRENT TASK: F042 — Flow steps (NOT STARTED)
 
 ## Status: NOT STARTED
 
 ## Current Feature
-**F114 — Technology catalog** (Phase 04 — Diagrams and Views)
-- Library: name, category, version, vendor, lifecycle, security-status, owner, docs
-- 'Find systems using unsupported technology'; filter-by-technology view
-- Test: tag with a tech; query unsupported returns them.
+**F042 — Flow steps** (Phase 05 — Flows)
+- Add/reorder/annotate steps; each step references a connection
+- Test: steps stay ordered; notes persist.
 
 ## Next Feature
-- **F115 — Persona modes** (Phase 04 — Diagrams and Views)
+- **F043 — Flow visualization** (Phase 05 — Flows)

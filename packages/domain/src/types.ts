@@ -168,6 +168,18 @@ export interface Flow {
   updatedAt: Date;
 }
 
+export interface FlowStep {
+  readonly id: string;
+  readonly flowId: FlowId;
+  stepIndex: number;
+  connectionId: ConnectionId;
+  note?: string | null;
+}
+
+export interface FlowWithSteps extends Flow {
+  readonly steps: FlowStep[];
+}
+
 export interface Decision {
   readonly id: DecisionId;
   readonly architectureId: ArchitectureId;

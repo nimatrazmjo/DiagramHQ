@@ -8,26 +8,30 @@ Name: DiagramHQ
 Description: Model-first architecture intelligence platform (a "better than IcePanel" Architecture OS). The model — objects + connections — is the product; diagrams are projections of it. Full spec: `product/PRODUCT.md`. CLI: `dhq`.
 
 ## Current Phase
-Phase: 04
-Phase Name: Diagrams and Views
+Phase: 05
+Phase Name: Flows
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F135
-Feature Name: Architecture templates
+Feature ID: F042
+Feature Name: Flow steps
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 41
+Completed: 43
 In Progress: 0
 Blocked: 0
-Not Started: 94
-Progress: 30.4%
+Not Started: 92
+Progress: 31.9%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F115 — Persona modes. Added `projectPersonaViewToCanvas` domain projection, `<PersonaBadges />` UI component, and `persona-modes.spec.ts` integration spec covering all 8 persona modes.
+F041 — Flow model. Ordered sequence of connections. Added `FlowStep` and `FlowWithSteps` domain interfaces, pure domain validation & creation functions in `flow.ts` (8 unit tests), NestJS `FlowsModule` with endpoints and unit tests (8 tests), and web integration spec in `flow-model.spec.ts` (4 tests).
+
+Prior: F135 — Architecture templates. Starter templates (SaaS, e-commerce, fintech, healthcare, microservices, monolith, serverless, event-driven, data-platform, Kubernetes, AWS, Azure, GCP). Pure domain instantiation, UI template picker card grid, 19 integration tests.
+
+Prior: F115 — Persona modes. Added `projectPersonaViewToCanvas` domain projection, `<PersonaBadges />` UI component, and `persona-modes.spec.ts` integration spec covering all 8 persona modes.
 
 Prior: F114 — Technology catalog. Added Technology model properties, technology view projection, UI badges, and view filter lifecycle evaluation.
 
@@ -40,16 +44,16 @@ Prior: F038 — Security views. Added projection wrappers and custom badge compo
 Prior: F037 — Saved views. Added `isStarred` property to views, with `PATCH /views/:viewId` endpoint. Validated by 2 new e2e tests in `saved-views.e2e.spec.ts`.
 
 ## Current Work
-F135 — Architecture templates. Starter templates.
+F042 — Flow steps. Ordered, annotated steps.
 
 ## Next Task
-F135 — Architecture templates. Starter templates.
+F042 — Flow steps. Ordered, annotated steps.
 
 ## Last Verified
-F115 @ feat/F115-persona-modes — pnpm verify (typecheck / lint / test / check-architecture) + pnpm build all green.
+F041 @ feat/F041-flow-model — typecheck / lint / tests (168 domain + 303 web + 8 api) / check-architecture / pnpm build all green.
 
 ## Current Git Commit
-Working tree: CLEAN on branch `main`. Squash merged from `feat/F115-persona-modes` at commit `a9f1988`.
+Working tree: CLEAN on branch `feat/F041-flow-model`.
 
 
 ## Important Notes
