@@ -1,6 +1,7 @@
 import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { ComponentNodeData, Technology, PersonaMode } from '@diagramhq/domain';
+import { getTechnologyIconPath } from '../../lib/icons';
 import { SecurityBadges } from './security-badges';
 import { DataBadges } from './data-badges';
 import { OwnershipBadges } from './ownership-badges';
@@ -185,6 +186,11 @@ export function ComponentNode({ id, data, selected }: NodeProps): JSX.Element {
     }
   };
 
+  const brandIcon =
+    (nodeData.icon as string) ||
+    getTechnologyIconPath(technology) ||
+    getTechnologyIconPath(label);
+
   return (
     <div
       data-testid="component-node"
@@ -205,7 +211,11 @@ export function ComponentNode({ id, data, selected }: NodeProps): JSX.Element {
       {/* Header Badge */}
       <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-white/10">
         <div className="flex items-center gap-1.5">
-          {getComponentIcon(componentKind)}
+          {brandIcon ? (
+            <img src={brandIcon} alt="" className="w-4 h-4 flex-shrink-0 object-contain" />
+          ) : (
+            getComponentIcon(componentKind)
+          )}
           <span
             data-testid="component-kind-badge"
             className="text-[10px] font-semibold uppercase tracking-wider text-slate-300"

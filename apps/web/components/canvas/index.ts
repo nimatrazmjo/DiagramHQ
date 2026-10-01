@@ -5,3 +5,6 @@ export * from './alignment-toolbar';
 export * from './layout-menu';
 export * from './template-panel';
 export * from './shape-palette';
+export * from './icon-picker-modal';
+export * from './icepanel-sidebar';
+export * from './icepanel-edge';

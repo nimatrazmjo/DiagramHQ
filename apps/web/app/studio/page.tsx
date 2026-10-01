@@ -16,9 +16,8 @@ import {
   type ObjectId,
   type ConnectionId,
 } from '@diagramhq/domain';
-import { InfiniteCanvas, toAlignableNode } from '../../components/canvas';
+import { InfiniteCanvas, toAlignableNode, IcePanelSidebar, IconPickerModal } from '../../components/canvas';
 import { InspectorPanel } from '../../components/shell/inspector-panel';
-import { IconPickerModal } from '../../components/canvas/icon-picker-modal';
 
 export default function StudioPage(): JSX.Element {
   // Pre-seed with the SaaS 3-tier starter architecture
@@ -65,21 +64,64 @@ export default function StudioPage(): JSX.Element {
   const [activeView, setActiveView] = useState<'all' | 'context' | 'container' | 'security' | 'data' | 'ownership'>('all');
   const [activePersona, setActivePersona] = useState<PersonaMode | 'all'>('all');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [isInspectorOpen, setIsInspectorOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [canvasKey, setCanvasKey] = useState(1);
   const [currentNodes, setCurrentNodes] = useState<CanvasNode[]>(initialGraph.nodes);
   const [currentEdges, setCurrentEdges] = useState<CanvasEdge[]>(initialGraph.edges);
+  const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
+  const [c4Level, setC4Level] = useState<1 | 2 | 3>(1);
 
-  // Selected node item for the Inspector panel
+  // Selected node item for Inspector
   const selectedNode = useMemo(() => {
     if (!selectedNodeId) return null;
     return currentNodes.find((n) => n.id === selectedNodeId) ?? null;
   }, [selectedNodeId, currentNodes]);
 
+  // Selected edge item for Inspector
+  const selectedEdgeData = useMemo(() => {
+    if (!selectedEdgeId) return null;
+    const edge = currentEdges.find((e) => e.id === selectedEdgeId);
+    if (!edge) return null;
+
+    const sourceNode = currentNodes.find((n) => n.id === edge.source);
+    const targetNode = currentNodes.find((n) => n.id === edge.target);
+    const edgeData = (edge.data || {}) as Record<string, unknown>;
+
+    let protocol = (edgeData.protocol as string) || (edgeData.kind as string) || undefined;
+    let description = (edgeData.description as string) || (edge.label as string) || undefined;
+    if (!protocol && typeof edge.label === 'string' && edge.label.includes(':')) {
+      const parts = edge.label.split(':');
+      protocol = parts[0]?.trim() || undefined;
+      description = parts.slice(1).join(':').trim() || undefined;
+    }
+
+    return {
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      sourceName: (sourceNode?.data?.label as string) || edge.source,
+      targetName: (targetNode?.data?.label as string) || edge.target,
+      label: edge.label,
+      protocol,
+      description,
+    };
+  }, [selectedEdgeId, currentEdges, currentNodes]);
+
   const handleNodeSelect = useCallback((nodeId: string | null) => {
     setSelectedNodeId(nodeId);
-    if (nodeId && !isInspectorOpen) {
-      setIsInspectorOpen(true);
+    if (nodeId) {
+      setSelectedEdgeId(null);
+      if (!isInspectorOpen) setIsInspectorOpen(true);
+    }
+  }, [isInspectorOpen]);
+
+  const handleEdgeSelect = useCallback((edgeId: string | null) => {
+    setSelectedEdgeId(edgeId);
+    if (edgeId) {
+      setSelectedNodeId(null);
+      if (!isInspectorOpen) setIsInspectorOpen(true);
     }
   }, [isInspectorOpen]);
 
@@ -101,11 +143,93 @@ export default function StudioPage(): JSX.Element {
     );
   }, [selectedNodeId]);
 
+  const handleEdgeMetadataChange = useCallback((edgeId: string, updates: { protocol?: string; description?: string }) => {
+    setCurrentEdges((prev) =>
+      prev.map((e) => {
+        if (e.id !== edgeId) return e;
+        const data = { ...(e.data || {}), ...updates };
+        const label = updates.protocol && updates.description
+          ? `${updates.protocol}: ${updates.description}`
+          : updates.protocol || updates.description || e.label;
+        return { ...e, label, data };
+      }),
+    );
+  }, []);
+
+  const handleDeleteEdge = useCallback((edgeId: string) => {
+    setCurrentEdges((prev) => prev.filter((e) => e.id !== edgeId));
+    if (selectedEdgeId === edgeId) setSelectedEdgeId(null);
+  }, [selectedEdgeId]);
+
+  const handleDeleteNode = useCallback((nodeId: string) => {
+    setCurrentNodes((prev) => prev.filter((n) => n.id !== nodeId));
+    setCurrentEdges((prev) => prev.filter((e) => e.source !== nodeId && e.target !== nodeId));
+    if (selectedNodeId === nodeId) setSelectedNodeId(null);
+  }, [selectedNodeId]);
+
+  // Connect two nodes from the Inspector
+  const handleConnectNodesFromInspector = useCallback((targetId: string, protocol?: string, description?: string) => {
+    if (!selectedNodeId || !targetId || selectedNodeId === targetId) return;
+
+    const newEdge: CanvasEdge = {
+      id: `conn-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      source: selectedNodeId,
+      target: targetId,
+      type: 'icepanel',
+      label: protocol && description ? `${protocol}: ${description}` : protocol || description || 'connects to',
+      data: {
+        protocol: protocol || 'HTTPS',
+        description: description || undefined,
+      },
+    };
+
+    setCurrentEdges((prev) => [...prev, newEdge]);
+  }, [selectedNodeId]);
+
+  // Add node from Sidebar or Palette
+  const handleAddNode = useCallback((
+    kind: 'system' | 'application' | 'database' | 'queue' | 'person' | 'component',
+    customData?: { label?: string; technology?: string; icon?: string; description?: string }
+  ) => {
+    const id = `${kind}-${Date.now().toString().slice(-5)}`;
+    const defaultLabels: Record<string, string> = {
+      system: 'New System',
+      application: 'New Service',
+      database: 'New Database',
+      queue: 'New Message Queue',
+      person: 'New Actor',
+      component: 'New Component',
+    };
+
+    const label = customData?.label || defaultLabels[kind] || 'New Object';
+    const offset = (currentNodes.length % 6) * 40;
+
+    const newNode: CanvasNode = {
+      id,
+      type: kind,
+      position: { x: 280 + offset, y: 160 + offset },
+      data: {
+        label,
+        kind,
+        technology: customData?.technology,
+        description: customData?.description || 'Newly created architecture element.',
+        icon: customData?.icon,
+        status: 'Active',
+      },
+    };
+
+    setCurrentNodes((nds) => [...nds, newNode]);
+    setSelectedNodeId(id);
+    setSelectedEdgeId(null);
+    if (!isInspectorOpen) setIsInspectorOpen(true);
+  }, [currentNodes.length, isInspectorOpen]);
+
   const handleClearDiagram = useCallback(() => {
     if (window.confirm('Clear all objects and connections from the diagram?')) {
       setCurrentNodes([]);
       setCurrentEdges([]);
       setSelectedNodeId(null);
+      setSelectedEdgeId(null);
       setCanvasKey((k) => k + 1);
     }
   }, []);
@@ -137,6 +261,7 @@ export default function StudioPage(): JSX.Element {
           setCurrentNodes(parsed.nodes);
           setCurrentEdges(parsed.edges);
           setSelectedNodeId(null);
+          setSelectedEdgeId(null);
           setCanvasKey((k) => k + 1);
         } else {
           alert('Invalid diagram format: nodes and edges must be arrays.');
@@ -168,8 +293,49 @@ export default function StudioPage(): JSX.Element {
     });
   }, [currentNodes, activeView, activePersona]);
 
-  const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
-  const [c4Level, setC4Level] = useState<1 | 2 | 3>(1);
+  // Connections formatted for the Inspector
+  const incomingConnectionsForSelectedNode = useMemo(() => {
+    if (!selectedNodeId) return [];
+    return currentEdges
+      .filter((e) => e.target === selectedNodeId)
+      .map((e) => {
+        const sourceNode = currentNodes.find((n) => n.id === e.source);
+        const data = (e.data || {}) as Record<string, unknown>;
+        return {
+          id: e.id,
+          sourceId: e.source,
+          sourceName: (sourceNode?.data?.label as string) || e.source,
+          protocol: (data.protocol as string) || undefined,
+          description: (data.description as string) || (e.label as string) || undefined,
+        };
+      });
+  }, [selectedNodeId, currentEdges, currentNodes]);
+
+  const outgoingConnectionsForSelectedNode = useMemo(() => {
+    if (!selectedNodeId) return [];
+    return currentEdges
+      .filter((e) => e.source === selectedNodeId)
+      .map((e) => {
+        const targetNode = currentNodes.find((n) => n.id === e.target);
+        const data = (e.data || {}) as Record<string, unknown>;
+        return {
+          id: e.id,
+          targetId: e.target,
+          targetName: (targetNode?.data?.label as string) || e.target,
+          protocol: (data.protocol as string) || undefined,
+          description: (data.description as string) || (e.label as string) || undefined,
+        };
+      });
+  }, [selectedNodeId, currentEdges, currentNodes]);
+
+  const allNodesForInspector = useMemo(() => {
+    return currentNodes.map((n) => ({
+      id: n.id,
+      label: (n.data?.label as string) || n.id,
+      kind: (n.data?.kind as string) || n.type,
+      icon: (n.data?.icon as string) || undefined,
+    }));
+  }, [currentNodes]);
 
   const handleLoadStarter = useCallback(() => {
     let objCount = 0;
@@ -230,12 +396,15 @@ export default function StudioPage(): JSX.Element {
             Phase 0 Studio (Guest Mode)
           </span>
 
-          <span className="hidden xl:inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700">
-            <span>Model:</span>
-            <span className="font-semibold text-white">
+          {/* Breadcrumb Hierarchy (IcePanel style) */}
+          <div className="hidden lg:flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+            <span className="text-slate-600">/</span>
+            <span>Model</span>
+            <span className="text-slate-600">/</span>
+            <span className="text-white font-semibold">
               {c4Level === 1 ? 'System Context' : c4Level === 2 ? 'Containers & Apps' : 'Components'}
             </span>
-          </span>
+          </div>
         </div>
 
         {/* IcePanel signature C4 Level Switcher, View & Persona Filters */}
@@ -309,7 +478,7 @@ export default function StudioPage(): JSX.Element {
           </div>
 
           {/* Persona Mode Switcher */}
-          <div className="hidden lg:flex items-center gap-1 bg-slate-950/60 p-1 rounded-lg border border-slate-800 text-xs">
+          <div className="hidden xl:flex items-center gap-1 bg-slate-950/60 p-1 rounded-lg border border-slate-800 text-xs">
             <span className="text-[11px] text-slate-400 px-1 font-mono">Persona:</span>
             <select
               value={activePersona}
@@ -328,14 +497,24 @@ export default function StudioPage(): JSX.Element {
           </div>
         </div>
 
-        {/* Quick Actions (Icons, Import, Export, Reset, Inspector) */}
+        {/* Quick Actions & Admin Superuser Pill */}
         <div className="flex items-center gap-2">
+          {/* Admin Status Pill */}
+          <Link
+            href="/dashboard"
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-medium transition-colors"
+            title="Admin full access enabled (Switch to Dashboard)"
+          >
+            <span>👑</span>
+            <span className="font-semibold">Admin (Owner)</span>
+          </Link>
+
           {/* Brand Icon catalog trigger */}
           <button
             type="button"
             onClick={() => setIsIconPickerOpen(true)}
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors shadow-sm"
-            title="Browse official icons (Azure, AWS, Postgres, Claude, Python...)"
+            title="Browse official brand icons (Azure, AWS, Postgres, Claude, Python...)"
           >
             <span>🎨</span>
             <span className="hidden sm:inline">Icons</span>
@@ -379,8 +558,26 @@ export default function StudioPage(): JSX.Element {
         </div>
       </header>
 
-      {/* Main Studio Body: Canvas + Collapsible Inspector */}
+      {/* Main Studio Body: Left Sidebar + Canvas + Right Inspector */}
       <div className="flex flex-1 overflow-hidden relative">
+        {/* IcePanel Left Sidebar: Model Objects Tree & Diagram Views */}
+        <IcePanelSidebar
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen((prev) => !prev)}
+          c4Level={c4Level}
+          onSelectC4Level={(lvl) => {
+            setC4Level(lvl);
+            if (lvl === 1) setActiveView('context');
+            else if (lvl === 2) setActiveView('container');
+            else setActiveView('all');
+          }}
+          nodes={currentNodes}
+          selectedNodeId={selectedNodeId}
+          onSelectNode={handleNodeSelect}
+          onAddNode={handleAddNode}
+          onOpenIconPicker={() => setIsIconPickerOpen(true)}
+        />
+
         {/* Full-bleed Infinite Canvas */}
         <div className="flex-1 h-full w-full relative">
           <InfiniteCanvas
@@ -388,6 +585,7 @@ export default function StudioPage(): JSX.Element {
             initialNodes={displayNodes}
             initialEdges={currentEdges}
             onNodeSelect={handleNodeSelect}
+            onEdgeSelect={handleEdgeSelect}
             showPalette
             showTemplatePicker
             onNodeCreate={(newNode) => {
@@ -396,12 +594,7 @@ export default function StudioPage(): JSX.Element {
             onEdgeConnect={(newEdge) => {
               setCurrentEdges((eds) => [...eds, newEdge]);
             }}
-            onNodeDelete={(nodeId) => {
-              setCurrentNodes((nds) => nds.filter((n) => n.id !== nodeId));
-              setCurrentEdges((eds) =>
-                eds.filter((e) => e.source !== nodeId && e.target !== nodeId),
-              );
-            }}
+            onNodeDelete={handleDeleteNode}
           />
 
           {/* IcePanel Empty State Helper */}
@@ -413,7 +606,7 @@ export default function StudioPage(): JSX.Element {
                 </div>
                 <h3 className="text-base font-semibold text-white mb-1">Canvas is ready</h3>
                 <p className="text-xs text-slate-400 mb-4 leading-relaxed">
-                  Use the Insert toolbar on the left to add systems, services, and databases, or load a starter architecture.
+                  Use the Model Tree on the left or the Insert bar to add systems, services, and databases, or load a starter architecture.
                 </p>
                 <button
                   type="button"
@@ -437,6 +630,14 @@ export default function StudioPage(): JSX.Element {
           metadata={selectedNode?.data as Record<string, unknown> | undefined}
           onMetadataChange={handleMetadataChange}
           onOpenIconPicker={() => setIsIconPickerOpen(true)}
+          onDeleteNode={handleDeleteNode}
+          selectedEdge={selectedEdgeData}
+          onEdgeChange={handleEdgeMetadataChange}
+          onDeleteEdge={handleDeleteEdge}
+          allNodes={allNodesForInspector}
+          incomingConnections={incomingConnectionsForSelectedNode}
+          outgoingConnections={outgoingConnectionsForSelectedNode}
+          onConnectNodes={handleConnectNodesFromInspector}
         />
       </div>
 
@@ -444,7 +645,10 @@ export default function StudioPage(): JSX.Element {
       <IconPickerModal
         isOpen={isIconPickerOpen}
         currentIcon={(selectedNode?.data.icon as string) ?? null}
-        onSelectIcon={(iconPath) => handleMetadataChange('icon', iconPath)}
+        onSelectIcon={(iconPath) => {
+          handleMetadataChange('icon', iconPath);
+          setIsIconPickerOpen(false);
+        }}
         onClose={() => setIsIconPickerOpen(false)}
       />
     </div>

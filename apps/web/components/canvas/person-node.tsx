@@ -2,6 +2,8 @@ import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { PersonNodeData } from '@diagramhq/domain';
 
+import { getTechnologyIconPath } from '../../lib/icons';
+
 function PersonAvatarIcon(): JSX.Element {
   return (
     <svg
@@ -50,6 +52,10 @@ export function PersonNode({ data, selected }: NodeProps): JSX.Element {
   const email = typeof nodeData.email === 'string' && nodeData.email.length > 0 ? nodeData.email : undefined;
   const description = typeof nodeData.description === 'string' && nodeData.description.length > 0 ? nodeData.description : undefined;
   const isExternal = Boolean(nodeData.external);
+  const brandIcon =
+    (nodeData.icon as string) ||
+    getTechnologyIconPath(role) ||
+    getTechnologyIconPath(label);
 
   return (
     <div
@@ -75,8 +81,12 @@ export function PersonNode({ data, selected }: NodeProps): JSX.Element {
       {/* Header bar */}
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-1.5">
-          <div className="p-1 rounded-full bg-pink-500/10 border border-pink-500/20">
-            <PersonAvatarIcon />
+          <div className="w-6 h-6 rounded bg-pink-500/10 border border-pink-500/20 flex items-center justify-center p-1 shrink-0">
+            {brandIcon ? (
+              <img src={brandIcon} alt="" className="w-full h-full object-contain" />
+            ) : (
+              <PersonAvatarIcon />
+            )}
           </div>
           <span className="text-[10px] font-semibold uppercase tracking-wider text-pink-400 font-mono">
             Person

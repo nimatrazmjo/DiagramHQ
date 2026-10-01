@@ -65,15 +65,23 @@ import {
   type AlignOperation,
 } from '../../lib/commands';
 import { nodeTypes } from './custom-nodes';
+import { IcePanelEdge } from './icepanel-edge';
 import { AlignmentToolbar } from './alignment-toolbar';
 import { LayoutMenu } from './layout-menu';
 import { ShapePalette, type ShapeKind } from './shape-palette';
 import { TemplatePanel } from './template-panel';
 
+const edgeTypes = {
+  icepanel: IcePanelEdge,
+  default: IcePanelEdge,
+  smoothstep: IcePanelEdge,
+};
+
 export interface InfiniteCanvasProps {
   initialNodes?: CanvasNode[];
   initialEdges?: CanvasEdge[];
   onNodeSelect?: (nodeId: string | null) => void;
+  onEdgeSelect?: (edgeId: string | null) => void;
   isSpacePanning?: boolean;
   selectedNodeIds?: string[];
   selectedEdgeIds?: string[];
@@ -234,7 +242,7 @@ function toFlowEdge(edge: CanvasEdge): Edge {
     id: edge.id,
     source: edge.source,
     target: edge.target,
-    type: edge.type ?? 'default',
+    type: edge.type && edge.type !== 'default' && edge.type !== 'smoothstep' ? edge.type : 'icepanel',
     label: edge.label,
     animated: edge.animated,
     selected: edge.selected,
@@ -257,6 +265,7 @@ function InfiniteCanvasContent({
   initialNodes = [],
   initialEdges = [],
   onNodeSelect,
+  onEdgeSelect,
   isSpacePanning: propIsSpacePanning,
   selectedNodeIds: propSelectedNodeIds,
   selectedEdgeIds: propSelectedEdgeIds,
@@ -1024,8 +1033,11 @@ function InfiniteCanvasContent({
       if (onNodeSelect) {
         onNodeSelect(selectedNodeIds[0] ?? null);
       }
+      if (onEdgeSelect) {
+        onEdgeSelect(selectedEdgeIds[0] ?? null);
+      }
     },
-    [onNodeSelect]
+    [onNodeSelect, onEdgeSelect]
   );
 
   const onMoveEnd = useCallback((_event: unknown, viewport: Viewport) => {
@@ -1067,7 +1079,10 @@ function InfiniteCanvasContent({
     if (onNodeSelect) {
       onNodeSelect(null);
     }
-  }, [onNodeSelect]);
+    if (onEdgeSelect) {
+      onEdgeSelect(null);
+    }
+  }, [onNodeSelect, onEdgeSelect]);
 
   return (
     <div
@@ -1095,6 +1110,7 @@ function InfiniteCanvasContent({
         nodes={displayedNodes}
         edges={displayedEdges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}

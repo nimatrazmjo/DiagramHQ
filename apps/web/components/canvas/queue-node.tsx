@@ -1,6 +1,7 @@
 import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { QueueNodeData } from '@diagramhq/domain';
+import { getTechnologyIconPath } from '../../lib/icons';
 
 function QueueIcon(): JSX.Element {
   return (
@@ -67,6 +68,12 @@ export function QueueNode({ id: _id, data, selected }: NodeProps): JSX.Element {
     }
   };
 
+  const brandIcon =
+    (nodeData.icon as string) ||
+    getTechnologyIconPath(queueKind) ||
+    getTechnologyIconPath(technology) ||
+    getTechnologyIconPath(label);
+
   return (
     <div
       data-testid="queue-node"
@@ -85,7 +92,11 @@ export function QueueNode({ id: _id, data, selected }: NodeProps): JSX.Element {
 
       <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-white/10">
         <div className="flex items-center gap-1.5">
-          <QueueIcon />
+          {brandIcon ? (
+            <img src={brandIcon} alt="" className="w-4 h-4 flex-shrink-0 object-contain" />
+          ) : (
+            <QueueIcon />
+          )}
           <span
             data-testid="queue-kind-badge"
             className="text-[10px] font-semibold uppercase tracking-wider text-slate-300"

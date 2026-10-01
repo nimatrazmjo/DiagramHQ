@@ -75,7 +75,11 @@ export function DatabaseNode({ id: _id, data, selected }: NodeProps): JSX.Elemen
     }
   };
 
-  const brandIcon = getTechnologyIconPath(databaseKind) || getTechnologyIconPath(technology);
+  const brandIcon =
+    (nodeData.icon as string) ||
+    getTechnologyIconPath(databaseKind) ||
+    getTechnologyIconPath(technology) ||
+    getTechnologyIconPath(label);
 
   return (
     <div
