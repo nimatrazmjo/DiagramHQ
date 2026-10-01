@@ -11,7 +11,13 @@ import {
   type MemberRole,
 } from '@diagramhq/domain';
 import { PrismaService } from '../database/prisma.service';
-import type { CreateFlowDto, UpdateFlowDto } from './flows.dto';
+import type {
+  AddFlowStepDto,
+  CreateFlowDto,
+  ReorderFlowStepsDto,
+  UpdateFlowDto,
+  UpdateFlowStepDto,
+} from './flows.dto';
 
 export type FlowWithSteps = Flow & { steps: FlowStep[] };
 
@@ -287,5 +293,238 @@ export class FlowsService {
     });
 
     return { deleted: true };
+  }
+
+  async addStep(
+    userId: string,
+    flowId: string,
+    dto: AddFlowStepDto,
+  ): Promise<{ flow: FlowWithSteps; step: FlowStep }> {
+    const { role, flow } = await this.resolveFlowMember(userId, flowId);
+    if (!canWrite(role)) {
+      throw new ForbiddenException('Insufficient permissions to modify flow steps');
+    }
+
+    const conn = await this.prisma.modelConnection.findFirst({
+      where: {
+        architectureId: flow.architectureId,
+        id: dto.connectionId,
+      },
+    });
+    if (!conn) {
+      throw new BadRequestException(
+        `Invalid flow step: connection "${dto.connectionId}" does not exist in architecture`,
+      );
+    }
+
+    const currentSteps = [...flow.steps].sort((a, b) => a.stepIndex - b.stepIndex);
+    const targetIndex =
+      dto.insertAtIndex !== undefined
+        ? Math.max(0, Math.min(dto.insertAtIndex, currentSteps.length))
+        : currentSteps.length;
+
+    const newStepId = `${flowId}_step_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+
+    const newStepItem = {
+      id: newStepId,
+      flowId,
+      stepIndex: targetIndex,
+      connectionId: dto.connectionId,
+      note: dto.note ?? null,
+    };
+
+    currentSteps.splice(targetIndex, 0, newStepItem as FlowStep);
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.flowStep.deleteMany({ where: { flowId } });
+      for (let i = 0; i < currentSteps.length; i++) {
+        const s = currentSteps[i];
+        if (!s) continue;
+        await tx.flowStep.create({
+          data: {
+            id: s.id,
+            flowId,
+            stepIndex: i,
+            connectionId: s.connectionId,
+            note: s.note,
+          },
+        });
+      }
+    });
+
+    const updatedFlow = await this.prisma.flow.findUniqueOrThrow({
+      where: { id: flowId },
+      include: {
+        steps: { orderBy: { stepIndex: 'asc' } },
+      },
+    });
+
+    const createdStep =
+      updatedFlow.steps.find((s) => s.id === newStepId) ??
+      updatedFlow.steps[targetIndex];
+    if (!createdStep) {
+      throw new NotFoundException('Failed to retrieve created step');
+    }
+    return { flow: updatedFlow, step: createdStep };
+  }
+
+  async updateStep(
+    userId: string,
+    flowId: string,
+    stepId: string,
+    dto: UpdateFlowStepDto,
+  ): Promise<{ flow: FlowWithSteps; step: FlowStep }> {
+    const { role, flow } = await this.resolveFlowMember(userId, flowId);
+    if (!canWrite(role)) {
+      throw new ForbiddenException('Insufficient permissions to modify flow steps');
+    }
+
+    const stepIndex = flow.steps.findIndex((s) => s.id === stepId);
+    if (stepIndex < 0) {
+      throw new NotFoundException(`Step "${stepId}" not found in flow "${flowId}"`);
+    }
+
+    const steps = [...flow.steps].sort((a, b) => a.stepIndex - b.stepIndex);
+    const targetStep = steps[stepIndex];
+    if (!targetStep) {
+      throw new NotFoundException(`Step "${stepId}" not found in flow "${flowId}"`);
+    }
+
+    if (dto.note !== undefined) {
+      targetStep.note = dto.note;
+    }
+
+    if (dto.stepIndex !== undefined && dto.stepIndex !== targetStep.stepIndex) {
+      steps.splice(stepIndex, 1);
+      const newIdx = Math.max(0, Math.min(dto.stepIndex, steps.length));
+      steps.splice(newIdx, 0, targetStep);
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.flowStep.deleteMany({ where: { flowId } });
+      for (let i = 0; i < steps.length; i++) {
+        const s = steps[i];
+        if (!s) continue;
+        await tx.flowStep.create({
+          data: {
+            id: s.id,
+            flowId,
+            stepIndex: i,
+            connectionId: s.connectionId,
+            note: s.note,
+          },
+        });
+      }
+    });
+
+    const updatedFlow = await this.prisma.flow.findUniqueOrThrow({
+      where: { id: flowId },
+      include: {
+        steps: { orderBy: { stepIndex: 'asc' } },
+      },
+    });
+
+    const updatedStep = updatedFlow.steps.find((s) => s.id === stepId);
+    if (!updatedStep) {
+      throw new NotFoundException(`Step "${stepId}" not found after update`);
+    }
+    return { flow: updatedFlow, step: updatedStep };
+  }
+
+  async removeStep(
+    userId: string,
+    flowId: string,
+    stepId: string,
+  ): Promise<{ flow: FlowWithSteps; deletedStepId: string }> {
+    const { role, flow } = await this.resolveFlowMember(userId, flowId);
+    if (!canWrite(role)) {
+      throw new ForbiddenException('Insufficient permissions to delete flow steps');
+    }
+
+    const stepIndex = flow.steps.findIndex((s) => s.id === stepId);
+    if (stepIndex < 0) {
+      throw new NotFoundException(`Step "${stepId}" not found in flow "${flowId}"`);
+    }
+
+    const steps = [...flow.steps].sort((a, b) => a.stepIndex - b.stepIndex);
+    steps.splice(stepIndex, 1);
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.flowStep.deleteMany({ where: { flowId } });
+      for (let i = 0; i < steps.length; i++) {
+        const s = steps[i];
+        if (!s) continue;
+        await tx.flowStep.create({
+          data: {
+            id: s.id,
+            flowId,
+            stepIndex: i,
+            connectionId: s.connectionId,
+            note: s.note,
+          },
+        });
+      }
+    });
+
+    const updatedFlow = await this.prisma.flow.findUniqueOrThrow({
+      where: { id: flowId },
+      include: {
+        steps: { orderBy: { stepIndex: 'asc' } },
+      },
+    });
+
+    return { flow: updatedFlow, deletedStepId: stepId };
+  }
+
+  async reorderSteps(
+    userId: string,
+    flowId: string,
+    dto: ReorderFlowStepsDto,
+  ): Promise<{ flow: FlowWithSteps }> {
+    const { role, flow } = await this.resolveFlowMember(userId, flowId);
+    if (!canWrite(role)) {
+      throw new ForbiddenException('Insufficient permissions to reorder flow steps');
+    }
+
+    const stepMap = new Map<string, FlowStep>(flow.steps.map((s) => [s.id, s]));
+    if (dto.orderedStepIds.length !== flow.steps.length) {
+      throw new BadRequestException(
+        `Reorder step count mismatch: expected ${flow.steps.length}, received ${dto.orderedStepIds.length}`,
+      );
+    }
+
+    for (const stepId of dto.orderedStepIds) {
+      if (!stepMap.has(stepId)) {
+        throw new BadRequestException(`Step "${stepId}" not found in flow`);
+      }
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.flowStep.deleteMany({ where: { flowId } });
+      for (let i = 0; i < dto.orderedStepIds.length; i++) {
+        const stepId = dto.orderedStepIds[i];
+        if (!stepId) continue;
+        const existing = stepMap.get(stepId);
+        if (!existing) continue;
+        await tx.flowStep.create({
+          data: {
+            id: existing.id,
+            flowId,
+            stepIndex: i,
+            connectionId: existing.connectionId,
+            note: existing.note,
+          },
+        });
+      }
+    });
+
+    const updatedFlow = await this.prisma.flow.findUniqueOrThrow({
+      where: { id: flowId },
+      include: {
+        steps: { orderBy: { stepIndex: 'asc' } },
+      },
+    });
+
+    return { flow: updatedFlow };
   }
 }

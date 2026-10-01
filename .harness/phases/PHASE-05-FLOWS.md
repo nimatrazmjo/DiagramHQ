@@ -25,7 +25,7 @@ Test: build a flow from connections; an invalid step is rejected.
 
 ### F042 — Flow steps
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Ordered, annotated steps.
 

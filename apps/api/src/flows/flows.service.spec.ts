@@ -14,6 +14,7 @@ describe('FlowsService', () => {
     };
     modelConnection: {
       findMany: ReturnType<typeof vi.fn>;
+      findFirst: ReturnType<typeof vi.fn>;
     };
     flow: {
       findUnique: ReturnType<typeof vi.fn>;
@@ -68,6 +69,7 @@ describe('FlowsService', () => {
       },
       modelConnection: {
         findMany: vi.fn(),
+        findFirst: vi.fn(),
       },
       flow: {
         findUnique: vi.fn(),
@@ -246,6 +248,182 @@ describe('FlowsService', () => {
 
       const result = await service.deleteFlow('usr_admin', 'flw_test');
       expect(result.deleted).toBe(true);
+    });
+  });
+
+  describe('F042 — Step Operations (add, update, remove, reorder)', () => {
+    it('adds a step to an existing flow and re-indexes steps', async () => {
+      prismaMock.flow.findUnique.mockResolvedValue(mockFlow);
+      prismaMock.member.findUnique.mockResolvedValue({
+        id: 'mem_1',
+        orgId: 'org_test',
+        userId: 'usr_editor',
+        role: 'editor',
+      });
+      prismaMock.modelConnection.findFirst.mockResolvedValue({ id: 'con_2' });
+
+      const updatedFlow = {
+        ...mockFlow,
+        steps: [
+          mockFlow.steps[0],
+          { id: 'new_step_id', flowId: 'flw_test', stepIndex: 1, connectionId: 'con_2', note: 'Second step' },
+        ],
+      };
+
+      prismaMock.$transaction.mockImplementation(async (callback) => {
+        return callback({
+          flowStep: {
+            deleteMany: vi.fn(),
+            create: vi.fn(),
+          },
+        });
+      });
+      prismaMock.flow.findUniqueOrThrow.mockResolvedValue(updatedFlow);
+
+      const result = await service.addStep('usr_editor', 'flw_test', {
+        connectionId: 'con_2',
+        note: 'Second step',
+      });
+
+      expect(result.flow.steps).toHaveLength(2);
+      expect(result.step.connectionId).toBe('con_2');
+      expect(result.step.note).toBe('Second step');
+    });
+
+    it('rejects adding a step with a non-existent connection', async () => {
+      prismaMock.flow.findUnique.mockResolvedValue(mockFlow);
+      prismaMock.member.findUnique.mockResolvedValue({
+        id: 'mem_1',
+        orgId: 'org_test',
+        userId: 'usr_editor',
+        role: 'editor',
+      });
+      prismaMock.modelConnection.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.addStep('usr_editor', 'flw_test', {
+          connectionId: 'con_missing',
+        }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('updates a step note and index', async () => {
+      prismaMock.flow.findUnique.mockResolvedValue(mockFlow);
+      prismaMock.member.findUnique.mockResolvedValue({
+        id: 'mem_1',
+        orgId: 'org_test',
+        userId: 'usr_editor',
+        role: 'editor',
+      });
+
+      const updatedFlow = {
+        ...mockFlow,
+        steps: [
+          { ...mockFlow.steps[0], note: 'Updated annotation note' },
+        ],
+      };
+
+      prismaMock.$transaction.mockImplementation(async (callback) => {
+        return callback({
+          flowStep: {
+            deleteMany: vi.fn(),
+            create: vi.fn(),
+          },
+        });
+      });
+      prismaMock.flow.findUniqueOrThrow.mockResolvedValue(updatedFlow);
+
+      const result = await service.updateStep('usr_editor', 'flw_test', 'flw_test_step_1', {
+        note: 'Updated annotation note',
+      });
+
+      expect(result.step.note).toBe('Updated annotation note');
+    });
+
+    it('removes a step and normalizes remaining step indices', async () => {
+      const multiStepFlow = {
+        ...mockFlow,
+        steps: [
+          { id: 's1', flowId: 'flw_test', stepIndex: 0, connectionId: 'con_1', note: 'Note 1' },
+          { id: 's2', flowId: 'flw_test', stepIndex: 1, connectionId: 'con_2', note: 'Note 2' },
+        ],
+      };
+
+      prismaMock.flow.findUnique.mockResolvedValue(multiStepFlow);
+      prismaMock.member.findUnique.mockResolvedValue({
+        id: 'mem_1',
+        orgId: 'org_test',
+        userId: 'usr_editor',
+        role: 'editor',
+      });
+
+      const flowAfterRemoval = {
+        ...mockFlow,
+        steps: [
+          { id: 's2', flowId: 'flw_test', stepIndex: 0, connectionId: 'con_2', note: 'Note 2' },
+        ],
+      };
+
+      prismaMock.$transaction.mockImplementation(async (callback) => {
+        return callback({
+          flowStep: {
+            deleteMany: vi.fn(),
+            create: vi.fn(),
+          },
+        });
+      });
+      prismaMock.flow.findUniqueOrThrow.mockResolvedValue(flowAfterRemoval);
+
+      const result = await service.removeStep('usr_editor', 'flw_test', 's1');
+      expect(result.deletedStepId).toBe('s1');
+      expect(result.flow.steps).toHaveLength(1);
+      expect(result.flow.steps[0]?.id).toBe('s2');
+      expect(result.flow.steps[0]?.stepIndex).toBe(0);
+    });
+
+    it('reorders steps by explicit ID list', async () => {
+      const multiStepFlow = {
+        ...mockFlow,
+        steps: [
+          { id: 's1', flowId: 'flw_test', stepIndex: 0, connectionId: 'con_1', note: 'First' },
+          { id: 's2', flowId: 'flw_test', stepIndex: 1, connectionId: 'con_2', note: 'Second' },
+        ],
+      };
+
+      prismaMock.flow.findUnique.mockResolvedValue(multiStepFlow);
+      prismaMock.member.findUnique.mockResolvedValue({
+        id: 'mem_1',
+        orgId: 'org_test',
+        userId: 'usr_editor',
+        role: 'editor',
+      });
+
+      const reorderedFlow = {
+        ...mockFlow,
+        steps: [
+          { id: 's2', flowId: 'flw_test', stepIndex: 0, connectionId: 'con_2', note: 'Second' },
+          { id: 's1', flowId: 'flw_test', stepIndex: 1, connectionId: 'con_1', note: 'First' },
+        ],
+      };
+
+      prismaMock.$transaction.mockImplementation(async (callback) => {
+        return callback({
+          flowStep: {
+            deleteMany: vi.fn(),
+            create: vi.fn(),
+          },
+        });
+      });
+      prismaMock.flow.findUniqueOrThrow.mockResolvedValue(reorderedFlow);
+
+      const result = await service.reorderSteps('usr_editor', 'flw_test', {
+        orderedStepIds: ['s2', 's1'],
+      });
+
+      expect(result.flow.steps[0]?.id).toBe('s2');
+      expect(result.flow.steps[1]?.id).toBe('s1');
+      expect(result.flow.steps[0]?.note).toBe('Second');
+      expect(result.flow.steps[1]?.note).toBe('First');
     });
   });
 });

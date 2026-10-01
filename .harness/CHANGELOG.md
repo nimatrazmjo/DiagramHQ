@@ -2,6 +2,36 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-01 — F042 — Flow steps
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `flow.ts`: Implemented `addFlowStep()`, `removeFlowStep()`, `annotateFlowStep()`, `reorderFlowStepsByIndex()`, and `reorderFlowStepList()`. Ensures step indices remain normalized (0..N-1) and annotations persist stably across additions, deletions, and moves.
+  - `flow.test.ts`: Added 5 unit tests for insertion with index shifting, step annotation, removal with normalization, index-based reordering, and ID list reordering.
+- API layer (`apps/api/src/`):
+  - `flows/flows.dto.ts`: Added `AddFlowStepDto`, `UpdateFlowStepDto`, and `ReorderFlowStepsDto`.
+  - `flows/flows.service.ts`: Added `addStep()`, `updateStep()`, `removeStep()`, and `reorderSteps()` methods with connection validation and transactional re-indexing.
+  - `flows/flows.controller.ts`: Exposed `POST /flows/:flowId/steps`, `PATCH /flows/:flowId/steps/:stepId`, `DELETE /flows/:flowId/steps/:stepId`, and `PUT /flows/:flowId/steps/reorder`.
+  - `flows/flows.service.spec.ts`: Added 5 unit tests covering step operations.
+- Web layer (`apps/web/`):
+  - `flow-steps.spec.ts`: Added 4 integration tests verifying adding steps, reordering by index and list, annotating steps, and persistence of notes.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0
+pnpm lint               → exit 0
+pnpm check-architecture → exit 0 (clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm --filter @diagramhq/domain test → 173 passed (25 test files)
+pnpm --filter @diagramhq/web test    → 307 passed (38 test files)
+pnpm --filter @diagramhq/api exec vitest run src/flows/flows.service.spec.ts → 13 passed
+branch: feat/F042-flow-steps
+```
+
+Evaluator scores: acceptance=5, correctness=5, boundaries=5, modularity=5, evidence=5 => avg 5.0 — PASS
+
 ## 2026-10-01 — F041 — Flow model
 
 Status: COMPLETE

@@ -13,21 +13,23 @@ Phase Name: Flows
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F042
-Feature Name: Flow steps
+Feature ID: F043
+Feature Name: Flow visualization
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 43
+Completed: 44
 In Progress: 0
 Blocked: 0
-Not Started: 92
-Progress: 31.9%
+Not Started: 91
+Progress: 32.6%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F041 — Flow model. Ordered sequence of connections. Added `FlowStep` and `FlowWithSteps` domain interfaces, pure domain validation & creation functions in `flow.ts` (8 unit tests), NestJS `FlowsModule` with endpoints and unit tests (8 tests), and web integration spec in `flow-model.spec.ts` (4 tests).
+F042 — Flow steps. Ordered, annotated steps. Added `addFlowStep()`, `removeFlowStep()`, `annotateFlowStep()`, `reorderFlowStepsByIndex()`, and `reorderFlowStepList()` to domain (5 tests), added step endpoints and unit tests to API (5 tests), and added web integration spec in `flow-steps.spec.ts` (4 tests).
+
+Prior: F041 — Flow model. Ordered sequence of connections. Added `FlowStep` and `FlowWithSteps` domain interfaces, pure domain validation & creation functions in `flow.ts` (8 unit tests), NestJS `FlowsModule` with endpoints and unit tests (8 tests), and web integration spec in `flow-model.spec.ts` (4 tests).
 
 Prior: F135 — Architecture templates. Starter templates (SaaS, e-commerce, fintech, healthcare, microservices, monolith, serverless, event-driven, data-platform, Kubernetes, AWS, Azure, GCP). Pure domain instantiation, UI template picker card grid, 19 integration tests.
 
@@ -44,16 +46,16 @@ Prior: F038 — Security views. Added projection wrappers and custom badge compo
 Prior: F037 — Saved views. Added `isStarred` property to views, with `PATCH /views/:viewId` endpoint. Validated by 2 new e2e tests in `saved-views.e2e.spec.ts`.
 
 ## Current Work
-F042 — Flow steps. Ordered, annotated steps.
+F043 — Flow visualization. Highlight flow path over existing architecture.
 
 ## Next Task
-F042 — Flow steps. Ordered, annotated steps.
+F043 — Flow visualization. Highlight flow path over existing architecture.
 
 ## Last Verified
-F041 @ feat/F041-flow-model — typecheck / lint / tests (168 domain + 303 web + 8 api) / check-architecture / pnpm build all green.
+F042 @ feat/F042-flow-steps — typecheck / lint / tests (173 domain + 307 web + 13 api) / check-architecture / pnpm build all green.
 
 ## Current Git Commit
-Working tree: CLEAN on branch `feat/F041-flow-model`.
+Working tree: CLEAN on branch `feat/F042-flow-steps`.
 
 
 ## Important Notes

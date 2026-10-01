@@ -1,11 +1,11 @@
-# CURRENT TASK: F042 — Flow steps (NOT STARTED)
+# CURRENT TASK: F043 — Flow visualization (NOT STARTED)
 
 ## Status: NOT STARTED
 
 ## Current Feature
-**F042 — Flow steps** (Phase 05 — Flows)
-- Add/reorder/annotate steps; each step references a connection
-- Test: steps stay ordered; notes persist.
+**F043 — Flow visualization** (Phase 05 — Flows)
+- Highlight the flow path over the existing architecture
+- Test: flow path renders over the model.
 
 ## Next Feature
-- **F043 — Flow visualization** (Phase 05 — Flows)
+- **F044 — Flow playback** (Phase 05 — Flows)

@@ -244,3 +244,220 @@ export function reorderFlowSteps(
     };
   });
 }
+
+/**
+ * Adds a step to a flow, either at a designated index or appended at the end.
+ * Subsequent step indices are shifted accordingly, and all existing notes and order are preserved.
+ */
+export function addFlowStep(
+  flow: FlowWithSteps,
+  stepInput: CreateFlowStepInput,
+  insertAtIndex?: number,
+  availableConnections?: Set<ConnectionId> | ConnectionId[] | ModelConnection[],
+): FlowWithSteps {
+  if (availableConnections) {
+    const validation = validateFlowSteps([stepInput], availableConnections);
+    if (!validation.valid) {
+      throw new InvariantViolationError(
+        `Invalid flow step: ${validation.errors.join('; ')}`,
+        'INVALID_FLOW_STEPS',
+      );
+    }
+  }
+
+  const sortedSteps = [...flow.steps].sort((a, b) => a.stepIndex - b.stepIndex);
+  const targetIndex =
+    insertAtIndex !== undefined
+      ? Math.max(0, Math.min(insertAtIndex, sortedSteps.length))
+      : sortedSteps.length;
+
+  const newStep: FlowStep = {
+    id: stepInput.id ?? `${flow.id}_step_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`,
+    flowId: flow.id,
+    stepIndex: targetIndex,
+    connectionId: stepInput.connectionId,
+    note: stepInput.note ?? null,
+  };
+
+  sortedSteps.splice(targetIndex, 0, newStep);
+
+  // Normalize all indices to 0..N-1
+  const updatedSteps = sortedSteps.map((step, idx) => ({
+    ...step,
+    stepIndex: idx,
+  }));
+
+  return {
+    ...flow,
+    updatedAt: new Date(),
+    steps: updatedSteps,
+  };
+}
+
+/**
+ * Removes a step by its ID or its 0-based index.
+ * Remaining steps maintain their relative order, notes persist, and stepIndex is normalized.
+ */
+export function removeFlowStep(
+  flow: FlowWithSteps,
+  stepIdOrIndex: string | number,
+): FlowWithSteps {
+  const sortedSteps = [...flow.steps].sort((a, b) => a.stepIndex - b.stepIndex);
+  let removeIndex = -1;
+
+  if (typeof stepIdOrIndex === 'number') {
+    removeIndex = stepIdOrIndex;
+  } else {
+    removeIndex = sortedSteps.findIndex((s) => s.id === stepIdOrIndex);
+  }
+
+  if (removeIndex < 0 || removeIndex >= sortedSteps.length) {
+    throw new InvariantViolationError(
+      `Step "${stepIdOrIndex}" not found in flow "${flow.id}"`,
+      'STEP_NOT_FOUND',
+    );
+  }
+
+  sortedSteps.splice(removeIndex, 1);
+
+  const updatedSteps = sortedSteps.map((step, idx) => ({
+    ...step,
+    stepIndex: idx,
+  }));
+
+  return {
+    ...flow,
+    updatedAt: new Date(),
+    steps: updatedSteps,
+  };
+}
+
+/**
+ * Annotates a step with a note.
+ * Step order and notes on all other steps are preserved.
+ */
+export function annotateFlowStep(
+  flow: FlowWithSteps,
+  stepIdOrIndex: string | number,
+  note: string | null,
+): FlowWithSteps {
+  const sortedSteps = [...flow.steps].sort((a, b) => a.stepIndex - b.stepIndex);
+  let targetIndex = -1;
+
+  if (typeof stepIdOrIndex === 'number') {
+    targetIndex = stepIdOrIndex;
+  } else {
+    targetIndex = sortedSteps.findIndex((s) => s.id === stepIdOrIndex);
+  }
+
+  if (targetIndex < 0 || targetIndex >= sortedSteps.length) {
+    throw new InvariantViolationError(
+      `Step "${stepIdOrIndex}" not found in flow "${flow.id}"`,
+      'STEP_NOT_FOUND',
+    );
+  }
+
+  const existing = sortedSteps[targetIndex];
+  if (!existing) {
+    throw new InvariantViolationError(
+      `Step "${stepIdOrIndex}" not found in flow "${flow.id}"`,
+      'STEP_NOT_FOUND',
+    );
+  }
+
+  sortedSteps[targetIndex] = {
+    ...existing,
+    note: note ?? null,
+  };
+
+  return {
+    ...flow,
+    updatedAt: new Date(),
+    steps: sortedSteps,
+  };
+}
+
+/**
+ * Reorders flow steps by moving a step from one index to another.
+ * All notes and connection IDs persist.
+ */
+export function reorderFlowStepsByIndex(
+  flow: FlowWithSteps,
+  fromIndex: number,
+  toIndex: number,
+): FlowWithSteps {
+  const sortedSteps = [...flow.steps].sort((a, b) => a.stepIndex - b.stepIndex);
+
+  if (
+    fromIndex < 0 ||
+    fromIndex >= sortedSteps.length ||
+    toIndex < 0 ||
+    toIndex >= sortedSteps.length
+  ) {
+    throw new InvariantViolationError(
+      `Invalid indices for reorder: fromIndex ${fromIndex}, toIndex ${toIndex} (total steps: ${sortedSteps.length})`,
+      'INVALID_REORDER_INDEX',
+    );
+  }
+
+  const [moved] = sortedSteps.splice(fromIndex, 1);
+  if (!moved) {
+    throw new InvariantViolationError(
+      `Could not retrieve step at fromIndex ${fromIndex}`,
+      'INVALID_REORDER_INDEX',
+    );
+  }
+  sortedSteps.splice(toIndex, 0, moved);
+
+  const updatedSteps = sortedSteps.map((step, idx) => ({
+    ...step,
+    stepIndex: idx,
+  }));
+
+  return {
+    ...flow,
+    updatedAt: new Date(),
+    steps: updatedSteps,
+  };
+}
+
+/**
+ * Reorders flow steps according to an explicit ordered list of step IDs.
+ * All notes and connections are preserved in the new order.
+ */
+export function reorderFlowStepList(
+  flow: FlowWithSteps,
+  orderedStepIds: string[],
+): FlowWithSteps {
+  const stepMap = new Map<string, FlowStep>(
+    flow.steps.map((s) => [s.id, s]),
+  );
+
+  if (orderedStepIds.length !== flow.steps.length) {
+    throw new InvariantViolationError(
+      `Reorder list length (${orderedStepIds.length}) does not match flow step count (${flow.steps.length})`,
+      'REORDER_COUNT_MISMATCH',
+    );
+  }
+
+  const updatedSteps = orderedStepIds.map((stepId, newIndex) => {
+    const step = stepMap.get(stepId);
+    if (!step) {
+      throw new InvariantViolationError(
+        `Step id "${stepId}" does not exist in flow "${flow.id}"`,
+        'UNKNOWN_STEP_ID',
+      );
+    }
+    return {
+      ...step,
+      stepIndex: newIndex,
+    };
+  });
+
+  return {
+    ...flow,
+    updatedAt: new Date(),
+    steps: updatedSteps,
+  };
+}
+
