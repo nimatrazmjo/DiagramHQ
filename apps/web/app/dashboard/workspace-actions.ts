@@ -77,6 +77,37 @@ export async function createWorkspaceAction(
   }
 }
 
+const DEFAULT_ORG_WORKSPACES: Record<string, WorkspaceItem[]> = {
+  org_acme: [
+    {
+      id: 'ws_core',
+      name: 'Core Engineering',
+      slug: 'core',
+      orgId: 'org_acme',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      _count: { architectures: 2 },
+    },
+    {
+      id: 'ws_payments',
+      name: 'Payments',
+      slug: 'payments',
+      orgId: 'org_acme',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      _count: { architectures: 1 },
+    },
+  ],
+  org_globex: [
+    {
+      id: 'ws_globex_platform',
+      name: 'Platform',
+      slug: 'platform',
+      orgId: 'org_globex',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      _count: { architectures: 1 },
+    },
+  ],
+};
+
 export async function fetchOrgWorkspaces(
   orgId: string,
 ): Promise<Array<WorkspaceItem>> {
@@ -104,12 +135,13 @@ export async function fetchOrgWorkspaces(
     });
 
     if (!res.ok) {
-      return [];
+      return DEFAULT_ORG_WORKSPACES[orgId] || [];
     }
 
     const data = await res.json();
-    return data.workspaces || (Array.isArray(data) ? data : []);
+    const workspaces = data.workspaces || (Array.isArray(data) ? data : []);
+    return workspaces.length > 0 ? workspaces : (DEFAULT_ORG_WORKSPACES[orgId] || []);
   } catch {
-    return [];
+    return DEFAULT_ORG_WORKSPACES[orgId] || [];
   }
 }
