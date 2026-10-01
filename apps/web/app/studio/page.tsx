@@ -18,6 +18,7 @@ import {
 } from '@diagramhq/domain';
 import { InfiniteCanvas, toAlignableNode } from '../../components/canvas';
 import { InspectorPanel } from '../../components/shell/inspector-panel';
+import { IconPickerModal } from '../../components/canvas/icon-picker-modal';
 
 export default function StudioPage(): JSX.Element {
   // Pre-seed with the SaaS 3-tier starter architecture
@@ -167,9 +168,52 @@ export default function StudioPage(): JSX.Element {
     });
   }, [currentNodes, activeView, activePersona]);
 
+  const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
+  const [c4Level, setC4Level] = useState<1 | 2 | 3>(1);
+
+  const handleLoadStarter = useCallback(() => {
+    let objCount = 0;
+    let connCount = 0;
+    const instantiated = instantiateTemplate({
+      templateId: 'saas' as TemplateId,
+      architectureId: 'arch-studio-init' as ArchitectureId,
+      versionId: 'v1' as VersionId,
+      createObjectId: () => `obj-${++objCount}` as ObjectId,
+      createConnectionId: () => `conn-${++connCount}` as ConnectionId,
+    });
+
+    const { nodes: initNodes, edges: initEdges } = projectViewModelToCanvas({
+      objects: instantiated.objects,
+      connections: instantiated.connections.map((c) => ({
+        id: c.id,
+        sourceId: c.sourceObjectId,
+        targetId: c.targetObjectId,
+        kind: c.kind,
+        description: c.description,
+      })),
+    });
+
+    const layoutNodes = initNodes.map(toAlignableNode);
+    const layoutEdges: LayoutEdge[] = initEdges.map((e) => ({
+      source: e.source,
+      target: e.target,
+    }));
+
+    try {
+      const positions = applyLayout(layoutNodes, layoutEdges, 'layered');
+      const posMap = new Map(layoutNodes.map((n, i) => [n.id, positions[i] ?? n.position]));
+      setCurrentNodes(initNodes.map((n) => ({ ...n, position: posMap.get(n.id) ?? n.position })));
+      setCurrentEdges(initEdges);
+    } catch {
+      setCurrentNodes(initNodes);
+      setCurrentEdges(initEdges);
+    }
+    setCanvasKey((k) => k + 1);
+  }, []);
+
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-950 text-slate-100 select-none">
-      {/* Studio Top Navigation Bar */}
+      {/* Studio Top Navigation Bar (IcePanel style) */}
       <header className="h-14 border-b border-slate-800 bg-slate-900/90 px-4 flex items-center justify-between gap-4 shrink-0 backdrop-blur-md z-20">
         <div className="flex items-center gap-3">
           <Link
@@ -185,12 +229,68 @@ export default function StudioPage(): JSX.Element {
           <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
             Phase 0 Studio (Guest Mode)
           </span>
+
+          <span className="hidden xl:inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700">
+            <span>Model:</span>
+            <span className="font-semibold text-white">
+              {c4Level === 1 ? 'System Context' : c4Level === 2 ? 'Containers & Apps' : 'Components'}
+            </span>
+          </span>
         </div>
 
-        {/* View & Persona Filters */}
+        {/* IcePanel signature C4 Level Switcher, View & Persona Filters */}
         <div className="flex items-center gap-2">
-          {/* View Filter Switcher */}
-          <div className="flex items-center gap-1 bg-slate-950/60 p-1 rounded-lg border border-slate-800 text-xs">
+          {/* C4 Level Tabs */}
+          <div className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800 text-xs">
+            <button
+              type="button"
+              onClick={() => {
+                setC4Level(1);
+                setActiveView('context');
+              }}
+              title="Level 1: System Context (High-level boundary)"
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                c4Level === 1
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              1. Context
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setC4Level(2);
+                setActiveView('container');
+              }}
+              title="Level 2: Containers & Applications (Services, DBs, Queues)"
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                c4Level === 2
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              2. Containers
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setC4Level(3);
+                setActiveView('all');
+              }}
+              title="Level 3: Components (Internal modules & controllers)"
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                c4Level === 3
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              3. Components
+            </button>
+          </div>
+
+          {/* Perspective View Switcher */}
+          <div className="hidden md:flex items-center gap-1 bg-slate-950/60 p-1 rounded-lg border border-slate-800 text-xs">
             <span className="text-[11px] text-slate-400 px-1 font-mono">View:</span>
             {(['all', 'security', 'data', 'ownership'] as const).map((view) => (
               <button
@@ -209,7 +309,7 @@ export default function StudioPage(): JSX.Element {
           </div>
 
           {/* Persona Mode Switcher */}
-          <div className="flex items-center gap-1 bg-slate-950/60 p-1 rounded-lg border border-slate-800 text-xs">
+          <div className="hidden lg:flex items-center gap-1 bg-slate-950/60 p-1 rounded-lg border border-slate-800 text-xs">
             <span className="text-[11px] text-slate-400 px-1 font-mono">Persona:</span>
             <select
               value={activePersona}
@@ -228,9 +328,20 @@ export default function StudioPage(): JSX.Element {
           </div>
         </div>
 
-        {/* Export / Import / Clear Actions */}
+        {/* Quick Actions (Icons, Import, Export, Reset, Inspector) */}
         <div className="flex items-center gap-2">
-          <label className="cursor-pointer px-2.5 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors">
+          {/* Brand Icon catalog trigger */}
+          <button
+            type="button"
+            onClick={() => setIsIconPickerOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors shadow-sm"
+            title="Browse official icons (Azure, AWS, Postgres, Claude, Python...)"
+          >
+            <span>🎨</span>
+            <span className="hidden sm:inline">Icons</span>
+          </button>
+
+          <label className="cursor-pointer px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors">
             📥 Import JSON
             <input type="file" accept=".json" onChange={handleImportJson} className="hidden" />
           </label>
@@ -238,7 +349,7 @@ export default function StudioPage(): JSX.Element {
           <button
             type="button"
             onClick={handleExportJson}
-            className="px-2.5 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors"
+            className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors"
             title="Export diagram as JSON"
           >
             📤 Export JSON
@@ -247,7 +358,7 @@ export default function StudioPage(): JSX.Element {
           <button
             type="button"
             onClick={handleClearDiagram}
-            className="px-2.5 py-1.5 rounded bg-slate-800/80 hover:bg-red-900/40 text-xs font-medium text-slate-400 hover:text-red-300 border border-slate-700 hover:border-red-700 transition-colors"
+            className="px-2.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-red-900/40 text-xs font-medium text-slate-400 hover:text-red-300 border border-slate-700 hover:border-red-700 transition-colors"
             title="Clear canvas"
           >
             🧹 Reset
@@ -256,7 +367,7 @@ export default function StudioPage(): JSX.Element {
           <button
             type="button"
             onClick={() => setIsInspectorOpen((prev) => !prev)}
-            className={`px-2.5 py-1.5 rounded text-xs font-medium border transition-colors ${
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
               isInspectorOpen
                 ? 'bg-blue-600/20 text-blue-300 border-blue-500/40'
                 : 'bg-slate-800 text-slate-400 border-slate-700'
@@ -292,6 +403,28 @@ export default function StudioPage(): JSX.Element {
               );
             }}
           />
+
+          {/* IcePanel Empty State Helper */}
+          {currentNodes.length === 0 && (
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10 p-4">
+              <div className="pointer-events-auto bg-slate-900/95 border border-slate-700/80 rounded-2xl p-6 max-w-sm text-center shadow-2xl backdrop-blur-md">
+                <div className="w-12 h-12 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-2xl mx-auto mb-3">
+                  🧊
+                </div>
+                <h3 className="text-base font-semibold text-white mb-1">Canvas is ready</h3>
+                <p className="text-xs text-slate-400 mb-4 leading-relaxed">
+                  Use the Insert toolbar on the left to add systems, services, and databases, or load a starter architecture.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleLoadStarter}
+                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium shadow-md shadow-blue-600/30 transition-all"
+                >
+                  🚀 Load Reference Architecture
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Inspector Sidebar */}
@@ -303,8 +436,17 @@ export default function StudioPage(): JSX.Element {
           objectKind={typeof selectedNode?.data.kind === 'string' ? selectedNode.data.kind : selectedNode?.type}
           metadata={selectedNode?.data as Record<string, unknown> | undefined}
           onMetadataChange={handleMetadataChange}
+          onOpenIconPicker={() => setIsIconPickerOpen(true)}
         />
       </div>
+
+      {/* Interactive Official Brand Icon Picker Modal */}
+      <IconPickerModal
+        isOpen={isIconPickerOpen}
+        currentIcon={(selectedNode?.data.icon as string) ?? null}
+        onSelectIcon={(iconPath) => handleMetadataChange('icon', iconPath)}
+        onClose={() => setIsIconPickerOpen(false)}
+      />
     </div>
   );
 }

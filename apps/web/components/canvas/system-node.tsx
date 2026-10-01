@@ -1,6 +1,7 @@
 import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { SystemNodeData, Technology, PersonaMode } from '@diagramhq/domain';
+import { getTechnologyIconPath } from '../../lib/icons';
 import { SecurityBadges } from './security-badges';
 import { DataBadges } from './data-badges';
 import { OwnershipBadges } from './ownership-badges';
@@ -77,6 +78,10 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
     }
   };
 
+  const brandIcon =
+    (nodeData.icon as string) ||
+    getTechnologyIconPath(label || domain || systemType);
+
   if (isExternal) {
     return (
       <div
@@ -99,8 +104,12 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
         {/* Header bar */}
         <div className="flex items-center justify-between gap-2 mb-2">
           <div className="flex items-center gap-1.5">
-            <div className="p-1 rounded bg-slate-800 border border-slate-700">
-              <CloudIcon />
+            <div className="w-6 h-6 rounded bg-slate-800 border border-slate-700 flex items-center justify-center p-1 shrink-0">
+              {brandIcon ? (
+                <img src={brandIcon} alt="" className="w-full h-full object-contain" />
+              ) : (
+                <CloudIcon />
+              )}
             </div>
             <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 font-mono">
               External System
@@ -170,8 +179,12 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
       {/* Header bar */}
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-1.5">
-          <div className="p-1 rounded bg-blue-500/10 border border-blue-500/20">
-            <SystemIcon />
+          <div className="w-6 h-6 rounded bg-blue-500/10 border border-blue-500/20 flex items-center justify-center p-1 shrink-0">
+            {brandIcon ? (
+              <img src={brandIcon} alt="" className="w-full h-full object-contain" />
+            ) : (
+              <SystemIcon />
+            )}
           </div>
           <span className="text-[10px] font-semibold uppercase tracking-wider text-blue-400 font-mono">
             System Boundary

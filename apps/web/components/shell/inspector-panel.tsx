@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { getTechnologyIconPath } from '../../lib/icons';
 
 export interface InspectorItem {
   id: string;
@@ -25,6 +26,7 @@ export interface InspectorPanelProps {
   objectKind?: string;
   metadata?: Record<string, unknown>;
   onMetadataChange?: (field: string, value: unknown) => void;
+  onOpenIconPicker?: () => void;
   onClose?: () => void;
 }
 
@@ -38,6 +40,7 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
     objectKind = selectedItem?.type,
     metadata = selectedItem?.metadata || {},
     onMetadataChange,
+    onOpenIconPicker,
     onClose = onToggle,
     children,
   } = props;
@@ -79,6 +82,10 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
     </div>
   );
 
+  const currentIcon =
+    (metadata.icon as string) ||
+    getTechnologyIconPath((metadata.technology as string) || (metadata.databaseKind as string) || objectName);
+
   return (
     <aside
       aria-label="Object Inspector"
@@ -86,24 +93,59 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
       className="w-72 lg:w-80 bg-slate-900 border-l border-slate-800 flex flex-col h-full text-slate-100 overflow-y-auto shrink-0 select-none"
     >
       <div className="p-3 border-b border-slate-800 flex justify-between items-center gap-2">
-        <div className="truncate">
-          <div className="font-bold text-sm text-slate-100 truncate">{objectName || 'Inspector'}</div>
-          {objectKind && (
-            <span className="text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded font-mono inline-block mt-0.5">
-              {objectKind}
-            </span>
-          )}
+        <div className="flex items-center gap-2.5 min-w-0">
+          <button
+            type="button"
+            onClick={onOpenIconPicker}
+            title={onOpenIconPicker ? 'Click to choose brand icon' : undefined}
+            disabled={!onOpenIconPicker}
+            className={`w-10 h-10 rounded-xl bg-slate-800 border border-slate-700/80 flex items-center justify-center p-2 relative shrink-0 transition-all ${
+              onOpenIconPicker ? 'hover:bg-slate-700 hover:border-blue-500 cursor-pointer group' : ''
+            }`}
+          >
+            {currentIcon ? (
+              <img src={currentIcon} alt="" className="w-full h-full object-contain" />
+            ) : (
+              <span className="text-base">🏢</span>
+            )}
+            {onOpenIconPicker && (
+              <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[9px] shadow group-hover:scale-110 transition-transform">
+                ✏️
+              </span>
+            )}
+          </button>
+          <div className="truncate">
+            <div className="font-bold text-sm text-slate-100 truncate">{objectName || 'Inspector'}</div>
+            {objectKind && (
+              <span className="text-[10px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded font-mono inline-block mt-0.5">
+                {objectKind}
+              </span>
+            )}
+          </div>
         </div>
         <button
           type="button"
           aria-label="Collapse inspector"
           data-testid="inspector-close"
           onClick={onClose}
-          className="text-slate-400 hover:text-slate-200 p-1 rounded hover:bg-slate-800 transition-colors"
+          className="text-slate-400 hover:text-slate-200 p-1 rounded hover:bg-slate-800 transition-colors shrink-0"
         >
           ✖
         </button>
       </div>
+
+      {objectId && onOpenIconPicker && (
+        <div className="px-3 pt-2.5 pb-0.5">
+          <button
+            type="button"
+            onClick={onOpenIconPicker}
+            className="w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/30 text-blue-300 hover:text-white text-xs font-medium transition-all group"
+          >
+            <span className="text-xs group-hover:scale-110 transition-transform">🎨</span>
+            <span>Choose Brand Icon (Azure, Postgres...)</span>
+          </button>
+        </div>
+      )}
 
       {children ? (
         <div className="p-3">

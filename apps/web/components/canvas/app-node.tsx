@@ -1,6 +1,7 @@
 import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { ApplicationNodeData, Technology, PersonaMode } from '@diagramhq/domain';
+import { getTechnologyIconPath } from '../../lib/icons';
 import { SecurityBadges } from './security-badges';
 import { DataBadges } from './data-badges';
 import { OwnershipBadges } from './ownership-badges';
@@ -60,6 +61,10 @@ export function AppNode({ id, data, selected }: NodeProps): JSX.Element {
     }
   };
 
+  const brandIcon =
+    (nodeData.icon as string) ||
+    getTechnologyIconPath(technology || runtime || label);
+
   return (
     <div
       data-testid="app-node"
@@ -83,8 +88,12 @@ export function AppNode({ id, data, selected }: NodeProps): JSX.Element {
       {/* Header bar */}
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-1.5">
-          <div className="p-1 rounded bg-emerald-500/10 border border-emerald-500/20">
-            <AppIcon />
+          <div className="w-6 h-6 rounded bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center p-1 shrink-0">
+            {brandIcon ? (
+              <img src={brandIcon} alt="" className="w-full h-full object-contain" />
+            ) : (
+              <AppIcon />
+            )}
           </div>
           <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400 font-mono">
             App Service
