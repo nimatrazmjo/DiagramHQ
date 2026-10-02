@@ -131,7 +131,7 @@ Test: a generated ADR links to the change.
 
 ### F071 — MCP integration
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: MCP tool server.
 
