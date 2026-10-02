@@ -25,7 +25,9 @@ export type IdPrefix =
   | 'tech'
   | 'usr'
   | 'mem'
-  | 'cmt';
+  | 'cmt'
+  | 'tsk'
+  | 'ntf';
 
 export type Id<P extends IdPrefix> = string & { readonly __brand: P };
 
@@ -45,6 +47,8 @@ export type TechnologyId = Id<'tech'>;
 export type UserId = Id<'usr'>;
 export type MemberId = Id<'mem'>;
 export type CommentId = Id<'cmt'>;
+export type TaskId = Id<'tsk'>;
+export type NotificationId = Id<'ntf'>;
 
 let sequence = 0;
 

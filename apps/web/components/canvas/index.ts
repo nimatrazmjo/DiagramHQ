@@ -17,3 +17,4 @@ export * from './collaboration-banner';
 export * from './presence-cursors';
 export * from './presence-indicators';
 export * from './comments-panel';
+export * from './mention-task-badge';

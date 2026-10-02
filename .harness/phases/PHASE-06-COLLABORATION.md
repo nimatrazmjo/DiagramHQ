@@ -49,7 +49,7 @@ Test: comment CRUD + resolve on the right entity.
 
 ### F051 — Mentions
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: @mentions + tasks.
 
