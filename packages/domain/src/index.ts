@@ -55,3 +55,4 @@ export * from './ai-explanation';
 export * from './ai-impact';
 export * from './ai-security';
 export * from './ai-documentation';
+export * from './ai-architecture-review';

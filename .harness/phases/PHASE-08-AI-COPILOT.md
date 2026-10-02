@@ -102,7 +102,7 @@ Test: generated docs are grounded, not invented.
 
 ### F069 — AI architecture review
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Review agent.
 
