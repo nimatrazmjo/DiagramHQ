@@ -68,3 +68,4 @@ export * from './openapi-import';
 export * from './repo-sync';
 export * from './api-catalog';
 export * from './event-catalog';
+export * from './database-catalog';

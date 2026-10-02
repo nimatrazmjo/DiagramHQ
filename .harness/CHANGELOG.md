@@ -2,6 +2,32 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F124 — Database catalog (Phase 09 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `database-catalog.ts`: Implemented Database Catalog and data schema registry for DiagramHQ (Phase 09 — Code Integrations). Indexes relational and NoSQL datastores with full hierarchical structure (Database -> Schema/Namespace -> Table/Collection -> Column/Field), capturing primary keys, foreign key relations, nullable flags, unique indices, data classification tags, and migration repo coordinates (`CodeLocationSpec`).
+  - Supports all major database engines (PostgreSQL, MySQL, SQLite, MongoDB, Redis, DynamoDB, Cassandra, ClickHouse, Snowflake, BigQuery) with relationship detection (`findTableRelationships`) and faceted browsing.
+  - `database-catalog.test.ts`: Added 5 unit tests verifying database registration, hierarchical table and column modeling, foreign key relationship discovery, and faceted catalog browsing.
+  - `index.ts`: Exported `database-catalog`.
+- Web layer (`apps/web/`):
+  - `components/canvas/database-catalog-panel.tsx`: Implemented `<DatabaseCatalogExplorerModal />` (full-featured modal with metrics banner, database tree, search/engine filters, and column schema inspector drawer).
+  - `components/canvas/index.ts`: Exported Database Catalog components.
+  - `database-catalog.spec.tsx`: Added 3 integration tests verifying modal metrics and table listings, search/engine filters, and column schema inspection.
+- Milestone:
+  - **Phase 09 — Code Integrations is now 90% COMPLETE (9/10 features completed, 88/135 total, 65.2% milestone reached)!**
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (185 test suites, 1132 tests passed)
+```
+
 ## 2026-10-02 — F123 — Event catalog (Phase 09 Progress)
 
 Status: COMPLETE

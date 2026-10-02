@@ -13,21 +13,23 @@ Phase Name: Code Integrations
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F124
-Feature Name: Database catalog
-Status: NOT STARTED
+Feature ID: F125
+Feature Name: Model-as-code + CLI
+Status: IN PROGRESS
 
 ## Overall Progress
 Total Features: 135
-Completed: 87
-In Progress: 0
+Completed: 88
+In Progress: 1
 Blocked: 0
-Not Started: 48
-Progress: 64.4%
+Not Started: 46
+Progress: 65.2%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F123 — Event catalog. Implemented Event Catalog and asynchronous messaging registry for DiagramHQ (Phase 09 — Code Integrations). Indexes domain events, topics, message brokers (Kafka, RabbitMQ, SQS/SNS, EventBridge, NATS, Redis Streams, Google Pub/Sub), message schemas (JSON Schema, Avro, Protobuf), delivery guarantees, and emission frequencies. Deterministically links event producers and consumers to C4 model objects (`ObjectId`) and async connections (`ConnectionId`), providing faceted searching and subscription management. Added canvas UI components `<EventCatalogExplorerModal />`, 4 domain unit tests, and 3 web integration tests.
+F124 — Database catalog. Implemented Database Catalog and data schema registry for DiagramHQ (Phase 09 — Code Integrations). Indexes relational and NoSQL datastores with full hierarchical structure (Database -> Schema/Namespace -> Table/Collection -> Column/Field), capturing primary keys, foreign key relations, nullable flags, unique indices, data classification tags, and migration repo coordinates (`CodeLocationSpec`). Supports all major database engines (PostgreSQL, MySQL, SQLite, MongoDB, Redis, DynamoDB, Cassandra, ClickHouse, Snowflake, BigQuery) with relationship detection (`findTableRelationships`) and faceted browsing. Added canvas UI components `<DatabaseCatalogExplorerModal />`, 5 domain unit tests, and 3 web integration tests.
+
+Prior: F123 — Event catalog. Implemented Event Catalog and asynchronous messaging registry for DiagramHQ (Phase 09 — Code Integrations). Indexes domain events, topics, message brokers (Kafka, RabbitMQ, SQS/SNS, EventBridge, NATS, Redis Streams, Google Pub/Sub), message schemas (JSON Schema, Avro, Protobuf), delivery guarantees, and emission frequencies. Deterministically links event producers and consumers to C4 model objects (`ObjectId`) and async connections (`ConnectionId`), providing faceted searching and subscription management. Added canvas UI components `<EventCatalogExplorerModal />`, 4 domain unit tests, and 3 web integration tests.
 
 Prior: F122 — API catalog. Implemented centralized, discoverable API catalog and interface registry for DiagramHQ (Phase 09 — Code Integrations). Indexes REST endpoints, GraphQL queries/mutations, and gRPC RPC methods, deterministically anchored to architecture model objects (`ObjectId`) and source code repository locations (`CodeLocationSpec`). Provides multi-dimensional querying (text search, protocol, service, deprecation status, auth scheme, tags), deprecation lifecycle tracking, and facet aggregations. Added canvas UI components `<ApiCatalogExplorerModal />` and `<ApiEndpointDetailDrawer />`, 5 domain unit tests, and 3 web integration tests.
 
