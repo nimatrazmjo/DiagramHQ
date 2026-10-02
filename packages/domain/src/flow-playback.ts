@@ -241,3 +241,61 @@ export function getUserJourneyPlaybackStepInfo(
   };
 }
 
+export interface DataFlowPlaybackStepInfo {
+  readonly flowId: string;
+  readonly flowName: string;
+  readonly flowType: FlowType;
+  readonly dataClassification: string | null;
+  readonly flowDataElements: string[];
+  readonly stepIndex: number;
+  readonly stepNumber: number;
+  readonly totalSteps: number;
+  readonly connectionId: string | null;
+  readonly note: string | null;
+  readonly dataElements: string[];
+  readonly transformation: string | null;
+  readonly stepClassification: string | null;
+  readonly isPlaying: boolean;
+}
+
+/**
+ * Extracts structured data flow playback context for the current step (F046).
+ * Returns null if the flow is not a data_flow or has no steps.
+ */
+export function getDataFlowPlaybackStepInfo(
+  flow: FlowWithSteps,
+  state: FlowPlaybackState,
+): DataFlowPlaybackStepInfo | null {
+  if (flow.type !== 'data_flow' || !flow.steps || flow.steps.length === 0) {
+    return null;
+  }
+
+  const sortedSteps = [...flow.steps].sort((a, b) => a.stepIndex - b.stepIndex);
+  const currentStep = sortedSteps[state.currentStepIndex] ?? sortedSteps[0];
+  if (!currentStep) {
+    return null;
+  }
+
+  return {
+    flowId: flow.id,
+    flowName: flow.name,
+    flowType: 'data_flow',
+    dataClassification: flow.dataClassification ?? null,
+    flowDataElements: flow.dataElements ?? [],
+    stepIndex: state.currentStepIndex,
+    stepNumber: state.currentStepIndex + 1,
+    totalSteps: state.totalSteps,
+    connectionId: currentStep.connectionId,
+    note: currentStep.note ?? null,
+    dataElements:
+      currentStep.dataElements && currentStep.dataElements.length > 0
+        ? currentStep.dataElements
+        : flow.dataElements ?? [],
+    transformation: currentStep.transformation ?? null,
+    stepClassification:
+      currentStep.dataClassification ?? flow.dataClassification ?? null,
+    isPlaying: state.isPlaying,
+  };
+}
+
+

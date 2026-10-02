@@ -1,6 +1,14 @@
 import { createId, type ArchitectureId, type ConnectionId, type FlowId, type ObjectId } from './ids';
 import { InvariantViolationError } from './invariants';
-import type { FlowStep, FlowType, FlowWithSteps, ModelConnection, ModelObject } from './types';
+import type {
+  DataLineageHop,
+  DataLineageTrace,
+  FlowStep,
+  FlowType,
+  FlowWithSteps,
+  ModelConnection,
+  ModelObject,
+} from './types';
 
 export interface CreateFlowStepInput {
   id?: string;
@@ -9,6 +17,9 @@ export interface CreateFlowStepInput {
   note?: string | null;
   actorAction?: string | null;
   userIntent?: string | null;
+  dataElements?: string[];
+  transformation?: string | null;
+  dataClassification?: string | null;
 }
 
 export interface CreateFlowInput {
@@ -19,6 +30,8 @@ export interface CreateFlowInput {
   type?: FlowType;
   actorId?: ObjectId | null;
   persona?: string | null;
+  dataClassification?: string | null;
+  dataElements?: string[];
   steps?: CreateFlowStepInput[];
 }
 
@@ -28,6 +41,8 @@ export interface UpdateFlowInput {
   type?: FlowType;
   actorId?: ObjectId | null;
   persona?: string | null;
+  dataClassification?: string | null;
+  dataElements?: string[];
   steps?: CreateFlowStepInput[];
 }
 
@@ -38,6 +53,16 @@ export interface CreateUserJourneyFlowInput {
   description?: string | null;
   actorId?: ObjectId | null;
   persona?: string | null;
+  steps?: CreateFlowStepInput[];
+}
+
+export interface CreateDataFlowInput {
+  id?: FlowId;
+  architectureId: ArchitectureId;
+  name: string;
+  description?: string | null;
+  dataClassification?: string | null;
+  dataElements?: string[];
   steps?: CreateFlowStepInput[];
 }
 
@@ -147,6 +172,9 @@ export function createFlow(
     note: s.note ?? null,
     actorAction: s.actorAction ?? null,
     userIntent: s.userIntent ?? null,
+    dataElements: s.dataElements ? [...s.dataElements] : undefined,
+    transformation: s.transformation ?? null,
+    dataClassification: s.dataClassification ?? null,
   }));
 
   return {
@@ -157,6 +185,8 @@ export function createFlow(
     type: input.type ?? 'sequence',
     actorId: input.actorId ?? null,
     persona: input.persona ?? null,
+    dataClassification: input.dataClassification ?? null,
+    dataElements: input.dataElements ? [...input.dataElements] : undefined,
     createdAt: now,
     updatedAt: now,
     steps,
@@ -188,6 +218,12 @@ export function updateFlow(
   const type = input.type !== undefined ? input.type : flow.type;
   const actorId = input.actorId !== undefined ? input.actorId : flow.actorId;
   const persona = input.persona !== undefined ? input.persona : flow.persona;
+  const dataClassification =
+    input.dataClassification !== undefined
+      ? input.dataClassification
+      : flow.dataClassification;
+  const dataElements =
+    input.dataElements !== undefined ? input.dataElements : flow.dataElements;
 
   let steps = flow.steps;
   if (input.steps !== undefined) {
@@ -215,6 +251,9 @@ export function updateFlow(
       note: s.note ?? null,
       actorAction: s.actorAction ?? null,
       userIntent: s.userIntent ?? null,
+      dataElements: s.dataElements ? [...s.dataElements] : undefined,
+      transformation: s.transformation ?? null,
+      dataClassification: s.dataClassification ?? null,
     }));
   }
 
@@ -225,6 +264,8 @@ export function updateFlow(
     type,
     actorId,
     persona,
+    dataClassification,
+    dataElements,
     updatedAt: new Date(),
     steps,
   };
@@ -316,6 +357,9 @@ export function addFlowStep(
     note: stepInput.note ?? null,
     actorAction: stepInput.actorAction ?? null,
     userIntent: stepInput.userIntent ?? null,
+    dataElements: stepInput.dataElements ? [...stepInput.dataElements] : undefined,
+    transformation: stepInput.transformation ?? null,
+    dataClassification: stepInput.dataClassification ?? null,
   };
 
   sortedSteps.splice(targetIndex, 0, newStep);
@@ -589,5 +633,170 @@ export function annotateUserJourneyStep(
     steps: sortedSteps,
   };
 }
+
+export interface DataFlowStepAnnotations {
+  note?: string | null;
+  dataElements?: string[];
+  transformation?: string | null;
+  dataClassification?: string | null;
+}
+
+/**
+ * Creates a data flow (F046).
+ * Sets type to 'data_flow' and associates data elements & data classification.
+ */
+export function createDataFlow(
+  input: CreateDataFlowInput,
+  availableConnections?: Set<ConnectionId> | ConnectionId[] | ModelConnection[],
+): FlowWithSteps {
+  return createFlow(
+    {
+      ...input,
+      type: 'data_flow',
+    },
+    availableConnections,
+  );
+}
+
+/**
+ * Annotates a data flow step with data elements, transformation notes, and classification (F046).
+ */
+export function annotateDataFlowStep(
+  flow: FlowWithSteps,
+  stepIdOrIndex: string | number,
+  annotations: DataFlowStepAnnotations,
+): FlowWithSteps {
+  const sortedSteps = [...flow.steps].sort((a, b) => a.stepIndex - b.stepIndex);
+  let targetIndex = -1;
+
+  if (typeof stepIdOrIndex === 'number') {
+    targetIndex = stepIdOrIndex;
+  } else {
+    targetIndex = sortedSteps.findIndex((s) => s.id === stepIdOrIndex);
+  }
+
+  if (targetIndex < 0 || targetIndex >= sortedSteps.length) {
+    throw new InvariantViolationError(
+      `Step "${stepIdOrIndex}" not found in flow "${flow.id}"`,
+      'STEP_NOT_FOUND',
+    );
+  }
+
+  const existing = sortedSteps[targetIndex];
+  if (!existing) {
+    throw new InvariantViolationError(
+      `Step "${stepIdOrIndex}" not found in flow "${flow.id}"`,
+      'STEP_NOT_FOUND',
+    );
+  }
+
+  sortedSteps[targetIndex] = {
+    ...existing,
+    note: annotations.note !== undefined ? annotations.note : existing.note,
+    dataElements:
+      annotations.dataElements !== undefined
+        ? annotations.dataElements
+        : existing.dataElements,
+    transformation:
+      annotations.transformation !== undefined
+        ? annotations.transformation
+        : existing.transformation,
+    dataClassification:
+      annotations.dataClassification !== undefined
+        ? annotations.dataClassification
+        : existing.dataClassification,
+  };
+
+  return {
+    ...flow,
+    updatedAt: new Date(),
+    steps: sortedSteps,
+  };
+}
+
+/**
+ * Extracts the sequential data lineage trace from a data flow (F046 feeds F091).
+ * Traces data elements across hops, records transformations, and flags external egress points.
+ */
+export function extractDataLineage(
+  flow: FlowWithSteps,
+  connections: ModelConnection[],
+  options?: {
+    searchedElement?: string;
+    externalObjectIds?: Set<ObjectId> | ObjectId[];
+  },
+): DataLineageTrace {
+  const connectionMap = new Map<string, ModelConnection>(
+    connections.map((c) => [c.id, c]),
+  );
+
+  const sortedSteps = [...flow.steps].sort((a, b) => a.stepIndex - b.stepIndex);
+  const externalIdSet = new Set<string>();
+  if (options?.externalObjectIds) {
+    for (const id of options.externalObjectIds) {
+      externalIdSet.add(typeof id === 'string' ? id : (id as ModelObject).id);
+    }
+  }
+
+  const hops: DataLineageHop[] = [];
+  const participatingObjectIds = new Set<ObjectId>();
+  const exits: DataLineageTrace['exits'] = [];
+
+  for (let i = 0; i < sortedSteps.length; i++) {
+    const step = sortedSteps[i]!;
+    const conn = connectionMap.get(step.connectionId);
+    if (!conn) continue;
+
+    const stepElements =
+      step.dataElements && step.dataElements.length > 0
+        ? step.dataElements
+        : flow.dataElements ?? [];
+
+    if (
+      options?.searchedElement &&
+      !stepElements.some((el) =>
+        el.toLowerCase().includes(options.searchedElement!.toLowerCase()),
+      )
+    ) {
+      continue;
+    }
+
+    const hop: DataLineageHop = {
+      hopIndex: hops.length,
+      stepId: step.id,
+      connectionId: step.connectionId,
+      sourceObjectId: conn.sourceObjectId,
+      targetObjectId: conn.targetObjectId,
+      dataElements: stepElements,
+      transformation: step.transformation ?? null,
+      dataClassification: step.dataClassification ?? flow.dataClassification ?? null,
+      note: step.note ?? null,
+    };
+
+    hops.push(hop);
+    participatingObjectIds.add(conn.sourceObjectId);
+    participatingObjectIds.add(conn.targetObjectId);
+
+    if (externalIdSet.has(conn.targetObjectId)) {
+      exits.push({
+        hopIndex: hop.hopIndex,
+        exitObjectId: conn.targetObjectId,
+        connectionId: conn.id,
+        dataElements: stepElements,
+        dataClassification: hop.dataClassification,
+      });
+    }
+  }
+
+  return {
+    flowId: flow.id,
+    flowName: flow.name,
+    searchedElement: options?.searchedElement ?? null,
+    hops,
+    participatingObjectIds: Array.from(participatingObjectIds),
+    exits,
+  };
+}
+
 
 
