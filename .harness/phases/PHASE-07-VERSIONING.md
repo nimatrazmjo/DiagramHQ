@@ -24,7 +24,7 @@ Test: snapshot stays immutable while live edits continue.
 
 ### F056 — Architecture snapshots
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Full-state capture.
 

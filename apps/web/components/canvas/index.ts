@@ -23,3 +23,4 @@ export * from './permission-guard';
 export * from './team-badge';
 export * from './notification-center';
 export * from './version-history';
+export * from './snapshot-modal';
