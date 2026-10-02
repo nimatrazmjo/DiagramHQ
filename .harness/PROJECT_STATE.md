@@ -13,21 +13,23 @@ Phase Name: Collaboration
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F049
-Feature Name: Presence
+Feature ID: F050
+Feature Name: Comments
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 50
+Completed: 51
 In Progress: 0
 Blocked: 0
-Not Started: 85
-Progress: 37.0%
+Not Started: 84
+Progress: 37.8%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F048 — Real-time collaboration. Multi-user concurrent editing with pure deterministic conflict resolution (CRDT / LWW Lamport clocks). Added `CollabSession`, `CollabOperation`, `compareLamport`, `applyLocalOperation`, `applyRemoteOperation`, and `syncSessions` to domain with cascade deletion handling, `<CollaborationBanner />` live pulse and peer avatars to web UI, 9 domain unit tests, and 5 web integration tests.
+F049 — Presence. Cursors, selection, current-object focus, and presence indicators. Added pure presence state machine (`UserPresence`, `PresenceRoomState`, `createPresenceRoom`, `upsertPeerPresence`, `updatePeerCursor`, `updatePeerSelection`, `pruneInactivePeers`, `getRemoteCursorsForView`, `getRemoteSelections`, `getRemoteActiveObjects`) to domain, `<PresenceCursors />` and `<PresenceIndicators />` to web canvas, 8 domain unit tests, and 6 web integration tests.
+
+Prior: F048 — Real-time collaboration. Multi-user concurrent editing with pure deterministic conflict resolution (CRDT / LWW Lamport clocks). Added `CollabSession`, `CollabOperation`, `compareLamport`, `applyLocalOperation`, `applyRemoteOperation`, and `syncSessions` to domain with cascade deletion handling, `<CollaborationBanner />` live pulse and peer avatars to web UI, 9 domain unit tests, and 5 web integration tests.
 
 Prior: F047 — API flows. Flow type for API requests and exporter to Mermaid and PlantUML sequence diagrams (completing Phase 05 — Flows!). Added `createApiFlow` factory, `annotateApiFlowStep` annotator, `exportFlowToMermaidSequence` exporter, `exportFlowToPlantUMLSequence` exporter, `getApiFlowPlaybackStepInfo` runtime helper, `<ApiFlowOverlay />` component, 9 domain unit tests, and 6 web integration tests.
 
