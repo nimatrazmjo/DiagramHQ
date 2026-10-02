@@ -106,7 +106,7 @@ Test: create/browse API entries linked to objects.
 
 ### F123 — Event catalog
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Events + schemas.
 

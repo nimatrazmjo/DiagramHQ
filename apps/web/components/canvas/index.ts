@@ -51,3 +51,4 @@ export * from './code-mapping-panel';
 export * from './openapi-import-panel';
 export * from './repo-sync-panel';
 export * from './api-catalog-panel';
+export * from './event-catalog-panel';

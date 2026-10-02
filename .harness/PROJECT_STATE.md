@@ -13,21 +13,23 @@ Phase Name: Code Integrations
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F123
-Feature Name: Event catalog
+Feature ID: F124
+Feature Name: Database catalog
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 86
+Completed: 87
 In Progress: 0
 Blocked: 0
-Not Started: 49
-Progress: 63.7%
+Not Started: 48
+Progress: 64.4%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F122 — API catalog. Implemented centralized, discoverable API catalog and interface registry for DiagramHQ (Phase 09 — Code Integrations). Indexes REST endpoints, GraphQL queries/mutations, and gRPC RPC methods, deterministically anchored to architecture model objects (`ObjectId`) and source code repository locations (`CodeLocationSpec`). Provides multi-dimensional querying (text search, protocol, service, deprecation status, auth scheme, tags), deprecation lifecycle tracking, and facet aggregations. Added canvas UI components `<ApiCatalogExplorerModal />` and `<ApiEndpointDetailDrawer />`, 5 domain unit tests, and 3 web integration tests.
+F123 — Event catalog. Implemented Event Catalog and asynchronous messaging registry for DiagramHQ (Phase 09 — Code Integrations). Indexes domain events, topics, message brokers (Kafka, RabbitMQ, SQS/SNS, EventBridge, NATS, Redis Streams, Google Pub/Sub), message schemas (JSON Schema, Avro, Protobuf), delivery guarantees, and emission frequencies. Deterministically links event producers and consumers to C4 model objects (`ObjectId`) and async connections (`ConnectionId`), providing faceted searching and subscription management. Added canvas UI components `<EventCatalogExplorerModal />`, 4 domain unit tests, and 3 web integration tests.
+
+Prior: F122 — API catalog. Implemented centralized, discoverable API catalog and interface registry for DiagramHQ (Phase 09 — Code Integrations). Indexes REST endpoints, GraphQL queries/mutations, and gRPC RPC methods, deterministically anchored to architecture model objects (`ObjectId`) and source code repository locations (`CodeLocationSpec`). Provides multi-dimensional querying (text search, protocol, service, deprecation status, auth scheme, tags), deprecation lifecycle tracking, and facet aggregations. Added canvas UI components `<ApiCatalogExplorerModal />` and `<ApiEndpointDetailDrawer />`, 5 domain unit tests, and 3 web integration tests.
 
 Prior: F077 — Repository synchronization. Implemented continuous repository synchronization and background architecture freshness engine for DiagramHQ (Phase 09 — Code Integrations). Supports periodic scheduled sync (`SyncScheduleConfig`) and remote git webhook triggers (`push`, `pull_request_merged`), comparing previous scan fingerprints against current commit state and active model topology. Detects added, modified, and removed components, route controllers, and datastores. Directly feeds architectural drift detection (F084) with itemized drift items, severity levels, and evidence citations, and generates reviewable model refresh updates without ungrounded silent mutations. Added canvas UI components `<RepoSyncDrawer />` and `<SyncScheduleModal />`, 5 domain unit tests, and 4 web integration tests.
 

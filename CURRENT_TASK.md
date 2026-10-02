@@ -1,29 +1,30 @@
-# Current Task: F123 — Event catalog
+# Current Task: F124 — Database catalog
 
 **Status**: NOT STARTED
 
 ## Description
-Event catalog and asynchronous messaging registry for DiagramHQ. Enables architectural discovery, documentation, and governance of all domain events, messages, and topics across the distributed system:
-- Indexes asynchronous messages, event streams, and message topics (Kafka, RabbitMQ, SQS, SNS, EventBridge, NATS, Redis Streams).
-- Captures producer services, consumer services, message schemas (JSON Schema, Avro, Protobuf), topic/channel names, delivery semantics, and emission frequency.
-- Deterministically links producers and consumers to C4 model objects (`ObjectId`) and async connections (`ConnectionId`).
-- Supports schema versioning and schema evolution/compatibility rules (backward, forward, full).
-- Strict Invariant Enforced: Every event catalog entry is anchored to at least one producer/publisher architecture service and topic name.
+Database catalog and data schema registry for DiagramHQ. Enables architectural discovery, documentation, and structural navigation of relational and NoSQL datastores across the enterprise:
+- Full hierarchical structure: Database -> Schema -> Table / Collection -> Column / Field.
+- Captures primary keys, foreign key relations, column data types, nullable flags, unique indices, and descriptions.
+- Deterministically links every database to its hosting architecture datastore object (`ObjectId`) and source migrations/models repo location.
+- Multi-engine support: PostgreSQL, MySQL, SQLite, MongoDB, Redis, DynamoDB.
+- Multi-dimensional search and schema inspection.
+- Strict Invariant Enforced: Every database catalog entry is anchored to an architecture model datastore (`ObjectId`) and defines its schema/table/column hierarchy.
 
 Acceptance Criteria:
-- Producer, consumers, schema, topic, frequency
-- Test: create/browse event entries.
+- Database -> schema -> table -> column
+- Test: create/browse database entries.
 
-- Feature ID: F123
+- Feature ID: F124
 - Phase: 09 — Code Integrations
 - Dependencies: F072, F075
 
 ## Next Steps
-1. In `packages/domain/src/`, implement the Event Catalog domain module (`event-catalog.ts`):
-   - Model `EventCatalogEntry`, `EventBrokerType`, `SchemaFormat`, `EventCatalogRegistry`, `EventCatalogQuery`.
-   - Implement `createEventCatalogEntry`, `addEventCatalogEntry`, `linkEventProducerAndConsumer`, `browseEventCatalog`.
-   - Unit tests in `packages/domain/src/event-catalog.test.ts`.
+1. In `packages/domain/src/`, implement the Database Catalog domain module (`database-catalog.ts`):
+   - Model `DatabaseCatalogEntry`, `DatabaseSchema`, `DatabaseTable`, `DatabaseColumn`, `DatabaseEngine`, `ForeignKeyRelation`.
+   - Implement `createDatabaseCatalogEntry`, `addTableToDatabase`, `browseDatabaseCatalog`, `findTablesByColumn`.
+   - Unit tests in `packages/domain/src/database-catalog.test.ts`.
 2. In `apps/web/`, implement canvas UI components:
-   - `<EventCatalogExplorerModal />` and `<EventDetailDrawer />` in `apps/web/components/canvas/event-catalog-panel.tsx`.
-   - Integration specs in `apps/web/event-catalog.spec.tsx`.
+   - `<DatabaseCatalogExplorerModal />` and `<TableSchemaDrawer />` in `apps/web/components/canvas/database-catalog-panel.tsx`.
+   - Integration specs in `apps/web/database-catalog.spec.tsx`.
 3. Verify with `pnpm typecheck && pnpm lint && pnpm check-architecture && pnpm test && pnpm build`.
