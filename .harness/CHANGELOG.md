@@ -2,6 +2,34 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F075 — Code-to-architecture mapping (Phase 09 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `code-mapping.ts`: Implemented bidirectional code-to-architecture mapping and traceability linking architecture model objects (services, components, datastores) directly to their underlying code repositories, directory folders, source file paths, and line ranges (Phase 09 — Code Integrations).
+  - Generates canonical remote repository deep links: "Open in GitHub" (`https://github.com/owner/repo/blob/main/path/to/file#L10-L20`) and "Open in GitLab" (`https://gitlab.com/owner/repo/-/blob/main/path/to/file#L10-20`).
+  - Normalizes repository coordinates across HTTPS URLs, SSH URIs (`git@`), and project slugs.
+  - Injects code mapping metadata into architecture objects without violating pure model invariants.
+  - `code-mapping.test.ts`: Added 4 unit tests verifying component linking, GitHub and GitLab URL generation with line anchors, repo coordinate normalization, and validation rules.
+  - `index.ts`: Exported `code-mapping`.
+- Web layer (`apps/web/`):
+  - `components/canvas/code-mapping-panel.tsx`: Implemented `<CodeMappingBadge />` (compact badge showing provider icon, file path, line range suffix, and deep link), `<OpenInRepoButton />` (button navigating directly to remote repository), and `<CodeMappingEditorDrawer />` (editor modal to configure repository, branch, directory, file, and line anchors with live computed URL preview).
+  - `components/canvas/index.ts`: Exported code mapping components.
+  - `code-mapping.spec.tsx`: Added 4 integration tests verifying badge rendering, open-in-repo buttons for GitHub & GitLab, editor drawer live preview, and dismiss states.
+- Milestone:
+  - **Phase 09 — Code Integrations is now 40% COMPLETE (4/10 features completed, 83/135 total, 61.5% milestone reached)!**
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (179 test suites, 1093 tests passed)
+```
+
 ## 2026-10-02 — F074 — Repository discovery (Phase 09 Progress)
 
 Status: COMPLETE

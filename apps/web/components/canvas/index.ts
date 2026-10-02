@@ -47,3 +47,4 @@ export * from './specialized-agents-panel';
 export * from './github-scanner-panel';
 export * from './gitlab-scanner-panel';
 export * from './repo-discovery-panel';
+export * from './code-mapping-panel';
