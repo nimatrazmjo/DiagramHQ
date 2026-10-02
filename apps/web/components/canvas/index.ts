@@ -36,3 +36,4 @@ export * from './ai-copilot-panel';
 export * from './ai-generation-modal';
 export * from './nl-edit-modal';
 export * from './architecture-explanation-panel';
+export * from './ai-impact-drawer';

@@ -60,7 +60,7 @@ Test: explanation references real objects.
 
 ### F066 — Impact analysis
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: AI over impact.
 

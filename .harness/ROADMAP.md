@@ -13,12 +13,12 @@ Statuses (use ONLY these): NOT STARTED · IN PROGRESS · BLOCKED · IN REVIEW ·
 _Computed from this file. Update on every status change. Contract for an auto-counter: `scripts/SCRIPTS.md` -> progress-counter._
 
 - Total features: **135**
-- Complete: 71
+- Complete: 72
 - In Progress: 0
 - In Review: 0
 - Blocked: 0
-- Not Started: 64
-- **Progress: 52.6%**
+- Not Started: 63
+- **Progress: 53.3%**
 
 
 Feature IDs are permanent. Never reuse or repurpose an ID. Split a large feature into new IDs (e.g. F018 -> F018 + F135) and keep the history. F001–F108 follow the reference roadmap; F109+ cover master-spec items not in the reference list.
@@ -172,7 +172,7 @@ Status: IN PROGRESS  ·  Depends on: Phase 03, Phase 04, Phase 05, Phase 07  · 
 - [x] F063 — Architecture generation
 - [x] F064 — Natural-language editing
 - [x] F065 — Architecture explanation
-- [ ] F066 — Impact analysis
+- [x] F066 — Impact analysis
 - [ ] F067 — Security analysis
 - [ ] F068 — AI documentation
 - [ ] F069 — AI architecture review

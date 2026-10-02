@@ -2,6 +2,29 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F066 — Impact analysis
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ai-impact.ts`: Pure domain AI Architecture Impact Analysis engine. Traverses the architecture graph using breadth-first search to calculate direct and indirect downstream dependents (components broken if target fails), direct and indirect upstream dependencies, affected runtime execution flows, affected stakeholder engineering teams, and Single Point of Failure (SPOF) critical paths (`computeArchitecturalImpact`). Generates an AI-synthesized narrative (`generateAIImpactNarrative`, `analyzeAndNarrateImpact`) that strictly reflects and matches the computed topological impact set and risk metrics.
+  - `ai-impact.test.ts`: Added 4 unit tests verifying acceptance test for selecting an object and confirming AI impact narrative matches the computed set, critical path single-point-of-failure detection, isolated node low-risk handling, and missing object error validation.
+  - `index.ts`: Exported `ai-impact`.
+- Web layer (`apps/web/`):
+  - `components/canvas/ai-impact-drawer.tsx`: Implemented `<ImpactMetricsBadge />` (dynamic risk color styling, icon, and affected blast radius count) and `<AIImpactDrawer />` (slide-out drawer with target overview, metric counters, AI narrative breakdown, recommended actions, and impacted entity catalog).
+  - `components/canvas/index.ts`: Exported AI impact components.
+  - `ai-impact.spec.tsx`: Added 3 integration tests verifying acceptance test for AI impact narrative matching computed impact set, `<ImpactMetricsBadge />` rendering across risk levels, and `<AIImpactDrawer />` open/closed states.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (150 test suites, 1005 tests passed)
+```
+
 ## 2026-10-02 — F065 — Architecture explanation
 
 Status: COMPLETE
