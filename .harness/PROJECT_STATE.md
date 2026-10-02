@@ -13,21 +13,23 @@ Phase Name: Drift and Governance
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F085
-Feature Name: Architecture linting
+Feature ID: F086
+Feature Name: Architecture rules
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 99
+Completed: 100
 In Progress: 0
 Blocked: 0
-Not Started: 36
-Progress: 73.3%
+Not Started: 35
+Progress: 74.1%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F084 — Architecture drift. Implemented architecture drift detection and governance engine for DiagramHQ (Phase 11 — Drift and Governance). Compares documented architecture model (objects and connections) against imported/discovered actual infrastructure and code state, surfacing all categories of drift (unmanaged resources, missing resources, attribute mismatches, undocumented connections, missing connections) with grounded DriftEvidence. Supports 3 canonical action workflows: Update Model (reconcileDriftDirectly), Ignore with audit justification (ignoreDriftItem), and Create Change Request (createChangeRequestFromDrift) which generates an ArchitecturePullRequest with visual diff (computeVisualArchitectureDiff), structured change set (computeArchitectureChangeSet), risk scoring, and affected systems. Added canvas UI component <ArchitectureDriftModal />, 4 domain unit tests, and 3 web integration tests.
+F085 — Architecture linting. Implemented architecture linting engine and diagnostics for DiagramHQ (Phase 11 — Drift and Governance). Evaluates architecture models against canonical rules spanning structural integrity, hierarchy encapsulation, documentation completeness, and node coupling (dangling connections, store-to-store direct coupling, invalid containment hierarchy, orphaned objects, missing technology metadata, self-referencing connection loops, high coupling / god-services, missing descriptions, and missing actor entrypoints). Generates structured findings at error, warning, and info levels with actionable remediation advice and health scoring. Added canvas UI component <ArchitectureLintModal />, 4 domain unit tests, and 3 web integration tests. **Milestone: 100 / 135 features completed (74.1%)!**
+
+Prior: F084 — Architecture drift. Implemented architecture drift detection and governance engine for DiagramHQ (Phase 11 — Drift and Governance). Compares documented architecture model (objects and connections) against imported/discovered actual infrastructure and code state, surfacing all categories of drift (unmanaged resources, missing resources, attribute mismatches, undocumented connections, missing connections) with grounded DriftEvidence. Supports 3 canonical action workflows: Update Model (reconcileDriftDirectly), Ignore with audit justification (ignoreDriftItem), and Create Change Request (createChangeRequestFromDrift) which generates an ArchitecturePullRequest with visual diff (computeVisualArchitectureDiff), structured change set (computeArchitectureChangeSet), risk scoring, and affected systems. Added canvas UI component <ArchitectureDriftModal />, 4 domain unit tests, and 3 web integration tests.
 
 Prior: F128 — Cost visualization. Implemented cloud infrastructure cost estimation and architectural cost overlay engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Attaches cloud cost data to infrastructure architecture model objects without mutating original objects (attachCostToObject), computes per-service rollups with subtotals across categories (calculateServiceCostRollup across compute, database, storage, networking), generates architecture-wide cost summaries (calculateArchitectureCostReport), and preserves grounded CostEvidence (sourceType: 'cloud_billing', billing account, meter ID, provider, timestamp). Added canvas UI component <CostVisualizationModal />, 4 domain unit tests, and 3 web integration tests. **Phase 10 — Infrastructure Integrations is now 100% COMPLETE (7/7 features)!**
 

@@ -27,7 +27,7 @@ Test: seeded drift detected; create-change-request produces a PR.
 
 ### F085 — Architecture linting
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Lint the model.
 
