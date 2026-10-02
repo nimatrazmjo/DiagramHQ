@@ -6,7 +6,7 @@ import type {
   ProjectViewModelViewObject,
 } from './canvas';
 import { projectViewModelToCanvas } from './canvas';
-import type { FlowWithSteps, ModelConnection, ModelObject } from './types';
+import type { FlowType, FlowWithSteps, ModelConnection, ModelObject } from './types';
 
 export interface FlowNodeData {
   flowView?: boolean;
@@ -25,6 +25,8 @@ export interface FlowEdgeData {
   flowStepNumber?: number;
   flowStepNotes?: string[];
   flowStepNote?: string;
+  actorAction?: string | null;
+  userIntent?: string | null;
   isDimmed?: boolean;
   isActiveStep?: boolean;
   [key: string]: unknown;
@@ -40,9 +42,14 @@ export interface FlowProjectionResult {
   flowMetadata: {
     flowId: string;
     flowName: string;
+    flowType?: FlowType;
+    actorId?: string | null;
+    persona?: string | null;
     stepCount: number;
     participatingObjectIds: string[];
     activeStepIndex?: number;
+    activeActorAction?: string | null;
+    activeUserIntent?: string | null;
   };
 }
 
@@ -100,7 +107,13 @@ export function projectFlowToCanvas(
   const flowConnectionIds = new Set<string>();
   const stepsByConnectionId = new Map<
     string,
-    Array<{ stepIndex: number; stepNumber: number; note: string | null }>
+    Array<{
+      stepIndex: number;
+      stepNumber: number;
+      note: string | null;
+      actorAction: string | null;
+      userIntent: string | null;
+    }>
   >();
 
   for (const step of sortedSteps) {
@@ -110,6 +123,8 @@ export function projectFlowToCanvas(
       stepIndex: step.stepIndex,
       stepNumber: step.stepIndex + 1,
       note: step.note ?? null,
+      actorAction: step.actorAction ?? null,
+      userIntent: step.userIntent ?? null,
     });
     stepsByConnectionId.set(step.connectionId, existing);
   }
@@ -216,6 +231,8 @@ export function projectFlowToCanvas(
           flowStepNumber: primaryStepNumber,
           flowStepNotes,
           flowStepNote: primaryNote,
+          actorAction: primaryStep?.actorAction ?? null,
+          userIntent: primaryStep?.userIntent ?? null,
           isActiveStep,
           isDimmed: false,
         },
@@ -241,9 +258,14 @@ export function projectFlowToCanvas(
     flowMetadata: {
       flowId: flow.id,
       flowName: flow.name,
+      flowType: flow.type,
+      actorId: flow.actorId ?? null,
+      persona: flow.persona ?? null,
       stepCount: sortedSteps.length,
       participatingObjectIds: Array.from(participatingObjectIds),
       activeStepIndex: options?.activeStepIndex,
+      activeActorAction: activeStep?.actorAction ?? null,
+      activeUserIntent: activeStep?.userIntent ?? null,
     },
   };
 }

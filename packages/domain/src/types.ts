@@ -159,11 +159,16 @@ export interface Technology {
   docs?: string | null;
 }
 
+export type FlowType = 'sequence' | 'user_journey' | 'data_flow' | 'api_flow';
+
 export interface Flow {
   readonly id: FlowId;
   readonly architectureId: ArchitectureId;
   name: string;
   description?: string | null;
+  type?: FlowType;
+  actorId?: ObjectId | null;
+  persona?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -174,6 +179,8 @@ export interface FlowStep {
   stepIndex: number;
   connectionId: ConnectionId;
   note?: string | null;
+  actorAction?: string | null;
+  userIntent?: string | null;
 }
 
 export interface FlowWithSteps extends Flow {

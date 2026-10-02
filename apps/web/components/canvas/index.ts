@@ -10,5 +10,6 @@ export * from './icepanel-sidebar';
 export * from './icepanel-edge';
 export * from './flow-badges';
 export * from './flow-playback-toolbar';
+export * from './user-journey-overlay';
 
 
