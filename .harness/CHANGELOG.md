@@ -2,6 +2,29 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F061 — Merge
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `merge.ts`: Pure 3-way architecture branch merge engine and conflict detection system. Implemented `detectMergeConflicts` and `mergeBranchOntoMain`. Detects conflicts across `both_modified`, `both_added`, and `modify_delete` on identical object and connection IDs. Supports conflict resolution strategies ('theirs', 'ours', and per-entity manual resolution). Successfully synthesizes merged branch state and transitions source branch status to `'merged'` while pruning dangling connections.
+  - `merge.test.ts`: Added 2 unit tests verifying acceptance test for clean merge application onto main, conflict detection on identical object IDs, conflict resolution via 'theirs', and manual per-entity resolution choices.
+  - `index.ts`: Exported `merge`.
+- Web layer (`apps/web/`):
+  - `components/canvas/merge-modal.tsx`: Implemented `<ConflictResolutionBanner />` (warning alert with conflict counter and resolution strategy selectors) and `<MergeBranchModal />` (interactive 3-way merge dialog showing clean vs conflicting status, field deltas, and resolution choices).
+  - `components/canvas/index.ts`: Exported merge components.
+  - `merge.spec.tsx`: Added 3 integration tests verifying acceptance test for clean merge and conflict detection on identical object IDs, `<ConflictResolutionBanner />` rendering, and `<MergeBranchModal />` clean/conflicting state rendering.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (141 test suites, 948 tests passed)
+```
+
 ## 2026-10-02 — F060 — Pull requests
 
 Status: COMPLETE

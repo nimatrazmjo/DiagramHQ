@@ -13,21 +13,23 @@ Phase Name: Versioning
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F061
-Feature Name: Merge
+Feature ID: F117
+Feature Name: ADR system
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 63
+Completed: 64
 In Progress: 0
 Blocked: 0
-Not Started: 72
-Progress: 46.7%
+Not Started: 71
+Progress: 47.4%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F060 — Pull requests. Pure architecture pull request review engine and canvas UI. Supports titled pull requests linking source to target branch, embedded visual diff (added, modified, removed, moved objects & connections with semantic colors), downstream affected systems impact analysis, automatic risk scoring (low, medium, high, critical) with human-readable rationale, and full review workflows (commenting, reviewing, approving, and rejecting). Added UI components `<PullRequestBadge />` and `<PullRequestModal />`, 3 domain unit tests, and 3 web integration tests.
+F061 — Merge. Pure 3-way architecture branch merge engine and conflict detection system. Compares base ancestor, source feature branch, and target branch (main). Accurately detects merge conflicts on identical object IDs (concurrent modifications on the same object ID, concurrent additions with differing attributes, or modify/delete collisions). Provides automated and manual resolution strategies ('theirs', 'ours', per-entity manual selection). Upon clean merge or conflict resolution, updates main's architecture state while transitioning the source branch status to `'merged'`. Added UI components `<ConflictResolutionBanner />` and `<MergeBranchModal />`, 2 domain unit tests, and 3 web integration tests.
+
+Prior: F060 — Pull requests. Pure architecture pull request review engine and canvas UI. Supports titled pull requests linking source to target branch, embedded visual diff (added, modified, removed, moved objects & connections with semantic colors), downstream affected systems impact analysis, automatic risk scoring (low, medium, high, critical) with human-readable rationale, and full review workflows (commenting, reviewing, approving, and rejecting). Added UI components `<PullRequestBadge />` and `<PullRequestModal />`, 3 domain unit tests, and 3 web integration tests.
 
 Prior: F059 — Architecture changes. Pure architecture change sets and impact analysis engine. Computes direct change lists (added, modified, removed objects and connections) alongside full downstream impact analysis: affected architecture objects (direct changes, connection endpoints, and connected dependencies), affected flows (flows traversing affected connections or objects), and affected stakeholder teams (teams owning affected objects via ownership records or metadata). Added UI components `<ImpactAnalysisBadge />` and `<ChangeSetSummary />`, 2 domain unit tests, and 3 web integration tests.
 
