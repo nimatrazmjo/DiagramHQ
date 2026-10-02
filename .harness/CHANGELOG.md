@@ -2,6 +2,32 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F071 — MCP integration
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `mcp-server.ts`: Pure domain Model Context Protocol (MCP) server implementation (`DiagramHQMCPServer`). Exposes all 14 required tools:
+    - Query tools: `search_architecture`, `get_object`, `get_dependencies`, `get_dependents`, `analyze_impact`, `compare_versions`, `review_change`.
+    - Mutating tools: `create_object`, `update_object`, `delete_object`, `create_diagram`, `create_flow`, `create_change`, `create_adr`.
+    - Strict invariant: All mutating tools return reviewable proposals (`isProposal: true, requiresApproval: true`), never committing silent changes directly to the model.
+  - `mcp-server.test.ts`: Added 4 unit tests verifying tool list discovery, querying objects and blast-radius impact analysis, and verifying mutating tools create reviewable proposals with required approvals.
+  - `index.ts`: Exported `mcp-server`.
+- Web layer (`apps/web/`):
+  - `components/canvas/mcp-integration-modal.tsx`: Implemented `<MCPStatusBadge />` (connected status, tool counts, and trigger) and `<MCPInspectorModal />` (interactive MCP server inspector showing available tools, parameter schemas, mutating flags, and raw JSON schema inspect).
+  - `components/canvas/index.ts`: Exported MCP integration components.
+  - `mcp-integration.spec.tsx`: Added 3 integration tests verifying that each tool is callable, mutating tools return proposals requiring approval, and `<MCPStatusBadge />` / `<MCPInspectorModal />` render correctly.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (155 test suites, 1039 tests passed)
+```
+
 ## 2026-10-02 — F070 — ADR generation
 
 Status: COMPLETE

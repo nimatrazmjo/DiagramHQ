@@ -13,21 +13,23 @@ Phase Name: AI Copilot
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F071
-Feature Name: MCP integration
+Feature ID: F120
+Feature Name: AI evidence + confidence
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 76
+Completed: 77
 In Progress: 0
 Blocked: 0
-Not Started: 59
-Progress: 56.3%
+Not Started: 58
+Progress: 57.0%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F070 — ADR generation. Pure AI Architecture Decision Record (ADR) generator from architecture change sets and pull requests for DiagramHQ (Phase 08 — AI Copilot). Automatically synthesizes structured MADR / Michael Nygard decision records directly grounded in model mutations: context synthesis capturing problem statements and affected downstream components, decision synthesis itemizing provisioned components, new integration channels, refactored services, and decommissioned legacy entities, consequences synthesis detailing positive and negative trade-offs, and alternatives considered. Establishes polymorphic traceability by attaching directly to the source change set (`targetType: 'change'`). Enables human-in-the-loop review and editing (`acceptDraftedADR`) committing the official immutable `ArchitectureDecisionRecord`. Added canvas UI components `<DraftedADRCard />` and `<ADRGenerationModal />`, 3 domain unit tests, and 3 web integration tests.
+F071 — MCP integration. Pure Model Context Protocol (MCP) server implementation for DiagramHQ (Phase 08 — AI Copilot). Exposes 14 standard MCP tools for querying, inspecting, and proposing modifications to architecture models: read/query tools (`search_architecture`, `get_object`, `get_dependencies`, `get_dependents`, `analyze_impact`, `compare_versions`, `review_change`) and mutating authoring tools (`create_object`, `update_object`, `delete_object`, `create_diagram`, `create_flow`, `create_change`, `create_adr`). Strict invariant enforced: mutating tools return a reviewable proposal with `isProposal: true, requiresApproval: true`, never committing silent mutations. Added canvas UI components `<MCPStatusBadge />` and `<MCPInspectorModal />`, 4 domain unit tests, and 3 web integration tests.
+
+Prior: F070 — ADR generation. Pure AI Architecture Decision Record (ADR) generator from architecture change sets and pull requests for DiagramHQ (Phase 08 — AI Copilot). Automatically synthesizes structured MADR / Michael Nygard decision records directly grounded in model mutations: context synthesis capturing problem statements and affected downstream components, decision synthesis itemizing provisioned components, new integration channels, refactored services, and decommissioned legacy entities, consequences synthesis detailing positive and negative trade-offs, and alternatives considered. Establishes polymorphic traceability by attaching directly to the source change set (`targetType: 'change'`). Enables human-in-the-loop review and editing (`acceptDraftedADR`) committing the official immutable `ArchitectureDecisionRecord`. Added canvas UI components `<DraftedADRCard />` and `<ADRGenerationModal />`, 3 domain unit tests, and 3 web integration tests.
 
 Prior: F069 — AI architecture review. Pure AI Architecture Review Agent and automated pre-merge governance gate for DiagramHQ (Phase 08 — AI Copilot). Evaluates architecture models and pull request change sets against a comprehensive pre-merge governance checklist: circular dependencies detection using depth-first search along microservice call paths; team ownership audit verifying every internal component has designated engineering team ownership assigned in metadata or `ObjectOwnership` records; unapproved external dependencies inspection detecting third-party external systems or vendors not present on the organization's approved whitelist or lacking security clearance; backup & disaster recovery (DR) compliance check ensuring persistent data stores have verified backup schedules and disaster recovery replication configured; and PII exfiltration check detecting direct customer PII or credential exfiltration paths to external third-party boundaries. Generates verdicts (`REQUEST_CHANGES`, `APPROVE`, `COMMENT`) with actionable remediation instructions. Added canvas UI components `<ReviewVerdictBadge />` and `<ArchitectureReviewModal />`, 3 domain unit tests, and 3 web integration tests.
 

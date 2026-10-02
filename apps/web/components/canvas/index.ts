@@ -41,3 +41,4 @@ export * from './ai-security-drawer';
 export * from './ai-documentation-modal';
 export * from './ai-architecture-review-modal';
 export * from './ai-adr-modal';
+export * from './mcp-integration-modal';
