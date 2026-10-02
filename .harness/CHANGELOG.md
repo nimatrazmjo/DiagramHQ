@@ -2,6 +2,32 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F122 — API catalog (Phase 09 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `api-catalog.ts`: Implemented centralized, discoverable API catalog and interface registry for DiagramHQ (Phase 09 — Code Integrations). Indexes REST endpoints, GraphQL queries/mutations, and gRPC RPC methods, deterministically anchored to architecture model objects (`ObjectId`) and source code repository locations (`CodeLocationSpec`).
+  - Provides multi-dimensional querying (text search, protocol, service, deprecation status, auth scheme, tags), deprecation lifecycle tracking, and facet aggregations.
+  - `api-catalog.test.ts`: Added 5 unit tests verifying entry creation with service and repo mapping, multi-protocol registry population, model linking and code mapping inheritance, deprecation lifecycle updates, and faceted browsing.
+  - `index.ts`: Exported `api-catalog`.
+- Web layer (`apps/web/`):
+  - `components/canvas/api-catalog-panel.tsx`: Implemented `<ApiCatalogExplorerModal />` (full-featured catalog explorer modal featuring metrics banner, text search, protocol tabs, service filter dropdown, status filter, and detailed inspector drawer).
+  - `components/canvas/index.ts`: Exported API catalog components.
+  - `api-catalog.spec.tsx`: Added 3 integration tests verifying modal metrics and endpoint row rendering, search and filter toolbars, and closed state behavior.
+- Milestone:
+  - **Phase 09 — Code Integrations is now 70% COMPLETE (7/10 features completed, 86/135 total, 63.7% milestone reached)!**
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (183 test suites, 1117 tests passed)
+```
+
 ## 2026-10-02 — F077 — Repository synchronization (Phase 09 Progress)
 
 Status: COMPLETE

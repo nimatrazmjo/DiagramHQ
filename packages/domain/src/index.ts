@@ -66,3 +66,4 @@ export * from './repository-discovery';
 export * from './code-mapping';
 export * from './openapi-import';
 export * from './repo-sync';
+export * from './api-catalog';

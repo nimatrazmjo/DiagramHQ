@@ -94,7 +94,7 @@ Test: a repo change triggers a model refresh.
 
 ### F122 — API catalog
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Discoverable APIs.
 
