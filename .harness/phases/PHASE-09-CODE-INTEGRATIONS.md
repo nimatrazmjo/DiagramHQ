@@ -118,7 +118,7 @@ Test: create/browse event entries.
 
 ### F124 — Database catalog
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: DB structure.
 
