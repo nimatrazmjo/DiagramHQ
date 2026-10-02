@@ -60,7 +60,7 @@ Test: diff matches seeded changes.
 
 ### F059 — Architecture changes
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Change set.
 
