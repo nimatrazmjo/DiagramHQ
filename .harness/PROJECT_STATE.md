@@ -13,21 +13,23 @@ Phase Name: Versioning
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F056
-Feature Name: Architecture snapshots
+Feature ID: F057
+Feature Name: Branches
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 58
+Completed: 59
 In Progress: 0
 Blocked: 0
-Not Started: 77
-Progress: 43.0%
+Not Started: 76
+Progress: 43.7%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F055 — Version history. Pure architecture version history and snapshot immutability engine. Supports live editable architecture versions (`LiveArchitectureVersion`) and strictly immutable numbered snapshots (`NumberedSnapshot`, `SnapshotId`). Guarantees that snapshots stay completely immutable and frozen while live edits proceed, with strict error throwing (`SnapshotImmutableError`) on mutation attempts. Added UI components `<SnapshotBadge />` and `<VersionTimeline />`, 6 domain unit tests, and 4 web integration tests.
+F056 — Architecture snapshots. Full-state architecture snapshot capture across all 6 model dimensions: objects, connections, views, flows (with steps), metadata, and documentation (markdown pages) with complete restoration back to active architecture state (`captureFullArchitectureSnapshot`, `restoreFullArchitectureSnapshot`, and `diffArchitectureStates`). Added `<SnapshotDetailsModal />` and `<SnapshotDiffModal />` UI components, 4 domain unit tests, and 3 web integration tests.
+
+Prior: F055 — Version history. Pure architecture version history and snapshot immutability engine. Supports live editable architecture versions (`LiveArchitectureVersion`) and strictly immutable numbered snapshots (`NumberedSnapshot`, `SnapshotId`). Guarantees that snapshots stay completely immutable and frozen while live edits proceed, with strict error throwing (`SnapshotImmutableError`) on mutation attempts. Added UI components `<SnapshotBadge />` and `<VersionTimeline />`, 6 domain unit tests, and 4 web integration tests.
 
 Prior: F116 — Notifications. Multi-channel notification pipeline (in-app, email, Slack, Microsoft Teams) for model changes, comments, mentions, and version review requests. Added pure notifications domain engine (`createNotification`, `dispatchNotification`, `markNotificationRead`, `markAllNotificationsRead`, `filterNotifications`, `countUnreadNotifications`, `StubNotificationTransport`), `<NotificationBadge />`, `<NotificationItem />`, and `<NotificationCenter />` web UI components, 5 domain unit tests, and 5 web integration tests. Completes Phase 06 — Collaboration!
 

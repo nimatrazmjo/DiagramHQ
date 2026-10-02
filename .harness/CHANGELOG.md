@@ -2,6 +2,29 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F056 — Architecture snapshots
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `snapshots.ts`: Full 6-dimension architecture snapshot capture, deep freezing, restoration, and diffing engine. Implemented `captureFullArchitectureSnapshot` (capturing objects, connections, views, flows with steps, metadata, and doc pages), `restoreFullArchitectureSnapshot` (complete recreation of active state from snapshot), `diffArchitectureStates` (calculates added, modified, removed across all 6 dimensions), and `deepFreezeArchitectureState`.
+  - `snapshots.test.ts`: Added 4 unit tests verifying full 6-dimension snapshot capture, acceptance test for snapshot restoration, deep freeze immutability enforcement, and comprehensive state diffing.
+  - `index.ts`: Exported `snapshots`.
+- Web layer (`apps/web/`):
+  - `components/canvas/snapshot-modal.tsx`: Implemented `<SnapshotDetailsModal />` displaying dimension count badges and snapshot restoration action, and `<SnapshotDiffModal />` displaying comparison delta metrics across all 6 dimensions.
+  - `components/canvas/index.ts`: Exported snapshot modal components.
+  - `snapshots.spec.tsx`: Added 3 integration tests verifying acceptance test for snapshot restoration, details modal rendering, and comparison diff modal rendering.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (131 test suites, 919 tests passed)
+```
+
 ## 2026-10-02 — F055 — Version history
 
 Status: COMPLETE
