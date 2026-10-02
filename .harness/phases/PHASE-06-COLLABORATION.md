@@ -1,6 +1,6 @@
 # Phase 06 — Collaboration
 
-Status: NOT STARTED
+Status: IN PROGRESS
 
 ## Description
 Turn the single-player model into a team tool: real-time editing, presence, comments, mentions, share links, permissions, team management, notifications.
@@ -12,7 +12,7 @@ Phase 01
 
 ### F048 — Real-time collaboration
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Live multi-user editing.
 

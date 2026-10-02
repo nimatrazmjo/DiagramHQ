@@ -2,6 +2,34 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F048 — Real-time collaboration
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `collaboration.ts`: Pure CRDT/OT collaboration engine supporting `CollabSession`, `CollabOperation` (`upsert_object`, `delete_object`, `upsert_connection`, `delete_connection`, `update_object_position`). Implemented `compareLamport()` for deterministic Lamport clock and sessionId tie-breaking. Implemented `createCollabSession()`, `applyLocalOperation()`, `applyRemoteOperation()`, and `syncSessions()`. Guaranteed graph integrity with automated cascade deletion of orphan connections and diagram coordinates upon object deletion.
+  - `collaboration.test.ts`: Added 9 unit tests verifying session creation, local operation dispatch, remote operation processing, idempotent re-application, deterministic LWW conflict resolution, cascade deletions, and multi-peer convergence.
+  - `index.ts`: Exported collaboration types and functions.
+- Web layer (`apps/web/`):
+  - `components/canvas/collaboration-banner.tsx`: Added `<CollaborationBanner />` UI component displaying live connection pulse, peer count, avatar chips, operation counter, conflict resolution indicator, and manual sync trigger.
+  - `components/canvas/index.ts`: Exported `CollaborationBanner`.
+  - `collaboration.spec.tsx`: Added 5 integration tests verifying multi-client sessions, 2-client simultaneous edits, concurrent conflict resolution, 3-peer graph synchronization, and banner rendering.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm --filter @diagramhq/domain test → 213 passed (31 test files)
+pnpm --filter @diagramhq/web test    → 342 passed (45 test files)
+pnpm test                            → 825 passed across all workspaces (213 domain, 342 web, 270 api)
+branch: feat/F048-real-time-collaboration
+```
+
+Evaluator scores: acceptance=5, correctness=5, boundaries=5, modularity=5, evidence=5 => avg 5.0 — PASS
+
 ## 2026-10-02 — F047 — API flows
 
 Status: COMPLETE

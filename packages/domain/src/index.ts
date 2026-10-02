@@ -30,5 +30,6 @@ export * from './architecture-template';
 export * from './flow';
 export * from './flow-view';
 export * from './flow-playback';
+export * from './collaboration';
 
 
