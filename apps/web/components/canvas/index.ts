@@ -57,5 +57,6 @@ export * from './model-as-code-panel';
 export * from './webhooks-panel';
 export * from './sdk-panel';
 export * from './aws-panel';
+export * from './azure-panel';
 
 

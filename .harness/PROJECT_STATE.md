@@ -13,21 +13,23 @@ Phase Name: Infrastructure Integrations
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F079
-Feature Name: Azure
+Feature ID: F080
+Feature Name: GCP
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 92
+Completed: 93
 In Progress: 0
 Blocked: 0
-Not Started: 43
-Progress: 68.1%
+Not Started: 42
+Progress: 68.9%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F078 — AWS. Implemented AWS cloud infrastructure import and topology mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Maps all 13 canonical AWS resource types (EC2, ECS, EKS, Lambda, RDS, DynamoDB, S3, CloudFront, API Gateway, SQS, SNS, EventBridge, VPC) to typed `ModelObject` instances with hierarchical VPC containment, derives inter-service `ModelConnection` interactions (origin fetch, proxy integration, database queries, async pub/sub), and preserves traceable `AwsCloudEvidence`. Added canvas UI component `<AwsImportModal />`, 7 domain unit tests, and 3 web integration tests.
+F079 — Azure. Implemented Microsoft Azure cloud infrastructure import and topology mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Maps all 15 canonical Azure resource types (VM, App Service, Function App, AKS, Container App, SQL Database, Cosmos DB, Storage Account, VNet, App Gateway, Front Door, API Management, Service Bus, Event Hubs, Event Grid) to typed `ModelObject` instances with hierarchical VNet containment, derives inter-service `ModelConnection` interactions (ingress routing, backend API calls, database queries, async pub/sub), and preserves traceable `AzureCloudEvidence`. Added canvas UI component `<AzureImportModal />`, 7 domain unit tests, and 3 web integration tests.
+
+Prior: F078 — AWS. Implemented AWS cloud infrastructure import and topology mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Maps all 13 canonical AWS resource types (EC2, ECS, EKS, Lambda, RDS, DynamoDB, S3, CloudFront, API Gateway, SQS, SNS, EventBridge, VPC) to typed `ModelObject` instances with hierarchical VPC containment, derives inter-service `ModelConnection` interactions (origin fetch, proxy integration, database queries, async pub/sub), and preserves traceable `AwsCloudEvidence`. Added canvas UI component `<AwsImportModal />`, 7 domain unit tests, and 3 web integration tests.
 
 Prior: F127 — SDK. Implemented typed TypeScript client SDK (`DiagramHQClient`, `createDiagramHQClient`) for DiagramHQ's REST and Model intelligence APIs (Phase 09 — Code Integrations). Covers complete CRUD over architectures, model objects, connections, views, and execution flows with model snapshot extraction (`getModel`), comprehensive error hierarchy (`DiagramHQApiError`, `AuthenticationError`, `NotFoundError`), custom HTTP transport interface, and in-memory mock test server (`createMockTestServer`) with verified round-trip fidelity. Added canvas UI component `<SdkPanelModal />`, 5 domain unit tests, and 3 web integration tests. **Phase 09 — Code Integrations is now 100% COMPLETE (10/10 features)!**
 

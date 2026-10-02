@@ -24,7 +24,7 @@ Test: import a mocked account -> resources mapped.
 
 ### F079 — Azure
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Import Azure resources.
 

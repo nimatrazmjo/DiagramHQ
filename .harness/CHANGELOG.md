@@ -2,6 +2,32 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F079 — Azure (Phase 10 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `azure.ts`: Implemented Microsoft Azure cloud infrastructure import and topology mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Maps all 15 canonical Azure resource types (VM, App Service, Function App, AKS, Container App, SQL Database, Cosmos DB, Storage Account, VNet, App Gateway, Front Door, API Management, Service Bus, Event Hubs, Event Grid) to typed `ModelObject` instances with hierarchical VNet containment, derives inter-service `ModelConnection` interactions (ingress routing, backend API calls, database queries, async pub/sub), and preserves traceable `AzureCloudEvidence`.
+  - Implemented `parseAzureResourceId`, `determineObjectKindForAzure`, `determineConnectionKindForAzure`, `importAzureSubscription`, and `createMockAzureSubscription`.
+  - `azure.test.ts`: Added 7 unit tests verifying Resource ID parsing, resource-to-kind mapping, connection inference, mocked subscription import with all 15 resource types, VNet containment, filtering, and cloud evidence retention.
+  - `index.ts`: Exported `azure`.
+- Web layer (`apps/web/`):
+  - `components/canvas/azure-panel.tsx`: Implemented `<AzureImportModal />` (Azure import modal featuring subscription ID, Entra ID tenant ID, resource group, primary region selector, resource type filter chips for all 15 types, VNet containment toggle, connection derivation toggle, discovered inventory listing, and import execution).
+  - `components/canvas/index.ts`: Exported Azure components.
+  - `azure.spec.tsx`: Added 3 integration tests verifying modal rendering, closed state, and inventory items for all 15 Azure resource types.
+- Milestone:
+  - **93 / 135 total features completed (68.9% milestone reached)!**
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (199 test suites, 1186 tests passed)
+```
+
 ## 2026-10-02 — F078 — AWS (Phase 10 Progress)
 
 Status: COMPLETE
