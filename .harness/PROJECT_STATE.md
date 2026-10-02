@@ -13,21 +13,23 @@ Phase Name: Versioning
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F057
-Feature Name: Branches
+Feature ID: F058
+Feature Name: Architecture diff
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 59
+Completed: 60
 In Progress: 0
 Blocked: 0
-Not Started: 76
-Progress: 43.7%
+Not Started: 75
+Progress: 44.4%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F056 — Architecture snapshots. Full-state architecture snapshot capture across all 6 model dimensions: objects, connections, views, flows (with steps), metadata, and documentation (markdown pages) with complete restoration back to active architecture state (`captureFullArchitectureSnapshot`, `restoreFullArchitectureSnapshot`, and `diffArchitectureStates`). Added `<SnapshotDetailsModal />` and `<SnapshotDiffModal />` UI components, 4 domain unit tests, and 3 web integration tests.
+F057 — Branches. Pure architecture branching engine supporting branch creation off main or parent branches. Carries all 6 architecture dimensions plus ADRs and threaded comments (`objects`, `connections`, `views`, `flows`, `metadata`, `adrs`, `comments`). Deep cloning guarantees complete memory and state isolation such that additions, removals, or edits on child branches never pollute or mutate main. Added UI components `<BranchBadge />` and `<BranchSelector />`, 4 domain unit tests, and 3 web integration tests.
+
+Prior: F056 — Architecture snapshots. Full-state architecture snapshot capture across all 6 model dimensions: objects, connections, views, flows (with steps), metadata, and documentation (markdown pages) with complete restoration back to active architecture state (`captureFullArchitectureSnapshot`, `restoreFullArchitectureSnapshot`, and `diffArchitectureStates`). Added `<SnapshotDetailsModal />` and `<SnapshotDiffModal />` UI components, 4 domain unit tests, and 3 web integration tests.
 
 Prior: F055 — Version history. Pure architecture version history and snapshot immutability engine. Supports live editable architecture versions (`LiveArchitectureVersion`) and strictly immutable numbered snapshots (`NumberedSnapshot`, `SnapshotId`). Guarantees that snapshots stay completely immutable and frozen while live edits proceed, with strict error throwing (`SnapshotImmutableError`) on mutation attempts. Added UI components `<SnapshotBadge />` and `<VersionTimeline />`, 6 domain unit tests, and 4 web integration tests.
 

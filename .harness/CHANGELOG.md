@@ -2,6 +2,30 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F057 — Branches
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ids.ts`: Added `'brn'` prefix to `IdPrefix` and declared `BranchId` brand type.
+  - `branches.ts`: Architecture branches domain logic and state isolation engine. Implemented `createMainBranch`, `forkBranch`, `addObjectToBranch`, `removeObjectFromBranch` (cascading removal of connections), `addConnectionToBranch`, `addAdrToBranch`, `addCommentToBranch`, `updateBranchMetadata`, and `cloneBranchState`. Guarantees deep state isolation so changes on a branch do not mutate main.
+  - `branches.test.ts`: Added 4 unit tests verifying full architecture dimension carriage on main, acceptance test for branch independence from main, connection cascading on deletion, and branch name validation.
+  - `index.ts`: Exported `branches`.
+- Web layer (`apps/web/`):
+  - `components/canvas/branch-selector.tsx`: Implemented `<BranchBadge />` (displaying branch icon and name with default/feature badge) and `<BranchSelector />` (dialog displaying branches, active status, entity counts, and creation form).
+  - `components/canvas/index.ts`: Exported branch components.
+  - `branches.spec.tsx`: Added 3 integration tests verifying acceptance test for branch independence from main, `<BranchBadge />` rendering, and `<BranchSelector />` branch switching and metrics rendering.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (133 test suites, 926 tests passed)
+```
+
 ## 2026-10-02 — F056 — Architecture snapshots
 
 Status: COMPLETE
