@@ -2,6 +2,32 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F083 — Cloud Resource Discovery (Phase 10 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `cloud-discovery.ts`: Implemented live multi-cloud resource discovery and automated architecture proposal engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Discovers live infrastructure resources across accounts and subscriptions (AWS, Azure, GCP, Kubernetes), classifying resources into functional categories (`compute`, `database`, `storage`, `networking`, `messaging`, `security`) with deterministic C4 `ModelObjectKind` mapping (`application`, `store`, `group`, `component`). Reconciles live resources against existing architecture models, generating proposals with concrete `CloudDiscoveryEvidence` (`sourceType: 'cloud_discovery'`, confidence >= 0.9, provider, account, region, matchReason) for creates (unmapped assets), updates (reconfigured attributes/status), drifts (terminated backing resources), and exact matches. Supports proposal execution (`applyDiscoveryProposals`).
+  - Implemented `determineObjectKindForDiscoveredResource`, `inferCloudCategory`, `reconcileCloudResources`, `applyDiscoveryProposals`, `createMockCloudAccounts`, and `createMockMultiCloudResources`.
+  - `cloud-discovery.test.ts`: Added 7 unit tests verifying category inference, kind mapping, live discovery reconciliation with evidence, duplicate prevention, attribute updates, drift/stale detection, and proposal application.
+  - `index.ts`: Exported `cloud-discovery`.
+- Web layer (`apps/web/`):
+  - `components/canvas/cloud-discovery-panel.tsx`: Implemented `<CloudDiscoveryModal />` (interactive multi-cloud discovery panel with account selectors, live scan trigger, summary KPI metrics, provider and category filter chips, proposal card list with action badges, expandable evidence drawers, and bulk proposal application).
+  - `components/canvas/index.ts`: Exported cloud discovery panel.
+  - `cloud-discovery.spec.tsx`: Added 3 integration tests verifying modal rendering, closed state, and accessibility attributes.
+- Milestone:
+  - **97 / 135 total features completed (71.9% milestone reached)!**
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean, 0 errors, 0 warnings)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (205 test suites, 1221 tests passed)
+```
+
 ## 2026-10-02 — F082 — Kubernetes (Phase 10 Progress)
 
 Status: COMPLETE

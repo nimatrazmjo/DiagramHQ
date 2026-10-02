@@ -77,5 +77,4 @@ export * from './azure';
 export * from './gcp';
 export * from './terraform';
 export * from './kubernetes';
-
-
+export * from './cloud-discovery';

@@ -1,38 +1,35 @@
-# Current Task: F083 — Cloud resource discovery
+# Current Task: F128 — Cost visualization
 
 **Status**: NOT STARTED
 
 ## Description
-Unified multi-cloud resource discovery and automated architecture proposal engine for DiagramHQ (Phase 10 — Infrastructure Integrations):
-- Multi-cloud live resource discovery across accounts and subscriptions:
-  - Supports multiple cloud providers (AWS, Azure, GCP, Kubernetes) and accounts/projects/subscriptions.
-  - Discover resources: compute (instances, container clusters, serverless functions), databases (relational, NoSQL, caches), storage (buckets, volumes), networking (VPCs, VNets, load balancers, API gateways), messaging (queues, topics, streams).
-  - Collects discovered inventory with metadata (resource ARN/ID, type, region, tags, network coordinates).
-- Automated architecture reconciliation and proposal generation:
-  - Compares discovered cloud resources against active architecture model objects.
-  - Categorizes discovered assets:
-    - `matched`: Resource already mapped to an existing model object (updates metadata/tags/freshness).
-    - `unmanaged`: Resource detected in cloud account but not yet present in architecture model (proposes new model object).
-    - `drifted`: Previously mapped model object whose backing cloud resource is missing or modified.
-  - Grounded evidence: each proposal attaches traceable `CloudDiscoveryEvidence` with resource ID/ARN, provider, region, account/project ID, discovery timestamp, and confidence score.
-  - Human-in-the-loop review: interactive acceptance/rejection of proposed additions before applying to the model.
+Cloud cost estimation and architectural cost overlay engine for DiagramHQ (Phase 10 — Infrastructure Integrations):
+- Attach cloud cost data to infrastructure architecture model objects:
+  - Per-service and per-resource cost models: monthly spend, hourly rate, currency (`USD`, `EUR`, `GBP`), billing period, cost breakdown (base compute, storage, egress/transfer, licenses/support).
+  - Cost categorization: compute, database, storage, networking, messaging, other.
+- Cost rollups and architectural aggregations:
+  - System, group (VPC/VNet/Namespace), and architecture-level rollups.
+  - Per-service rollup grouped by category (compute / db / storage / networking).
+  - Budget thresholds, cost anomalies, and projected monthly growth.
+- Grounded cost evidence:
+  - Traceable `CostEvidence` (`sourceType: 'cloud_billing'`) with billing account ID, meter ID, provider, rate, and calculation timestamp.
+- Canvas UI Integration:
+  - `<CostVisualizationModal />` / Cost overlay badge on canvas: visual cost chips on nodes, cost breakdown by category, currency selector, and budget warning indicators.
 
 Acceptance Criteria:
-- Discover live resources across accounts; propose objects with evidence
-- Test: discovery proposes resources with evidence.
+- Attach cloud cost to infra objects; per-service rollup (compute/db/storage/networking)
+- Test: mocked cost data rolls up per service.
 
-- Feature ID: F083
-- Phase: 10 — Infrastructure Integrations
-- Dependencies: F078, F079, F080, F081, F082, Phase 03, Phase 09
+- Feature ID: F128
+- Phase: 10 — Infrastructure Integrations (Final Feature of Phase 10!)
+- Dependencies: F078, F079, F080, F081, F082, F083, Phase 03, Phase 09
 
 ## Next Steps
-1. In `packages/domain/src/`, implement the cloud resource discovery engine (`cloud-discovery.ts`):
-   - Type definitions: `DiscoveredResource`, `CloudAccountConfig`, `DiscoveryProposal`, `CloudDiscoveryEvidence`, `DiscoveryRunResult`, etc.
-   - Resource discovery scanner across providers (AWS, Azure, GCP, K8s).
-   - Reconciliation logic matching discovered resources against existing `ModelObject` records.
-   - Generation of typed additions/updates with concrete evidence and confidence.
-   - Unit tests in `packages/domain/src/cloud-discovery.test.ts`.
+1. In `packages/domain/src/`, implement the cost visualization domain module (`cost-visualization.ts`):
+   - Type definitions: `CloudCostSpec`, `ResourceCost`, `ServiceCostRollup`, `ArchitectureCostReport`, `CostCategory`, `CostEvidence`.
+   - Functions: `attachCostToObject`, `calculateServiceCostRollup`, `calculateArchitectureCostReport`, `createMockCostDataset`.
+   - Unit tests in `packages/domain/src/cost-visualization.test.ts`.
 2. In `apps/web/`, implement canvas UI components:
-   - `<CloudDiscoveryPanel />` / `<CloudDiscoveryModal />` in `apps/web/components/canvas/cloud-discovery-panel.tsx`.
-   - Integration specs in `apps/web/cloud-discovery.spec.tsx`.
+   - `<CostVisualizationModal />` in `apps/web/components/canvas/cost-panel.tsx`.
+   - Integration specs in `apps/web/cost.spec.tsx`.
 3. Verify with `pnpm typecheck && pnpm lint && pnpm check-architecture && pnpm test && pnpm build`.

@@ -13,23 +13,23 @@ Phase Name: Infrastructure Integrations
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F083
-Feature Name: Cloud resource discovery
+Feature ID: F128
+Feature Name: Cost visualization
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 96
+Completed: 97
 In Progress: 0
 Blocked: 0
-Not Started: 39
-Progress: 71.1%
+Not Started: 38
+Progress: 71.9%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F082 — Kubernetes. Implemented Kubernetes cluster topology and workload manifest import engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Multi-document YAML parser supporting all 14 canonical Kubernetes resource types (Cluster, Namespace, Deployment, StatefulSet, DaemonSet, Job, CronJob, Pod, Service, Ingress, ConfigMap, Secret, PersistentVolume, PersistentVolumeClaim). Maps resources to ModelObject records with proper C4 kinds (group, store, application), multi-tenant namespace containment (groupByNamespace) setting parentId to enclosing namespace group object, and automatic topology connection inference (Ingress -> Service routing, Service -> Workload selector matching, Workload -> PVC storage mounts, PVC -> PV storage bindings, Workload -> ConfigMap/Secret environment bindings). Preserves traceable KubernetesEvidence (sourceType: 'kubernetes_manifest'). Added canvas UI component <KubernetesImportModal />, 5 domain unit tests, and 3 web integration tests.
+F083 — Cloud resource discovery. Implemented live multi-cloud resource discovery and architecture proposal engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Discovers live infrastructure resources across accounts and subscriptions (AWS, Azure, GCP, Kubernetes), classifying resources into functional categories (compute, database, storage, networking, messaging, security) with deterministic C4 ModelObjectKind mapping. Reconciles live resources against existing architecture models, generating proposals with concrete CloudDiscoveryEvidence (sourceType: 'cloud_discovery', confidence >= 0.9, provider, account, region, matchReason) for creates (unmapped assets), updates (reconfigured attributes/status), drifts (terminated backing resources), and exact matches. Supports proposal execution (applyDiscoveryProposals). Added canvas UI component <CloudDiscoveryModal />, 7 domain unit tests, and 3 web integration tests.
 
-Prior: F081 — Terraform. Implemented Google Cloud Platform cloud infrastructure import and topology mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Maps all 17 canonical GCP resource types (GCE, GKE, Cloud Run, Cloud Functions, App Engine, Cloud SQL, Spanner, Bigtable, Firestore, GCS, VPC, Cloud LB, Cloud CDN, API Gateway, Pub/Sub, Eventarc, Cloud Tasks) to typed `ModelObject` instances with hierarchical VPC containment, derives inter-service `ModelConnection` interactions (origin cache fetch, LB ingress, API Gateway proxying, database queries, async pub/sub, Eventarc triggers, Cloud Tasks dispatch), and preserves traceable `GcpCloudEvidence`. Added canvas UI component `<GcpImportModal />`, 7 domain unit tests, and 3 web integration tests.
+Prior: F082 — Kubernetes. Implemented Google Cloud Platform cloud infrastructure import and topology mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Maps all 17 canonical GCP resource types (GCE, GKE, Cloud Run, Cloud Functions, App Engine, Cloud SQL, Spanner, Bigtable, Firestore, GCS, VPC, Cloud LB, Cloud CDN, API Gateway, Pub/Sub, Eventarc, Cloud Tasks) to typed `ModelObject` instances with hierarchical VPC containment, derives inter-service `ModelConnection` interactions (origin cache fetch, LB ingress, API Gateway proxying, database queries, async pub/sub, Eventarc triggers, Cloud Tasks dispatch), and preserves traceable `GcpCloudEvidence`. Added canvas UI component `<GcpImportModal />`, 7 domain unit tests, and 3 web integration tests.
 
 Prior: F079 — Azure. Implemented Microsoft Azure cloud infrastructure import and topology mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Maps all 15 canonical Azure resource types (VM, App Service, Function App, AKS, Container App, SQL Database, Cosmos DB, Storage Account, VNet, App Gateway, Front Door, API Management, Service Bus, Event Hubs, Event Grid) to typed `ModelObject` instances with hierarchical VNet containment, derives inter-service `ModelConnection` interactions (ingress routing, backend API calls, database queries, async pub/sub), and preserves traceable `AzureCloudEvidence`. Added canvas UI component `<AzureImportModal />`, 7 domain unit tests, and 3 web integration tests.
 
