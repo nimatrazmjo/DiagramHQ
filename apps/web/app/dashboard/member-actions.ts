@@ -2,9 +2,8 @@
 
 import { auth } from '@/auth';
 import { signApiToken } from '@/lib/api-token';
+import { fetchFromApi } from '@/lib/api-fetch';
 import { revalidatePath } from 'next/cache';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export interface UpdateMemberRoleResult {
   success?: boolean;
@@ -32,7 +31,7 @@ export async function updateMemberRoleAction(
       name: session.user.name,
     });
 
-    const res = await fetch(`${API_BASE}/organizations/${orgId}/members/${memberId}`, {
+    const res = await fetchFromApi(`/organizations/${orgId}/members/${memberId}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',

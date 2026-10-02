@@ -11,7 +11,7 @@ function SubmitButton(): JSX.Element {
     <button
       type="submit"
       disabled={pending}
-      className="py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded shadow transition-colors disabled:opacity-50"
+      className="form-button-primary"
     >
       {pending ? 'Creating...' : 'Create Organization'}
     </button>
@@ -29,21 +29,21 @@ export function CreateOrgForm(): JSX.Element {
   }, [state.success]);
 
   return (
-    <form ref={formRef} action={formAction} className="flex flex-col gap-3 max-w-md">
+    <form ref={formRef} action={formAction} className="flex flex-col gap-4 max-w-md">
       {state.error && (
-        <div role="alert" className="p-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded">
+        <div role="alert" className="form-alert-error">
           {state.error}
         </div>
       )}
 
       {state.success && (
-        <div role="status" className="p-3 text-sm text-green-700 bg-green-50 border border-green-200 rounded">
+        <div role="status" className="form-alert-success">
           Organization created successfully!
         </div>
       )}
 
       <div>
-        <label htmlFor="name" className="block text-xs font-semibold text-gray-700 uppercase mb-1">
+        <label htmlFor="name" className="form-label">
           Organization Name
         </label>
         <input
@@ -54,13 +54,13 @@ export function CreateOrgForm(): JSX.Element {
           minLength={2}
           maxLength={64}
           placeholder="e.g. Acme Corp"
-          className="w-full px-3 py-1.5 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="form-input"
         />
       </div>
 
       <div>
-        <label htmlFor="slug" className="block text-xs font-semibold text-gray-700 uppercase mb-1">
-          Slug <span className="text-gray-400 font-normal">(optional)</span>
+        <label htmlFor="slug" className="form-label">
+          Slug <span className="text-gray-400 font-normal lowercase">(optional)</span>
         </label>
         <input
           id="slug"
@@ -68,7 +68,7 @@ export function CreateOrgForm(): JSX.Element {
           type="text"
           maxLength={64}
           placeholder="e.g. acme-corp"
-          className="w-full px-3 py-1.5 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="form-input"
         />
       </div>
 

@@ -120,11 +120,13 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
   };
 
   const renderInput = (label: string, field: string) => {
-    let value = (metadata[field] as string) || '';
-    if (field === 'name' && !value) {
-      value = (metadata.label as string) || objectName || '';
-    } else if (field === 'description' && !value) {
-      value = (metadata.description as string) || '';
+    let value = metadata[field] != null ? String(metadata[field]) : undefined;
+    if (field === 'name' && value === undefined) {
+      value = (metadata.label != null ? String(metadata.label) : undefined) ?? objectName ?? '';
+    } else if (field === 'description' && value === undefined) {
+      value = (metadata.description != null ? String(metadata.description) : undefined) ?? '';
+    } else if (value === undefined) {
+      value = '';
     }
 
     return (
@@ -270,7 +272,13 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
                 {objectId ? (
                   <input
                     type="text"
-                    value={(metadata.name as string) || (metadata.label as string) || objectName || ''}
+                    value={
+                      metadata.name != null
+                        ? String(metadata.name)
+                        : metadata.label != null
+                        ? String(metadata.label)
+                        : objectName || ''
+                    }
                     onChange={(e) => handleFieldChange('name', e.target.value)}
                     placeholder="Object name..."
                     className="font-bold text-sm text-slate-100 bg-transparent hover:bg-slate-800/80 focus:bg-slate-800 focus:ring-1 focus:ring-blue-500 rounded px-1.5 py-0.5 -ml-1.5 w-full truncate transition-colors outline-none"

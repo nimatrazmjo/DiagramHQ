@@ -2,9 +2,8 @@
 
 import { auth } from '@/auth';
 import { signApiToken } from '@/lib/api-token';
+import { fetchFromApi } from '@/lib/api-fetch';
 import { revalidatePath } from 'next/cache';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export interface ActionState {
   error?: string | null;
@@ -51,7 +50,7 @@ export async function createWorkspaceAction(
       name: session.user.name,
     });
 
-    const res = await fetch(`${API_BASE}/organizations/${effectiveOrgId}/workspaces`, {
+    const res = await fetchFromApi(`/organizations/${effectiveOrgId}/workspaces`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -127,7 +126,7 @@ export async function fetchOrgWorkspaces(
       name: session.user.name,
     });
 
-    const res = await fetch(`${API_BASE}/organizations/${orgId}/workspaces`, {
+    const res = await fetchFromApi(`/organizations/${orgId}/workspaces`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

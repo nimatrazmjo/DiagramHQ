@@ -242,6 +242,8 @@ function toFlowEdge(edge: CanvasEdge): Edge {
     id: edge.id,
     source: edge.source,
     target: edge.target,
+    sourceHandle: edge.sourceHandle ?? (edge.data?.sourceHandle as string | undefined),
+    targetHandle: edge.targetHandle ?? (edge.data?.targetHandle as string | undefined),
     type: edge.type && edge.type !== 'default' && edge.type !== 'smoothstep' ? edge.type : 'icepanel',
     label: edge.label,
     animated: edge.animated,
@@ -938,12 +940,51 @@ function InfiniteCanvasContent({
   );
 
   useEffect(() => {
-    setNodes(initialNodes.map(toFlowNode));
-  }, [initialNodes]);
+    setNodes((currentNodes) => {
+      const currentMap = new Map(currentNodes.map((n) => [n.id, n]));
+      return initialNodes.map((node) => {
+        const existing = currentMap.get(node.id);
+        const flowNode = toFlowNode(node);
+        if (existing) {
+          const isSelected =
+            node.selected ??
+            (propSelectedNodeIds ? propSelectedNodeIds.includes(node.id) : existing.selected);
+
+          return {
+            ...existing,
+            ...flowNode,
+            selected: isSelected,
+            position: node.position ?? existing.position,
+            data: { ...existing.data, ...flowNode.data },
+          };
+        }
+        return flowNode;
+      });
+    });
+  }, [initialNodes, propSelectedNodeIds]);
 
   useEffect(() => {
-    setEdges(initialEdges.map(toFlowEdge));
-  }, [initialEdges]);
+    setEdges((currentEdges) => {
+      const currentMap = new Map(currentEdges.map((e) => [e.id, e]));
+      return initialEdges.map((edge) => {
+        const existing = currentMap.get(edge.id);
+        const flowEdge = toFlowEdge(edge);
+        if (existing) {
+          const isSelected =
+            edge.selected ??
+            (propSelectedEdgeIds ? propSelectedEdgeIds.includes(edge.id) : existing.selected);
+
+          return {
+            ...existing,
+            ...flowEdge,
+            selected: isSelected,
+            data: { ...existing.data, ...flowEdge.data },
+          };
+        }
+        return flowEdge;
+      });
+    });
+  }, [initialEdges, propSelectedEdgeIds]);
 
   // Keyboard shortcut listener: Space for pan, 'F' for fit-to-content, Escape for clearing selection, Delete/Backspace for removal
   useEffect(() => {
@@ -1027,6 +1068,11 @@ function InfiniteCanvasContent({
       const selectedNodeIds = selectedNodes.map((n) => n.id);
       const selectedEdgeIds = selectedEdges.map((e) => e.id);
 
+      // Prevent dropping selection if the user is currently editing an input or textarea
+      if (selectedNodeIds.length === 0 && selectedEdgeIds.length === 0 && isTextInput(document.activeElement)) {
+        return;
+      }
+
       useCanvasStore.getState().setSelectedNodes(selectedNodeIds);
       useCanvasStore.getState().setSelectedEdges(selectedEdgeIds);
 
@@ -1038,6 +1084,15 @@ function InfiniteCanvasContent({
       }
     },
     [onNodeSelect, onEdgeSelect]
+  );
+
+  const handleEdgeClick = useCallback(
+    (_event: React.MouseEvent, edge: Edge) => {
+      if (onEdgeSelect) {
+        onEdgeSelect(edge.id);
+      }
+    },
+    [onEdgeSelect]
   );
 
   const onMoveEnd = useCallback((_event: unknown, viewport: Viewport) => {
@@ -1111,9 +1166,11 @@ function InfiniteCanvasContent({
         edges={displayedEdges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
+        defaultEdgeOptions={{ type: 'icepanel' }}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onEdgeClick={handleEdgeClick}
         onSelectionChange={onSelectionChange}
         onPaneClick={onPaneClick}
         onMoveEnd={onMoveEnd}
@@ -1165,48 +1222,50 @@ function InfiniteCanvasContent({
           </Panel>
         )}
 
-        {/* Top-Left Canvas Badge */}
-        <Panel position="top-left" className="m-3">
-          <div
-            data-testid="canvas-status-badge"
-            className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-slate-900/90 border border-slate-700/80 shadow-md backdrop-blur-sm text-xs font-mono text-slate-300"
-          >
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Infinite Canvas — React Flow Renderer (ADR-0002)</span>
-            {isSpacePanning && (
-              <span
-                data-testid="pan-mode-indicator"
-                className="ml-2 px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px]"
-              >
-                PAN MODE (SPACE)
-              </span>
-            )}
-            {isFocusMode && (
-              <span
-                data-testid="focus-mode-badge"
-                className="ml-2 px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px]"
-              >
-                FOCUS MODE {selectedNodeIds.length > 0 ? `(${selectedNodeIds.length} ISOLATED)` : '(SELECT TO ISOLATE)'}
-              </span>
-            )}
-            {totalSelected > 1 && (
-              <span
-                data-testid="multi-selection-badge"
-                className="ml-2 px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-300 border border-violet-500/40 text-[10px]"
-              >
-                MULTI-SELECT ({selectedNodeIds.length} OBJECTS)
-              </span>
-            )}
-            {totalSelected === 1 && (
-              <span
-                data-testid="selection-badge"
-                className="ml-2 px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px]"
-              >
-                1 SELECTED (ESC TO CLEAR)
-              </span>
-            )}
-          </div>
-        </Panel>
+        {/* Active Mode & Selection Indicators */}
+        {(isSpacePanning || isFocusMode || totalSelected > 0) ? (
+          <Panel position="top-left" className="m-3">
+            <div
+              data-testid="canvas-status-badge"
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-slate-900/90 border border-slate-700/80 shadow-md backdrop-blur-sm text-xs font-mono text-slate-300"
+            >
+              {isSpacePanning && (
+                <span
+                  data-testid="pan-mode-indicator"
+                  className="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px]"
+                >
+                  PAN MODE (SPACE)
+                </span>
+              )}
+              {isFocusMode && (
+                <span
+                  data-testid="focus-mode-badge"
+                  className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px]"
+                >
+                  FOCUS MODE {selectedNodeIds.length > 0 ? `(${selectedNodeIds.length} ISOLATED)` : '(SELECT TO ISOLATE)'}
+                </span>
+              )}
+              {totalSelected > 1 && (
+                <span
+                  data-testid="multi-selection-badge"
+                  className="px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-300 border border-violet-500/40 text-[10px]"
+                >
+                  MULTI-SELECT ({selectedNodeIds.length} OBJECTS)
+                </span>
+              )}
+              {totalSelected === 1 && (
+                <span
+                  data-testid="selection-badge"
+                  className="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px]"
+                >
+                  1 SELECTED (ESC TO CLEAR)
+                </span>
+              )}
+            </div>
+          </Panel>
+        ) : (
+          <div data-testid="canvas-status-badge" className="hidden" aria-hidden="true" />
+        )}
 
         {/* Top-Right Pan & Zoom Controls Toolbar */}
         <Panel position="top-right" className="m-3">

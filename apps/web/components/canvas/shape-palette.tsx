@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 export type ShapeKind =
   | 'system'
@@ -87,7 +87,7 @@ const SHAPES: Array<{
 ];
 
 /**
- * ShapePalette renders an interactive node creation bar and template picker
+ * ShapePalette renders an interactive node creation dropdown and template picker
  * for drawing diagrams directly on the canvas without requiring auth.
  */
 export function ShapePalette({
@@ -98,32 +98,108 @@ export function ShapePalette({
   disabled = false,
   className = '',
 }: ShapePaletteProps): JSX.Element {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
+
   return (
     <div
       data-testid="shape-palette"
       className={`flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-900/95 border border-slate-700/80 shadow-xl backdrop-blur-md text-xs text-slate-200 ${className}`}
     >
-      <div className="flex items-center gap-1 pl-1 pr-1.5 text-[11px] font-mono font-medium text-slate-400 select-none">
-        <span className="text-slate-500">Insert:</span>
-      </div>
-
-      {SHAPES.map((shape) => (
+      {/* Insert Dropdown Container */}
+      <div className="relative" ref={dropdownRef}>
         <button
-          key={shape.kind}
           type="button"
-          data-testid={`add-${shape.kind}-btn`}
-          onClick={() => onAddShape(shape.kind)}
+          data-testid="insert-dropdown-trigger"
+          onClick={() => setIsOpen((prev) => !prev)}
           disabled={disabled}
-          title={shape.title}
-          className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md border bg-slate-950/60 transition-all text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed ${shape.colorClass}`}
+          title="Insert object or service into diagram"
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md border font-medium text-xs transition-all ${
+            isOpen
+              ? 'bg-sky-500/20 border-sky-400 text-sky-200 shadow-sm shadow-sky-500/30'
+              : 'bg-slate-950/70 border-slate-700/80 text-slate-200 hover:border-slate-500 hover:text-white hover:bg-slate-800/80'
+          } disabled:opacity-40 disabled:cursor-not-allowed`}
         >
-          <span className="text-xs" aria-hidden="true">
-            {shape.icon}
-          </span>
-          <span className="hidden sm:inline">{shape.label}</span>
-          <span className="sm:hidden">{shape.shortLabel}</span>
+          <span className="text-sky-400 font-bold text-sm leading-none">+</span>
+          <span>Insert</span>
+          <svg
+            className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180 text-sky-400' : ''}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+            aria-hidden="true"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
         </button>
-      ))}
+
+        {/* Dropdown Menu */}
+        <div
+          style={{ display: isOpen ? 'block' : 'none' }}
+          className="absolute left-0 top-full mt-2 w-64 rounded-xl bg-slate-900/98 border border-slate-700/90 shadow-2xl backdrop-blur-xl p-1.5 z-50"
+        >
+          <div className="px-2.5 py-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-400 font-semibold border-b border-slate-800 mb-1 flex items-center justify-between select-none">
+            <span>Insert Object</span>
+            <span className="text-[9px] text-slate-500">7 types</span>
+          </div>
+
+          <div className="flex flex-col gap-0.5">
+            {SHAPES.map((shape) => (
+              <button
+                key={shape.kind}
+                type="button"
+                data-testid={`add-${shape.kind}-btn`}
+                onClick={() => {
+                  onAddShape(shape.kind);
+                  setIsOpen(false);
+                }}
+                disabled={disabled}
+                title={shape.title}
+                className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors hover:bg-slate-800/90 text-slate-200 hover:text-white group disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <span className="w-6 h-6 rounded-md bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-xs group-hover:scale-110 transition-transform flex-shrink-0">
+                  {shape.icon}
+                </span>
+                <div className="flex flex-col min-w-0 flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-slate-100 group-hover:text-sky-300">
+                      {shape.label}
+                    </span>
+                    <span className="text-[9px] font-mono px-1 rounded bg-slate-800 text-slate-400">
+                      {shape.shortLabel}
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-slate-400 truncate leading-tight mt-0.5">
+                    {shape.title}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
 
       {onOpenTemplates && (
         <>
@@ -161,5 +237,3 @@ export function ShapePalette({
     </div>
   );
 }
-
-export default ShapePalette;

@@ -429,7 +429,6 @@ describe('Web Canvas Implementation (F009 - Infinite Canvas)', () => {
 
       expect(html).toContain('data-testid="infinite-canvas-container"');
       expect(html).toContain('data-testid="canvas-status-badge"');
-      expect(html).toContain('Infinite Canvas — React Flow Renderer (ADR-0002)');
       expect(html).toContain('react-flow');
     });
   });

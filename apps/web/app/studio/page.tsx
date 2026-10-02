@@ -290,9 +290,13 @@ export default function StudioPage(): JSX.Element {
       } else if (activeView === 'ownership') {
         data.ownershipView = true;
       }
-      return { ...node, data };
+      return {
+        ...node,
+        selected: node.id === selectedNodeId,
+        data,
+      };
     });
-  }, [currentNodes, activeView, activePersona]);
+  }, [currentNodes, activeView, activePersona, selectedNodeId]);
 
   // Connections formatted for the Inspector
   const incomingConnectionsForSelectedNode = useMemo(() => {
@@ -585,6 +589,8 @@ export default function StudioPage(): JSX.Element {
             key={canvasKey}
             initialNodes={displayNodes}
             initialEdges={currentEdges}
+            selectedNodeIds={selectedNodeId ? [selectedNodeId] : []}
+            selectedEdgeIds={selectedEdgeId ? [selectedEdgeId] : []}
             onNodeSelect={handleNodeSelect}
             onEdgeSelect={handleEdgeSelect}
             showPalette

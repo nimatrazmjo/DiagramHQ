@@ -122,7 +122,7 @@ export default function WorkspaceOverviewPage({
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
             <h2 id="live-canvas-heading" className="text-sm font-semibold uppercase tracking-wider text-slate-400">
-              Interactive Canvas (ADR-0002)
+              Interactive Canvas
             </h2>
           </div>
           <span className="text-xs text-slate-500 font-mono">

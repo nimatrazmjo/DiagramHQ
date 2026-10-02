@@ -42,6 +42,8 @@ export interface CanvasEdge {
   id: string;
   source: string;
   target: string;
+  sourceHandle?: string;
+  targetHandle?: string;
   type?: string;
   label?: string;
   selected?: boolean;

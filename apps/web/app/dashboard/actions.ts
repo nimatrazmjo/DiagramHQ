@@ -2,9 +2,8 @@
 
 import { auth } from '@/auth';
 import { signApiToken } from '@/lib/api-token';
+import { fetchFromApi } from '@/lib/api-fetch';
 import { revalidatePath } from 'next/cache';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export interface ActionState {
   error?: string | null;
@@ -34,7 +33,7 @@ export async function createOrganizationAction(
       name: session.user.name,
     });
 
-    const res = await fetch(`${API_BASE}/organizations`, {
+    const res = await fetchFromApi('/organizations', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -96,7 +95,7 @@ export async function fetchUserOrganizations(): Promise<
       name: session.user.name,
     });
 
-    const res = await fetch(`${API_BASE}/organizations`, {
+    const res = await fetchFromApi('/organizations', {
       headers: {
         Authorization: `Bearer ${token}`,
       },
