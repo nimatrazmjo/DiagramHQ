@@ -39,7 +39,7 @@ Test: seeded violations produce expected lint findings; a clean model is clean.
 
 ### F086 — Architecture rules
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Org-defined rules.
 
