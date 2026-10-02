@@ -13,21 +13,23 @@ Phase Name: Drift and Governance
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F084
-Feature Name: Architecture drift
+Feature ID: F085
+Feature Name: Architecture linting
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 98
+Completed: 99
 In Progress: 0
 Blocked: 0
-Not Started: 37
-Progress: 72.6%
+Not Started: 36
+Progress: 73.3%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F128 — Cost visualization. Implemented cloud infrastructure cost estimation and architectural cost overlay engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Attaches cloud cost data to infrastructure architecture model objects without mutating original objects (attachCostToObject), computes per-service rollups with subtotals across categories (calculateServiceCostRollup across compute, database, storage, networking), generates architecture-wide cost summaries (calculateArchitectureCostReport), and preserves grounded CostEvidence (sourceType: 'cloud_billing', billing account, meter ID, provider, timestamp). Added canvas UI component <CostVisualizationModal />, 4 domain unit tests, and 3 web integration tests. **Phase 10 — Infrastructure Integrations is now 100% COMPLETE (7/7 features)!**
+F084 — Architecture drift. Implemented architecture drift detection and governance engine for DiagramHQ (Phase 11 — Drift and Governance). Compares documented architecture model (objects and connections) against imported/discovered actual infrastructure and code state, surfacing all categories of drift (unmanaged resources, missing resources, attribute mismatches, undocumented connections, missing connections) with grounded DriftEvidence. Supports 3 canonical action workflows: Update Model (reconcileDriftDirectly), Ignore with audit justification (ignoreDriftItem), and Create Change Request (createChangeRequestFromDrift) which generates an ArchitecturePullRequest with visual diff (computeVisualArchitectureDiff), structured change set (computeArchitectureChangeSet), risk scoring, and affected systems. Added canvas UI component <ArchitectureDriftModal />, 4 domain unit tests, and 3 web integration tests.
+
+Prior: F128 — Cost visualization. Implemented cloud infrastructure cost estimation and architectural cost overlay engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Attaches cloud cost data to infrastructure architecture model objects without mutating original objects (attachCostToObject), computes per-service rollups with subtotals across categories (calculateServiceCostRollup across compute, database, storage, networking), generates architecture-wide cost summaries (calculateArchitectureCostReport), and preserves grounded CostEvidence (sourceType: 'cloud_billing', billing account, meter ID, provider, timestamp). Added canvas UI component <CostVisualizationModal />, 4 domain unit tests, and 3 web integration tests. **Phase 10 — Infrastructure Integrations is now 100% COMPLETE (7/7 features)!**
 
 Prior: F083 — Cloud resource discovery. Implemented Google Cloud Platform cloud infrastructure import and topology mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Maps all 17 canonical GCP resource types (GCE, GKE, Cloud Run, Cloud Functions, App Engine, Cloud SQL, Spanner, Bigtable, Firestore, GCS, VPC, Cloud LB, Cloud CDN, API Gateway, Pub/Sub, Eventarc, Cloud Tasks) to typed `ModelObject` instances with hierarchical VPC containment, derives inter-service `ModelConnection` interactions (origin cache fetch, LB ingress, API Gateway proxying, database queries, async pub/sub, Eventarc triggers, Cloud Tasks dispatch), and preserves traceable `GcpCloudEvidence`. Added canvas UI component `<GcpImportModal />`, 7 domain unit tests, and 3 web integration tests.
 

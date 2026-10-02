@@ -13,12 +13,12 @@ Statuses (use ONLY these): NOT STARTED · IN PROGRESS · BLOCKED · IN REVIEW ·
 _Computed from this file. Update on every status change. Contract for an auto-counter: `scripts/SCRIPTS.md` -> progress-counter._
 
 - Total features: **135**
-- Complete: 98
+- Complete: 99
 - In Progress: 0
 - In Review: 0
 - Blocked: 0
-- Not Started: 37
-- **Progress: 72.6%**
+- Not Started: 36
+- **Progress: 73.3%**
 
 
 Feature IDs are permanent. Never reuse or repurpose an ID. Split a large feature into new IDs (e.g. F018 -> F018 + F135) and keep the history. F001–F108 follow the reference roadmap; F109+ cover master-spec items not in the reference list.
@@ -222,11 +222,11 @@ Status: COMPLETE  ·  Depends on: Phase 03, Phase 09  ·  File: `phases/PHASE-10
 
 # Phase 11 — Drift and Governance
 
-Status: NOT STARTED  ·  Depends on: Phase 03, Phase 09, Phase 10  ·  File: `phases/PHASE-11-DRIFT-AND-GOVERNANCE.md`
+Status: IN PROGRESS  ·  Depends on: Phase 03, Phase 09, Phase 10  ·  File: `phases/PHASE-11-DRIFT-AND-GOVERNANCE.md`
 
 ## Features
 
-- [ ] F084 — Architecture drift
+- [x] F084 — Architecture drift
 - [ ] F085 — Architecture linting
 - [ ] F086 — Architecture rules
 - [ ] F087 — Dependency analysis
