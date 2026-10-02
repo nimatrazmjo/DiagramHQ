@@ -25,3 +25,4 @@ export * from './notification-center';
 export * from './version-history';
 export * from './snapshot-modal';
 export * from './branch-selector';
+export * from './visual-diff-viewer';
