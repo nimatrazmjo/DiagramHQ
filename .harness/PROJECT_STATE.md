@@ -13,21 +13,23 @@ Phase Name: AI Copilot
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F120
-Feature Name: AI evidence + confidence
+Feature ID: F121
+Feature Name: Specialized agents
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 77
+Completed: 78
 In Progress: 0
 Blocked: 0
-Not Started: 58
-Progress: 57.0%
+Not Started: 57
+Progress: 57.8%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F071 — MCP integration. Pure Model Context Protocol (MCP) server implementation for DiagramHQ (Phase 08 — AI Copilot). Exposes 14 standard MCP tools for querying, inspecting, and proposing modifications to architecture models: read/query tools (`search_architecture`, `get_object`, `get_dependencies`, `get_dependents`, `analyze_impact`, `compare_versions`, `review_change`) and mutating authoring tools (`create_object`, `update_object`, `delete_object`, `create_diagram`, `create_flow`, `create_change`, `create_adr`). Strict invariant enforced: mutating tools return a reviewable proposal with `isProposal: true, requiresApproval: true`, never committing silent mutations. Added canvas UI components `<MCPStatusBadge />` and `<MCPInspectorModal />`, 4 domain unit tests, and 3 web integration tests.
+F120 — AI evidence + confidence. Pure AI Evidence and Confidence scoring engine for DiagramHQ (Phase 08 — AI Copilot). Enforces the core invariant that every AI assertion, generated dependency, architectural edit, or synthesized claim must be anchored to concrete source evidence (repo, file path, line numbers, symbols, commit SHA, configuration rules) accompanied by a mathematically calibrated confidence score (0.00 to 1.00). Evaluates corroborating evidence bonuses, penalizes missing locations or heuristic-only assertions, and automatically flags low-confidence inferences below threshold (< 0.60) with diagnostic warnings and human verification requirements. Added canvas UI components `<ConfidenceBadge />`, `<AIEvidenceCard />`, and `<AIEvidenceInspector />`, 6 domain unit tests, and 4 web integration tests.
+
+Prior: F071 — MCP integration. Pure Model Context Protocol (MCP) server implementation for DiagramHQ (Phase 08 — AI Copilot). Exposes 14 standard MCP tools for querying, inspecting, and proposing modifications to architecture models: read/query tools (`search_architecture`, `get_object`, `get_dependencies`, `get_dependents`, `analyze_impact`, `compare_versions`, `review_change`) and mutating authoring tools (`create_object`, `update_object`, `delete_object`, `create_diagram`, `create_flow`, `create_change`, `create_adr`). Strict invariant enforced: mutating tools return a reviewable proposal with `isProposal: true, requiresApproval: true`, never committing silent mutations. Added canvas UI components `<MCPStatusBadge />` and `<MCPInspectorModal />`, 4 domain unit tests, and 3 web integration tests.
 
 Prior: F070 — ADR generation. Pure AI Architecture Decision Record (ADR) generator from architecture change sets and pull requests for DiagramHQ (Phase 08 — AI Copilot). Automatically synthesizes structured MADR / Michael Nygard decision records directly grounded in model mutations: context synthesis capturing problem statements and affected downstream components, decision synthesis itemizing provisioned components, new integration channels, refactored services, and decommissioned legacy entities, consequences synthesis detailing positive and negative trade-offs, and alternatives considered. Establishes polymorphic traceability by attaching directly to the source change set (`targetType: 'change'`). Enables human-in-the-loop review and editing (`acceptDraftedADR`) committing the official immutable `ArchitectureDecisionRecord`. Added canvas UI components `<DraftedADRCard />` and `<ADRGenerationModal />`, 3 domain unit tests, and 3 web integration tests.
 

@@ -2,6 +2,29 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F120 — AI evidence + confidence
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ai-confidence.ts`: Pure domain AI Evidence & Confidence scoring engine. Fulfills the requirement that every AI assertion, generated dependency, architectural edit, or synthesized claim must be anchored to concrete source evidence (repo, file path, line numbers, symbols, commit SHA, configuration rules) accompanied by a mathematically calibrated confidence score (0.00 to 1.00). Evaluates corroborating evidence bonuses, penalizes missing locations or heuristic-only assertions, and automatically flags low-confidence inferences below threshold (< 0.60) with diagnostic warnings and human verification requirements.
+  - `ai-confidence.test.ts`: Added 6 unit tests verifying citation formatting, evidence strength calculations, dependency generation with high-confidence code evidence, low-confidence flagging on weak/unanchored evidence, empty evidence handling, and edit proposal grounding.
+  - `index.ts`: Exported `ai-confidence`.
+- Web layer (`apps/web/`):
+  - `components/canvas/ai-confidence-badge.tsx`: Implemented `<ConfidenceBadge />` (reactive confidence status pill with tier colors and score percentages), `<AIEvidenceCard />` (evidence item card displaying source type, strength percentage, code snippet, and formatted citation), and `<AIEvidenceInspector />` (interactive inspector modal supporting claim filtering, low-confidence warning alerts, and human verification).
+  - `components/canvas/index.ts`: Exported AI confidence components.
+  - `ai-confidence.spec.tsx`: Added 4 integration tests verifying that generated dependencies include evidence, low-confidence dependencies are flagged with warnings, evidence cards render citations and strength, and the inspector displays grounded assertions and filter counters.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (156 test suites, 1049 tests passed)
+```
+
 ## 2026-10-02 — F071 — MCP integration
 
 Status: COMPLETE
