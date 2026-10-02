@@ -1,6 +1,6 @@
 # Phase 09 — Code Integrations
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Description
 Close the code -> architecture loop: GitHub/GitLab discovery + code mapping, OpenAPI import, repo sync, catalogs, model-as-code + CLI, webhooks, SDK. Every detected object carries evidence.
@@ -159,7 +159,7 @@ Test: an action fires the expected webhook (test sink).
 
 ### F127 — SDK
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: TypeScript SDK.
 
