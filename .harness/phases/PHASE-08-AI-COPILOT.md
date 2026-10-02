@@ -1,6 +1,6 @@
 # Phase 08 — AI Copilot
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Description
 AI as a first-class surface: grounded Copilot, generation, NL editing (with evidence), explanation, analysis, documentation, review, ADR generation, MCP, and specialized agents. Every AI mutation is a proposed change a human approves.
@@ -156,7 +156,7 @@ Test: a generated dependency includes evidence; low confidence flagged.
 
 ### F121 — Specialized agents
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Role agents on MCP.
 

@@ -2,6 +2,32 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F121 — Specialized agents (Phase 08 Complete)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `specialized-agents.ts`: Implemented 7 specialized role-based architectural AI agents operating directly over DiagramHQ's Model Context Protocol (MCP) tool surface: Analyst Agent (domain boundaries, cohesion, coupling indices, fan-in/fan-out), Designer Agent (C4 container topologies, component boundaries, interface contracts, yielding reviewable proposals), Security Agent (zero-trust threat modeling, perimeter ingress validation, blast-radius calculations), Cloud Agent (infrastructure mapping, multi-AZ high availability resilience, persistent datastores), Documentation Agent (C4 architecture catalog cards and Markdown technical specifications), Migration Agent (phased cutover strategies, Strangler Fig pattern, dual-write replication plans, decommissioning change proposals), and Code Agent (repository-to-model alignment, AST static analysis grounding, drift detection).
+  - Strict invariant enforced: mutating operations yield reviewable proposals (`isProposal: true, requiresApproval: true`), never silent commits.
+  - `specialized-agents.test.ts`: Added 8 unit tests verifying that all 7 agents execute and complete scoped tasks on the MCP tool surface, with mutating operations producing reviewable proposals.
+  - `index.ts`: Exported `specialized-agents`.
+- Web layer (`apps/web/`):
+  - `components/canvas/specialized-agents-panel.tsx`: Implemented `<SpecializedAgentSelector />` (role selector with icons, capability details, preferred MCP tool badges, and custom task instruction launcher), `<SpecializedAgentResultCard />` (structured output viewer showing status, execution timestamp, invoked MCP tools, findings, and reviewable proposal cards with "Approve Proposal" action), and `<SpecializedAgentDrawer />` (modal overlay containing role selection, execution trigger, and activity stream).
+  - `components/canvas/index.ts`: Exported specialized agents components.
+  - `specialized-agents.spec.tsx`: Added 5 integration tests verifying all 7 agents complete scoped tasks, proposal requirements for mutating operations, and UI component rendering.
+- Milestone:
+  - **Phase 08 — AI Copilot is now 100% COMPLETE (12/12 features)!**
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (157 test suites, 1056 tests passed)
+```
+
 ## 2026-10-02 — F120 — AI evidence + confidence
 
 Status: COMPLETE

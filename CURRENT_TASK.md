@@ -1,32 +1,35 @@
-# Current Task: F121 — Specialized agents
+# Current Task: F072 — GitHub
 
 **Status**: NOT STARTED
 
 ## Description
-Specialized AI role-based subagents operating over the Model Context Protocol (MCP) tool surface in DiagramHQ. Dispatches domain-calibrated AI agents tailored to specific architectural disciplines:
-- Specialized Agent Roles:
-  - `Analyst`: inspects models for domain boundaries, cohesion, coupling, and requirement alignment.
-  - `Designer`: generates and evaluates C4 component topology, container layout, and interface schemas.
-  - `Security`: performs automated threat modeling, perimeter ingress validation, and PII exfiltration scans.
-  - `Cloud`: audits infrastructure mapping, multi-AZ high availability, and cloud vendor service selection.
-  - `Documentation`: synthesizes C4 architecture diagrams, Markdown catalogs, and linked ADRs.
-  - `Migration`: formulates transition scenarios, phasing roadmaps, and decommissioning sequences.
-  - `Code`: validates repository code-to-architecture mapping, AST call graphs, and drift detection.
-- Acceptance criteria:
-  - Analyst, Designer, Security, Cloud, Documentation, Migration, Code agents on the MCP surface
-  - Test: each agent completes a scoped task.
+GitHub repository connection and repository code scanner for DiagramHQ. Connects a GitHub repository and statically analyzes repository file trees, manifests (`package.json`, `pom.xml`, `go.mod`, `requirements.txt`, `Cargo.toml`), configuration files (`docker-compose.yml`, `Dockerfile`, Kubernetes manifests, Helm charts), and route handlers to detect:
+- Services & Applications
+- Exposed APIs & Endpoints
+- Databases & Data Stores (PostgreSQL, Redis, MongoDB, MySQL, DynamoDB)
+- Message Queues & Brokers (Kafka, RabbitMQ, SQS)
+- Dependencies, Libraries, Frameworks (NestJS, Express, FastAPI, Gin, Spring Boot)
+- Cloud SDKs (AWS SDK, Google Cloud Client, Azure SDK)
 
-- Feature ID: F121
-- Phase: 08 — AI Copilot
-- Dependencies: F071, F120
+Strict Invariant Enforced:
+- Every detected architectural entity carries concrete grounding evidence (repo name, file path, line numbers, commit SHA, detection method) and confidence scoring (F120).
+- Mutations are formulated as reviewable proposals before addition to the architecture model.
+
+Acceptance Criteria:
+- Connect a repo; detect services, APIs, databases, queues, deps, libs, frameworks, cloud SDKs; each with evidence
+- Test: scan a sample repo -> expected objects proposed with evidence.
+
+- Feature ID: F072
+- Phase: 09 — Code Integrations
+- Dependencies: Phase 03, Phase 08, F120
 
 ## Next Steps
-1. In `packages/domain/src/`, implement specialized role agents (`specialized-agents.ts`):
-   - Define role types (`SpecializedAgentRole = 'analyst' | 'designer' | 'security' | 'cloud' | 'documentation' | 'migration' | 'code'`).
-   - Define agent interface and task execution dispatch (`SpecializedAgentContext`, `SpecializedAgentTask`, `SpecializedAgentResult`).
-   - Implement execution logic for all 7 role agents executing scoped tasks on the MCP tool surface.
-   - Unit tests in `packages/domain/src/specialized-agents.test.ts`.
+1. In `packages/domain/src/`, implement GitHub repo connection and scanner domain logic (`github-scanner.ts`):
+   - Model `GitHubRepoConfig`, `GitHubRepoFile`, `DetectedArchitectureObject`, `GitHubScanResult`.
+   - Manifest scanners for Node.js (`package.json`), Python (`requirements.txt`), Go (`go.mod`), Java (`pom.xml`), Docker/K8s configs.
+   - Grounded detection of services, databases, queues, frameworks, and cloud SDKs with attached `AIEvidence` and confidence rating.
+   - Unit tests in `packages/domain/src/github-scanner.test.ts`.
 2. In `apps/web/`, implement canvas UI components:
-   - `<SpecializedAgentSelector />` and `<SpecializedAgentDrawer />` in `apps/web/components/canvas/specialized-agents-panel.tsx`.
-   - Integration specs in `apps/web/specialized-agents.spec.tsx`.
+   - `<GitHubConnectModal />` and `<GitHubScanResultDrawer />` in `apps/web/components/canvas/github-scanner-panel.tsx`.
+   - Integration specs in `apps/web/github-scanner.spec.tsx`.
 3. Verify with `pnpm typecheck && pnpm lint && pnpm check-architecture && pnpm test && pnpm build`.
