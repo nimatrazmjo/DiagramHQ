@@ -231,8 +231,9 @@ Status: IN PROGRESS  ·  Depends on: Phase 03, Phase 09, Phase 10  ·  File: `ph
 - [x] F086 — Architecture rules
 - [x] F087 — Dependency analysis
 - [x] F088 — Blast-radius analysis
-- [ ] F089 — Failure simulation
+- [x] F089 — Failure simulation
 - [ ] F090 — Security architecture
+
 - [ ] F091 — Data lineage
 - [ ] F129 — Architecture health
 - [ ] F130 — Circular + SPOF detection

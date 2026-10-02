@@ -77,7 +77,8 @@ Test: blast-radius counts are correct.
 
 ### F089 — Failure simulation
 
-Status: NOT STARTED
+Status: COMPLETE
+
 
 Description: Simulate outages.
 
