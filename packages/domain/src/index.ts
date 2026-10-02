@@ -37,3 +37,4 @@ export * from './mentions';
 export * from './share-links';
 export * from './permissions';
 export * from './teams';
+export * from './notifications';
