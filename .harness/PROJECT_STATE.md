@@ -13,21 +13,23 @@ Phase Name: Flows
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F044
-Feature Name: Flow playback
+Feature ID: F045
+Feature Name: User journeys
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 45
+Completed: 46
 In Progress: 0
 Blocked: 0
-Not Started: 90
-Progress: 33.3%
+Not Started: 89
+Progress: 34.1%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F043 — Flow visualization. Highlight flow path over existing architecture. Added `projectFlowToCanvas()` domain projection (4 unit tests), `<FlowBadges />` UI component, node dimming/highlighting integration across all node types, animated edge glow and step pill badges in `icepanel-edge.tsx`, and web integration suite in `flow-visualization.spec.ts` (4 tests).
+F044 — Flow playback. Animated step-by-step playback through sequence flows. Pure domain state machine in `flow-playback.ts` (8 unit tests), canvas playback toolbar `<FlowPlaybackToolbar />` with play/pause/step/restart/speed/loop controls, and web integration suite in `flow-playback.spec.ts` (4 tests).
+
+Prior: F043 — Flow visualization. Highlight flow path over existing architecture. Added `projectFlowToCanvas()` domain projection (4 unit tests), `<FlowBadges />` UI component, node dimming/highlighting integration across all node types, animated edge glow and step pill badges in `icepanel-edge.tsx`, and web integration suite in `flow-visualization.spec.ts` (4 tests).
 
 Prior: F042 — Flow steps. Ordered, annotated steps. Added `addFlowStep()`, `removeFlowStep()`, `annotateFlowStep()`, `reorderFlowStepsByIndex()`, and `reorderFlowStepList()` to domain (5 tests), added step endpoints and unit tests to API (5 tests), and added web integration spec in `flow-steps.spec.ts` (4 tests).
 
@@ -48,16 +50,16 @@ Prior: F038 — Security views. Added projection wrappers and custom badge compo
 Prior: F037 — Saved views. Added `isStarred` property to views, with `PATCH /views/:viewId` endpoint. Validated by 2 new e2e tests in `saved-views.e2e.spec.ts`.
 
 ## Current Work
-F044 — Flow playback. Animated playback with play, pause, next, previous, speed, and restart controls.
+F045 — User journeys. Flow type with actor/persona step context and journey playback.
 
 ## Next Task
-F044 — Flow playback. Animated playback with play, pause, next, previous, speed, and restart controls.
+F045 — User journeys. Flow type with actor/persona step context and journey playback.
 
 ## Last Verified
-F043 @ feat/F043-flow-visualization — typecheck / lint / tests (177 domain + 318 web + 270 api = 765 total) / check-architecture / pnpm build all green.
+F044 @ feat/F044-flow-playback — typecheck / lint / tests (185 domain + 314 web + 270 api = 769 total) / check-architecture / pnpm build all green.
 
 ## Current Git Commit
-Working tree: on branch `feat/F043-flow-visualization`.
+Working tree: on branch `feat/F044-flow-playback`.
 
 
 

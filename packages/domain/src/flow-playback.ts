@@ -1,0 +1,189 @@
+import { InvariantViolationError } from './invariants';
+import type { FlowWithSteps } from './types';
+
+export interface FlowPlaybackState {
+  readonly flowId: string;
+  readonly totalSteps: number;
+  readonly currentStepIndex: number;
+  readonly isPlaying: boolean;
+  readonly speedMultiplier: number;
+  readonly isLooping: boolean;
+}
+
+export const DEFAULT_STEP_INTERVAL_MS = 2000;
+export const ALLOWED_SPEED_MULTIPLIERS = [0.5, 1, 1.5, 2] as const;
+
+export interface CreateFlowPlaybackOptions {
+  initialSpeed?: number;
+  isLooping?: boolean;
+  autoPlay?: boolean;
+}
+
+/**
+ * Initializes a new playback state for a given flow (F044).
+ */
+export function createFlowPlayback(
+  flow: FlowWithSteps,
+  options?: CreateFlowPlaybackOptions,
+): FlowPlaybackState {
+  const totalSteps = flow.steps ? flow.steps.length : 0;
+  const speed = options?.initialSpeed ?? 1;
+
+  if (speed <= 0) {
+    throw new InvariantViolationError(
+      `Speed multiplier must be positive, received: ${speed}`,
+      'INVALID_PLAYBACK_SPEED',
+    );
+  }
+
+  return {
+    flowId: flow.id,
+    totalSteps,
+    currentStepIndex: 0,
+    isPlaying: Boolean(options?.autoPlay && totalSteps > 0),
+    speedMultiplier: speed,
+    isLooping: Boolean(options?.isLooping),
+  };
+}
+
+/**
+ * Starts or resumes playback.
+ */
+export function playFlow(state: FlowPlaybackState): FlowPlaybackState {
+  if (state.totalSteps === 0) {
+    return state;
+  }
+
+  // If at the end, restart from step 0 upon pressing play
+  const currentStepIndex =
+    state.currentStepIndex >= state.totalSteps - 1 && !state.isPlaying
+      ? 0
+      : state.currentStepIndex;
+
+  return {
+    ...state,
+    currentStepIndex,
+    isPlaying: true,
+  };
+}
+
+/**
+ * Pauses playback.
+ */
+export function pauseFlow(state: FlowPlaybackState): FlowPlaybackState {
+  return {
+    ...state,
+    isPlaying: false,
+  };
+}
+
+/**
+ * Advances playback to the next step.
+ * If at the last step:
+ * - loops back to index 0 if isLooping is enabled
+ * - pauses playback if isLooping is disabled
+ */
+export function nextFlowStep(state: FlowPlaybackState): FlowPlaybackState {
+  if (state.totalSteps <= 1) {
+    return state;
+  }
+
+  if (state.currentStepIndex < state.totalSteps - 1) {
+    return {
+      ...state,
+      currentStepIndex: state.currentStepIndex + 1,
+    };
+  }
+
+  // At the last step
+  if (state.isLooping) {
+    return {
+      ...state,
+      currentStepIndex: 0,
+    };
+  }
+
+  return {
+    ...state,
+    isPlaying: false,
+  };
+}
+
+/**
+ * Steps back to the previous step, clamped at 0.
+ */
+export function prevFlowStep(state: FlowPlaybackState): FlowPlaybackState {
+  if (state.totalSteps === 0) {
+    return state;
+  }
+
+  return {
+    ...state,
+    currentStepIndex: Math.max(0, state.currentStepIndex - 1),
+  };
+}
+
+/**
+ * Restarts playback from step 0.
+ */
+export function restartFlow(
+  state: FlowPlaybackState,
+  autoPlay = true,
+): FlowPlaybackState {
+  return {
+    ...state,
+    currentStepIndex: 0,
+    isPlaying: autoPlay && state.totalSteps > 0,
+  };
+}
+
+/**
+ * Sets playback speed multiplier (e.g., 0.5x, 1x, 2x).
+ */
+export function setFlowSpeed(
+  state: FlowPlaybackState,
+  speedMultiplier: number,
+): FlowPlaybackState {
+  if (speedMultiplier <= 0) {
+    throw new InvariantViolationError(
+      `Speed multiplier must be positive, received: ${speedMultiplier}`,
+      'INVALID_PLAYBACK_SPEED',
+    );
+  }
+
+  return {
+    ...state,
+    speedMultiplier,
+  };
+}
+
+/**
+ * Directly seeks to a specific step index. Clamps index to valid bounds.
+ */
+export function seekFlowStep(
+  state: FlowPlaybackState,
+  stepIndex: number,
+): FlowPlaybackState {
+  if (state.totalSteps === 0) {
+    return state;
+  }
+
+  const clamped = Math.max(0, Math.min(stepIndex, state.totalSteps - 1));
+  return {
+    ...state,
+    currentStepIndex: clamped,
+  };
+}
+
+/**
+ * Computes interval duration in milliseconds for current speed.
+ */
+export function computeStepIntervalMs(
+  baseDurationMs = DEFAULT_STEP_INTERVAL_MS,
+  speedMultiplier = 1,
+): number {
+  if (speedMultiplier <= 0) {
+    return baseDurationMs;
+  }
+  return Math.round(baseDurationMs / speedMultiplier);
+}

@@ -2,6 +2,34 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F044 — Flow playback
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `flow-playback.ts`: Pure domain state machine for flow playback (`createFlowPlayback`, `playFlow`, `pauseFlow`, `nextFlowStep`, `prevFlowStep`, `restartFlow`, `setFlowSpeed`, `seekFlowStep`, `computeStepIntervalMs`). Zero external dependencies, pure immutable updates.
+  - `flow-playback.test.ts`: Added 8 unit tests covering initialization, play, pause, bounds checking, forward/backward navigation, step restart, loop-around semantics, speed setting, and interval computation.
+  - `index.ts`: Exported flow playback types and functions.
+- Web layer (`apps/web/`):
+  - `components/canvas/flow-playback-toolbar.tsx`: Added `<FlowPlaybackToolbar />` component featuring Play/Pause toggle, Previous/Next step buttons, Restart, Step counter/scrubber, Speed selector (`0.5x`, `1x`, `2x`, `4x`), and Loop toggle.
+  - `components/canvas/index.ts`: Exported `FlowPlaybackToolbar`.
+  - `flow-playback.spec.ts`: Added 4 integration tests verifying playback advancement, loop behavior, speed adjustments, and UI component rendering.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm --filter @diagramhq/domain test → 185 passed (27 test files)
+pnpm --filter @diagramhq/web test    → 314 passed (39 test files)
+pnpm test                            → 769 passed across all workspaces
+branch: feat/F044-flow-playback
+```
+
+Evaluator scores: acceptance=5, correctness=5, boundaries=5, modularity=5, evidence=5 => avg 5.0 — PASS
+
 ## 2026-10-02 — F043 — Flow visualization
 
 Status: COMPLETE
