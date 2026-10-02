@@ -33,3 +33,4 @@ export * from './adr-drawer';
 export * from './scenario-modal';
 export * from './roadmap-panel';
 export * from './ai-copilot-panel';
+export * from './ai-generation-modal';

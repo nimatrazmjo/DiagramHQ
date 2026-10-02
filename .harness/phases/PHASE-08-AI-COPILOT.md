@@ -24,7 +24,7 @@ Test: 'why does X depend on Y' cites the real connection.
 
 ### F063 — Architecture generation
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: NL -> model.
 
