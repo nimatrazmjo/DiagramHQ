@@ -20,3 +20,4 @@ export * from './comments-panel';
 export * from './mention-task-badge';
 export * from './share-link-modal';
 export * from './permission-guard';
+export * from './team-badge';

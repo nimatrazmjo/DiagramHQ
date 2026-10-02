@@ -13,21 +13,23 @@ Phase Name: Collaboration
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F054
-Feature Name: Team management
+Feature ID: F116
+Feature Name: Notifications
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 55
+Completed: 56
 In Progress: 0
 Blocked: 0
-Not Started: 80
-Progress: 40.7%
+Not Started: 79
+Progress: 41.5%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F053 — Permissions. Full role catalog (Owner, Admin, Editor, Viewer, Guest) with permission evaluator, strict assertions, per-workspace overrides, and per-diagram overrides. Added pure domain permissions engine (`canPerform`, `assertPermission`, `getAllowedActions`, `PermissionDeniedError`), `<RoleBadge />` and `<PermissionGuard />` web components, 7 domain unit tests, and 5 web integration tests.
+F054 — Team management. Pure team management and object ownership domain logic. Supports team lifecycle (creation, slug derivation, member management, team leads), object ownership attachment (primary owner team, backup owner team, contact leads), and filtering architecture models/objects by owner team ("show everything owned by X"). Added UI components `<TeamBadge />` and `<OwnershipFilterSelector />`, 6 domain unit tests, and 4 web integration tests.
+
+Prior: F053 — Permissions. Full role catalog (Owner, Admin, Editor, Viewer, Guest) with permission evaluator, strict assertions, per-workspace overrides, and per-diagram overrides. Added pure domain permissions engine (`canPerform`, `assertPermission`, `getAllowedActions`, `PermissionDeniedError`), `<RoleBadge />` and `<PermissionGuard />` web components, 7 domain unit tests, and 5 web integration tests.
 
 Prior: F052 — Share links. Read-only share links preserving viewer position, zoom, and active selection without requiring an account. Added pure share-links token engine (`createShareLink`, `encodeShareLinkToken`, `decodeShareLinkToken`, `verifyShareLink`, `resolveAnonymousViewState`, `generateShareLinkUrl`), `'shl'` prefix to `ids.ts`, `<ShareLinkModal />` and `<ReadOnlyBanner />` to web UI, 6 domain unit tests, and 4 web integration tests.
 
