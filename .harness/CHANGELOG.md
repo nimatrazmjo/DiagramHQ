@@ -2,6 +2,35 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F052 — Share links
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ids.ts`: Added `'shl'` prefix to `IdPrefix` and declared `ShareLinkId` brand type.
+  - `share-links.ts`: Pure share links engine supporting `ShareLinkPayload`, `ShareLinkCameraState`, and `AnonymousViewState`. Implemented `createShareLink()`, `encodeShareLinkToken()`, `decodeShareLinkToken()`, `verifyShareLink()`, `resolveAnonymousViewState()`, and `generateShareLinkUrl()`.
+  - `share-links.test.ts`: Added 6 unit tests verifying link creation, token encoding/decoding, expiration enforcement, and state preservation.
+  - `index.ts`: Exported `share-links`.
+- Web layer (`apps/web/`):
+  - `components/canvas/share-link-modal.tsx`: Added `<ShareLinkModal />` with camera and selection preservation options, and `<ReadOnlyBanner />` component indicating read-only shared view.
+  - `components/canvas/index.ts`: Exported share links components.
+  - `share-links.spec.tsx`: Added 4 integration tests verifying anonymous view state preservation, expiration rejection, and component rendering.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm --filter @diagramhq/domain test → 239 passed (35 test files)
+pnpm --filter @diagramhq/web test    → 361 passed (49 test files)
+pnpm test                            → 870 passed across all workspaces (239 domain, 361 web, 270 api)
+branch: feat/F052-share-links
+```
+
+Evaluator scores: acceptance=5, correctness=5, boundaries=5, modularity=5, evidence=5 => avg 5.0 — PASS
+
 ## 2026-10-02 — F051 — Mentions
 
 Status: COMPLETE
