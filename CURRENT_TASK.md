@@ -1,23 +1,27 @@
-# Current Task: F064 — Natural-language editing
+# Current Task: F065 — Architecture explanation
 
 **Status**: NOT STARTED
 
 ## Description
-Natural-language architectural editing engine. Supports precise natural-language modifications to existing architecture models (e.g., 'add Redis between A and B', 'swap Postgres for DynamoDB', 'remove obsolete auth proxy'). Strictly adheres to the core architecture rule: every AI edit is presented as an explicit proposed change set (added, modified, removed entities) with clear Apply and Reject actions. Rejecting changes nothing; applying updates the live model.
-- Feature ID: F064
+Multi-altitude architecture explanation engine. Generates grounded explanations of systems, flows, components, and architectural decisions tailored to specific audience altitudes:
+- Technical altitude (Engineer / Tech Lead): Detailed protocol, synchronous vs asynchronous semantics, data structures, concurrency, failure modes, error handling.
+- Architectural altitude (Solutions / Enterprise Architect): Component boundaries, coupling, patterns, data ownership, integration topologies, scalability trade-offs.
+- Executive altitude (VP / CTO): Business value, operational cost, reliability posture, team ownership, risk factors, time-to-market.
+Strict invariant: All generated explanations must be grounded in and directly cite real model entities (objects, connections, flows, ADRs).
+
+- Feature ID: F065
 - Phase: 08 — AI Copilot
-- Dependencies: Phase 03, Phase 04, Phase 05, Phase 07, F062, F063
+- Dependencies: Phase 03, Phase 04, Phase 05, Phase 07, F062, F063, F064
 - Acceptance criteria:
-  - NL edit -> explicit added/modified/removed with Apply/Reject; never silent
-  - Test: 'add Redis between A and B' proposes exactly that; Reject changes nothing.
+  - Explain a system/flow/decision at a chosen altitude (engineer -> CTO)
+  - Test: explanation references real objects.
 
 ## Next Steps
-1. Review `PHASE-08-AI-COPILOT.md` for F064 acceptance criteria.
-2. In `packages/domain/src/`, implement NL editing engine (`ai-editing.ts`):
-   - Interfaces: `NLEditInstruction`, `NLEditProposal`, `generateEditProposalFromInstruction`, `applyEditProposal`, `rejectEditProposal`.
-   - Recognizes additions (e.g., "add Redis between A and B"), modifications (tech stack / label edits), and removals.
-   - Unit tests in `packages/domain/src/ai-editing.test.ts`.
-3. In `apps/web/`, implement canvas UI components and edit proposal preview:
-   - `<NLEditModal />` and `<NLEditProposalCard />`.
-   - Integration specs in `apps/web/ai-editing.spec.tsx`.
-4. Verify with `pnpm typecheck && pnpm lint && pnpm check-architecture && pnpm test && pnpm build`.
+1. In `packages/domain/src/`, implement architecture explanation engine (`ai-explanation.ts`):
+   - Types: `AudienceAltitude` ('engineer' | 'architect' | 'executive'), `ExplainTarget` (system, flow, object, adr), `ArchitectureExplanation`.
+   - Core functions: `explainArchitectureAtAltitude`, `extractReferencedEntities`.
+   - Unit tests in `packages/domain/src/ai-explanation.test.ts`.
+2. In `apps/web/`, implement canvas UI components:
+   - `<ExplanationAltitudeSelector />` and `<ArchitectureExplanationPanel />`.
+   - Integration specs in `apps/web/ai-explanation.spec.tsx`.
+3. Verify with `pnpm typecheck && pnpm lint && pnpm check-architecture && pnpm test && pnpm build`.

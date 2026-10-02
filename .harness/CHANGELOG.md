@@ -2,6 +2,29 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F064 — Natural-language editing
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ai-editing.ts`: Pure domain Natural Language Editing engine. Translates natural language commands into explicit, non-destructive proposed change sets (`generateEditProposal`, `applyEditProposal`, `rejectEditProposal`). Recognizes entity insertions ("add Redis between Service A and Service B"), component removals and cascading connection disconnections ("remove Service B"), and attribute updates ("rename Service A to Payment Gateway"). Enforces invariant that AI edits are never committed silently: every modification requires explicit Apply/Reject action. Applying verifies integrity invariants and updates live model state; rejecting preserves complete model immutability.
+  - `ai-editing.test.ts`: Added 5 unit tests verifying acceptance test for 'add Redis between A and B' proposing exactly that, rejecting proposals leaving context unchanged, applying proposals updating model, removing entities and incident connections, renames, and integrity validation.
+  - `index.ts`: Exported `ai-editing`.
+- Web layer (`apps/web/`):
+  - `components/canvas/nl-edit-modal.tsx`: Implemented `<NLEditProposalCard />` (status badge, itemized added/modified/removed lists and chips, Apply/Reject triggers) and `<NLEditModal />` (interactive instruction input form, quick action chips, and empty/populated proposal states).
+  - `components/canvas/index.ts`: Exported NL edit modal components.
+  - `ai-editing.spec.tsx`: Added 3 integration tests verifying acceptance test for 'add Redis between A and B' proposal/reject/apply lifecycle, `<NLEditProposalCard />` breakdown rendering, and `<NLEditModal />` modal rendering.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (148 test suites, 991 tests passed)
+```
+
 ## 2026-10-02 — F063 — Architecture generation
 
 Status: COMPLETE
