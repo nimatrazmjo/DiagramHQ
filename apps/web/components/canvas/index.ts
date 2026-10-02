@@ -38,3 +38,4 @@ export * from './nl-edit-modal';
 export * from './architecture-explanation-panel';
 export * from './ai-impact-drawer';
 export * from './ai-security-drawer';
+export * from './ai-documentation-modal';

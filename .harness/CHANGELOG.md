@@ -2,6 +2,29 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F068 — AI documentation
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ai-documentation.ts`: Pure domain AI Architecture Documentation generator and synchronizer. Generates comprehensive, grounded Markdown documentation for components (`generateObjectDocumentation`) and systems (`generateSystemArchitectureDocumentation`) strictly anchored in model topology, metadata, connection interfaces, and ADRs. Enforces the strict invariant of zero hallucinations — 100% of cited entities are grounded references validated against the live model. Provides synchronization engine (`refreshDocumentationOnModelChange`) to keep documentation in sync as models evolve.
+  - `ai-documentation.test.ts`: Added 4 unit tests verifying acceptance test for grounded object documentation generation, system architecture documentation generation, model change synchronization, and missing object error handling.
+  - `index.ts`: Exported `ai-documentation`.
+- Web layer (`apps/web/`):
+  - `components/canvas/ai-documentation-modal.tsx`: Implemented `<AIDocumentationCard />` (compact spec card with version chip, section count, grounded entity count, and refresh/view triggers) and `<DocumentationViewerModal />` (grounded entity bar with zero-hallucination verification badge, formatted Markdown sections, and interactive references).
+  - `components/canvas/index.ts`: Exported AI documentation components.
+  - `ai-documentation.spec.tsx`: Added 4 integration tests verifying acceptance test for grounded object and system docs, model update synchronization, and `<AIDocumentationCard />` / `<DocumentationViewerModal />` rendering.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (152 test suites, 1020 tests passed)
+```
+
 ## 2026-10-02 — F067 — Security analysis
 
 Status: COMPLETE
