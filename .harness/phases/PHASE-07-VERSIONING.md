@@ -1,6 +1,6 @@
 # Phase 07 — Versioning
 
-Status: NOT STARTED
+Status: IN PROGRESS
 
 ## Description
 Git-like history for architecture: snapshots, branches, diff, changes, pull requests, merge, plus ADRs, scenarios and roadmap items.
@@ -12,7 +12,7 @@ Phase 03, Phase 06
 
 ### F055 — Version history
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Live + numbered versions.
 

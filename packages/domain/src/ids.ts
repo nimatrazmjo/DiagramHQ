@@ -29,7 +29,8 @@ export type IdPrefix =
   | 'tsk'
   | 'ntf'
   | 'shl'
-  | 'team';
+  | 'team'
+  | 'snp';
 
 export type Id<P extends IdPrefix> = string & { readonly __brand: P };
 
@@ -53,6 +54,7 @@ export type TaskId = Id<'tsk'>;
 export type NotificationId = Id<'ntf'>;
 export type ShareLinkId = Id<'shl'>;
 export type TeamId = Id<'team'>;
+export type SnapshotId = Id<'snp'>;
 
 let sequence = 0;
 

@@ -22,3 +22,4 @@ export * from './share-link-modal';
 export * from './permission-guard';
 export * from './team-badge';
 export * from './notification-center';
+export * from './version-history';
