@@ -63,7 +63,7 @@ Test: a mention creates a notification.
 
 ### F052 — Share links
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Read-only links.
 

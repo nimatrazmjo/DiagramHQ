@@ -34,3 +34,4 @@ export * from './collaboration';
 export * from './presence';
 export * from './comments';
 export * from './mentions';
+export * from './share-links';

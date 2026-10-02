@@ -13,21 +13,23 @@ Phase Name: Collaboration
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F052
-Feature Name: Share links
+Feature ID: F053
+Feature Name: Permissions
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 53
+Completed: 54
 In Progress: 0
 Blocked: 0
-Not Started: 82
-Progress: 39.3%
+Not Started: 81
+Progress: 40.0%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F051 — Mentions. @mentions in comments and descriptions with notifications, and converting comments into tracked architecture tasks. Added pure mention parser and task conversion engine (`extractMentionHandles`, `generateMentionNotifications`, `convertCommentToTask`, `updateTaskStatus`, `reassignTask`), `'tsk'` and `'ntf'` prefixes to `ids.ts`, `<MentionText />` and `<TaskCard />` to web UI, 5 domain unit tests, and 4 web integration tests.
+F052 — Share links. Read-only share links preserving viewer position, zoom, and active selection without requiring an account. Added pure share-links token engine (`createShareLink`, `encodeShareLinkToken`, `decodeShareLinkToken`, `verifyShareLink`, `resolveAnonymousViewState`, `generateShareLinkUrl`), `'shl'` prefix to `ids.ts`, `<ShareLinkModal />` and `<ReadOnlyBanner />` to web UI, 6 domain unit tests, and 4 web integration tests.
+
+Prior: F051 — Mentions. @mentions in comments and descriptions with notifications, and converting comments into tracked architecture tasks. Added pure mention parser and task conversion engine (`extractMentionHandles`, `generateMentionNotifications`, `convertCommentToTask`, `updateTaskStatus`, `reassignTask`), `'tsk'` and `'ntf'` prefixes to `ids.ts`, `<MentionText />` and `<TaskCard />` to web UI, 5 domain unit tests, and 4 web integration tests.
 
 Prior: F050 — Comments. Threaded comments across architectural entities (objects, connections, diagrams, flows, docs, changes) with reply, resolve, and re-open workflows. Added pure comments domain engine (`createComment`, `replyToComment`, `resolveComment`, `reopenComment`, `updateCommentContent`, `filterComments`, `buildCommentThreads`, `countUnresolvedCommentsByTarget`), `'cmt'` prefix to `ids.ts`, `<CommentsPanel />` and `<CommentPinBadge />` to web UI, 7 domain unit tests, and 5 web integration tests.
 
