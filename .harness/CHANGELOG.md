@@ -2,6 +2,32 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F125 — Model-as-code + CLI (Phase 09 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `model-as-code.ts`: Implemented Model-as-code serialization engine and `dhq` CLI command surface for DiagramHQ (Phase 09 — Code Integrations). Serializes architecture models to clean, human-readable YAML with deterministic mapping between slugs and stable internal IDs (`ObjectId`, `ConnectionId`), supporting C4 model kinds and aliases (`container`, `person`, `database`).
+  - Implemented full `dhq` CLI command set (`dhq login`, `dhq init`, `dhq pull`, `dhq push`, `dhq validate`, `dhq diff`, `dhq deploy`, `dhq export`, `dhq generate`) with push-then-pull round-trip fidelity, invariant validation catching syntax errors, duplicate slugs, dangling references, and parent hierarchy cycles, and structural diffing.
+  - `model-as-code.test.ts`: Added 15 unit tests verifying slug-to-ID mapping, YAML serialization & round-trip fidelity, invariant validation, structural diffing, and all `dhq` CLI commands.
+  - `index.ts`: Exported `model-as-code`.
+- Web layer (`apps/web/`):
+  - `components/canvas/model-as-code-panel.tsx`: Implemented `<ModelAsCodeModal />` (full-featured modal with tabs for YAML Definition, Live Validation, Diff Viewer, and interactive dhq CLI Terminal, with two-way Push/Pull Canvas synchronization).
+  - `components/canvas/index.ts`: Exported Model-as-code components.
+  - `model-as-code.spec.tsx`: Added 3 integration tests verifying modal tabs, YAML editor, active model synchronization, and closed state.
+- Milestone:
+  - **89 / 135 total features completed (65.9% milestone reached)!**
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (186 test suites, 1135 tests passed)
+```
+
 ## 2026-10-02 — F124 — Database catalog (Phase 09 Progress)
 
 Status: COMPLETE

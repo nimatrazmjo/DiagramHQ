@@ -130,7 +130,7 @@ Test: create/browse database entries.
 
 ### F125 — Model-as-code + CLI
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: YAML + dhq CLI.
 
