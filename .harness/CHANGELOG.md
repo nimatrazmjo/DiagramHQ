@@ -2,6 +2,29 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F070 — ADR generation
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ai-adr-generation.ts`: Pure domain AI Architecture Decision Record (ADR) generator from architecture change sets and pull requests. Automatically synthesizes MADR / Michael Nygard decision records: context synthesis capturing problem statements, business objectives, and topological blast radius / affected downstream component counts; decision synthesis itemizing provisioned components, new integration channels, refactored services, and decommissioned legacy entities; consequences synthesis detailing positive and negative operational trade-offs; and alternatives considered. Invariant: establishes polymorphic traceability by attaching directly to the source change set (`targetType: 'change'`). Enables human-in-the-loop review and editing (`acceptDraftedADR`) committing the official immutable `ArchitectureDecisionRecord`.
+  - `ai-adr-generation.test.ts`: Added 3 unit tests verifying acceptance test for drafting an ADR linked to the source change set, human edits and acceptance, and decommissioning changes.
+  - `index.ts`: Exported `ai-adr-generation`.
+- Web layer (`apps/web/`):
+  - `components/canvas/ai-adr-modal.tsx`: Implemented `<DraftedADRCard />` (proposal badge, context preview, linked change ID, and review trigger) and `<ADRGenerationModal />` (interactive review dialog with form inputs for title, context, decision, consequences, and alternatives, with one-click commitment).
+  - `components/canvas/index.ts`: Exported AI ADR components.
+  - `ai-adr-generation.spec.tsx`: Added 3 integration tests verifying acceptance test for drafting ADR linked to change, human edits and acceptance, and `<DraftedADRCard />` / `<ADRGenerationModal />` rendering.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (154 test suites, 1032 tests passed)
+```
+
 ## 2026-10-02 — F069 — AI architecture review
 
 Status: COMPLETE
