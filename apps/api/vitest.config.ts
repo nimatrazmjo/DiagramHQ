@@ -12,7 +12,9 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig(({ mode }) => ({
   plugins: [swc.vite()],
   test: {
+    pool: 'forks',
     fileParallelism: false,
+    maxConcurrency: 1,
     poolOptions: {
       forks: {
         singleFork: true,

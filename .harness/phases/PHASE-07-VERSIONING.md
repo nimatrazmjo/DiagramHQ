@@ -72,7 +72,7 @@ Test: a change reports the correct affected sets.
 
 ### F060 — Pull requests
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Reviewable architecture PRs.
 
