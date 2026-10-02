@@ -88,7 +88,7 @@ Test: AI security findings match seeded issues.
 
 ### F068 — AI documentation
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Generate docs.
 

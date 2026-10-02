@@ -13,21 +13,23 @@ Phase Name: AI Copilot
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F068
-Feature Name: AI documentation
+Feature ID: F069
+Feature Name: AI architecture review
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 73
+Completed: 74
 In Progress: 0
 Blocked: 0
-Not Started: 62
-Progress: 54.1%
+Not Started: 61
+Progress: 54.8%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F067 — Security analysis. Pure AI Architecture Security Review and automated vulnerability audit engine for DiagramHQ (Phase 08 — AI Copilot). Analyzes architecture model graphs for security anti-patterns, data privacy risks, and network perimeter vulnerabilities: unauthenticated public ingress endpoints bypassing edge gateways, PII and sensitive data transmission over cleartext / unencrypted network paths, missing authentication / authorization boundaries on internal datastores and microservices, and unencrypted sensitive PII datastores. Computes an architectural security rating (0 to 100) with category-weighted penalty scoring, and synthesizes an AI narrative strictly guaranteed to match detected structural security issues and entity citations. Added UI components `<SecurityScoreGauge />`, `<SecurityFindingCard />`, and `<AISecurityDrawer />`, 3 domain unit tests, and 4 web integration tests.
+F068 — AI documentation. Pure AI Architecture Documentation generator and synchronizer for DiagramHQ (Phase 08 — AI Copilot). Automatically generates structured technical documentation grounded in architecture models, topology, metadata, and ADRs: component-level documentation (`generateObjectDocumentation`) capturing component overview, runtime classification, incoming integration callers & interfaces, downstream egress dependencies, linked ADR decisions, and team ownership & governance contacts; system-level documentation (`generateSystemArchitectureDocumentation`) synthesizing platform overview, executive summary, complete component catalog table, and graph invariant topology summaries; strict zero-hallucinations invariant where 100% of cited entities are grounded references directly validated against the active architecture model; model change synchronization (`refreshDocumentationOnModelChange`) automatically updating documentation when nodes or connections change; and canvas UI components `<AIDocumentationCard />` and `<DocumentationViewerModal />` with interactive grounded reference pills and live auto-refresh. Added 4 domain unit tests and 4 web integration tests.
+
+Prior: F067 — Security analysis. Pure AI Architecture Security Review and automated vulnerability audit engine for DiagramHQ (Phase 08 — AI Copilot). Analyzes architecture model graphs for security anti-patterns, data privacy risks, and network perimeter vulnerabilities: unauthenticated public ingress endpoints bypassing edge gateways, PII and sensitive data transmission over cleartext / unencrypted network paths, missing authentication / authorization boundaries on internal datastores and microservices, and unencrypted sensitive PII datastores. Computes an architectural security rating (0 to 100) with category-weighted penalty scoring, and synthesizes an AI narrative strictly guaranteed to match detected structural security issues and entity citations. Added UI components `<SecurityScoreGauge />`, `<SecurityFindingCard />`, and `<AISecurityDrawer />`, 3 domain unit tests, and 4 web integration tests.
 
 Prior: F066 — Impact analysis. Pure AI Architecture Impact Analysis and blast radius drawer for DiagramHQ (Phase 08 — AI Copilot). Provides comprehensive topological blast radius calculations and AI-narrated operational impact assessments when an architecture object is modified, replaced, or decommissioned: direct and indirect downstream dependents, upstream dependencies, affected execution flows traversing impacted components, affected engineering teams owning impacted objects, critical path and Single Point of Failure (SPOF) detection, risk scoring (low, medium, high, critical), and AI-synthesized narrative strictly guaranteed to match the computed structural impact set. Added UI components `<ImpactMetricsBadge />` and `<AIImpactDrawer />`, 4 domain unit tests, and 3 web integration tests.
 
