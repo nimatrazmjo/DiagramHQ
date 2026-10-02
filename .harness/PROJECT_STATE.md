@@ -10,24 +10,26 @@ Description: Model-first architecture intelligence platform (a "better than IceP
 ## Current Phase
 Phase: 06
 Phase Name: Collaboration
-Status: NOT STARTED
+Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F048
-Feature Name: Real-time collaboration
+Feature ID: F049
+Feature Name: Presence
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 49
+Completed: 50
 In Progress: 0
 Blocked: 0
-Not Started: 86
-Progress: 36.3%
+Not Started: 85
+Progress: 37.0%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F047 — API flows. Flow type for API requests and exporter to Mermaid and PlantUML sequence diagrams (completing Phase 05 — Flows!). Added `createApiFlow` factory, `annotateApiFlowStep` annotator, `exportFlowToMermaidSequence` exporter, `exportFlowToPlantUMLSequence` exporter, `getApiFlowPlaybackStepInfo` runtime helper, `<ApiFlowOverlay />` component, 9 domain unit tests, and 6 web integration tests.
+F048 — Real-time collaboration. Multi-user concurrent editing with pure deterministic conflict resolution (CRDT / LWW Lamport clocks). Added `CollabSession`, `CollabOperation`, `compareLamport`, `applyLocalOperation`, `applyRemoteOperation`, and `syncSessions` to domain with cascade deletion handling, `<CollaborationBanner />` live pulse and peer avatars to web UI, 9 domain unit tests, and 5 web integration tests.
+
+Prior: F047 — API flows. Flow type for API requests and exporter to Mermaid and PlantUML sequence diagrams (completing Phase 05 — Flows!). Added `createApiFlow` factory, `annotateApiFlowStep` annotator, `exportFlowToMermaidSequence` exporter, `exportFlowToPlantUMLSequence` exporter, `getApiFlowPlaybackStepInfo` runtime helper, `<ApiFlowOverlay />` component, 9 domain unit tests, and 6 web integration tests.
 
 Prior: F046 — Data flows. Data-flow flow type with schema/payload attribution feeding data lineage (F091). Added `createDataFlow` factory, `annotateDataFlowStep` step annotator, `extractDataLineage` lineage tracer with external egress exit identification, `getDataFlowPlaybackStepInfo` runtime helper, `<DataFlowOverlay />` component, 5 domain unit tests, and 5 web integration tests.
 

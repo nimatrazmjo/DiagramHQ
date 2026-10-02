@@ -1,18 +1,24 @@
-# Current Task: F048 — Real-time collaboration
+# Current Task: F049 — Presence
 
 **Status**: NOT STARTED
 
 ## Description
-Live multi-user editing with conflict resolution (CRDT / Operational Transformation or state sync with deterministic conflict resolution).
-- Feature ID: F048
+Real-time user presence, live cursors, remote selection, current-object indicators, and peer badges.
+- Feature ID: F049
 - Phase: 06 — Collaboration
 - Acceptance criteria:
-  - Multiple users edit live; conflict resolution (CRDT/OT)
-  - Test: two clients: an edit in one appears in the other.
+  - Cursors, selection, current-object, presence indicators
+  - Test: presence shows both users + cursors.
 
 ## Next Steps
-1. Review `PHASE-06-COLLABORATION.md` for F048 acceptance criteria.
-2. In `packages/domain/src/`, implement collaborative document / operational message state machine (`createCollabSession()`, `applyRemoteOperation()`, `broadcastLocalOperation()`, deterministic LWW/CRDT or vector-clock conflict resolution).
-3. In `apps/web/`, implement collaborative room hook/store and synchronization transport simulation.
-4. Add unit and integration tests verifying concurrent multi-client edits and convergence.
-5. Verify with `pnpm typecheck && pnpm lint && pnpm check-architecture && pnpm test && pnpm build`.
+1. Review `PHASE-06-COLLABORATION.md` for F049 acceptance criteria.
+2. In `packages/domain/src/`, implement presence state types and pure management functions:
+   - `UserPresence` (userId, userName, userColor, avatarUrl, cursor: {x, y, viewId} | null, selectedObjectIds: string[], currentObjectId: string | null, lastActiveAt: number)
+   - Pure presence manager: `createPresenceState()`, `updateLocalPresence()`, `updateRemotePresence()`, `removePresencePeer()`, `pruneInactivePeers()`, `filterPresenceByView()`.
+   - Unit tests in `packages/domain/src/presence.test.ts`.
+3. In `apps/web/`, implement canvas presence overlay:
+   - `<PresenceCursors />`: live animated cursors with name tags and color branding.
+   - Remote selection outlines / halos on canvas nodes.
+   - Presence indicators / avatars in toolbar / header.
+   - Web integration specs in `apps/web/presence.spec.tsx`.
+4. Verify with `pnpm typecheck && pnpm lint && pnpm check-architecture && pnpm test && pnpm build`.
