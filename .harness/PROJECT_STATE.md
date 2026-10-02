@@ -13,21 +13,23 @@ Phase Name: Versioning
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F059
-Feature Name: Architecture changes
+Feature ID: F060
+Feature Name: Pull requests
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 61
+Completed: 62
 In Progress: 0
 Blocked: 0
-Not Started: 74
-Progress: 45.2%
+Not Started: 73
+Progress: 45.9%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F058 — Architecture diff. Pure visual architecture diff engine comparing two architecture versions or branches. Categorizes all entity variations into semantic buckets: added (new entities in target), modified (attributes or connections changed), removed (deleted in target), moved (position changed without attribute modifications), and unchanged. Maps each category to standardized semantic colors (emerald for added, amber for modified, rose for removed, purple for moved). Added UI components `<DiffLegend />` and `<VisualDiffViewer />`, 3 domain unit tests, and 3 web integration tests.
+F059 — Architecture changes. Pure architecture change sets and impact analysis engine. Computes direct change lists (added, modified, removed objects and connections) alongside full downstream impact analysis: affected architecture objects (direct changes, connection endpoints, and connected dependencies), affected flows (flows traversing affected connections or objects), and affected stakeholder teams (teams owning affected objects via ownership records or metadata). Added UI components `<ImpactAnalysisBadge />` and `<ChangeSetSummary />`, 2 domain unit tests, and 3 web integration tests.
+
+Prior: F058 — Architecture diff. Pure visual architecture diff engine comparing two architecture versions or branches. Categorizes all entity variations into semantic buckets: added (new entities in target), modified (attributes or connections changed), removed (deleted in target), moved (position changed without attribute modifications), and unchanged. Maps each category to standardized semantic colors (emerald for added, amber for modified, rose for removed, purple for moved). Added UI components `<DiffLegend />` and `<VisualDiffViewer />`, 3 domain unit tests, and 3 web integration tests.
 
 Prior: F057 — Branches. Pure architecture branching engine supporting branch creation off main or parent branches. Carries all 6 architecture dimensions plus ADRs and threaded comments (`objects`, `connections`, `views`, `flows`, `metadata`, `adrs`, `comments`). Deep cloning guarantees complete memory and state isolation such that additions, removals, or edits on child branches never pollute or mutate main. Added UI components `<BranchBadge />` and `<BranchSelector />`, 4 domain unit tests, and 3 web integration tests.
 

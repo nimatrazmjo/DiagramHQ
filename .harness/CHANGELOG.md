@@ -2,6 +2,29 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F059 — Architecture changes
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `changes.ts`: Architecture change sets and impact analysis engine. Implemented `computeArchitectureChangeSet` calculating direct change lists (added, modified, removed objects and connections) alongside full downstream impact analysis: affected architecture objects (direct changes, connection endpoints, and connected dependencies), affected flows (flows traversing affected connections or objects), and affected stakeholder teams (teams owning affected objects via ownership records or metadata).
+  - `changes.test.ts`: Added 2 unit tests verifying acceptance test for reporting correct affected sets (objects, flows, teams) and removed connection impact on flows and endpoints.
+  - `index.ts`: Exported `changes`.
+- Web layer (`apps/web/`):
+  - `components/canvas/change-set-summary.tsx`: Implemented `<ImpactAnalysisBadge />` (displaying compact direct change and affected metric chips) and `<ChangeSetSummary />` (interactive panel with Direct Changes and Impact Analysis tabs).
+  - `components/canvas/index.ts`: Exported change set components.
+  - `changes.spec.tsx`: Added 3 integration tests verifying acceptance test for reporting correct affected sets, `<ImpactAnalysisBadge />` rendering, and `<ChangeSetSummary />` details rendering.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (137 test suites, 937 tests passed)
+```
+
 ## 2026-10-02 — F058 — Architecture diff
 
 Status: COMPLETE
