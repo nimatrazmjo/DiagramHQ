@@ -13,21 +13,23 @@ Phase Name: Collaboration
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F051
-Feature Name: Mentions
+Feature ID: F052
+Feature Name: Share links
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 52
+Completed: 53
 In Progress: 0
 Blocked: 0
-Not Started: 83
-Progress: 38.5%
+Not Started: 82
+Progress: 39.3%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F050 — Comments. Threaded comments across architectural entities (objects, connections, diagrams, flows, docs, changes) with reply, resolve, and re-open workflows. Added pure comments domain engine (`createComment`, `replyToComment`, `resolveComment`, `reopenComment`, `updateCommentContent`, `filterComments`, `buildCommentThreads`, `countUnresolvedCommentsByTarget`), `'cmt'` prefix to `ids.ts`, `<CommentsPanel />` and `<CommentPinBadge />` to web UI, 7 domain unit tests, and 5 web integration tests.
+F051 — Mentions. @mentions in comments and descriptions with notifications, and converting comments into tracked architecture tasks. Added pure mention parser and task conversion engine (`extractMentionHandles`, `generateMentionNotifications`, `convertCommentToTask`, `updateTaskStatus`, `reassignTask`), `'tsk'` and `'ntf'` prefixes to `ids.ts`, `<MentionText />` and `<TaskCard />` to web UI, 5 domain unit tests, and 4 web integration tests.
+
+Prior: F050 — Comments. Threaded comments across architectural entities (objects, connections, diagrams, flows, docs, changes) with reply, resolve, and re-open workflows. Added pure comments domain engine (`createComment`, `replyToComment`, `resolveComment`, `reopenComment`, `updateCommentContent`, `filterComments`, `buildCommentThreads`, `countUnresolvedCommentsByTarget`), `'cmt'` prefix to `ids.ts`, `<CommentsPanel />` and `<CommentPinBadge />` to web UI, 7 domain unit tests, and 5 web integration tests.
 
 Prior: F049 — Presence. Cursors, selection, current-object focus, and presence indicators. Added pure presence state machine (`UserPresence`, `PresenceRoomState`, `createPresenceRoom`, `upsertPeerPresence`, `updatePeerCursor`, `updatePeerSelection`, `pruneInactivePeers`, `getRemoteCursorsForView`, `getRemoteSelections`, `getRemoteActiveObjects`) to domain, `<PresenceCursors />` and `<PresenceIndicators />` to web canvas, 8 domain unit tests, and 6 web integration tests.
 

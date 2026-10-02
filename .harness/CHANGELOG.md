@@ -2,6 +2,35 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F051 — Mentions
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ids.ts`: Added `'tsk'` and `'ntf'` to `IdPrefix` and declared `TaskId` and `NotificationId` brand types.
+  - `mentions.ts`: Pure mention parser, notification generator, and comment-to-task conversion engine. Implemented `extractMentionHandles()`, `generateMentionNotifications()` with author self-mention exclusion, `convertCommentToTask()` with target entity attribution and title derivation, `updateTaskStatus()`, and `reassignTask()`.
+  - `mentions.test.ts`: Added 5 unit tests verifying mention handle extraction, notification dispatch, author self-mention exclusion, comment-to-task conversion, and task reassignment.
+  - `index.ts`: Exported `mentions`.
+- Web layer (`apps/web/`):
+  - `components/canvas/mention-task-badge.tsx`: Added `<MentionText />` component highlighting `@username` mentions as stylized pills, and `<TaskCard />` component displaying task status, priority badges, and assignees.
+  - `components/canvas/index.ts`: Exported mentions components.
+  - `mentions.spec.tsx`: Added 4 integration tests verifying end-to-end @mention notification, comment conversion to task, multi-mentions, and React component rendering.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm --filter @diagramhq/domain test → 233 passed (34 test files)
+pnpm --filter @diagramhq/web test    → 357 passed (48 test files)
+pnpm test                            → 860 passed across all workspaces (233 domain, 357 web, 270 api)
+branch: feat/F051-mentions
+```
+
+Evaluator scores: acceptance=5, correctness=5, boundaries=5, modularity=5, evidence=5 => avg 5.0 — PASS
+
 ## 2026-10-02 — F050 — Comments
 
 Status: COMPLETE

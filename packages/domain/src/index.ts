@@ -33,3 +33,4 @@ export * from './flow-playback';
 export * from './collaboration';
 export * from './presence';
 export * from './comments';
+export * from './mentions';
