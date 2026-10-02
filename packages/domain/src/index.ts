@@ -36,3 +36,4 @@ export * from './comments';
 export * from './mentions';
 export * from './share-links';
 export * from './permissions';
+export * from './teams';

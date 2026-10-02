@@ -88,7 +88,7 @@ Test: role permission matrix enforced.
 
 ### F054 — Team management
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Teams + ownership.
 
