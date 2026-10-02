@@ -2,6 +2,8 @@ import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { QueueNodeData } from '@diagramhq/domain';
 import { getTechnologyIconPath } from '../../lib/icons';
+import { FlowBadges } from './flow-badges';
+
 
 function QueueIcon(): JSX.Element {
   return (
@@ -78,9 +80,16 @@ export function QueueNode({ id: _id, data, selected }: NodeProps): JSX.Element {
     <div
       data-testid="queue-node"
       className={`min-w-[220px] max-w-[280px] p-3.5 rounded-xl border-2 shadow-xl backdrop-blur-sm transition-all duration-150 ${getThemeClasses()} ${
-        selected ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-950 border-amber-400' : ''
+        nodeData.flowView && !nodeData.isInFlow
+          ? 'opacity-35 border-slate-800'
+          : nodeData.flowView && nodeData.isInFlow
+            ? 'border-sky-400 ring-2 ring-sky-500/50 shadow-sky-500/30'
+            : selected
+              ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-950 border-amber-400'
+              : ''
       }`}
     >
+
       <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-amber-400" />
       <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-amber-400" />
       <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2 !h-2 !bg-amber-400" />
@@ -147,6 +156,16 @@ export function QueueNode({ id: _id, data, selected }: NodeProps): JSX.Element {
           )}
         </div>
       )}
+
+      {/* Flow Visualization Overlay */}
+      <FlowBadges
+        flowView={nodeData.flowView as boolean | undefined}
+        isInFlow={nodeData.isInFlow as boolean | undefined}
+        flowStepNumbers={nodeData.flowStepNumbers as number[] | undefined}
+        isActiveStepParticipant={nodeData.isActiveStepParticipant as boolean | undefined}
+      />
     </div>
+
+
   );
 }

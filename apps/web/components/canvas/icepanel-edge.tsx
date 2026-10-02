@@ -126,6 +126,12 @@ export function IcePanelEdge({
   const allEdges = useEdges();
 
   const edgeData = (data ?? {}) as Record<string, unknown>;
+  const isFlowView = Boolean(edgeData.flowView);
+  const isInFlow = Boolean(edgeData.isInFlow);
+  const flowStepNumber = edgeData.flowStepNumber as number | undefined;
+  const flowStepNote = edgeData.flowStepNote as string | undefined;
+  const isActiveStep = Boolean(edgeData.isActiveStep);
+
   const rawProtocol = (edgeData.protocol as string) || (edgeData.kind as string);
   const rawDescription = (edgeData.description as string) || (edgeData.label as string);
   const isAsync =
@@ -143,6 +149,7 @@ export function IcePanelEdge({
   } else if (!description && typeof label === 'string') {
     description = label;
   }
+
 
   // Calculate dynamic routing & anchor positions
   const routeGeometry = useMemo(() => {
@@ -285,7 +292,21 @@ export function IcePanelEdge({
     offset: routeGeometry.offset,
   });
 
-  const strokeColor = selected ? '#38bdf8' : (style.stroke as string) || '#64748b';
+  let strokeColor = selected ? '#38bdf8' : (style.stroke as string) || '#64748b';
+  let strokeWidth = selected ? 2.5 : (style.strokeWidth as number) || 1.75;
+  let edgeOpacity = 1;
+
+  if (isFlowView) {
+    if (isInFlow) {
+      strokeColor = isActiveStep ? '#06b6d4' : '#0284c7';
+      strokeWidth = isActiveStep ? 3.5 : 2.5;
+    } else {
+      strokeColor = '#475569';
+      strokeWidth = 1.25;
+      edgeOpacity = 0.25;
+    }
+  }
+
   const markerId = `icepanel-arrow-${id.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
 
   return (
@@ -321,16 +342,20 @@ export function IcePanelEdge({
         style={{
           ...style,
           stroke: strokeColor,
-          strokeWidth: selected ? 2.5 : (style.strokeWidth as number) || 1.75,
+          strokeWidth,
+          opacity: edgeOpacity,
           strokeDasharray: isAsync ? '6 4' : undefined,
-          filter: selected ? 'drop-shadow(0 0 6px rgba(56, 189, 248, 0.5))' : undefined,
-          transition: 'stroke 0.15s ease, stroke-width 0.15s ease',
+          filter:
+            selected || (isFlowView && isInFlow)
+              ? `drop-shadow(0 0 6px ${isActiveStep ? 'rgba(6, 182, 212, 0.7)' : 'rgba(2, 132, 199, 0.6)'})`
+              : undefined,
+          transition: 'stroke 0.15s ease, stroke-width 0.15s ease, opacity 0.15s ease',
         }}
         markerEnd={markerEnd ?? `url(#${markerId})`}
       />
 
       {/* Pill Badge */}
-      {(protocol || description) && (
+      {(isFlowView ? isInFlow : protocol || description) && (
         <EdgeLabelRenderer>
           <div
             style={{
@@ -338,25 +363,39 @@ export function IcePanelEdge({
               transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
               pointerEvents: 'all',
             }}
+            data-testid={isFlowView ? 'flow-edge-badge' : 'edge-pill-badge'}
             className={`nopan nodrag flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-sans border backdrop-blur-md shadow-lg select-none cursor-pointer transition-all ${
-              selected
+              isFlowView && isInFlow
+                ? isActiveStep
+                  ? 'bg-cyan-950/95 border-cyan-400 text-cyan-200 ring-2 ring-cyan-500/50 shadow-cyan-500/30 scale-110 animate-pulse'
+                  : 'bg-sky-950/95 border-sky-400 text-sky-200 ring-2 ring-sky-500/40 shadow-sky-500/20 scale-105'
+                : selected
                 ? 'bg-slate-900 border-sky-400 text-sky-200 ring-2 ring-sky-500/40 shadow-sky-500/20 scale-105'
                 : 'bg-slate-900/95 border-slate-700/80 text-slate-300 hover:border-slate-500 hover:text-white hover:scale-102'
             }`}
           >
+            {isFlowView && isInFlow && flowStepNumber && (
+              <span
+                data-testid="badge-flow-step-number"
+                className="px-1.5 py-0.2 rounded bg-sky-500/30 text-sky-200 border border-sky-400/50 font-mono text-[10px] font-bold uppercase tracking-wider"
+              >
+                #{flowStepNumber}
+              </span>
+            )}
             {protocol && (
               <span className="px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 font-mono text-[9px] font-semibold uppercase tracking-wider">
                 {protocol}
               </span>
             )}
-            {description && (
+            {(flowStepNote || description) && (
               <span className="truncate max-w-[160px] text-slate-200 font-medium">
-                {description}
+                {flowStepNote || description}
               </span>
             )}
           </div>
         </EdgeLabelRenderer>
       )}
+
     </>
   );
 }

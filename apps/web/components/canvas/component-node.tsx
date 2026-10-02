@@ -7,6 +7,8 @@ import { DataBadges } from './data-badges';
 import { OwnershipBadges } from './ownership-badges';
 import { TechnologyBadges } from './technology-badges';
 import { PersonaBadges } from './persona-badges';
+import { FlowBadges } from './flow-badges';
+
 
 function ControllerIcon(): JSX.Element {
   return (
@@ -195,9 +197,16 @@ export function ComponentNode({ id, data, selected }: NodeProps): JSX.Element {
     <div
       data-testid="component-node"
       className={`min-w-[220px] max-w-[280px] p-3.5 rounded-xl border-2 shadow-xl backdrop-blur-sm transition-all duration-150 ${getThemeClasses()} ${
-        selected ? 'ring-2 ring-blue-400 ring-offset-2 ring-offset-slate-950 border-blue-400' : ''
+        nodeData.flowView && !nodeData.isInFlow
+          ? 'opacity-35 border-slate-800'
+          : nodeData.flowView && nodeData.isInFlow
+            ? 'border-sky-400 ring-2 ring-sky-500/50 shadow-sky-500/30'
+            : selected
+              ? 'ring-2 ring-blue-400 ring-offset-2 ring-offset-slate-950 border-blue-400'
+              : ''
       }`}
     >
+
       {/* 4-way handles for routing */}
       <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-blue-400" />
       <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-blue-400" />
@@ -310,6 +319,15 @@ export function ComponentNode({ id, data, selected }: NodeProps): JSX.Element {
         <TechnologyBadges technologyView={nodeData.technologyView as boolean | undefined} technologies={nodeData.technologies as Technology[] | undefined} />
       {/* Persona Mode Overlay */}
       <PersonaBadges personaView={nodeData.personaView as boolean | undefined} personaMode={nodeData.personaMode as PersonaMode | undefined} />
+
+      {/* Flow Visualization Overlay */}
+      <FlowBadges
+        flowView={nodeData.flowView as boolean | undefined}
+        isInFlow={nodeData.isInFlow as boolean | undefined}
+        flowStepNumbers={nodeData.flowStepNumbers as number[] | undefined}
+        isActiveStepParticipant={nodeData.isActiveStepParticipant as boolean | undefined}
+      />
     </div>
+
   );
 }
