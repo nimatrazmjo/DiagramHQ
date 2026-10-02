@@ -53,3 +53,5 @@ export * from './repo-sync-panel';
 export * from './api-catalog-panel';
 export * from './event-catalog-panel';
 export * from './database-catalog-panel';
+export * from './model-as-code-panel';
+

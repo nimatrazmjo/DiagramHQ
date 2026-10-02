@@ -13,21 +13,23 @@ Phase Name: Code Integrations
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F125
-Feature Name: Model-as-code + CLI
-Status: IN PROGRESS
+Feature ID: F126
+Feature Name: Webhooks
+Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 88
-In Progress: 1
+Completed: 89
+In Progress: 0
 Blocked: 0
 Not Started: 46
-Progress: 65.2%
+Progress: 65.9%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F124 — Database catalog. Implemented Database Catalog and data schema registry for DiagramHQ (Phase 09 — Code Integrations). Indexes relational and NoSQL datastores with full hierarchical structure (Database -> Schema/Namespace -> Table/Collection -> Column/Field), capturing primary keys, foreign key relations, nullable flags, unique indices, data classification tags, and migration repo coordinates (`CodeLocationSpec`). Supports all major database engines (PostgreSQL, MySQL, SQLite, MongoDB, Redis, DynamoDB, Cassandra, ClickHouse, Snowflake, BigQuery) with relationship detection (`findTableRelationships`) and faceted browsing. Added canvas UI components `<DatabaseCatalogExplorerModal />`, 5 domain unit tests, and 3 web integration tests.
+F125 — Model-as-code + CLI. Implemented Model-as-code serialization engine and `dhq` CLI command surface for DiagramHQ (Phase 09 — Code Integrations). Serializes architecture models to clean, human-readable YAML with deterministic mapping between slugs and stable internal IDs (`ObjectId`, `ConnectionId`), supporting C4 model kinds and aliases (`container`, `person`, `database`). Implemented full `dhq` CLI commands (`login`, `init`, `pull`, `push`, `validate`, `diff`, `deploy`, `export`, `generate`) with push-then-pull round-trip fidelity, invariant validation catching syntax errors, duplicate slugs, dangling connection references, and parent hierarchy cycles, and structural diffing. Added canvas UI component `<ModelAsCodeModal />`, 15 domain unit tests, and 3 web integration tests.
+
+Prior: F124 — Database catalog. Implemented Database Catalog and data schema registry for DiagramHQ (Phase 09 — Code Integrations). Indexes relational and NoSQL datastores with full hierarchical structure (Database -> Schema/Namespace -> Table/Collection -> Column/Field), capturing primary keys, foreign key relations, nullable flags, unique indices, data classification tags, and migration repo coordinates (`CodeLocationSpec`). Supports all major database engines (PostgreSQL, MySQL, SQLite, MongoDB, Redis, DynamoDB, Cassandra, ClickHouse, Snowflake, BigQuery) with relationship detection (`findTableRelationships`) and faceted browsing. Added canvas UI components `<DatabaseCatalogExplorerModal />`, 5 domain unit tests, and 3 web integration tests.
 
 Prior: F123 — Event catalog. Implemented Event Catalog and asynchronous messaging registry for DiagramHQ (Phase 09 — Code Integrations). Indexes domain events, topics, message brokers (Kafka, RabbitMQ, SQS/SNS, EventBridge, NATS, Redis Streams, Google Pub/Sub), message schemas (JSON Schema, Avro, Protobuf), delivery guarantees, and emission frequencies. Deterministically links event producers and consumers to C4 model objects (`ObjectId`) and async connections (`ConnectionId`), providing faceted searching and subscription management. Added canvas UI components `<EventCatalogExplorerModal />`, 4 domain unit tests, and 3 web integration tests.
 
