@@ -2,6 +2,34 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F119 — Roadmap items (Phase 07 COMPLETE!)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ids.ts`: Added `'rdm'` prefix to `IdPrefix` and declared `RoadmapItemId` brand type.
+  - `roadmap-items.ts`: Pure Architecture Roadmap Items engine. Supports organizing architectural milestones into chronological quarters (`2026-Q1`, `2026-Q2`, etc.), managing lifecycle statuses (`planned`, `in_progress`, `completed`, `deferred`), priority tagging, team ownership, and directly linking roadmap milestones to concrete architecture change sets (`linkRoadmapItemToChange`, `unlinkRoadmapItemFromChange`, `getRoadmapItemsForChange`). Added chronological quarterly grouping (`groupRoadmapItemsByQuarter`) and overall completion calculation (`calculateRoadmapProgress`).
+  - `roadmap-items.test.ts`: Added 4 unit tests verifying acceptance test for creating a roadmap item and linking it to an architecture change set, chronological quarter grouping, status updates, completion metrics, and field validations.
+  - `index.ts`: Exported `roadmap-items`.
+- Web layer (`apps/web/`):
+  - `components/canvas/roadmap-panel.tsx`: Implemented `<RoadmapItemCard />` (displaying title, quarter badge, priority/status pill, and dynamic link/unlink change button) and `<RoadmapTimelinePanel />` (quarterly column timeline view, completion progress bar, active change set banner, and milestone creation modal).
+  - `components/canvas/index.ts`: Exported roadmap components.
+  - `roadmap-items.spec.tsx`: Added 3 integration tests verifying acceptance test for linking roadmap items to architecture changes, `<RoadmapItemCard />` rendering, and `<RoadmapTimelinePanel />` rendering across empty and populated states.
+
+Milestone Note:
+- **Phase 07 — Versioning is now 100% COMPLETE (10 / 10 features implemented & verified):**
+  - F055 (Version history), F056 (Architecture snapshots), F057 (Branches), F058 (Architecture diff), F059 (Architecture changes), F060 (Pull requests), F061 (Merge), F117 (ADR system), F118 (Scenarios), F119 (Roadmap items).
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (145 test suites, 968 tests passed)
+```
+
 ## 2026-10-02 — F118 — Scenarios
 
 Status: COMPLETE

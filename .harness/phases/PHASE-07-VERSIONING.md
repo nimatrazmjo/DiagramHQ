@@ -1,6 +1,6 @@
 # Phase 07 — Versioning
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Description
 Git-like history for architecture: snapshots, branches, diff, changes, pull requests, merge, plus ADRs, scenarios and roadmap items.
@@ -121,7 +121,7 @@ Test: create a scenario; compare without mutating main.
 
 ### F119 — Roadmap items
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Roadmap linked to changes.
 
