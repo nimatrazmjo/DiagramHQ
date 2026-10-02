@@ -66,7 +66,7 @@ Test: parse sample TF -> expected resources mapped.
 
 ### F082 — Kubernetes
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Import cluster topology.
 

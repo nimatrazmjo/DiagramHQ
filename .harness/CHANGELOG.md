@@ -2,6 +2,32 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F082 — Kubernetes (Phase 10 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `kubernetes.ts`: Implemented Kubernetes cluster topology and workload manifest import engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Multi-document YAML parser supporting all 14 canonical Kubernetes resource types (Cluster, Namespace, Deployment, StatefulSet, DaemonSet, Job, CronJob, Pod, Service, Ingress, ConfigMap, Secret, PersistentVolume, PersistentVolumeClaim). Maps resources to `ModelObject` records with proper C4 kinds (`group`, `store`, `application`), multi-tenant namespace containment (`groupByNamespace`) setting `parentId` to enclosing namespace group object, and automatic topology connection inference (Ingress -> Service routing, Service -> Workload selector matching, Workload -> PVC storage mounts, PVC -> PV storage bindings, Workload -> ConfigMap/Secret environment bindings). Preserves traceable `KubernetesEvidence` (`sourceType: 'kubernetes_manifest'`).
+  - Implemented `normalizeK8sKind`, `determineObjectKindForK8s`, `parseKubernetesYaml`, `importKubernetesManifests`, and `createMockKubernetesManifests`.
+  - `kubernetes.test.ts`: Added 5 unit tests verifying kind normalization, classification, multi-document parsing, acceptance test on sample microservices manifests, and namespace filtering.
+  - `index.ts`: Exported `kubernetes`.
+- Web layer (`apps/web/`):
+  - `components/canvas/kubernetes-panel.tsx`: Implemented `<KubernetesImportModal />` (interactive modal featuring cluster name input, sample stack loader, kind filter chips for all 14 types, namespace grouping toggle, topology connection inference toggle, tabbed views for topology preview and YAML manifest editor, and import execution).
+  - `components/canvas/index.ts`: Exported Kubernetes components.
+  - `kubernetes.spec.tsx`: Added 3 integration tests verifying modal rendering, closed state, and discovered sample resource rendering.
+- Milestone:
+  - **96 / 135 total features completed (71.1% milestone reached)!**
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (204 test suites, 1211 tests passed)
+```
+
 ## 2026-10-02 — F081 — Terraform (Phase 10 Progress)
 
 Status: COMPLETE
