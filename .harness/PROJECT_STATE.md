@@ -13,21 +13,23 @@ Phase Name: AI Copilot
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F069
-Feature Name: AI architecture review
+Feature ID: F070
+Feature Name: ADR generation
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 74
+Completed: 75
 In Progress: 0
 Blocked: 0
-Not Started: 61
-Progress: 54.8%
+Not Started: 60
+Progress: 55.6%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F068 — AI documentation. Pure AI Architecture Documentation generator and synchronizer for DiagramHQ (Phase 08 — AI Copilot). Automatically generates structured technical documentation grounded in architecture models, topology, metadata, and ADRs: component-level documentation (`generateObjectDocumentation`) capturing component overview, runtime classification, incoming integration callers & interfaces, downstream egress dependencies, linked ADR decisions, and team ownership & governance contacts; system-level documentation (`generateSystemArchitectureDocumentation`) synthesizing platform overview, executive summary, complete component catalog table, and graph invariant topology summaries; strict zero-hallucinations invariant where 100% of cited entities are grounded references directly validated against the active architecture model; model change synchronization (`refreshDocumentationOnModelChange`) automatically updating documentation when nodes or connections change; and canvas UI components `<AIDocumentationCard />` and `<DocumentationViewerModal />` with interactive grounded reference pills and live auto-refresh. Added 4 domain unit tests and 4 web integration tests.
+F069 — AI architecture review. Pure AI Architecture Review Agent and automated pre-merge governance gate for DiagramHQ (Phase 08 — AI Copilot). Evaluates architecture models and pull request change sets against a comprehensive pre-merge governance checklist: circular dependencies detection using depth-first search along microservice call paths; team ownership audit verifying every internal component has designated engineering team ownership assigned in metadata or `ObjectOwnership` records; unapproved external dependencies inspection detecting third-party external systems or vendors not present on the organization's approved whitelist or lacking security clearance; backup & disaster recovery (DR) compliance check ensuring persistent data stores have verified backup schedules and disaster recovery replication configured; and PII exfiltration check detecting direct customer PII or credential exfiltration paths to external third-party boundaries. Generates verdicts (`REQUEST_CHANGES`, `APPROVE`, `COMMENT`) with actionable remediation instructions. Added canvas UI components `<ReviewVerdictBadge />` and `<ArchitectureReviewModal />`, 3 domain unit tests, and 3 web integration tests.
+
+Prior: F068 — AI documentation. Pure AI Architecture Documentation generator and synchronizer for DiagramHQ (Phase 08 — AI Copilot). Automatically generates structured technical documentation grounded in architecture models, topology, metadata, and ADRs: component-level documentation (`generateObjectDocumentation`) capturing component overview, runtime classification, incoming integration callers & interfaces, downstream egress dependencies, linked ADR decisions, and team ownership & governance contacts; system-level documentation (`generateSystemArchitectureDocumentation`) synthesizing platform overview, executive summary, complete component catalog table, and graph invariant topology summaries; strict zero-hallucinations invariant where 100% of cited entities are grounded references directly validated against the active architecture model; model change synchronization (`refreshDocumentationOnModelChange`) automatically updating documentation when nodes or connections change; and canvas UI components `<AIDocumentationCard />` and `<DocumentationViewerModal />` with interactive grounded reference pills and live auto-refresh. Added 4 domain unit tests and 4 web integration tests.
 
 Prior: F067 — Security analysis. Pure AI Architecture Security Review and automated vulnerability audit engine for DiagramHQ (Phase 08 — AI Copilot). Analyzes architecture model graphs for security anti-patterns, data privacy risks, and network perimeter vulnerabilities: unauthenticated public ingress endpoints bypassing edge gateways, PII and sensitive data transmission over cleartext / unencrypted network paths, missing authentication / authorization boundaries on internal datastores and microservices, and unencrypted sensitive PII datastores. Computes an architectural security rating (0 to 100) with category-weighted penalty scoring, and synthesizes an AI narrative strictly guaranteed to match detected structural security issues and entity citations. Added UI components `<SecurityScoreGauge />`, `<SecurityFindingCard />`, and `<AISecurityDrawer />`, 3 domain unit tests, and 4 web integration tests.
 

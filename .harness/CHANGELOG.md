@@ -2,6 +2,29 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F069 — AI architecture review
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ai-architecture-review.ts`: Pure domain AI Architecture Review Agent and automated pre-merge governance gate. Evaluates architecture graphs and change sets against 5 pre-merge governance checklist rules: (1) no circular dependencies via DFS cycle detection along service call chains, (2) team ownership presence on all internal components via `ObjectOwnership` or component metadata, (3) approved external dependencies whitelist validation, (4) backup & disaster recovery verification on persistent stores, and (5) customer PII leak detection to external third-party boundaries. Computes automated verdict (`REQUEST_CHANGES` on blocking critical/high violations, `APPROVE` on clean compliance, `COMMENT` for advisories) alongside actionable remediation recommendations.
+  - `ai-architecture-review.test.ts`: Added 3 unit tests verifying acceptance test for seeded violations producing expected `REQUEST_CHANGES` verdict with all 5 checklist failures, clean architecture producing `APPROVE` verdict with 0 violations, and `ObjectOwnership` integration.
+  - `index.ts`: Exported `ai-architecture-review`.
+- Web layer (`apps/web/`):
+  - `components/canvas/ai-architecture-review-modal.tsx`: Implemented `<ReviewVerdictBadge />` (color-coded badge chips for APPROVE, REQUEST_CHANGES, and COMMENT) and `<ArchitectureReviewModal />` (interactive pre-merge checklist with PASS/FAIL chips, summary banner, blocking violation list, and actionable remediation boxes).
+  - `components/canvas/index.ts`: Exported review components.
+  - `ai-architecture-review.spec.tsx`: Added 3 integration tests verifying acceptance test for seeded violations returning REQUEST_CHANGES, clean architecture returning APPROVE, and `<ReviewVerdictBadge />` / `<ArchitectureReviewModal />` rendering.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (153 test suites, 1026 tests passed)
+```
+
 ## 2026-10-02 — F068 — AI documentation
 
 Status: COMPLETE
