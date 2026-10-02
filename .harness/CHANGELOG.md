@@ -2,6 +2,29 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F067 — Security analysis
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ai-security.ts`: Pure domain AI Architecture Security Review and audit engine. Inspects architecture topologies for security anti-patterns: unauthenticated public ingress endpoints bypassing edge gateways (`public_endpoint_unauthenticated`), PII and sensitive data transmission over unencrypted network channels (`pii_cleartext_path`), missing authentication / authorization on internal datastore connections (`missing_auth_boundary`), and unencrypted sensitive PII stores (`unencrypted_pii_store`). Computes a dynamic architecture security score (0-100) with penalty deductions, and generates a structured AI security review narrative (`auditArchitectureSecurity`) strictly matching detected structural issues and entity citations.
+  - `ai-security.test.ts`: Added 3 unit tests verifying acceptance test for detecting seeded issues (PII paths, public endpoints, missing auth) with matching AI security narrative, clean architecture scoring 100/100, and severity penalty calculations.
+  - `index.ts`: Exported `ai-security`.
+- Web layer (`apps/web/`):
+  - `components/canvas/ai-security-drawer.tsx`: Implemented `<SecurityScoreGauge />` (color-coded score badge with rating tiers), `<SecurityFindingCard />` (severity chip, affected object and connection IDs, and remediation guidance), and `<AISecurityDrawer />` (slide-out audit drawer with score card, severity counters, AI narrative breakdown, and interactive findings list).
+  - `components/canvas/index.ts`: Exported AI security components.
+  - `ai-security.spec.tsx`: Added 4 integration tests verifying acceptance test for detecting seeded security vulnerabilities, `<SecurityScoreGauge />` rendering, `<SecurityFindingCard />` rendering, and `<AISecurityDrawer />` open/closed states.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (151 test suites, 1012 tests passed)
+```
+
 ## 2026-10-02 — F066 — Impact analysis
 
 Status: COMPLETE
