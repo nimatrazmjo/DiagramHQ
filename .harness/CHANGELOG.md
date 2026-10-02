@@ -2,6 +2,33 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F077 — Repository synchronization (Phase 09 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `repo-sync.ts`: Implemented continuous repository synchronization and background architecture freshness engine for DiagramHQ (Phase 09 — Code Integrations). Supports periodic scheduled sync (`SyncScheduleConfig`) and remote git webhook triggers (`push`, `pull_request_merged`), comparing previous scan fingerprints against current commit state and active model topology.
+  - Detects added, modified, and removed components, route controllers, and datastores.
+  - Directly feeds architectural drift detection (F084) with itemized drift items, severity levels, and evidence citations, and generates reviewable model refresh updates without ungrounded silent mutations.
+  - `repo-sync.test.ts`: Added 5 unit tests verifying scheduled scan due checks, webhook trigger processing, drift evaluation, code addition/removal detection, and model refresh application.
+  - `index.ts`: Exported `repo-sync`.
+- Web layer (`apps/web/`):
+  - `components/canvas/repo-sync-panel.tsx`: Implemented `<RepoSyncDrawer />` (status card, schedule & webhook ingress indicators, drift findings list with severity badges, and "Apply Model Refresh" / "Create Change Request" actions) and `<SyncScheduleModal />` (configuration modal for interval scheduling, scan toggles, and webhook payload URL copying).
+  - `components/canvas/index.ts`: Exported repo sync components.
+  - `repo-sync.spec.tsx`: Added 4 integration tests verifying clean state rendering, drift alert banners and actions, schedule modal configuration, and closed drawer behavior.
+- Milestone:
+  - **Phase 09 — Code Integrations is now 60% COMPLETE (6/10 features completed, 85/135 total, 63.0% milestone reached)!**
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (182 test suites, 1109 tests passed)
+```
+
 ## 2026-10-02 — F076 — OpenAPI import (Phase 09 Progress)
 
 Status: COMPLETE

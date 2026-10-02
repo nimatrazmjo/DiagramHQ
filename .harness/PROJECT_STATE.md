@@ -13,21 +13,23 @@ Phase Name: Code Integrations
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F077
-Feature Name: Repository synchronization
+Feature ID: F122
+Feature Name: API catalog
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 84
+Completed: 85
 In Progress: 0
 Blocked: 0
-Not Started: 51
-Progress: 62.2%
+Not Started: 50
+Progress: 63.0%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F076 — OpenAPI import. Implemented OpenAPI 3.0/3.1 and Swagger 2.0 specification parser and API catalog importer for DiagramHQ (Phase 09 — Code Integrations). Parses JSON and YAML specs into structured endpoint operations (GET, POST, PUT, DELETE, PATCH) with path parameters, query parameters, request bodies, and response codes. Automatically links parsed endpoints to target architecture services and source repositories, populating the discoverable `ApiCatalog` while maintaining `AIEvidence` and confidence tracking. Added canvas UI components `<OpenApiImportModal />` and `<ApiCatalogDrawer />`, 4 domain unit tests, and 3 web integration tests.
+F077 — Repository synchronization. Implemented continuous repository synchronization and background architecture freshness engine for DiagramHQ (Phase 09 — Code Integrations). Supports periodic scheduled sync (`SyncScheduleConfig`) and remote git webhook triggers (`push`, `pull_request_merged`), comparing previous scan fingerprints against current commit state and active model topology. Detects added, modified, and removed components, route controllers, and datastores. Directly feeds architectural drift detection (F084) with itemized drift items, severity levels, and evidence citations, and generates reviewable model refresh updates without ungrounded silent mutations. Added canvas UI components `<RepoSyncDrawer />` and `<SyncScheduleModal />`, 5 domain unit tests, and 4 web integration tests.
+
+Prior: F076 — OpenAPI import. Implemented OpenAPI 3.0/3.1 and Swagger 2.0 specification parser and API catalog importer for DiagramHQ (Phase 09 — Code Integrations). Parses JSON and YAML specs into structured endpoint operations (GET, POST, PUT, DELETE, PATCH) with path parameters, query parameters, request bodies, and response codes. Automatically links parsed endpoints to target architecture services and source repositories, populating the discoverable `ApiCatalog` while maintaining `AIEvidence` and confidence tracking. Added canvas UI components `<OpenApiImportModal />` and `<ApiCatalogDrawer />`, 4 domain unit tests, and 3 web integration tests.
 
 Prior: F075 — Code-to-architecture mapping. Implemented bidirectional code-to-architecture mapping and traceability linking architecture model objects (services, components, datastores) directly to their underlying code repositories, directory folders, source file paths, and line ranges (Phase 09 — Code Integrations). Computes canonical remote repository deep links: "Open in GitHub" (`https://github.com/owner/repo/blob/main/path/to/file#L10-L20`) and "Open in GitLab" (`https://gitlab.com/owner/repo/-/blob/main/path/to/file#L10-20`). Normalizes repository coordinates across HTTPS URLs, SSH URIs (`git@`), and project slugs. Injects code mapping metadata into architecture objects without violating pure model invariants. Added canvas UI components `<CodeMappingBadge />`, `<OpenInRepoButton />`, and `<CodeMappingEditorDrawer />`, 4 domain unit tests, and 4 web integration tests.
 
