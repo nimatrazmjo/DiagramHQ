@@ -63,7 +63,7 @@ Test: playback advances step index; controls work.
 
 ### F045 — User journeys
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Flow type.
 

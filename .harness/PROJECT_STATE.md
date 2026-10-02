@@ -13,21 +13,23 @@ Phase Name: Flows
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F045
-Feature Name: User journeys
+Feature ID: F046
+Feature Name: Data flows
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 46
+Completed: 47
 In Progress: 0
 Blocked: 0
-Not Started: 89
-Progress: 34.1%
+Not Started: 88
+Progress: 34.8%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F044 — Flow playback. Animated step-by-step playback through sequence flows. Pure domain state machine in `flow-playback.ts` (8 unit tests), canvas playback toolbar `<FlowPlaybackToolbar />` with play/pause/step/restart/speed/loop controls, and web integration suite in `flow-playback.spec.ts` (4 tests).
+F045 — User journeys. User journey flow type with actor/persona step context and sequence playback. Added `createUserJourneyFlow` factory with model actor object validation, `annotateUserJourneyStep` step annotation, `FlowPlaybackState` support, `getUserJourneyPlaybackStepInfo`, user journey canvas overlay `<UserJourneyOverlay />`, toolbar context chips, 5 domain unit tests, and 4 web integration tests.
+
+Prior: F044 — Flow playback. Animated step-by-step playback through sequence flows. Pure domain state machine in `flow-playback.ts` (8 unit tests), canvas playback toolbar `<FlowPlaybackToolbar />` with play/pause/step/restart/speed/loop controls, and web integration suite in `flow-playback.spec.ts` (4 tests).
 
 Prior: F043 — Flow visualization. Highlight flow path over existing architecture. Added `projectFlowToCanvas()` domain projection (4 unit tests), `<FlowBadges />` UI component, node dimming/highlighting integration across all node types, animated edge glow and step pill badges in `icepanel-edge.tsx`, and web integration suite in `flow-visualization.spec.ts` (4 tests).
 
@@ -50,16 +52,16 @@ Prior: F038 — Security views. Added projection wrappers and custom badge compo
 Prior: F037 — Saved views. Added `isStarred` property to views, with `PATCH /views/:viewId` endpoint. Validated by 2 new e2e tests in `saved-views.e2e.spec.ts`.
 
 ## Current Work
-F045 — User journeys. Flow type with actor/persona step context and journey playback.
+F046 — Data flows. Data-flow flow type with schema/payload attribution feeding data lineage (F091).
 
 ## Next Task
-F045 — User journeys. Flow type with actor/persona step context and journey playback.
+F046 — Data flows. Data-flow flow type with schema/payload attribution feeding data lineage (F091).
 
 ## Last Verified
-F044 @ feat/F044-flow-playback — typecheck / lint / tests (185 domain + 314 web + 270 api = 769 total) / check-architecture / pnpm build all green.
+F045 @ feat/F045-user-journeys — typecheck / lint / tests (190 domain + 326 web + 270 api = 786 total) / check-architecture / pnpm build all green.
 
 ## Current Git Commit
-Working tree: on branch `feat/F044-flow-playback`.
+Working tree: on branch `feat/F045-user-journeys`.
 
 
 

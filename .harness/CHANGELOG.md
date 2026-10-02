@@ -2,6 +2,37 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F045 — User journeys
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `types.ts`: Added `FlowType` union (`'sequence' | 'user_journey' | 'data_flow' | 'api_flow'`), expanded `Flow` with `type`, `actorId`, and `persona`, and expanded `FlowStep` with `actorAction` and `userIntent`.
+  - `flow.ts`: Updated `createFlow`, `updateFlow`, and `addFlowStep` to preserve journey fields; implemented `createUserJourneyFlow` factory with model actor object validation (`ACTOR_NOT_FOUND`), and `annotateUserJourneyStep` for contextual step updates.
+  - `flow-playback.ts`: Added `flowType` to `FlowPlaybackState` and implemented `getUserJourneyPlaybackStepInfo` helper for runtime step context during playback.
+  - `flow-view.ts`: Enhanced `FlowEdgeData` and `flowMetadata` to pass persona, actor action, and user intent onto canvas projections.
+  - `user-journeys.test.ts`: Added 5 unit tests covering journey flow creation, actor validation, step annotations, step-by-step playback, and canvas projection.
+- Web layer (`apps/web/`):
+  - `components/canvas/flow-playback-toolbar.tsx`: Enhanced toolbar to accept optional persona, actor action, and user intent, rendering user journey context chips.
+  - `components/canvas/user-journey-overlay.tsx`: Created `<UserJourneyOverlay />` component rendering journey title, persona badge, progress bar, current step action, user intent, and note.
+  - `components/canvas/index.ts`: Exported `UserJourneyOverlay`.
+  - `user-journeys.spec.tsx`: Added 4 integration tests verifying user journey instantiation, step-by-step playback, canvas projection, and UI rendering.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm --filter @diagramhq/domain test → 190 passed (28 test files)
+pnpm --filter @diagramhq/web test    → 326 passed (42 test files)
+pnpm test                            → 786 passed across all workspaces (190 domain, 326 web, 270 api)
+branch: feat/F045-user-journeys
+```
+
+Evaluator scores: acceptance=5, correctness=5, boundaries=5, modularity=5, evidence=5 => avg 5.0 — PASS
+
 ## 2026-10-02 — F044 — Flow playback
 
 Status: COMPLETE

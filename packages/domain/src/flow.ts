@@ -1,12 +1,14 @@
-import { createId, type ArchitectureId, type ConnectionId, type FlowId } from './ids';
+import { createId, type ArchitectureId, type ConnectionId, type FlowId, type ObjectId } from './ids';
 import { InvariantViolationError } from './invariants';
-import type { FlowStep, FlowWithSteps, ModelConnection } from './types';
+import type { FlowStep, FlowType, FlowWithSteps, ModelConnection, ModelObject } from './types';
 
 export interface CreateFlowStepInput {
   id?: string;
   connectionId: ConnectionId;
   stepIndex?: number;
   note?: string | null;
+  actorAction?: string | null;
+  userIntent?: string | null;
 }
 
 export interface CreateFlowInput {
@@ -14,13 +16,35 @@ export interface CreateFlowInput {
   architectureId: ArchitectureId;
   name: string;
   description?: string | null;
+  type?: FlowType;
+  actorId?: ObjectId | null;
+  persona?: string | null;
   steps?: CreateFlowStepInput[];
 }
 
 export interface UpdateFlowInput {
   name?: string;
   description?: string | null;
+  type?: FlowType;
+  actorId?: ObjectId | null;
+  persona?: string | null;
   steps?: CreateFlowStepInput[];
+}
+
+export interface CreateUserJourneyFlowInput {
+  id?: FlowId;
+  architectureId: ArchitectureId;
+  name: string;
+  description?: string | null;
+  actorId?: ObjectId | null;
+  persona?: string | null;
+  steps?: CreateFlowStepInput[];
+}
+
+export interface UserJourneyStepAnnotations {
+  note?: string | null;
+  actorAction?: string | null;
+  userIntent?: string | null;
 }
 
 export interface FlowValidationResult {
@@ -121,6 +145,8 @@ export function createFlow(
     stepIndex: s.stepIndex !== undefined ? s.stepIndex : index,
     connectionId: s.connectionId,
     note: s.note ?? null,
+    actorAction: s.actorAction ?? null,
+    userIntent: s.userIntent ?? null,
   }));
 
   return {
@@ -128,6 +154,9 @@ export function createFlow(
     architectureId: input.architectureId,
     name: trimmedName,
     description: input.description ?? null,
+    type: input.type ?? 'sequence',
+    actorId: input.actorId ?? null,
+    persona: input.persona ?? null,
     createdAt: now,
     updatedAt: now,
     steps,
@@ -156,6 +185,9 @@ export function updateFlow(
 
   const description =
     input.description !== undefined ? input.description : flow.description;
+  const type = input.type !== undefined ? input.type : flow.type;
+  const actorId = input.actorId !== undefined ? input.actorId : flow.actorId;
+  const persona = input.persona !== undefined ? input.persona : flow.persona;
 
   let steps = flow.steps;
   if (input.steps !== undefined) {
@@ -181,6 +213,8 @@ export function updateFlow(
       stepIndex: s.stepIndex !== undefined ? s.stepIndex : index,
       connectionId: s.connectionId,
       note: s.note ?? null,
+      actorAction: s.actorAction ?? null,
+      userIntent: s.userIntent ?? null,
     }));
   }
 
@@ -188,6 +222,9 @@ export function updateFlow(
     ...flow,
     name,
     description,
+    type,
+    actorId,
+    persona,
     updatedAt: new Date(),
     steps,
   };
@@ -277,6 +314,8 @@ export function addFlowStep(
     stepIndex: targetIndex,
     connectionId: stepInput.connectionId,
     note: stepInput.note ?? null,
+    actorAction: stepInput.actorAction ?? null,
+    userIntent: stepInput.userIntent ?? null,
   };
 
   sortedSteps.splice(targetIndex, 0, newStep);
@@ -460,4 +499,95 @@ export function reorderFlowStepList(
     steps: updatedSteps,
   };
 }
+
+/**
+ * Creates a user journey flow (F045).
+ * Validates that name is provided, flow type is set to 'user_journey',
+ * and optionally validates that actorId belongs to a known model object.
+ */
+export function createUserJourneyFlow(
+  input: CreateUserJourneyFlowInput,
+  availableConnections?: Set<ConnectionId> | ConnectionId[] | ModelConnection[],
+  availableObjects?: Set<ObjectId> | ObjectId[] | ModelObject[],
+): FlowWithSteps {
+  if (availableObjects && input.actorId) {
+    const validObjectIds = new Set<string>();
+    if (availableObjects instanceof Set) {
+      for (const id of availableObjects) validObjectIds.add(id);
+    } else {
+      for (const item of availableObjects) {
+        if (typeof item === 'string') validObjectIds.add(item);
+        else if (item && typeof item === 'object' && 'id' in item) validObjectIds.add(item.id);
+      }
+    }
+
+    if (!validObjectIds.has(input.actorId)) {
+      throw new InvariantViolationError(
+        `Actor object "${input.actorId}" not found in model objects`,
+        'ACTOR_NOT_FOUND',
+      );
+    }
+  }
+
+  return createFlow(
+    {
+      ...input,
+      type: 'user_journey',
+    },
+    availableConnections,
+  );
+}
+
+/**
+ * Annotates a user journey step with contextual note, actor action, and user intent (F045).
+ */
+export function annotateUserJourneyStep(
+  flow: FlowWithSteps,
+  stepIdOrIndex: string | number,
+  annotations: UserJourneyStepAnnotations,
+): FlowWithSteps {
+  const sortedSteps = [...flow.steps].sort((a, b) => a.stepIndex - b.stepIndex);
+  let targetIndex = -1;
+
+  if (typeof stepIdOrIndex === 'number') {
+    targetIndex = stepIdOrIndex;
+  } else {
+    targetIndex = sortedSteps.findIndex((s) => s.id === stepIdOrIndex);
+  }
+
+  if (targetIndex < 0 || targetIndex >= sortedSteps.length) {
+    throw new InvariantViolationError(
+      `Step "${stepIdOrIndex}" not found in flow "${flow.id}"`,
+      'STEP_NOT_FOUND',
+    );
+  }
+
+  const existing = sortedSteps[targetIndex];
+  if (!existing) {
+    throw new InvariantViolationError(
+      `Step "${stepIdOrIndex}" not found in flow "${flow.id}"`,
+      'STEP_NOT_FOUND',
+    );
+  }
+
+  sortedSteps[targetIndex] = {
+    ...existing,
+    note: annotations.note !== undefined ? annotations.note : existing.note,
+    actorAction:
+      annotations.actorAction !== undefined
+        ? annotations.actorAction
+        : existing.actorAction,
+    userIntent:
+      annotations.userIntent !== undefined
+        ? annotations.userIntent
+        : existing.userIntent,
+  };
+
+  return {
+    ...flow,
+    updatedAt: new Date(),
+    steps: sortedSteps,
+  };
+}
+
 

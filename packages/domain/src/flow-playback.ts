@@ -1,5 +1,5 @@
 import { InvariantViolationError } from './invariants';
-import type { FlowWithSteps } from './types';
+import type { FlowType, FlowWithSteps } from './types';
 
 export interface FlowPlaybackState {
   readonly flowId: string;
@@ -8,6 +8,7 @@ export interface FlowPlaybackState {
   readonly isPlaying: boolean;
   readonly speedMultiplier: number;
   readonly isLooping: boolean;
+  readonly flowType?: FlowType;
 }
 
 export const DEFAULT_STEP_INTERVAL_MS = 2000;
@@ -20,7 +21,7 @@ export interface CreateFlowPlaybackOptions {
 }
 
 /**
- * Initializes a new playback state for a given flow (F044).
+ * Initializes a new playback state for a given flow (F044/F045).
  */
 export function createFlowPlayback(
   flow: FlowWithSteps,
@@ -38,6 +39,7 @@ export function createFlowPlayback(
 
   return {
     flowId: flow.id,
+    flowType: flow.type ?? 'sequence',
     totalSteps,
     currentStepIndex: 0,
     isPlaying: Boolean(options?.autoPlay && totalSteps > 0),
@@ -187,3 +189,55 @@ export function computeStepIntervalMs(
   }
   return Math.round(baseDurationMs / speedMultiplier);
 }
+
+export interface UserJourneyPlaybackStepInfo {
+  readonly flowId: string;
+  readonly flowName: string;
+  readonly flowType: FlowType;
+  readonly persona: string | null;
+  readonly actorId: string | null;
+  readonly stepIndex: number;
+  readonly stepNumber: number;
+  readonly totalSteps: number;
+  readonly connectionId: string | null;
+  readonly note: string | null;
+  readonly actorAction: string | null;
+  readonly userIntent: string | null;
+  readonly isPlaying: boolean;
+}
+
+/**
+ * Extracts structured user-journey playback context for the current step (F045).
+ * Returns null if the flow is not a user_journey flow or has no steps.
+ */
+export function getUserJourneyPlaybackStepInfo(
+  flow: FlowWithSteps,
+  state: FlowPlaybackState,
+): UserJourneyPlaybackStepInfo | null {
+  if (flow.type !== 'user_journey' || !flow.steps || flow.steps.length === 0) {
+    return null;
+  }
+
+  const sortedSteps = [...flow.steps].sort((a, b) => a.stepIndex - b.stepIndex);
+  const currentStep = sortedSteps[state.currentStepIndex] ?? sortedSteps[0];
+  if (!currentStep) {
+    return null;
+  }
+
+  return {
+    flowId: flow.id,
+    flowName: flow.name,
+    flowType: 'user_journey',
+    persona: flow.persona ?? null,
+    actorId: flow.actorId ?? null,
+    stepIndex: state.currentStepIndex,
+    stepNumber: state.currentStepIndex + 1,
+    totalSteps: state.totalSteps,
+    connectionId: currentStep.connectionId,
+    note: currentStep.note ?? null,
+    actorAction: currentStep.actorAction ?? null,
+    userIntent: currentStep.userIntent ?? null,
+    isPlaying: state.isPlaying,
+  };
+}
+

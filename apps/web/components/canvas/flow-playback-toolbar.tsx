@@ -4,6 +4,9 @@ import type { FlowPlaybackState } from '@diagramhq/domain';
 export interface FlowPlaybackToolbarProps {
   state: FlowPlaybackState;
   currentStepNote?: string | null;
+  persona?: string | null;
+  actorAction?: string | null;
+  userIntent?: string | null;
   onPlay: () => void;
   onPause: () => void;
   onNext: () => void;
@@ -17,6 +20,9 @@ export interface FlowPlaybackToolbarProps {
 export function FlowPlaybackToolbar({
   state,
   currentStepNote,
+  persona,
+  actorAction,
+  userIntent,
   onPlay,
   onPause,
   onNext,
@@ -34,6 +40,33 @@ export function FlowPlaybackToolbar({
       data-testid="flow-playback-toolbar"
       className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 bg-slate-900/95 border border-sky-500/40 backdrop-blur-md rounded-2xl p-2.5 px-4 shadow-2xl shadow-sky-950/50"
     >
+      {/* User Journey Context banner if available */}
+      {(persona || actorAction || userIntent) && (
+        <div
+          data-testid="playback-user-journey-context"
+          className="flex items-center gap-2 text-xs px-3 py-1 rounded-full bg-violet-950/80 border border-violet-500/50 text-violet-200"
+        >
+          {persona && (
+            <span
+              data-testid="playback-persona-badge"
+              className="px-2 py-0.5 rounded-full bg-violet-600/50 text-violet-100 font-semibold text-[10px]"
+            >
+              👤 {persona}
+            </span>
+          )}
+          {actorAction && (
+            <span data-testid="playback-actor-action" className="font-medium">
+              Action: <strong className="text-white">{actorAction}</strong>
+            </span>
+          )}
+          {userIntent && (
+            <span data-testid="playback-user-intent" className="text-violet-300/80 text-[11px]">
+              Intent: {userIntent}
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Current Step Description banner if available */}
       {currentStepNote && (
         <div
