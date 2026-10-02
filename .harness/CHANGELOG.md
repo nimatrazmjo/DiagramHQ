@@ -2,6 +2,29 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F065 — Architecture explanation
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ai-explanation.ts`: Pure domain Architecture Explanation engine. Synthesizes grounded, multi-altitude textual and structural narratives of systems, components, flows, and architectural decision records (ADRs) calibrated for specific audiences (`explainArchitectureAtAltitude`): Engineer (low-level protocols, sync/async RPCs, ports, error boundaries), Architect (bounded contexts, coupling degrees, CAP trade-offs, scalability bottlenecks), and Executive / CTO (business capabilities, operational continuity, blast radius, risk posture). Guaranteed to strictly cite real `ObjectId` and `ConnectionId` instances.
+  - `ai-explanation.test.ts`: Added 4 unit tests verifying acceptance test for explaining systems/flows/decisions at engineer, architect, and CTO altitudes referencing real objects, sequential flow step trace, overall architecture explanations, and error validation on invalid altitudes or missing entities.
+  - `index.ts`: Exported `ai-explanation`.
+- Web layer (`apps/web/`):
+  - `components/canvas/architecture-explanation-panel.tsx`: Implemented `<AltitudeSelector />` (engineer, architect, executive buttons with active indicators and descriptive badges) and `<ArchitectureExplanationPanel />` (slide-out drawer with narrative sections, bulleted key points, and interactive grounded entity citation buttons).
+  - `components/canvas/index.ts`: Exported architecture explanation components.
+  - `ai-explanation.spec.tsx`: Added 3 integration tests verifying acceptance test for multi-altitude explanation referencing real objects, `<AltitudeSelector />` rendering, and `<ArchitectureExplanationPanel />` open/closed rendering with grounded citations.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (149 test suites, 998 tests passed)
+```
+
 ## 2026-10-02 — F064 — Natural-language editing
 
 Status: COMPLETE

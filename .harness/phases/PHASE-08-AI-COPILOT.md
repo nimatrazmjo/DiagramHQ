@@ -48,7 +48,7 @@ Test: 'add Redis between A and B' proposes exactly that; Reject changes nothing.
 
 ### F065 — Architecture explanation
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Explain to an audience.
 

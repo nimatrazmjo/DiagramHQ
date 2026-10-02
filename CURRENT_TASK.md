@@ -1,27 +1,28 @@
-# Current Task: F065 — Architecture explanation
+# Current Task: F066 — Impact analysis
 
 **Status**: NOT STARTED
 
 ## Description
-Multi-altitude architecture explanation engine. Generates grounded explanations of systems, flows, components, and architectural decisions tailored to specific audience altitudes:
-- Technical altitude (Engineer / Tech Lead): Detailed protocol, synchronous vs asynchronous semantics, data structures, concurrency, failure modes, error handling.
-- Architectural altitude (Solutions / Enterprise Architect): Component boundaries, coupling, patterns, data ownership, integration topologies, scalability trade-offs.
-- Executive altitude (VP / CTO): Business value, operational cost, reliability posture, team ownership, risk factors, time-to-market.
-Strict invariant: All generated explanations must be grounded in and directly cite real model entities (objects, connections, flows, ADRs).
+AI-driven architectural impact analysis engine. Computes and narratively explains the complete blast radius when an architecture object is modified, upgraded, or removed:
+- Graph traversal calculating direct and indirect downstream dependents and upstream dependencies
+- Affected flows (flows executing through the target object or its connections)
+- Affected stakeholder teams (teams owning impacted objects)
+- Critical paths and single-point-of-failure (SPOF) risks
+- AI-synthesized narrative matching the computed structural impact set exactly
+- Strict invariant: AI impact summary matches the mathematically computed graph impact set.
 
-- Feature ID: F065
+- Feature ID: F066
 - Phase: 08 — AI Copilot
-- Dependencies: Phase 03, Phase 04, Phase 05, Phase 07, F062, F063, F064
+- Dependencies: Phase 03, Phase 04, Phase 05, Phase 07, F059, F062
 - Acceptance criteria:
-  - Explain a system/flow/decision at a chosen altitude (engineer -> CTO)
-  - Test: explanation references real objects.
+  - Select an object -> direct/indirect deps, affected flows/teams/APIs, critical paths, narrated
+  - Test: AI impact matches the computed set.
 
 ## Next Steps
-1. In `packages/domain/src/`, implement architecture explanation engine (`ai-explanation.ts`):
-   - Types: `AudienceAltitude` ('engineer' | 'architect' | 'executive'), `ExplainTarget` (system, flow, object, adr), `ArchitectureExplanation`.
-   - Core functions: `explainArchitectureAtAltitude`, `extractReferencedEntities`.
-   - Unit tests in `packages/domain/src/ai-explanation.test.ts`.
+1. In `packages/domain/src/`, implement AI impact analysis engine (`ai-impact.ts`):
+   - Interfaces: `ImpactAnalysisResult`, `analyzeObjectImpact`, `narrateImpactSummary`.
+   - Unit tests in `packages/domain/src/ai-impact.test.ts`.
 2. In `apps/web/`, implement canvas UI components:
-   - `<ExplanationAltitudeSelector />` and `<ArchitectureExplanationPanel />`.
-   - Integration specs in `apps/web/ai-explanation.spec.tsx`.
+   - `<ImpactAnalysisDrawer />` and `<ImpactGraphPreview />`.
+   - Integration specs in `apps/web/ai-impact.spec.tsx`.
 3. Verify with `pnpm typecheck && pnpm lint && pnpm check-architecture && pnpm test && pnpm build`.
