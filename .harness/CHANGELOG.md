@@ -2,6 +2,33 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F085 — Architecture Linting (100 Features Complete Milestone!)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `linting.ts`: Implemented architecture linting engine and rule evaluator for DiagramHQ (Phase 11 — Drift and Governance). Evaluates architecture models against canonical rules spanning structural integrity, hierarchy containment, documentation completeness, and node coupling (`ARCH-001` Dangling Connection, `ARCH-002` Store-to-Store Coupling, `ARCH-003` Invalid Containment Hierarchy, `ARCH-004` Orphaned Architecture Object, `ARCH-005` Missing Technology Stack, `ARCH-006` Self-Referencing Loop, `ARCH-007` Excessive Node Coupling, `ARCH-008` Missing Description, `ARCH-009` Missing User/Actor Entrypoint). Produces structured findings at `error`, `warning`, and `info` levels with actionable remediation advice, target identifiers, and dynamic health scoring (0 - 100).
+  - Implemented `lintArchitectureModel` with configurable severity threshold, custom rule extension, and rule suppression options.
+  - `linting.test.ts`: Added 4 unit tests verifying that a clean model produces 0 findings & 100% health score, seeded violations produce expected findings at error/warning/info, severity threshold filtering works, and custom/ignored rules are respected.
+  - `index.ts`: Exported `linting`.
+- Web layer (`apps/web/`):
+  - `components/canvas/lint-panel.tsx`: Implemented `<ArchitectureLintModal />` (interactive architecture quality diagnostics modal with clean banner, health gauge, severity filter tabs, category dropdown, search filtering, finding cards with actionable remediation, and canvas focus trigger).
+  - `components/canvas/index.ts`: Exported `lint-panel`.
+  - `linting.spec.tsx`: Added 3 integration tests verifying clean state banner, violating state with issue summary cards, and closed state.
+- Milestone:
+  - **100 / 135 total features completed (74.1% milestone reached)!**
+  - **Phase 11 — Drift and Governance is 25% complete (2/8 features)!**
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean, 0 errors, 0 warnings)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (all domain and web tests passing)
+```
+
 ## 2026-10-02 — F084 — Architecture Drift (Phase 11 Progress)
 
 Status: COMPLETE

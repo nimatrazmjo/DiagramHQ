@@ -80,3 +80,4 @@ export * from './kubernetes';
 export * from './cloud-discovery';
 export * from './cost-visualization';
 export * from './drift';
+export * from './linting';

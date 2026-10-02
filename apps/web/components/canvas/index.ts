@@ -64,3 +64,4 @@ export * from './kubernetes-panel';
 export * from './cloud-discovery-panel';
 export * from './cost-panel';
 export * from './drift-panel';
+export * from './lint-panel';
