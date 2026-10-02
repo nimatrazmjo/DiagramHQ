@@ -59,3 +59,4 @@ export * from './ai-architecture-review';
 export * from './ai-adr-generation';
 export * from './mcp-server';
 export * from './ai-confidence';
+export * from './specialized-agents';

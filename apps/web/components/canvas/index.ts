@@ -43,3 +43,4 @@ export * from './ai-architecture-review-modal';
 export * from './ai-adr-modal';
 export * from './mcp-integration-modal';
 export * from './ai-confidence-badge';
+export * from './specialized-agents-panel';

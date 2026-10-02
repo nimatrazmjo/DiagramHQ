@@ -13,12 +13,12 @@ Statuses (use ONLY these): NOT STARTED · IN PROGRESS · BLOCKED · IN REVIEW ·
 _Computed from this file. Update on every status change. Contract for an auto-counter: `scripts/SCRIPTS.md` -> progress-counter._
 
 - Total features: **135**
-- Complete: 78
+- Complete: 79
 - In Progress: 0
 - In Review: 0
 - Blocked: 0
-- Not Started: 57
-- **Progress: 57.8%**
+- Not Started: 56
+- **Progress: 58.5%**
 
 
 Feature IDs are permanent. Never reuse or repurpose an ID. Split a large feature into new IDs (e.g. F018 -> F018 + F135) and keep the history. F001–F108 follow the reference roadmap; F109+ cover master-spec items not in the reference list.
@@ -164,7 +164,7 @@ Status: COMPLETE  ·  Depends on: Phase 03, Phase 06  ·  File: `phases/PHASE-07
 
 # Phase 08 — AI Copilot
 
-Status: IN PROGRESS  ·  Depends on: Phase 03, Phase 04, Phase 05, Phase 07  ·  File: `phases/PHASE-08-AI-COPILOT.md`
+Status: COMPLETE  ·  Depends on: Phase 03, Phase 04, Phase 05, Phase 07  ·  File: `phases/PHASE-08-AI-COPILOT.md`
 
 ## Features
 
@@ -179,7 +179,7 @@ Status: IN PROGRESS  ·  Depends on: Phase 03, Phase 04, Phase 05, Phase 07  · 
 - [x] F070 — ADR generation
 - [x] F071 — MCP integration
 - [x] F120 — AI evidence + confidence
-- [ ] F121 — Specialized agents
+- [x] F121 — Specialized agents
 
 ---
 
