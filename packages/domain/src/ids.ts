@@ -33,7 +33,8 @@ export type IdPrefix =
   | 'snp'
   | 'brn'
   | 'pr'
-  | 'scn';
+  | 'scn'
+  | 'rdm';
 
 export type Id<P extends IdPrefix> = string & { readonly __brand: P };
 
@@ -61,6 +62,7 @@ export type SnapshotId = Id<'snp'>;
 export type BranchId = Id<'brn'>;
 export type PullRequestId = Id<'pr'>;
 export type ScenarioId = Id<'scn'>;
+export type RoadmapItemId = Id<'rdm'>;
 
 let sequence = 0;
 

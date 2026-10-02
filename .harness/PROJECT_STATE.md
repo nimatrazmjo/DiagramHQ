@@ -8,26 +8,28 @@ Name: DiagramHQ
 Description: Model-first architecture intelligence platform (a "better than IcePanel" Architecture OS). The model — objects + connections — is the product; diagrams are projections of it. Full spec: `product/PRODUCT.md`. CLI: `dhq`.
 
 ## Current Phase
-Phase: 07
-Phase Name: Versioning
+Phase: 08
+Phase Name: AI Copilot
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F119
-Feature Name: Roadmap items
+Feature ID: F062
+Feature Name: AI chat
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 66
+Completed: 67
 In Progress: 0
 Blocked: 0
-Not Started: 69
-Progress: 48.9%
+Not Started: 68
+Progress: 49.6%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F118 — Scenarios. Pure what-if architectural scenarios exploration engine and canvas comparison modal for DiagramHQ. Enables architects and engineering teams to hypothesize and simulate major structural variations (e.g., cloud provider migrations, microservice splits, database sharding, or edge caching) without mutating, polluting, or committing to the real architecture model or main branch. Supports simulated operational metrics (cost delta percentage, latency delta in milliseconds, risk scoring), detailed delta categorization (added, modified, removed objects and connections), and seamless promotion of proven scenarios into full architecture branches ready for review and pull request. Added UI components `<ScenarioBadge />` and `<ScenarioComparisonModal />`, 3 domain unit tests, and 3 web integration tests.
+F119 — Roadmap items. Pure Architecture Roadmap Items engine and quarterly timeline UI for DiagramHQ (completing Phase 07 — Versioning!). Enables architecture and engineering teams to organize architectural evolutions into chronological quarters (e.g., `2026-Q1`, `2026-Q2`), track lifecycle statuses (`planned`, `in_progress`, `completed`, `deferred`), assign priorities and team ownership, and directly link roadmap milestones to concrete architecture change sets and pull requests. Provides quarterly grouping, progress tracking calculations, and accessible canvas UI components `<RoadmapItemCard />` and `<RoadmapTimelinePanel />`, 4 domain unit tests, and 3 web integration tests. Completes Phase 07 — Versioning (10/10 features)!
+
+Prior: F118 — Scenarios. Pure what-if architectural scenarios exploration engine and canvas comparison modal for DiagramHQ. Enables architects and engineering teams to hypothesize and simulate major structural variations (e.g., cloud provider migrations, microservice splits, database sharding, or edge caching) without mutating, polluting, or committing to the real architecture model or main branch. Supports simulated operational metrics (cost delta percentage, latency delta in milliseconds, risk scoring), detailed delta categorization (added, modified, removed objects and connections), and seamless promotion of proven scenarios into full architecture branches ready for review and pull request. Added UI components `<ScenarioBadge />` and `<ScenarioComparisonModal />`, 3 domain unit tests, and 3 web integration tests.
 
 Prior: F117 — ADR system. Pure Architecture Decision Record (ADR) system for DiagramHQ. Supports structured architectural decision tracking with title, lifecycle status (`draft`, `proposed`, `accepted`, `rejected`, `superseded`, `deprecated`), context, decision, consequences, and alternatives considered. Provides polymorphic entity attachment to architecture objects, connections, changes, and version milestones. Implemented query helpers `getADRHistoryForObject`, `getADRsForVersion`, and `getADRsForConnection`. Added accessible, reactive UI components `<ADRBadge />` and `<ADRHistoryDrawer />`, 4 domain unit tests, and 3 web integration tests.
 
