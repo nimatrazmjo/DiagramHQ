@@ -37,7 +37,8 @@ Test: steps stay ordered; notes persist.
 
 ### F043 — Flow visualization
 
-Status: NOT STARTED
+Status: COMPLETE
+
 
 Description: Render the flow over the model.
 

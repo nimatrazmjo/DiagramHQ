@@ -2,7 +2,40 @@
 
 Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F043 — Flow visualization
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `flow-view.ts`: Implemented `projectFlowToCanvas(objects, connections, flow, viewObjects?, options?)` — pure projection function mapping architecture model objects, connections, and an ordered sequence Flow into canvas nodes and edges.
+  - Highlights flow path elements: flags participating nodes (`isInFlow: true`, `flowStepNumbers: number[]`, `highlighted: true`) and dims non-participating elements (`isDimmed: true`).
+  - Animates edges in the flow (`animated: true`, formatted sequential label with step number and note).
+  - Supports `options.activeStepIndex` highlighting specific active step edges and active step participant nodes for step scrubbing and playback.
+  - `flow-view.test.ts`: Added 4 unit tests covering flow path highlighting, node and edge annotation, active step indexing, empty flows, and immutability.
+  - `index.ts`: Exported `flow-view.ts` types and functions.
+- Web layer (`apps/web/`):
+  - `components/canvas/flow-badges.tsx`: Added `<FlowBadges />` component rendering step number indicators and active step pulses.
+  - Integrated `FlowBadges` and flow visual states (active ring/dimmed opacity) across all node types: `app-node.tsx`, `system-node.tsx` (internal and external boundaries), `database-node.tsx`, `component-node.tsx`, `queue-node.tsx`, `person-node.tsx`.
+  - `components/canvas/icepanel-edge.tsx`: Enhanced to support flow stroke coloring, stroke width, drop-shadow glow filter, and step pill badges with step numbers and notes.
+  - `flow-visualization.spec.ts`: Added 4 integration tests verifying flow path rendering, edge animation and annotation, active step highlighting, and model immutability.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm --filter @diagramhq/domain test → 177 passed (26 test files)
+pnpm --filter @diagramhq/web test    → 318 passed (40 test files)
+pnpm test                            → 765 passed across all workspaces
+branch: feat/F043-flow-visualization
+```
+
+Evaluator scores: acceptance=5, correctness=5, boundaries=5, modularity=5, evidence=5 => avg 5.0 — PASS
+
 ## 2026-10-01 — F042 — Flow steps
+
 
 Status: COMPLETE
 

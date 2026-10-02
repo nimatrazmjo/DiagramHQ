@@ -7,6 +7,8 @@ import { DataBadges } from './data-badges';
 import { OwnershipBadges } from './ownership-badges';
 import { TechnologyBadges } from './technology-badges';
 import { PersonaBadges } from './persona-badges';
+import { FlowBadges } from './flow-badges';
+
 
 function AppIcon(): JSX.Element {
   return (
@@ -70,11 +72,16 @@ export function AppNode({ id, data, selected }: NodeProps): JSX.Element {
       data-testid="app-node"
       onDoubleClick={handleDoubleClick}
       className={`min-w-[220px] max-w-[280px] rounded-xl p-3.5 shadow-lg bg-slate-900/95 border transition-all ${
-        selected
-          ? 'border-emerald-500 ring-2 ring-emerald-500/30 shadow-emerald-500/20'
-          : 'border-emerald-500/50 hover:border-emerald-400'
+        nodeData.flowView && !nodeData.isInFlow
+          ? 'opacity-35 border-slate-800'
+          : nodeData.flowView && nodeData.isInFlow
+            ? 'border-sky-400 ring-2 ring-sky-500/50 shadow-sky-500/30'
+            : selected
+              ? 'border-emerald-500 ring-2 ring-emerald-500/30 shadow-emerald-500/20'
+              : 'border-emerald-500/50 hover:border-emerald-400'
       }`}
     >
+
       {/* 4-way handles for routing */}
       <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-emerald-400" />
       <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-emerald-400" />
@@ -154,6 +161,15 @@ export function AppNode({ id, data, selected }: NodeProps): JSX.Element {
 
       {/* Persona Mode Overlay */}
       <PersonaBadges personaView={nodeData.personaView as boolean | undefined} personaMode={nodeData.personaMode as PersonaMode | undefined} />
+
+      {/* Flow Visualization Overlay */}
+      <FlowBadges
+        flowView={nodeData.flowView as boolean | undefined}
+        isInFlow={nodeData.isInFlow as boolean | undefined}
+        flowStepNumbers={nodeData.flowStepNumbers as number[] | undefined}
+        isActiveStepParticipant={nodeData.isActiveStepParticipant as boolean | undefined}
+      />
+
 
       {/* Drill-down action to Components */}
       {canDrillDown && (

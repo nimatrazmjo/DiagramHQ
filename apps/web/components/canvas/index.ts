@@ -8,3 +8,5 @@ export * from './shape-palette';
 export * from './icon-picker-modal';
 export * from './icepanel-sidebar';
 export * from './icepanel-edge';
+export * from './flow-badges';
+

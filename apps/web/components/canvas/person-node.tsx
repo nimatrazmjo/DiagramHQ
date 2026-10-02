@@ -1,6 +1,8 @@
 import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { PersonNodeData } from '@diagramhq/domain';
+import { FlowBadges } from './flow-badges';
+
 
 import { getTechnologyIconPath } from '../../lib/icons';
 
@@ -61,13 +63,18 @@ export function PersonNode({ data, selected }: NodeProps): JSX.Element {
     <div
       data-testid="person-node"
       className={`min-w-[220px] max-w-[280px] rounded-xl p-3.5 shadow-lg bg-slate-900/95 border transition-all ${
-        selected
-          ? 'border-pink-500 ring-2 ring-pink-500/30 shadow-pink-500/20'
-          : isExternal
-          ? 'border-pink-500/30 border-dashed hover:border-pink-400'
-          : 'border-pink-500/50 hover:border-pink-400'
+        nodeData.flowView && !nodeData.isInFlow
+          ? 'opacity-35 border-slate-800'
+          : nodeData.flowView && nodeData.isInFlow
+            ? 'border-sky-400 ring-2 ring-sky-500/50 shadow-sky-500/30'
+            : selected
+              ? 'border-pink-500 ring-2 ring-pink-500/30 shadow-pink-500/20'
+              : isExternal
+              ? 'border-pink-500/30 border-dashed hover:border-pink-400'
+              : 'border-pink-500/50 hover:border-pink-400'
       }`}
     >
+
       {/* 4-way handles for seamless connection routing */}
       <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-pink-400" />
       <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-pink-400" />
@@ -136,6 +143,15 @@ export function PersonNode({ data, selected }: NodeProps): JSX.Element {
           {description}
         </div>
       )}
+
+      {/* Flow Visualization Overlay */}
+      <FlowBadges
+        flowView={nodeData.flowView as boolean | undefined}
+        isInFlow={nodeData.isInFlow as boolean | undefined}
+        flowStepNumbers={nodeData.flowStepNumbers as number[] | undefined}
+        isActiveStepParticipant={nodeData.isActiveStepParticipant as boolean | undefined}
+      />
     </div>
+
   );
 }

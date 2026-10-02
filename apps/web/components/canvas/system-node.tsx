@@ -7,6 +7,8 @@ import { DataBadges } from './data-badges';
 import { OwnershipBadges } from './ownership-badges';
 import { TechnologyBadges } from './technology-badges';
 import { PersonaBadges } from './persona-badges';
+import { FlowBadges } from './flow-badges';
+
 
 function SystemIcon({ external }: { external?: boolean }): JSX.Element {
   return (
@@ -87,11 +89,16 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
       <div
         data-testid="external-system-node"
         className={`min-w-[220px] max-w-[280px] rounded-xl p-3.5 shadow-lg bg-slate-900/80 border border-dashed transition-all ${
-          selected
-            ? 'border-slate-300 ring-2 ring-slate-400/30 shadow-slate-400/20'
-            : 'border-slate-600 hover:border-slate-500'
+          nodeData.flowView && !nodeData.isInFlow
+            ? 'opacity-35 border-slate-800'
+            : nodeData.flowView && nodeData.isInFlow
+              ? 'border-sky-400 ring-2 ring-sky-500/50 shadow-sky-500/30'
+              : selected
+                ? 'border-slate-300 ring-2 ring-slate-400/30 shadow-slate-400/20'
+                : 'border-slate-600 hover:border-slate-500'
         }`}
       >
+
         <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-slate-400" />
         <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-slate-400" />
         <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2 !h-2 !bg-slate-400" />
@@ -150,7 +157,15 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
         <TechnologyBadges technologyView={nodeData.technologyView as boolean | undefined} technologies={nodeData.technologies as Technology[] | undefined} />
         {/* Persona Mode Overlay */}
         <PersonaBadges personaView={nodeData.personaView as boolean | undefined} personaMode={nodeData.personaMode as PersonaMode | undefined} />
+        {/* Flow Visualization Overlay */}
+        <FlowBadges
+          flowView={nodeData.flowView as boolean | undefined}
+          isInFlow={nodeData.isInFlow as boolean | undefined}
+          flowStepNumbers={nodeData.flowStepNumbers as number[] | undefined}
+          isActiveStepParticipant={nodeData.isActiveStepParticipant as boolean | undefined}
+        />
       </div>
+
     );
   }
 
@@ -160,13 +175,18 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
       data-testid="system-node"
       onDoubleClick={handleDoubleClick}
       className={`min-w-[220px] max-w-[280px] rounded-xl p-3.5 shadow-lg bg-slate-900/95 border transition-all ${
-        selected
-          ? 'border-blue-500 ring-2 ring-blue-500/30 shadow-blue-500/20'
-          : critical
-          ? 'border-blue-500/70 hover:border-blue-400 ring-1 ring-amber-500/20'
-          : 'border-blue-500/50 hover:border-blue-400'
+        nodeData.flowView && !nodeData.isInFlow
+          ? 'opacity-35 border-slate-800'
+          : nodeData.flowView && nodeData.isInFlow
+            ? 'border-sky-400 ring-2 ring-sky-500/50 shadow-sky-500/30'
+            : selected
+              ? 'border-blue-500 ring-2 ring-blue-500/30 shadow-blue-500/20'
+              : critical
+              ? 'border-blue-500/70 hover:border-blue-400 ring-1 ring-amber-500/20'
+              : 'border-blue-500/50 hover:border-blue-400'
       }`}
     >
+
       <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-blue-400" />
       <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-blue-400" />
       <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2 !h-2 !bg-blue-400" />
@@ -240,6 +260,15 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
 
       {/* Persona Mode Overlay */}
       <PersonaBadges personaView={nodeData.personaView as boolean | undefined} personaMode={nodeData.personaMode as PersonaMode | undefined} />
+
+      {/* Flow Visualization Overlay */}
+      <FlowBadges
+        flowView={nodeData.flowView as boolean | undefined}
+        isInFlow={nodeData.isInFlow as boolean | undefined}
+        flowStepNumbers={nodeData.flowStepNumbers as number[] | undefined}
+        isActiveStepParticipant={nodeData.isActiveStepParticipant as boolean | undefined}
+      />
+
 
       {/* Drill-down action to Containers */}
       {canDrillDown && (

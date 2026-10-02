@@ -7,6 +7,8 @@ import { DataBadges } from './data-badges';
 import { OwnershipBadges } from './ownership-badges';
 import { TechnologyBadges } from './technology-badges';
 import { PersonaBadges } from './persona-badges';
+import { FlowBadges } from './flow-badges';
+
 
 function DatabaseIcon(): JSX.Element {
   return (
@@ -85,9 +87,16 @@ export function DatabaseNode({ id: _id, data, selected }: NodeProps): JSX.Elemen
     <div
       data-testid="database-node"
       className={`min-w-[220px] max-w-[280px] p-3.5 rounded-xl border-2 shadow-xl backdrop-blur-sm transition-all duration-150 ${getThemeClasses()} ${
-        selected ? 'ring-2 ring-purple-400 ring-offset-2 ring-offset-slate-950 border-purple-400' : ''
+        nodeData.flowView && !nodeData.isInFlow
+          ? 'opacity-35 border-slate-800'
+          : nodeData.flowView && nodeData.isInFlow
+            ? 'border-sky-400 ring-2 ring-sky-500/50 shadow-sky-500/30'
+            : selected
+              ? 'ring-2 ring-purple-400 ring-offset-2 ring-offset-slate-950 border-purple-400'
+              : ''
       }`}
     >
+
       <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-purple-400" />
       <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-purple-400" />
       <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2 !h-2 !bg-purple-400" />
@@ -167,6 +176,15 @@ export function DatabaseNode({ id: _id, data, selected }: NodeProps): JSX.Elemen
         <TechnologyBadges technologyView={nodeData.technologyView as boolean | undefined} technologies={nodeData.technologies as Technology[] | undefined} />
       {/* Persona Mode Overlay */}
       <PersonaBadges personaView={nodeData.personaView as boolean | undefined} personaMode={nodeData.personaMode as PersonaMode | undefined} />
+
+      {/* Flow Visualization Overlay */}
+      <FlowBadges
+        flowView={nodeData.flowView as boolean | undefined}
+        isInFlow={nodeData.isInFlow as boolean | undefined}
+        flowStepNumbers={nodeData.flowStepNumbers as number[] | undefined}
+        isActiveStepParticipant={nodeData.isActiveStepParticipant as boolean | undefined}
+      />
     </div>
+
   );
 }
