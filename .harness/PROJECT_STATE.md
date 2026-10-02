@@ -13,21 +13,23 @@ Phase Name: Collaboration
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F050
-Feature Name: Comments
+Feature ID: F051
+Feature Name: Mentions
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 51
+Completed: 52
 In Progress: 0
 Blocked: 0
-Not Started: 84
-Progress: 37.8%
+Not Started: 83
+Progress: 38.5%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F049 — Presence. Cursors, selection, current-object focus, and presence indicators. Added pure presence state machine (`UserPresence`, `PresenceRoomState`, `createPresenceRoom`, `upsertPeerPresence`, `updatePeerCursor`, `updatePeerSelection`, `pruneInactivePeers`, `getRemoteCursorsForView`, `getRemoteSelections`, `getRemoteActiveObjects`) to domain, `<PresenceCursors />` and `<PresenceIndicators />` to web canvas, 8 domain unit tests, and 6 web integration tests.
+F050 — Comments. Threaded comments across architectural entities (objects, connections, diagrams, flows, docs, changes) with reply, resolve, and re-open workflows. Added pure comments domain engine (`createComment`, `replyToComment`, `resolveComment`, `reopenComment`, `updateCommentContent`, `filterComments`, `buildCommentThreads`, `countUnresolvedCommentsByTarget`), `'cmt'` prefix to `ids.ts`, `<CommentsPanel />` and `<CommentPinBadge />` to web UI, 7 domain unit tests, and 5 web integration tests.
+
+Prior: F049 — Presence. Cursors, selection, current-object focus, and presence indicators. Added pure presence state machine (`UserPresence`, `PresenceRoomState`, `createPresenceRoom`, `upsertPeerPresence`, `updatePeerCursor`, `updatePeerSelection`, `pruneInactivePeers`, `getRemoteCursorsForView`, `getRemoteSelections`, `getRemoteActiveObjects`) to domain, `<PresenceCursors />` and `<PresenceIndicators />` to web canvas, 8 domain unit tests, and 6 web integration tests.
 
 Prior: F048 — Real-time collaboration. Multi-user concurrent editing with pure deterministic conflict resolution (CRDT / LWW Lamport clocks). Added `CollabSession`, `CollabOperation`, `compareLamport`, `applyLocalOperation`, `applyRemoteOperation`, and `syncSessions` to domain with cascade deletion handling, `<CollaborationBanner />` live pulse and peer avatars to web UI, 9 domain unit tests, and 5 web integration tests.
 

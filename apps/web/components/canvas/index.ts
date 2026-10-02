@@ -16,3 +16,4 @@ export * from './api-flow-overlay';
 export * from './collaboration-banner';
 export * from './presence-cursors';
 export * from './presence-indicators';
+export * from './comments-panel';

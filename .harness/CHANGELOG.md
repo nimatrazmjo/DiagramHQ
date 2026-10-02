@@ -2,6 +2,35 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F050 — Comments
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ids.ts`: Added `'cmt'` to `IdPrefix` and declared `CommentId` type brand.
+  - `comments.ts`: Pure threaded comments engine supporting `CommentTargetType` ('object' | 'connection' | 'diagram' | 'flow' | 'doc' | 'change'). Implemented `createComment()`, `replyToComment()`, `resolveComment()`, `reopenComment()`, `updateCommentContent()`, `filterComments()`, `buildCommentThreads()`, and `countUnresolvedCommentsByTarget()`.
+  - `comments.test.ts`: Added 7 unit tests verifying entity support, input validation, reply nesting, CRUD operations, resolve/reopen, and thread aggregation.
+  - `index.ts`: Exported `comments`.
+- Web layer (`apps/web/`):
+  - `components/canvas/comments-panel.tsx`: Added `<CommentsPanel />` drawer component and `<CommentPinBadge />` bubble badge with unresolved comment counters.
+  - `components/canvas/index.ts`: Exported comments components.
+  - `comments.spec.tsx`: Added 5 integration tests verifying comment CRUD and resolve on distinct entities, entity coverage across flows/diagrams/docs/changes, thread structure, and component rendering.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm --filter @diagramhq/domain test → 228 passed (33 test files)
+pnpm --filter @diagramhq/web test    → 353 passed (47 test files)
+pnpm test                            → 851 passed across all workspaces (228 domain, 353 web, 270 api)
+branch: feat/F050-comments
+```
+
+Evaluator scores: acceptance=5, correctness=5, boundaries=5, modularity=5, evidence=5 => avg 5.0 — PASS
+
 ## 2026-10-02 — F049 — Presence
 
 Status: COMPLETE
