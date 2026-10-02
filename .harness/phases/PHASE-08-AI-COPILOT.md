@@ -1,6 +1,6 @@
 # Phase 08 — AI Copilot
 
-Status: NOT STARTED
+Status: IN PROGRESS
 
 ## Description
 AI as a first-class surface: grounded Copilot, generation, NL editing (with evidence), explanation, analysis, documentation, review, ADR generation, MCP, and specialized agents. Every AI mutation is a proposed change a human approves.
@@ -12,7 +12,7 @@ Phase 03, Phase 04, Phase 05, Phase 07
 
 ### F062 — AI chat
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Grounded Copilot panel.
 

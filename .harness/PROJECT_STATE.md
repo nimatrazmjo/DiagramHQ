@@ -13,21 +13,23 @@ Phase Name: AI Copilot
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F062
-Feature Name: AI chat
+Feature ID: F063
+Feature Name: Architecture generation
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 67
+Completed: 68
 In Progress: 0
 Blocked: 0
-Not Started: 68
-Progress: 49.6%
+Not Started: 67
+Progress: 50.4%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F119 — Roadmap items. Pure Architecture Roadmap Items engine and quarterly timeline UI for DiagramHQ (completing Phase 07 — Versioning!). Enables architecture and engineering teams to organize architectural evolutions into chronological quarters (e.g., `2026-Q1`, `2026-Q2`), track lifecycle statuses (`planned`, `in_progress`, `completed`, `deferred`), assign priorities and team ownership, and directly link roadmap milestones to concrete architecture change sets and pull requests. Provides quarterly grouping, progress tracking calculations, and accessible canvas UI components `<RoadmapItemCard />` and `<RoadmapTimelinePanel />`, 4 domain unit tests, and 3 web integration tests. Completes Phase 07 — Versioning (10/10 features)!
+F062 — AI chat. Pure AI Architecture Copilot grounded Q&A engine and persistent UI panel for DiagramHQ (starting Phase 08 — AI Copilot!). The Copilot operates with full grounding over the live architecture model graph (objects, connections, flows, ADRs). Provides dedicated dependency rationale resolution (`resolveDependencyRationale`) to explain direct and transitive multi-hop dependencies ("why does X depend on Y?"), discovering graph paths via breadth-first search and always citing concrete `ObjectId` and `ConnectionId` identifiers. Added accessible canvas UI components `<CitationBadge />` and `<AICopilotPanel />`, 4 domain unit tests, and 3 web integration tests.
+
+Prior: F119 — Roadmap items. Pure Architecture Roadmap Items engine and quarterly timeline UI for DiagramHQ (completing Phase 07 — Versioning!). Enables architecture and engineering teams to organize architectural evolutions into chronological quarters (e.g., `2026-Q1`, `2026-Q2`), track lifecycle statuses (`planned`, `in_progress`, `completed`, `deferred`), assign priorities and team ownership, and directly link roadmap milestones to concrete architecture change sets and pull requests. Provides quarterly grouping, progress tracking calculations, and accessible canvas UI components `<RoadmapItemCard />` and `<RoadmapTimelinePanel />`, 4 domain unit tests, and 3 web integration tests. Completes Phase 07 — Versioning (10/10 features)!
 
 Prior: F118 — Scenarios. Pure what-if architectural scenarios exploration engine and canvas comparison modal for DiagramHQ. Enables architects and engineering teams to hypothesize and simulate major structural variations (e.g., cloud provider migrations, microservice splits, database sharding, or edge caching) without mutating, polluting, or committing to the real architecture model or main branch. Supports simulated operational metrics (cost delta percentage, latency delta in milliseconds, risk scoring), detailed delta categorization (added, modified, removed objects and connections), and seamless promotion of proven scenarios into full architecture branches ready for review and pull request. Added UI components `<ScenarioBadge />` and `<ScenarioComparisonModal />`, 3 domain unit tests, and 3 web integration tests.
 
