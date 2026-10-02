@@ -13,21 +13,23 @@ Phase Name: Infrastructure Integrations
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F080
-Feature Name: GCP
+Feature ID: F081
+Feature Name: Terraform
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 93
+Completed: 94
 In Progress: 0
 Blocked: 0
-Not Started: 42
-Progress: 68.9%
+Not Started: 41
+Progress: 69.6%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F079 — Azure. Implemented Microsoft Azure cloud infrastructure import and topology mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Maps all 15 canonical Azure resource types (VM, App Service, Function App, AKS, Container App, SQL Database, Cosmos DB, Storage Account, VNet, App Gateway, Front Door, API Management, Service Bus, Event Hubs, Event Grid) to typed `ModelObject` instances with hierarchical VNet containment, derives inter-service `ModelConnection` interactions (ingress routing, backend API calls, database queries, async pub/sub), and preserves traceable `AzureCloudEvidence`. Added canvas UI component `<AzureImportModal />`, 7 domain unit tests, and 3 web integration tests.
+F080 — GCP. Implemented Google Cloud Platform cloud infrastructure import and topology mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Maps all 17 canonical GCP resource types (GCE, GKE, Cloud Run, Cloud Functions, App Engine, Cloud SQL, Spanner, Bigtable, Firestore, GCS, VPC, Cloud LB, Cloud CDN, API Gateway, Pub/Sub, Eventarc, Cloud Tasks) to typed `ModelObject` instances with hierarchical VPC containment, derives inter-service `ModelConnection` interactions (origin cache fetch, LB ingress, API Gateway proxying, database queries, async pub/sub, Eventarc triggers, Cloud Tasks dispatch), and preserves traceable `GcpCloudEvidence`. Added canvas UI component `<GcpImportModal />`, 7 domain unit tests, and 3 web integration tests.
+
+Prior: F079 — Azure. Implemented Microsoft Azure cloud infrastructure import and topology mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Maps all 15 canonical Azure resource types (VM, App Service, Function App, AKS, Container App, SQL Database, Cosmos DB, Storage Account, VNet, App Gateway, Front Door, API Management, Service Bus, Event Hubs, Event Grid) to typed `ModelObject` instances with hierarchical VNet containment, derives inter-service `ModelConnection` interactions (ingress routing, backend API calls, database queries, async pub/sub), and preserves traceable `AzureCloudEvidence`. Added canvas UI component `<AzureImportModal />`, 7 domain unit tests, and 3 web integration tests.
 
 Prior: F078 — AWS. Implemented AWS cloud infrastructure import and topology mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Maps all 13 canonical AWS resource types (EC2, ECS, EKS, Lambda, RDS, DynamoDB, S3, CloudFront, API Gateway, SQS, SNS, EventBridge, VPC) to typed `ModelObject` instances with hierarchical VPC containment, derives inter-service `ModelConnection` interactions (origin fetch, proxy integration, database queries, async pub/sub), and preserves traceable `AwsCloudEvidence`. Added canvas UI component `<AwsImportModal />`, 7 domain unit tests, and 3 web integration tests.
 

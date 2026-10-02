@@ -74,5 +74,6 @@ export * from './webhooks';
 export * from './sdk';
 export * from './aws';
 export * from './azure';
+export * from './gcp';
 
 

@@ -1,35 +1,36 @@
-# Current Task: F080 — GCP
+# Current Task: F081 — Terraform
 
 **Status**: NOT STARTED
 
 ## Description
-Import and map real Google Cloud Platform (GCP) cloud infrastructure into the DiagramHQ architecture model (equivalent feature parity with F078 — AWS and F079 — Azure):
-- Discovers and parses GCP resources across projects, folders, and regions:
-  - Compute: Compute Engine (GCE VMs), Google Kubernetes Engine (GKE Clusters), Cloud Run (Serverless containers), Cloud Functions (Gen 1 & Gen 2), App Engine
-  - Storage & Database: Cloud SQL (PostgreSQL, MySQL, SQL Server), Cloud Spanner, Cloud Bigtable, Cloud Firestore / Datastore, Cloud Storage (GCS buckets)
-  - Networking & Ingress: VPC Networks, Subnets, Cloud Load Balancing, Cloud CDN, Cloud Armor, Cloud Endpoints / API Gateway
-  - Messaging & Integration: Cloud Pub/Sub (Topics & Subscriptions), Eventarc, Cloud Tasks
-- Resource to DiagramHQ Object mapping:
-  - Maps GCP Resource URIs / names (`projects/{project}/regions/{region}/...`), resource types, labels, regions, and configuration metadata to typed `ModelObject` instances
-  - Derives inter-resource connections (e.g., Cloud Load Balancing -> Cloud Run / GKE, Cloud Functions -> Cloud SQL / Firestore, Pub/Sub -> Cloud Functions / Cloud Run)
-  - Retains raw cloud evidence and Resource URI references for governance and drift auditing
-- Acceptance test: import mocked GCP resources -> resources mapped.
+Parse Terraform (HCL and state files) and map infrastructure as code into the DiagramHQ architecture model (Phase 10 — Infrastructure Integrations):
+- Parse Terraform configurations (`.tf`, `.tfvars`, `.tfstate` / JSON plans):
+  - Extract resources (`resource "type" "name"`), data sources (`data "type" "name"`), modules (`module "name"`), and outputs (`output "name"`).
+  - Multi-provider support (AWS, Azure, GCP, Kubernetes, generic resources).
+  - Module hierarchy resolution and parameter propagation.
+- Map to architecture model:
+  - Map Terraform resources to typed `ModelObject` instances (`application`, `store`, `group`, `component`).
+  - Derive inter-resource `ModelConnection` links based on resource references and dependency graphs (`depends_on`, attribute interpolation like `${aws_security_group.sg.id}`).
+  - Maintain traceability with code location evidence (file path, line numbers) and Terraform address (`aws_instance.web`).
+- Acceptance test: parse a sample Terraform repo -> model generated with resources, modules, and connections.
 
 Acceptance Criteria:
-- Equivalent GCP resource import (Compute, Storage, Networking, Messaging)
-- Test: import mocked GCP resources.
+- Parse Terraform configs
+- Extract resources, modules, outputs
+- Map to architecture model
+- Test: parse a sample Terraform repo -> model generated.
 
-- Feature ID: F080
+- Feature ID: F081
 - Phase: 10 — Infrastructure Integrations
-- Dependencies: F078, F079, Phase 03, Phase 09
+- Dependencies: F072, F078, F079, F080, Phase 03, Phase 09
 
 ## Next Steps
-1. In `packages/domain/src/`, implement the GCP infrastructure mapper module (`gcp.ts`):
-   - Type definitions: `GcpResource`, `GcpResourceType`, `GcpProjectScanInput`, `GcpImportResult`, `GcpCloudEvidence`, etc.
-   - Resource parsers and normalizers for GCE, GKE, Cloud Run, Cloud Functions, Cloud SQL, Spanner, Bigtable, Firestore, GCS, Cloud LB, Cloud CDN, VPC, Pub/Sub, Eventarc.
-   - Relationship and dependency linkers for GCP topologies.
-   - Unit tests in `packages/domain/src/gcp.test.ts`.
+1. In `packages/domain/src/`, implement the Terraform parser and mapping engine (`terraform.ts`):
+   - Type definitions: `TerraformResource`, `TerraformModule`, `TerraformOutput`, `TerraformConfigScanInput`, `TerraformImportResult`, etc.
+   - HCL / AST token-based parser and state JSON interpreter.
+   - Resource-to-model object mapping and reference-based connection derivation.
+   - Unit tests in `packages/domain/src/terraform.test.ts`.
 2. In `apps/web/`, implement canvas UI components:
-   - `<GcpImportModal />` in `apps/web/components/canvas/gcp-panel.tsx`.
-   - Integration specs in `apps/web/gcp.spec.tsx`.
+   - `<TerraformImportModal />` in `apps/web/components/canvas/terraform-panel.tsx`.
+   - Integration specs in `apps/web/terraform.spec.tsx`.
 3. Verify with `pnpm typecheck && pnpm lint && pnpm check-architecture && pnpm test && pnpm build`.
