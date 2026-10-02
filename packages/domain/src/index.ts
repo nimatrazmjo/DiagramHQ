@@ -83,3 +83,4 @@ export * from './drift';
 export * from './linting';
 export * from './rules';
 export * from './dependency-graph';
+export * from './blast-radius';

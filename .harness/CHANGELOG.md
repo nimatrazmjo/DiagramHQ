@@ -2,6 +2,25 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F087 — Dependency Analysis (Phase 11 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `dependency-graph.ts`: Architecture dependency graph and path analysis engine. Implements:
+    1. **`inferDependencyCategory`**: Classifies each connection as `runtime` / `compile-time` / `data` / `external` based on source/target object kinds (`actor`→external, `store`→data) and connection metadata (`dependencyType: 'compile-time'/'build'/'package'`, `conn.kind === 'dependency'`).
+    2. **`detectDependencyCycles`**: DFS back-edge cycle detection; extracts cycle node lists and path descriptions.
+    3. **`findDependencyPaths`**: BFS/DFS path enumeration between any two nodes (up to configurable max hops); returns all paths sorted by hop count.
+    4. **`analyzeArchitectureDependencies`**: Builds direct + indirect edge sets, applies `DependencyFilterOptions` (type: direct/indirect, category: runtime/compile-time/data/external, selectedNodeId for focus), computes metrics (totalNodes, directDependencyCount, indirectDependencyCount, runtimeCount, compileTimeCount, dataCount, externalCount, cycleCount, hasCycles).
+  - `dependency-graph.test.ts`: 3 unit tests verifying cycle detection (A→B→C→A), indirect path discovery (A→B→C→D), and category filter correctness (direct/indirect/runtime/compile-time/data/external).
+  - `index.ts`: Exported `dependency-graph`.
+- Web layer (`apps/web/`):
+  - `components/canvas/dependency-panel.tsx`: Implemented `<DependencyAnalysisModal />` with 8 KPI metric cards (Nodes, Direct, Indirect, Runtime, Compile-time, Data, External, Cycles), red cycle warning alert banner, type filter buttons (All/Direct/Indirect), category filter dropdown, node-focus select, search input, edge card list (source→target, hop count, category/type badges), and footer showing filtered vs total edge counts.
+  - `components/canvas/index.ts`: Exported `dependency-panel`.
+  - `dependency.spec.tsx`: 3 integration tests — renders with cycle warning for cyclic model, renders with indirect path info for non-cyclic model, renders null when `isOpen=false`.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 83 test files / 468 tests ✓, web 97 test files / 522 tests ✓, `pnpm build ✓`.
+
 ## 2026-10-02 — F086 — Architecture Rules (Phase 11 Progress)
 
 Status: COMPLETE
