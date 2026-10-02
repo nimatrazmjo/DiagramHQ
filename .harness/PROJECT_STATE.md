@@ -13,21 +13,23 @@ Phase Name: Code Integrations
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F072
-Feature Name: GitHub
+Feature ID: F073
+Feature Name: GitLab
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 79
+Completed: 80
 In Progress: 0
 Blocked: 0
-Not Started: 56
-Progress: 58.5%
+Not Started: 55
+Progress: 59.3%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F121 — Specialized agents. Implemented the 7 specialized role-based architectural AI agents operating directly over DiagramHQ's Model Context Protocol (MCP) tool surface: Analyst Agent (domain boundaries, cohesion, coupling indices, fan-in/fan-out), Designer Agent (C4 container topologies, component boundaries, interface contracts, yielding reviewable proposals), Security Agent (zero-trust threat modeling, perimeter ingress validation, blast-radius calculations), Cloud Agent (infrastructure mapping, multi-AZ high availability resilience, persistent datastores), Documentation Agent (C4 architecture catalog cards and Markdown technical specifications), Migration Agent (phased cutover strategies, Strangler Fig pattern, dual-write replication plans, decommissioning change proposals), and Code Agent (repository-to-model alignment, AST static analysis grounding, drift detection). Strict invariant enforced: mutating operations yield reviewable proposals (`isProposal: true, requiresApproval: true`), never silent commits. Added canvas UI components `<SpecializedAgentSelector />`, `<SpecializedAgentResultCard />`, and `<SpecializedAgentDrawer />`, 8 domain unit tests, and 5 web integration tests. **Phase 08 — AI Copilot is now 100% COMPLETE (12/12 features)!**
+F072 — GitHub. Implemented GitHub repository connectivity and static code analysis for automated architecture discovery (Phase 09 — Code Integrations). Statically analyzes repository file trees (`package.json`, `docker-compose.yml`, route controllers) to identify services, exposed APIs, persistent datastores (PostgreSQL, MySQL, Redis, MongoDB), message queues (Kafka, RabbitMQ), frameworks (NestJS, Express, Next.js), and cloud provider SDKs (AWS SDK, GCP, Azure). Strictly enforces grounding invariant: every detected entity and connection carries concrete code evidence (`AIEvidence` with repo, file path, line numbers) and calibrated confidence assessment (high/medium/low). All detected items are formulated as proposed additions for human-in-the-loop review before model import. Added canvas UI components `<GitHubConnectModal />` and `<GitHubScanResultDrawer />`, 2 domain unit tests, and 4 web integration tests.
+
+Prior: F121 — Specialized agents. Implemented the 7 specialized role-based architectural AI agents operating directly over DiagramHQ's Model Context Protocol (MCP) tool surface: Analyst Agent (domain boundaries, cohesion, coupling indices, fan-in/fan-out), Designer Agent (C4 container topologies, component boundaries, interface contracts, yielding reviewable proposals), Security Agent (zero-trust threat modeling, perimeter ingress validation, blast-radius calculations), Cloud Agent (infrastructure mapping, multi-AZ high availability resilience, persistent datastores), Documentation Agent (C4 architecture catalog cards and Markdown technical specifications), Migration Agent (phased cutover strategies, Strangler Fig pattern, dual-write replication plans, decommissioning change proposals), and Code Agent (repository-to-model alignment, AST static analysis grounding, drift detection). Strict invariant enforced: mutating operations yield reviewable proposals (`isProposal: true, requiresApproval: true`), never silent commits. Added canvas UI components `<SpecializedAgentSelector />`, `<SpecializedAgentResultCard />`, and `<SpecializedAgentDrawer />`, 8 domain unit tests, and 5 web integration tests. **Phase 08 — AI Copilot is now 100% COMPLETE (12/12 features)!**
 
 Prior: F120 — AI evidence + confidence. Pure AI Evidence and Confidence scoring engine for DiagramHQ (Phase 08 — AI Copilot). Enforces the core invariant that every AI assertion, generated dependency, architectural edit, or synthesized claim must be anchored to concrete source evidence (repo, file path, line numbers, symbols, commit SHA, configuration rules) accompanied by a mathematically calibrated confidence score (0.00 to 1.00). Evaluates corroborating evidence bonuses, penalizes missing locations or heuristic-only assertions, and automatically flags low-confidence inferences below threshold (< 0.60) with diagnostic warnings and human verification requirements. Added canvas UI components `<ConfidenceBadge />`, `<AIEvidenceCard />`, and `<AIEvidenceInspector />`, 6 domain unit tests, and 4 web integration tests.
 
