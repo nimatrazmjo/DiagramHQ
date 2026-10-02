@@ -10,24 +10,26 @@ Description: Model-first architecture intelligence platform (a "better than IceP
 ## Current Phase
 Phase: 10
 Phase Name: Infrastructure Integrations
-Status: NOT STARTED
+Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F078
-Feature Name: AWS
+Feature ID: F079
+Feature Name: Azure
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 91
+Completed: 92
 In Progress: 0
 Blocked: 0
-Not Started: 44
-Progress: 67.4%
+Not Started: 43
+Progress: 68.1%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F127 — SDK. Implemented typed TypeScript client SDK (`DiagramHQClient`, `createDiagramHQClient`) for DiagramHQ's REST and Model intelligence APIs (Phase 09 — Code Integrations). Covers complete CRUD over architectures, model objects, connections, views, and execution flows with model snapshot extraction (`getModel`), comprehensive error hierarchy (`DiagramHQApiError`, `AuthenticationError`, `NotFoundError`), custom HTTP transport interface, and in-memory mock test server (`createMockTestServer`) with verified round-trip fidelity. Added canvas UI component `<SdkPanelModal />`, 5 domain unit tests, and 3 web integration tests. **Phase 09 — Code Integrations is now 100% COMPLETE (10/10 features)!**
+F078 — AWS. Implemented AWS cloud infrastructure import and topology mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Maps all 13 canonical AWS resource types (EC2, ECS, EKS, Lambda, RDS, DynamoDB, S3, CloudFront, API Gateway, SQS, SNS, EventBridge, VPC) to typed `ModelObject` instances with hierarchical VPC containment, derives inter-service `ModelConnection` interactions (origin fetch, proxy integration, database queries, async pub/sub), and preserves traceable `AwsCloudEvidence`. Added canvas UI component `<AwsImportModal />`, 7 domain unit tests, and 3 web integration tests.
+
+Prior: F127 — SDK. Implemented typed TypeScript client SDK (`DiagramHQClient`, `createDiagramHQClient`) for DiagramHQ's REST and Model intelligence APIs (Phase 09 — Code Integrations). Covers complete CRUD over architectures, model objects, connections, views, and execution flows with model snapshot extraction (`getModel`), comprehensive error hierarchy (`DiagramHQApiError`, `AuthenticationError`, `NotFoundError`), custom HTTP transport interface, and in-memory mock test server (`createMockTestServer`) with verified round-trip fidelity. Added canvas UI component `<SdkPanelModal />`, 5 domain unit tests, and 3 web integration tests. **Phase 09 — Code Integrations is now 100% COMPLETE (10/10 features)!**
 
 Prior: F126 — Webhooks. Implemented outbound webhook delivery and lifecycle event notification engine for DiagramHQ (Phase 09 — Code Integrations). Emits standard lifecycle events across architecture models (`object.*`, `connection.*`, `diagram.created`, `flow.created`, `architecture.updated`, `version.created`, `change.approved`, `change.merged`), secured with cryptographic HMAC SHA-256 signatures (`X-Hub-Signature-256`) and per-subscription secret tokens (`whsec_...`). Supports wildcard subscriptions (`*`, `object.*`, `connection.*`), architecture scoping, delivery audit logs, and test sink verification. Added canvas UI component `<WebhookManagerModal />`, 5 domain unit tests, and 3 web integration tests.
 

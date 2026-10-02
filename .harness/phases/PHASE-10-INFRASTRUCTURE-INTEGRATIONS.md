@@ -1,6 +1,6 @@
 # Phase 10 — Infrastructure Integrations
 
-Status: NOT STARTED
+Status: IN PROGRESS
 
 ## Description
 Import real infrastructure into the model: AWS/Azure/GCP, Terraform, Kubernetes, plus cloud resource discovery and cost.
@@ -12,7 +12,7 @@ Phase 03, Phase 09
 
 ### F078 — AWS
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Import AWS resources.
 
