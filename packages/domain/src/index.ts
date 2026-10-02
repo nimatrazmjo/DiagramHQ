@@ -78,3 +78,4 @@ export * from './gcp';
 export * from './terraform';
 export * from './kubernetes';
 export * from './cloud-discovery';
+export * from './cost-visualization';

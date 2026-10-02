@@ -2,6 +2,33 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F128 — Cost Visualization (Phase 10 COMPLETE!)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `cost-visualization.ts`: Implemented cloud infrastructure cost estimation and architectural cost overlay engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Attaches cloud cost data to infrastructure architecture model objects without mutating original objects (`attachCostToObject`), computes per-service rollups with subtotals across categories (`calculateServiceCostRollup` across compute, database, storage, networking), generates architecture-wide cost summaries (`calculateArchitectureCostReport`), and preserves grounded `CostEvidence` (`sourceType: 'cloud_billing'`, billing account, meter ID, provider, timestamp).
+  - Implemented `attachCostToObject`, `calculateServiceCostRollup`, `calculateArchitectureCostReport`, and `createMockCostDataset`.
+  - `cost-visualization.test.ts`: Added 4 unit tests verifying cost attachment & immutability, per-service rollups across compute/db/storage/networking, multiple resource aggregation, and architecture cost reports.
+  - `index.ts`: Exported `cost-visualization`.
+- Web layer (`apps/web/`):
+  - `components/canvas/cost-panel.tsx`: Implemented `<CostVisualizationModal />` (interactive modal with currency switcher, high-level KPI cards, category breakdown progress cards, filtered service rollups, expandable billing evidence, and canvas overlay integration).
+  - `components/canvas/index.ts`: Exported cost panel.
+  - `cost.spec.tsx`: Added 3 integration tests verifying modal rendering, closed state, and per-service cost items with evidence.
+- Milestone:
+  - **98 / 135 total features completed (72.6% milestone reached)!**
+  - **Phase 10 — Infrastructure Integrations is now 100% COMPLETE (7/7 features)!**
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean, 0 errors, 0 warnings)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (206 test suites, 1228 tests passed)
+```
+
 ## 2026-10-02 — F083 — Cloud Resource Discovery (Phase 10 Progress)
 
 Status: COMPLETE
