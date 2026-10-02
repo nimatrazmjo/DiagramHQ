@@ -1,27 +1,26 @@
-# Current Task: F116 — Notifications
+# Current Task: F055 — Version history
 
 **Status**: NOT STARTED
 
 ## Description
-Multi-channel notification engine (in-app, email, Slack, Microsoft Teams) for architectural events: model changes, comments, mentions, and version review requests.
-- Feature ID: F116
-- Phase: 06 — Collaboration
-- Dependencies: F050, F051, F054
+Live editable architecture version and immutable numbered snapshots with semantic version labels, timestamping, creator tracking, and immutability invariants.
+- Feature ID: F055
+- Phase: 07 — Versioning
+- Dependencies: Phase 03, Phase 06
 - Acceptance criteria:
-  - In-app notifications for changes, comments, mentions, reviews
-  - Multi-channel dispatch (email, Slack, Microsoft Teams) via pluggable transports / dispatchers
-  - Test: an event produces a notification; channel dispatch tested (stub transport).
+  - Live editable version + immutable numbered snapshots
+  - Test: snapshot stays immutable while live edits continue.
 
 ## Next Steps
-1. Review `PHASE-06-COLLABORATION.md` for F116 acceptance criteria.
-2. In `packages/domain/src/`, implement notifications dispatcher and inbox engine (`notifications.ts`):
-   - Notification events: `change`, `comment`, `mention`, `review_requested`, `review_approved`.
-   - Notification channels: `in_app`, `email`, `slack`, `teams`.
-   - Transport interface: `NotificationTransport` (with memory/stub transport for tests).
-   - Functions: `createNotification`, `dispatchNotification`, `filterNotificationsForUser`, `markNotificationRead`, `markAllNotificationsRead`.
-   - Unit tests in `packages/domain/src/notifications.test.ts`.
-3. In `apps/web/`, implement notification bell / inbox panel:
-   - `<NotificationCenter />` dropdown / flyout showing categorized unread notifications.
-   - Channel config / badge component `<NotificationBadge />`.
-   - Web integration specs in `apps/web/notifications.spec.tsx`.
+1. Review `PHASE-07-VERSIONING.md` for F055 acceptance criteria.
+2. In `packages/domain/src/`, implement version history engine (`version-history.ts`):
+   - Version snapshot entities (`VersionSnapshot`, `SnapshotId`).
+   - Live version mutability vs snapshot freeze.
+   - Operations: `createNumberedSnapshot`, `getSnapshot`, `listSnapshots`, `verifySnapshotIntegrity`.
+   - Invariants: Any mutation attempt on a snapshot throws `SnapshotImmutableError`.
+   - Unit tests in `packages/domain/src/version-history.test.ts`.
+3. In `apps/web/`, implement version history UI components:
+   - `<VersionHistoryModal />` or `<VersionTimeline />` displaying live vs snapshot releases.
+   - `<SnapshotBadge />` chip displaying snapshot number/tag and immutable status.
+   - Web integration specs in `apps/web/version-history.spec.tsx`.
 4. Verify with `pnpm typecheck && pnpm lint && pnpm check-architecture && pnpm test && pnpm build`.

@@ -2,6 +2,29 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F116 — Notifications (Phase 06 Complete)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `notifications.ts`: Multi-channel notification pipeline (in-app, email, Slack, Microsoft Teams) for model changes, comments, mentions, and version review requests. Implemented `createNotification`, `dispatchNotification`, `markNotificationRead`, `markAllNotificationsRead`, `filterNotifications`, `countUnreadNotifications`, and `StubNotificationTransport`.
+  - `notifications.test.ts`: Added 5 unit tests verifying multi-channel dispatch, transport failure handling, read workflows, and unread filtering.
+  - `index.ts`: Exported `notifications`.
+- Web layer (`apps/web/`):
+  - `components/canvas/notification-center.tsx`: Implemented `<NotificationBadge />` with dynamic unread badge, `<NotificationItem />` with event and channel icons, and `<NotificationCenter />` drawer with mark-all-read and empty state.
+  - `components/canvas/index.ts`: Exported notification components.
+  - `notifications.spec.tsx`: Added 5 integration tests verifying multi-channel dispatch with stub transports, read status transitions, unread counter, and component rendering.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (127 test suites, 902 tests passed)
+```
+
 ## 2026-10-02 — F054 — Team management
 
 Status: COMPLETE

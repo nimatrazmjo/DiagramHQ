@@ -1,6 +1,6 @@
 # Phase 06 — Collaboration
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Description
 Turn the single-player model into a team tool: real-time editing, presence, comments, mentions, share links, permissions, team management, notifications.
@@ -100,7 +100,7 @@ Test: assign owner; filter by owner returns the set.
 
 ### F116 — Notifications
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Multi-channel notifications.
 
