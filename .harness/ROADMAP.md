@@ -13,12 +13,12 @@ Statuses (use ONLY these): NOT STARTED · IN PROGRESS · BLOCKED · IN REVIEW ·
 _Computed from this file. Update on every status change. Contract for an auto-counter: `scripts/SCRIPTS.md` -> progress-counter._
 
 - Total features: **135**
-- Complete: 83
+- Complete: 84
 - In Progress: 0
 - In Review: 0
 - Blocked: 0
-- Not Started: 52
-- **Progress: 61.5%**
+- Not Started: 51
+- **Progress: 62.2%**
 
 
 Feature IDs are permanent. Never reuse or repurpose an ID. Split a large feature into new IDs (e.g. F018 -> F018 + F135) and keep the history. F001–F108 follow the reference roadmap; F109+ cover master-spec items not in the reference list.
@@ -193,7 +193,7 @@ Status: IN PROGRESS  ·  Depends on: Phase 03, Phase 08  ·  File: `phases/PHASE
 - [x] F073 — GitLab
 - [x] F074 — Repository discovery
 - [x] F075 — Code-to-architecture mapping
-- [ ] F076 — OpenAPI import
+- [x] F076 — OpenAPI import
 - [ ] F077 — Repository synchronization
 - [ ] F122 — API catalog
 - [ ] F123 — Event catalog

@@ -2,6 +2,32 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F076 — OpenAPI import (Phase 09 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `openapi-import.ts`: Implemented OpenAPI 3.0/3.1 and Swagger 2.0 specification parser and API catalog importer for DiagramHQ (Phase 09 — Code Integrations). Parses JSON and YAML specs into structured endpoint operations (GET, POST, PUT, DELETE, PATCH) with path parameters, query parameters, request bodies, and response codes.
+  - Automatically links parsed endpoints to target architecture services and source repositories, populating the discoverable `ApiCatalog` while maintaining `AIEvidence` and confidence tracking.
+  - `openapi-import.test.ts`: Added 4 unit tests verifying OpenAPI 3.0 parsing, Swagger 2.0 compatibility, tag and service filtering, and YAML/JSON error handling.
+  - `index.ts`: Exported `openapi-import`.
+- Web layer (`apps/web/`):
+  - `components/canvas/openapi-import-panel.tsx`: Implemented `<OpenApiImportModal />` (interactive spec import interface supporting JSON/YAML paste or file content, spec format detection, target service binding, and endpoint preview before import) and `<ApiCatalogDrawer />` (API catalog drawer displaying categorized endpoints with HTTP method badges, route parameters, tags, and service linkage badges).
+  - `components/canvas/index.ts`: Exported openapi import components.
+  - `openapi-import.spec.tsx`: Added 3 integration tests verifying modal import form, endpoint extraction and display, and catalog drawer search filtering.
+- Milestone:
+  - **Phase 09 — Code Integrations is now 50% COMPLETE (5/10 features completed, 84/135 total, 62.2% milestone reached)!**
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (181 test suites, 1100 tests passed)
+```
+
 ## 2026-10-02 — F075 — Code-to-architecture mapping (Phase 09 Progress)
 
 Status: COMPLETE

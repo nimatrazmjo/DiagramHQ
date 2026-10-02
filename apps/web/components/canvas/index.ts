@@ -48,3 +48,4 @@ export * from './github-scanner-panel';
 export * from './gitlab-scanner-panel';
 export * from './repo-discovery-panel';
 export * from './code-mapping-panel';
+export * from './openapi-import-panel';

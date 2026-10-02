@@ -66,7 +66,7 @@ Test: a component links to its repo path.
 
 ### F076 — OpenAPI import
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Spec -> API catalog.
 
