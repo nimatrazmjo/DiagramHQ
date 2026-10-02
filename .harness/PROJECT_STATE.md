@@ -13,21 +13,23 @@ Phase Name: Versioning
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F060
-Feature Name: Pull requests
+Feature ID: F061
+Feature Name: Merge
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 62
+Completed: 63
 In Progress: 0
 Blocked: 0
-Not Started: 73
-Progress: 45.9%
+Not Started: 72
+Progress: 46.7%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F059 — Architecture changes. Pure architecture change sets and impact analysis engine. Computes direct change lists (added, modified, removed objects and connections) alongside full downstream impact analysis: affected architecture objects (direct changes, connection endpoints, and connected dependencies), affected flows (flows traversing affected connections or objects), and affected stakeholder teams (teams owning affected objects via ownership records or metadata). Added UI components `<ImpactAnalysisBadge />` and `<ChangeSetSummary />`, 2 domain unit tests, and 3 web integration tests.
+F060 — Pull requests. Pure architecture pull request review engine and canvas UI. Supports titled pull requests linking source to target branch, embedded visual diff (added, modified, removed, moved objects & connections with semantic colors), downstream affected systems impact analysis, automatic risk scoring (low, medium, high, critical) with human-readable rationale, and full review workflows (commenting, reviewing, approving, and rejecting). Added UI components `<PullRequestBadge />` and `<PullRequestModal />`, 3 domain unit tests, and 3 web integration tests.
+
+Prior: F059 — Architecture changes. Pure architecture change sets and impact analysis engine. Computes direct change lists (added, modified, removed objects and connections) alongside full downstream impact analysis: affected architecture objects (direct changes, connection endpoints, and connected dependencies), affected flows (flows traversing affected connections or objects), and affected stakeholder teams (teams owning affected objects via ownership records or metadata). Added UI components `<ImpactAnalysisBadge />` and `<ChangeSetSummary />`, 2 domain unit tests, and 3 web integration tests.
 
 Prior: F058 — Architecture diff. Pure visual architecture diff engine comparing two architecture versions or branches. Categorizes all entity variations into semantic buckets: added (new entities in target), modified (attributes or connections changed), removed (deleted in target), moved (position changed without attribute modifications), and unchanged. Maps each category to standardized semantic colors (emerald for added, amber for modified, rose for removed, purple for moved). Added UI components `<DiffLegend />` and `<VisualDiffViewer />`, 3 domain unit tests, and 3 web integration tests.
 

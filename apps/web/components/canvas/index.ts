@@ -27,3 +27,4 @@ export * from './snapshot-modal';
 export * from './branch-selector';
 export * from './visual-diff-viewer';
 export * from './change-set-summary';
+export * from './pull-request-modal';

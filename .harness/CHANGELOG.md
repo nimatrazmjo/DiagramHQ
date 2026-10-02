@@ -2,6 +2,30 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F060 — Pull requests
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ids.ts`: Added `'pr'` prefix to `IdPrefix` and declared `PullRequestId` brand type.
+  - `pull-requests.ts`: Architecture pull requests domain logic and review engine. Implemented `createArchitecturePullRequest`, `submitPullRequestReview`, `addPullRequestComment`, and `calculatePullRequestRisk`. Supports titled pull requests linking source to target branch, embedded visual diff, downstream affected systems impact analysis, automated risk scoring (low, medium, high, critical) with human-readable rationale, and full review workflows (commenting, approving, and rejecting).
+  - `pull-requests.test.ts`: Added 3 unit tests verifying acceptance test for diff accuracy and review workflow transitions, risk scoring calculations for removals/flows, and error handling for empty titles and closed PR reviews.
+  - `index.ts`: Exported `pull-requests`.
+- Web layer (`apps/web/`):
+  - `components/canvas/pull-request-modal.tsx`: Implemented `<PullRequestBadge />` (displaying PR #, title, status pill, and risk level) and `<PullRequestModal />` (review modal with risk banner, diff tab, review history, comment form, and approve/reject actions).
+  - `components/canvas/index.ts`: Exported pull request components.
+  - `pull-requests.spec.tsx`: Added 3 integration tests verifying acceptance test for PR diff viewing and review submissions, `<PullRequestBadge />` rendering, and `<PullRequestModal />` review interactions.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (139 test suites, 943 tests passed)
+```
+
 ## 2026-10-02 — F059 — Architecture changes
 
 Status: COMPLETE

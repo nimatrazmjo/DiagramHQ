@@ -43,3 +43,4 @@ export * from './snapshots';
 export * from './branches';
 export * from './diff';
 export * from './changes';
+export * from './pull-requests';
