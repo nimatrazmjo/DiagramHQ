@@ -8,26 +8,28 @@ Name: DiagramHQ
 Description: Model-first architecture intelligence platform (a "better than IcePanel" Architecture OS). The model — objects + connections — is the product; diagrams are projections of it. Full spec: `product/PRODUCT.md`. CLI: `dhq`.
 
 ## Current Phase
-Phase: 09
-Phase Name: Code Integrations
-Status: IN PROGRESS
+Phase: 10
+Phase Name: Infrastructure Integrations
+Status: NOT STARTED
 
 ## Current Feature
-Feature ID: F127
-Feature Name: SDK
+Feature ID: F078
+Feature Name: AWS
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 90
+Completed: 91
 In Progress: 0
 Blocked: 0
-Not Started: 45
-Progress: 66.7%
+Not Started: 44
+Progress: 67.4%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F126 — Webhooks. Implemented outbound webhook delivery and lifecycle event notification engine for DiagramHQ (Phase 09 — Code Integrations). Emits standard lifecycle events across architecture models (`object.*`, `connection.*`, `diagram.created`, `flow.created`, `architecture.updated`, `version.created`, `change.approved`, `change.merged`), secured with cryptographic HMAC SHA-256 signatures (`X-Hub-Signature-256`) and per-subscription secret tokens (`whsec_...`). Supports wildcard subscriptions (`*`, `object.*`, `connection.*`), architecture scoping, delivery audit logs, and test sink verification. Added canvas UI component `<WebhookManagerModal />`, 5 domain unit tests, and 3 web integration tests.
+F127 — SDK. Implemented typed TypeScript client SDK (`DiagramHQClient`, `createDiagramHQClient`) for DiagramHQ's REST and Model intelligence APIs (Phase 09 — Code Integrations). Covers complete CRUD over architectures, model objects, connections, views, and execution flows with model snapshot extraction (`getModel`), comprehensive error hierarchy (`DiagramHQApiError`, `AuthenticationError`, `NotFoundError`), custom HTTP transport interface, and in-memory mock test server (`createMockTestServer`) with verified round-trip fidelity. Added canvas UI component `<SdkPanelModal />`, 5 domain unit tests, and 3 web integration tests. **Phase 09 — Code Integrations is now 100% COMPLETE (10/10 features)!**
+
+Prior: F126 — Webhooks. Implemented outbound webhook delivery and lifecycle event notification engine for DiagramHQ (Phase 09 — Code Integrations). Emits standard lifecycle events across architecture models (`object.*`, `connection.*`, `diagram.created`, `flow.created`, `architecture.updated`, `version.created`, `change.approved`, `change.merged`), secured with cryptographic HMAC SHA-256 signatures (`X-Hub-Signature-256`) and per-subscription secret tokens (`whsec_...`). Supports wildcard subscriptions (`*`, `object.*`, `connection.*`), architecture scoping, delivery audit logs, and test sink verification. Added canvas UI component `<WebhookManagerModal />`, 5 domain unit tests, and 3 web integration tests.
 
 Prior: F125 — Model-as-code + CLI. Implemented Model-as-code serialization engine and `dhq` CLI command surface for DiagramHQ (Phase 09 — Code Integrations). Serializes architecture models to clean, human-readable YAML with deterministic mapping between slugs and stable internal IDs (`ObjectId`, `ConnectionId`), supporting C4 model kinds and aliases (`container`, `person`, `database`). Implemented full `dhq` CLI commands (`login`, `init`, `pull`, `push`, `validate`, `diff`, `deploy`, `export`, `generate`) with push-then-pull round-trip fidelity, invariant validation catching syntax errors, duplicate slugs, dangling connection references, and parent hierarchy cycles, and structural diffing. Added canvas UI component `<ModelAsCodeModal />`, 15 domain unit tests, and 3 web integration tests.
 

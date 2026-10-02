@@ -55,5 +55,6 @@ export * from './event-catalog-panel';
 export * from './database-catalog-panel';
 export * from './model-as-code-panel';
 export * from './webhooks-panel';
+export * from './sdk-panel';
 
 
