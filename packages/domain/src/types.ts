@@ -171,6 +171,11 @@ export interface Flow {
   persona?: string | null;
   dataClassification?: string | null;
   dataElements?: string[];
+  endpoint?: string | null;
+  httpMethod?: string | null;
+  requestSchema?: string | null;
+  responseSchema?: string | null;
+  statusCode?: number | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -186,6 +191,11 @@ export interface FlowStep {
   dataElements?: string[];
   transformation?: string | null;
   dataClassification?: string | null;
+  endpoint?: string | null;
+  httpMethod?: string | null;
+  requestSchema?: string | null;
+  responseSchema?: string | null;
+  statusCode?: number | null;
 }
 
 export interface DataLineageHop {
@@ -213,6 +223,15 @@ export interface DataLineageTrace {
     readonly dataElements: string[];
     readonly dataClassification?: string | null;
   }>;
+}
+
+export interface SequenceDiagramExportOptions {
+  title?: string;
+  autonumber?: boolean;
+  includeNotes?: boolean;
+  includeSchemas?: boolean;
+  includeStatusCodes?: boolean;
+  includeReturnArrows?: boolean;
 }
 
 export interface FlowWithSteps extends Flow {

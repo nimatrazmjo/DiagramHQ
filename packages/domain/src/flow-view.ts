@@ -30,6 +30,11 @@ export interface FlowEdgeData {
   dataElements?: string[];
   transformation?: string | null;
   dataClassification?: string | null;
+  endpoint?: string | null;
+  httpMethod?: string | null;
+  statusCode?: number | null;
+  requestSchema?: string | null;
+  responseSchema?: string | null;
   isDimmed?: boolean;
   isActiveStep?: boolean;
   [key: string]: unknown;
@@ -50,6 +55,11 @@ export interface FlowProjectionResult {
     persona?: string | null;
     dataClassification?: string | null;
     dataElements?: string[];
+    endpoint?: string | null;
+    httpMethod?: string | null;
+    statusCode?: number | null;
+    requestSchema?: string | null;
+    responseSchema?: string | null;
     stepCount: number;
     participatingObjectIds: string[];
     activeStepIndex?: number;
@@ -58,6 +68,11 @@ export interface FlowProjectionResult {
     activeDataElements?: string[];
     activeTransformation?: string | null;
     activeDataClassification?: string | null;
+    activeEndpoint?: string | null;
+    activeHttpMethod?: string | null;
+    activeStatusCode?: number | null;
+    activeRequestSchema?: string | null;
+    activeResponseSchema?: string | null;
   };
 }
 
@@ -124,6 +139,11 @@ export function projectFlowToCanvas(
       dataElements?: string[];
       transformation?: string | null;
       dataClassification?: string | null;
+      endpoint?: string | null;
+      httpMethod?: string | null;
+      requestSchema?: string | null;
+      responseSchema?: string | null;
+      statusCode?: number | null;
     }>
   >();
 
@@ -139,6 +159,11 @@ export function projectFlowToCanvas(
       dataElements: step.dataElements ? [...step.dataElements] : undefined,
       transformation: step.transformation ?? null,
       dataClassification: step.dataClassification ?? null,
+      endpoint: step.endpoint ?? null,
+      httpMethod: step.httpMethod ?? null,
+      requestSchema: step.requestSchema ?? null,
+      responseSchema: step.responseSchema ?? null,
+      statusCode: step.statusCode !== undefined ? step.statusCode : null,
     });
     stepsByConnectionId.set(step.connectionId, existing);
   }
@@ -250,6 +275,11 @@ export function projectFlowToCanvas(
           dataElements: primaryStep?.dataElements,
           transformation: primaryStep?.transformation ?? null,
           dataClassification: primaryStep?.dataClassification ?? null,
+          endpoint: primaryStep?.endpoint ?? null,
+          httpMethod: primaryStep?.httpMethod ?? null,
+          statusCode: primaryStep?.statusCode ?? null,
+          requestSchema: primaryStep?.requestSchema ?? null,
+          responseSchema: primaryStep?.responseSchema ?? null,
           isActiveStep,
           isDimmed: false,
         },
@@ -280,6 +310,11 @@ export function projectFlowToCanvas(
       persona: flow.persona ?? null,
       dataClassification: flow.dataClassification ?? null,
       dataElements: flow.dataElements,
+      endpoint: flow.endpoint ?? null,
+      httpMethod: flow.httpMethod ?? null,
+      statusCode: flow.statusCode ?? null,
+      requestSchema: flow.requestSchema ?? null,
+      responseSchema: flow.responseSchema ?? null,
       stepCount: sortedSteps.length,
       participatingObjectIds: Array.from(participatingObjectIds),
       activeStepIndex: options?.activeStepIndex,
@@ -289,6 +324,11 @@ export function projectFlowToCanvas(
       activeTransformation: activeStep?.transformation ?? null,
       activeDataClassification:
         activeStep?.dataClassification ?? flow.dataClassification ?? null,
+      activeEndpoint: activeStep?.endpoint ?? flow.endpoint ?? null,
+      activeHttpMethod: activeStep?.httpMethod ?? flow.httpMethod ?? null,
+      activeStatusCode: activeStep?.statusCode ?? flow.statusCode ?? null,
+      activeRequestSchema: activeStep?.requestSchema ?? flow.requestSchema ?? null,
+      activeResponseSchema: activeStep?.responseSchema ?? flow.responseSchema ?? null,
     },
   };
 }

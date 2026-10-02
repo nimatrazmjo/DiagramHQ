@@ -2,6 +2,36 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F047 — API flows
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `types.ts`: Extended `Flow` and `FlowStep` with `endpoint`, `httpMethod`, `requestSchema`, `responseSchema`, and `statusCode`; defined `SequenceDiagramExportOptions` interface.
+  - `flow.ts`: Updated `createFlow`, `updateFlow`, and `addFlowStep` to map API fields; implemented `createApiFlow()` factory with non-empty endpoint validation; implemented `annotateApiFlowStep()`; implemented `exportFlowToMermaidSequence()` exporting to Mermaid sequence diagram syntax; implemented `exportFlowToPlantUMLSequence()` exporting to PlantUML syntax.
+  - `flow-playback.ts`: Added `getApiFlowPlaybackStepInfo()` runtime helper for step endpoint, method, status code, and schemas during playback.
+  - `flow-view.ts`: Enhanced `FlowEdgeData` and `flowMetadata` to pass API endpoint, method, status code, schemas, and active step variants.
+  - `api-flows.test.ts`: Added 9 unit tests covering API flow creation, step annotations, playback context extraction, Mermaid sequence export, PlantUML sequence export, missing connection validation, and canvas projection.
+- Web layer (`apps/web/`):
+  - `components/canvas/api-flow-overlay.tsx`: Added `<ApiFlowOverlay />` component rendering API endpoint, method badges with HTTP method color styling, status code badge, schema code blocks, step notes, and export action buttons.
+  - `components/canvas/index.ts`: Exported `ApiFlowOverlay`.
+  - `api-flows.spec.tsx`: Added 6 integration tests verifying API flow instantiation, step-by-step playback, Mermaid export generation, PlantUML export generation, canvas view projection, and overlay UI rendering.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm --filter @diagramhq/domain test → 204 passed (30 test files)
+pnpm --filter @diagramhq/web test    → 337 passed (44 test files)
+pnpm test                            → 811 passed across all workspaces (204 domain, 337 web, 270 api)
+branch: feat/F047-api-flows
+```
+
+Evaluator scores: acceptance=5, correctness=5, boundaries=5, modularity=5, evidence=5 => avg 5.0 — PASS
+
 ## 2026-10-02 — F046 — Data flows
 
 Status: COMPLETE

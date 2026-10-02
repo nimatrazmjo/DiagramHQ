@@ -1,18 +1,18 @@
-# Current Task: F047 — API flows
+# Current Task: F048 — Real-time collaboration
 
 **Status**: NOT STARTED
 
 ## Description
-Flow type for API requests and exporter to Mermaid and PlantUML sequence diagrams.
-- Flow type: `api_flow`
+Live multi-user editing with conflict resolution (CRDT / Operational Transformation or state sync with deterministic conflict resolution).
+- Feature ID: F048
+- Phase: 06 — Collaboration
 - Acceptance criteria:
-  - API-request flow type (`kind: 'api_flow'`, HTTP method, endpoint, request/response schema, status code).
-  - Sequence diagram exporter: export API flow sequence to Mermaid sequence diagram syntax (`sequenceDiagram`) and PlantUML (`@startuml ... @enduml`).
-  - Test: an API flow exports to Mermaid and plays back.
+  - Multiple users edit live; conflict resolution (CRDT/OT)
+  - Test: two clients: an edit in one appears in the other.
 
 ## Next Steps
-1. Review `PHASE-05-FLOWS.md` for F047 acceptance criteria.
-2. In `packages/domain/src/`, implement API-flow creation (`createApiFlow()`), step annotation (`annotateApiFlowStep()`), and sequence diagram exporters (`exportFlowToMermaidSequence()`, `exportFlowToPlantUMLSequence()`).
-3. Add domain unit tests in `packages/domain/src/api-flows.test.ts`.
-4. Add web UI component/integration tests in `apps/web/components/canvas/api-flow-overlay.tsx` and `apps/web/api-flows.spec.tsx`.
+1. Review `PHASE-06-COLLABORATION.md` for F048 acceptance criteria.
+2. In `packages/domain/src/`, implement collaborative document / operational message state machine (`createCollabSession()`, `applyRemoteOperation()`, `broadcastLocalOperation()`, deterministic LWW/CRDT or vector-clock conflict resolution).
+3. In `apps/web/`, implement collaborative room hook/store and synchronization transport simulation.
+4. Add unit and integration tests verifying concurrent multi-client edits and convergence.
 5. Verify with `pnpm typecheck && pnpm lint && pnpm check-architecture && pnpm test && pnpm build`.
