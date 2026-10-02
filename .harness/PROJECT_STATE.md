@@ -13,21 +13,23 @@ Phase Name: AI Copilot
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F066
-Feature Name: Impact analysis
+Feature ID: F067
+Feature Name: Security analysis
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 71
+Completed: 72
 In Progress: 0
 Blocked: 0
-Not Started: 64
-Progress: 52.6%
+Not Started: 63
+Progress: 53.3%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F065 — Architecture explanation. Pure AI Architecture Explanation engine and audience-calibrated narrative drawer for DiagramHQ (Phase 08 — AI Copilot). Generates grounded textual, structural, and operational explanations of systems, flows, components, and architectural decision records (ADRs) tailored across three distinct altitudes: Engineer (low-level protocols, sync/async RPCs, ports, error boundaries), Architect (bounded contexts, coupling degrees, CAP trade-offs, scalability bottlenecks), and Executive / CTO (business capabilities, operational continuity, blast radius, risk posture). Strictly grounded with concrete citations referencing real `ObjectId` and `ConnectionId` instances. Added UI components `<AltitudeSelector />` and `<ArchitectureExplanationPanel />`, 4 domain unit tests, and 3 web integration tests.
+F066 — Impact analysis. Pure AI Architecture Impact Analysis and blast radius drawer for DiagramHQ (Phase 08 — AI Copilot). Provides comprehensive topological blast radius calculations and AI-narrated operational impact assessments when an architecture object is modified, replaced, or decommissioned: direct and indirect downstream dependents, upstream dependencies, affected execution flows traversing impacted components, affected engineering teams owning impacted objects, critical path and Single Point of Failure (SPOF) detection, risk scoring (low, medium, high, critical), and AI-synthesized narrative strictly guaranteed to match the computed structural impact set. Added UI components `<ImpactMetricsBadge />` and `<AIImpactDrawer />`, 4 domain unit tests, and 3 web integration tests.
+
+Prior: F065 — Architecture explanation. Pure AI Architecture Explanation engine and audience-calibrated narrative drawer for DiagramHQ (Phase 08 — AI Copilot). Generates grounded textual, structural, and operational explanations of systems, flows, components, and architectural decision records (ADRs) tailored across three distinct altitudes: Engineer (low-level protocols, sync/async RPCs, ports, error boundaries), Architect (bounded contexts, coupling degrees, CAP trade-offs, scalability bottlenecks), and Executive / CTO (business capabilities, operational continuity, blast radius, risk posture). Strictly grounded with concrete citations referencing real `ObjectId` and `ConnectionId` instances. Added UI components `<AltitudeSelector />` and `<ArchitectureExplanationPanel />`, 4 domain unit tests, and 3 web integration tests.
 
 Prior: F064 — Natural-language editing. Pure AI Natural-Language Editing engine and reviewable proposal modal for DiagramHQ (Phase 08 — AI Copilot). Translates natural language editing commands (such as "add Redis between Service A and Service B", "remove Legacy Auth Proxy", or "rename Edge Gateway to Global API Gateway") into explicit, non-destructive proposed change sets with itemized added, modified, and removed entities. Adheres strictly to the invariant that AI edits are never committed silently; every mutation requires human Apply/Reject action. Applying verifies integrity invariants and updates live model state; rejecting preserves complete model immutability. Added UI components `<NLEditProposalCard />` and `<NLEditModal />`, 5 domain unit tests, and 3 web integration tests.
 
