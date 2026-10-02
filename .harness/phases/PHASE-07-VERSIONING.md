@@ -36,7 +36,7 @@ Test: a snapshot restores to the captured state.
 
 ### F057 — Branches
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Branch off main.
 
