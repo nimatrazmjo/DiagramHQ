@@ -84,7 +84,7 @@ Test: a PR shows the correct diff and can be reviewed.
 
 ### F061 — Merge
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Merge with conflict detection.
 
