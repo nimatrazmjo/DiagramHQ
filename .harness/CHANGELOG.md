@@ -2,6 +2,32 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F123 — Event catalog (Phase 09 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `event-catalog.ts`: Implemented Event Catalog and asynchronous messaging registry for DiagramHQ (Phase 09 — Code Integrations). Indexes domain events, topics, message brokers (Kafka, RabbitMQ, SQS/SNS, EventBridge, NATS, Redis Streams, Google Pub/Sub), message schemas (JSON Schema, Avro, Protobuf), delivery guarantees, and emission frequencies.
+  - Deterministically links event producers and consumers to C4 model objects (`ObjectId`) and async connections (`ConnectionId`), providing faceted searching and subscription management.
+  - `event-catalog.test.ts`: Added 4 unit tests verifying entry creation with schema and delivery guarantees, registry management across brokers, consumer subscription updates, and faceted browsing.
+  - `index.ts`: Exported `event-catalog`.
+- Web layer (`apps/web/`):
+  - `components/canvas/event-catalog-panel.tsx`: Implemented `<EventCatalogExplorerModal />` (full-featured modal with metrics banner, text search, broker filter buttons, producer filter, frequency filter, and detailed schema & subscription inspector drawer).
+  - `components/canvas/index.ts`: Exported Event Catalog components.
+  - `event-catalog.spec.tsx`: Added 3 integration tests verifying modal metrics and event rows, filter toolbars, and closed state behavior.
+- Milestone:
+  - **Phase 09 — Code Integrations is now 80% COMPLETE (8/10 features completed, 87/135 total, 64.4% milestone reached)!**
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (184 test suites, 1124 tests passed)
+```
+
 ## 2026-10-02 — F122 — API catalog (Phase 09 Progress)
 
 Status: COMPLETE
