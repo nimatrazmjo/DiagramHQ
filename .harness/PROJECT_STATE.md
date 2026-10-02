@@ -13,21 +13,23 @@ Phase Name: Code Integrations
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F126
-Feature Name: Webhooks
+Feature ID: F127
+Feature Name: SDK
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 89
+Completed: 90
 In Progress: 0
 Blocked: 0
-Not Started: 46
-Progress: 65.9%
+Not Started: 45
+Progress: 66.7%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F125 — Model-as-code + CLI. Implemented Model-as-code serialization engine and `dhq` CLI command surface for DiagramHQ (Phase 09 — Code Integrations). Serializes architecture models to clean, human-readable YAML with deterministic mapping between slugs and stable internal IDs (`ObjectId`, `ConnectionId`), supporting C4 model kinds and aliases (`container`, `person`, `database`). Implemented full `dhq` CLI commands (`login`, `init`, `pull`, `push`, `validate`, `diff`, `deploy`, `export`, `generate`) with push-then-pull round-trip fidelity, invariant validation catching syntax errors, duplicate slugs, dangling connection references, and parent hierarchy cycles, and structural diffing. Added canvas UI component `<ModelAsCodeModal />`, 15 domain unit tests, and 3 web integration tests.
+F126 — Webhooks. Implemented outbound webhook delivery and lifecycle event notification engine for DiagramHQ (Phase 09 — Code Integrations). Emits standard lifecycle events across architecture models (`object.*`, `connection.*`, `diagram.created`, `flow.created`, `architecture.updated`, `version.created`, `change.approved`, `change.merged`), secured with cryptographic HMAC SHA-256 signatures (`X-Hub-Signature-256`) and per-subscription secret tokens (`whsec_...`). Supports wildcard subscriptions (`*`, `object.*`, `connection.*`), architecture scoping, delivery audit logs, and test sink verification. Added canvas UI component `<WebhookManagerModal />`, 5 domain unit tests, and 3 web integration tests.
+
+Prior: F125 — Model-as-code + CLI. Implemented Model-as-code serialization engine and `dhq` CLI command surface for DiagramHQ (Phase 09 — Code Integrations). Serializes architecture models to clean, human-readable YAML with deterministic mapping between slugs and stable internal IDs (`ObjectId`, `ConnectionId`), supporting C4 model kinds and aliases (`container`, `person`, `database`). Implemented full `dhq` CLI commands (`login`, `init`, `pull`, `push`, `validate`, `diff`, `deploy`, `export`, `generate`) with push-then-pull round-trip fidelity, invariant validation catching syntax errors, duplicate slugs, dangling connection references, and parent hierarchy cycles, and structural diffing. Added canvas UI component `<ModelAsCodeModal />`, 15 domain unit tests, and 3 web integration tests.
 
 Prior: F124 — Database catalog. Implemented Database Catalog and data schema registry for DiagramHQ (Phase 09 — Code Integrations). Indexes relational and NoSQL datastores with full hierarchical structure (Database -> Schema/Namespace -> Table/Collection -> Column/Field), capturing primary keys, foreign key relations, nullable flags, unique indices, data classification tags, and migration repo coordinates (`CodeLocationSpec`). Supports all major database engines (PostgreSQL, MySQL, SQLite, MongoDB, Redis, DynamoDB, Cassandra, ClickHouse, Snowflake, BigQuery) with relationship detection (`findTableRelationships`) and faceted browsing. Added canvas UI components `<DatabaseCatalogExplorerModal />`, 5 domain unit tests, and 3 web integration tests.
 

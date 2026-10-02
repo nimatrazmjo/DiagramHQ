@@ -2,6 +2,32 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F126 — Webhooks (Phase 09 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `webhooks.ts`: Implemented outbound webhook delivery and lifecycle event notification engine for DiagramHQ (Phase 09 — Code Integrations). Emits standard lifecycle events across architecture models (`object.*`, `connection.*`, `diagram.created`, `flow.created`, `architecture.updated`, `version.created`, `change.approved`, `change.merged`), secured with cryptographic HMAC SHA-256 signatures (`X-Hub-Signature-256`) and per-subscription secret tokens (`whsec_...`).
+  - Supports wildcard subscriptions (`*`, `object.*`, `connection.*`), architecture scoping, delivery audit logs, and test sink verification.
+  - `webhooks.test.ts`: Added 5 unit tests verifying HMAC-SHA256 signature generation & verification, subscription CRUD operations, wildcard & prefix topic matching, end-to-end event dispatching to test sink, and error logging on failure.
+  - `index.ts`: Exported `webhooks`.
+- Web layer (`apps/web/`):
+  - `components/canvas/webhooks-panel.tsx`: Implemented `<WebhookManagerModal />` (full-featured modal with metrics banner, subscriptions list, test trigger, and delivery audit logs).
+  - `components/canvas/index.ts`: Exported Webhooks components.
+  - `webhooks.spec.tsx`: Added 3 integration tests verifying modal metrics and subscriptions, empty state, and closed state.
+- Milestone:
+  - **90 / 135 total features completed (66.7% milestone reached)!**
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (187 test suites, 1143 tests passed)
+```
+
 ## 2026-10-02 — F125 — Model-as-code + CLI (Phase 09 Progress)
 
 Status: COMPLETE
