@@ -38,3 +38,4 @@ export * from './share-links';
 export * from './permissions';
 export * from './teams';
 export * from './notifications';
+export * from './version-history';

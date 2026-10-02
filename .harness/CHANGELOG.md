@@ -2,6 +2,30 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F055 — Version history
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ids.ts`: Added `'snp'` prefix to `IdPrefix` and declared `SnapshotId` brand type.
+  - `version-history.ts`: Pure architecture version history and snapshot immutability engine. Implemented `createLiveVersion`, `createNumberedSnapshot`, `mutateLiveVersion`, `assertVersionEditable`, `listArchitectureSnapshots`, `findSnapshotByVersionNumber`, `restoreSnapshotToLive`, and `SnapshotImmutableError`. Deep freezes captured objects and connections to prevent mutation of historical releases.
+  - `version-history.test.ts`: Added 6 unit tests verifying live version mutability, snapshot immutability retention, error throwing on edit assertion, and snapshot restoration.
+  - `index.ts`: Exported `version-history`.
+- Web layer (`apps/web/`):
+  - `components/canvas/version-history.tsx`: Implemented `<SnapshotBadge />` with lock icon and metadata, and `<VersionTimeline />` displaying live editable node and snapshot release list with view and restore actions.
+  - `components/canvas/index.ts`: Exported version history components.
+  - `version-history.spec.tsx`: Added 4 integration tests verifying that snapshots remain unchanged while live edits continue, error throwing on snapshot edit assertions, and UI component rendering.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (129 test suites, 912 tests passed)
+```
+
 ## 2026-10-02 — F116 — Notifications (Phase 06 Complete)
 
 Status: COMPLETE

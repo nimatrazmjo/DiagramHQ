@@ -13,21 +13,23 @@ Phase Name: Versioning
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F055
-Feature Name: Version history
+Feature ID: F056
+Feature Name: Architecture snapshots
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 57
+Completed: 58
 In Progress: 0
 Blocked: 0
-Not Started: 78
-Progress: 42.2%
+Not Started: 77
+Progress: 43.0%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F116 — Notifications. Multi-channel notification pipeline (in-app, email, Slack, Microsoft Teams) for model changes, comments, mentions, and version review requests. Added pure notifications domain engine (`createNotification`, `dispatchNotification`, `markNotificationRead`, `markAllNotificationsRead`, `filterNotifications`, `countUnreadNotifications`, `StubNotificationTransport`), `<NotificationBadge />`, `<NotificationItem />`, and `<NotificationCenter />` web UI components, 5 domain unit tests, and 5 web integration tests. Completes Phase 06 — Collaboration!
+F055 — Version history. Pure architecture version history and snapshot immutability engine. Supports live editable architecture versions (`LiveArchitectureVersion`) and strictly immutable numbered snapshots (`NumberedSnapshot`, `SnapshotId`). Guarantees that snapshots stay completely immutable and frozen while live edits proceed, with strict error throwing (`SnapshotImmutableError`) on mutation attempts. Added UI components `<SnapshotBadge />` and `<VersionTimeline />`, 6 domain unit tests, and 4 web integration tests.
+
+Prior: F116 — Notifications. Multi-channel notification pipeline (in-app, email, Slack, Microsoft Teams) for model changes, comments, mentions, and version review requests. Added pure notifications domain engine (`createNotification`, `dispatchNotification`, `markNotificationRead`, `markAllNotificationsRead`, `filterNotifications`, `countUnreadNotifications`, `StubNotificationTransport`), `<NotificationBadge />`, `<NotificationItem />`, and `<NotificationCenter />` web UI components, 5 domain unit tests, and 5 web integration tests. Completes Phase 06 — Collaboration!
 
 Prior: F054 — Team management. Pure team management and object ownership domain logic. Supports team lifecycle (creation, slug derivation, member management, team leads), object ownership attachment (primary owner team, backup owner team, contact leads), and filtering architecture models/objects by owner team ("show everything owned by X"). Added UI components `<TeamBadge />` and `<OwnershipFilterSelector />`, 6 domain unit tests, and 4 web integration tests.
 
