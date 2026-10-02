@@ -109,7 +109,7 @@ Test: create an ADR, link it, see it in history.
 
 ### F118 — Scenarios
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Hypothetical comparisons.
 

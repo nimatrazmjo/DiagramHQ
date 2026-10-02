@@ -2,6 +2,30 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F118 — Scenarios
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ids.ts`: Added `'scn'` prefix to `IdPrefix` and declared `ScenarioId` brand type.
+  - `scenarios.ts`: Pure what-if architectural scenarios exploration engine. Supports creating hypothetical scenarios cloned from a base branch (`createScenario`), applying immutable hypothetical modifications (`applyHypotheticalChange`), comparing against base state without mutating the real model (`compareScenarioWithBase`), and promoting proven scenarios to full branches (`promoteScenarioToBranch`).
+  - `scenarios.test.ts`: Added 3 unit tests verifying acceptance test for creating a scenario and comparing against main without mutating main, hypothetical object removal with connection pruning, and scenario promotion.
+  - `index.ts`: Exported `scenarios`.
+- Web layer (`apps/web/`):
+  - `components/canvas/scenario-modal.tsx`: Implemented `<ScenarioBadge />` (displaying scenario name, status pill, and cost delta pill) and `<ScenarioComparisonModal />` (interactive dialog with hypothesis banner, stat counters, operational impact panel, objects/connections tabbed deltas, and promotion action).
+  - `components/canvas/index.ts`: Exported scenario components.
+  - `scenarios.spec.tsx`: Added 3 integration tests verifying acceptance test for what-if scenario creation, base model immutability assertion, `<ScenarioBadge />` rendering, and `<ScenarioComparisonModal />` rendering.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (144 test suites, 961 tests passed)
+```
+
 ## 2026-10-02 — F117 — ADR system
 
 Status: COMPLETE

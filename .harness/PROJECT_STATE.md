@@ -13,21 +13,23 @@ Phase Name: Versioning
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F118
-Feature Name: Scenarios
+Feature ID: F119
+Feature Name: Roadmap items
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 65
+Completed: 66
 In Progress: 0
 Blocked: 0
-Not Started: 70
-Progress: 48.1%
+Not Started: 69
+Progress: 48.9%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F117 — ADR system. Pure Architecture Decision Record (ADR) system for DiagramHQ. Supports structured architectural decision tracking with title, lifecycle status (`draft`, `proposed`, `accepted`, `rejected`, `superseded`, `deprecated`), context, decision, consequences, and alternatives considered. Provides polymorphic entity attachment to architecture objects, connections, changes, and version milestones. Implemented query helpers `getADRHistoryForObject`, `getADRsForVersion`, and `getADRsForConnection`. Added accessible, reactive UI components `<ADRBadge />` and `<ADRHistoryDrawer />`, 4 domain unit tests, and 3 web integration tests.
+F118 — Scenarios. Pure what-if architectural scenarios exploration engine and canvas comparison modal for DiagramHQ. Enables architects and engineering teams to hypothesize and simulate major structural variations (e.g., cloud provider migrations, microservice splits, database sharding, or edge caching) without mutating, polluting, or committing to the real architecture model or main branch. Supports simulated operational metrics (cost delta percentage, latency delta in milliseconds, risk scoring), detailed delta categorization (added, modified, removed objects and connections), and seamless promotion of proven scenarios into full architecture branches ready for review and pull request. Added UI components `<ScenarioBadge />` and `<ScenarioComparisonModal />`, 3 domain unit tests, and 3 web integration tests.
+
+Prior: F117 — ADR system. Pure Architecture Decision Record (ADR) system for DiagramHQ. Supports structured architectural decision tracking with title, lifecycle status (`draft`, `proposed`, `accepted`, `rejected`, `superseded`, `deprecated`), context, decision, consequences, and alternatives considered. Provides polymorphic entity attachment to architecture objects, connections, changes, and version milestones. Implemented query helpers `getADRHistoryForObject`, `getADRsForVersion`, and `getADRsForConnection`. Added accessible, reactive UI components `<ADRBadge />` and `<ADRHistoryDrawer />`, 4 domain unit tests, and 3 web integration tests.
 
 Prior: F061 — Merge. Pure 3-way architecture branch merge engine and conflict detection system. Compares base ancestor, source feature branch, and target branch (main). Accurately detects merge conflicts on identical object IDs (concurrent modifications on the same object ID, concurrent additions with differing attributes, or modify/delete collisions). Provides automated and manual resolution strategies ('theirs', 'ours', per-entity manual selection). Upon clean merge or conflict resolution, updates main's architecture state while transitioning the source branch status to `'merged'`. Added UI components `<ConflictResolutionBanner />` and `<MergeBranchModal />`, 2 domain unit tests, and 3 web integration tests.
 
