@@ -13,21 +13,23 @@ Phase Name: Code Integrations
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F076
-Feature Name: OpenAPI import
+Feature ID: F077
+Feature Name: Repository synchronization
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 83
+Completed: 84
 In Progress: 0
 Blocked: 0
-Not Started: 52
-Progress: 61.5%
+Not Started: 51
+Progress: 62.2%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F075 — Code-to-architecture mapping. Implemented bidirectional code-to-architecture mapping and traceability linking architecture model objects (services, components, datastores) directly to their underlying code repositories, directory folders, source file paths, and line ranges (Phase 09 — Code Integrations). Computes canonical remote repository deep links: "Open in GitHub" (`https://github.com/owner/repo/blob/main/path/to/file#L10-L20`) and "Open in GitLab" (`https://gitlab.com/owner/repo/-/blob/main/path/to/file#L10-20`). Normalizes repository coordinates across HTTPS URLs, SSH URIs (`git@`), and project slugs. Injects code mapping metadata into architecture objects without violating pure model invariants. Added canvas UI components `<CodeMappingBadge />`, `<OpenInRepoButton />`, and `<CodeMappingEditorDrawer />`, 4 domain unit tests, and 4 web integration tests.
+F076 — OpenAPI import. Implemented OpenAPI 3.0/3.1 and Swagger 2.0 specification parser and API catalog importer for DiagramHQ (Phase 09 — Code Integrations). Parses JSON and YAML specs into structured endpoint operations (GET, POST, PUT, DELETE, PATCH) with path parameters, query parameters, request bodies, and response codes. Automatically links parsed endpoints to target architecture services and source repositories, populating the discoverable `ApiCatalog` while maintaining `AIEvidence` and confidence tracking. Added canvas UI components `<OpenApiImportModal />` and `<ApiCatalogDrawer />`, 4 domain unit tests, and 3 web integration tests.
+
+Prior: F075 — Code-to-architecture mapping. Implemented bidirectional code-to-architecture mapping and traceability linking architecture model objects (services, components, datastores) directly to their underlying code repositories, directory folders, source file paths, and line ranges (Phase 09 — Code Integrations). Computes canonical remote repository deep links: "Open in GitHub" (`https://github.com/owner/repo/blob/main/path/to/file#L10-L20`) and "Open in GitLab" (`https://gitlab.com/owner/repo/-/blob/main/path/to/file#L10-20`). Normalizes repository coordinates across HTTPS URLs, SSH URIs (`git@`), and project slugs. Injects code mapping metadata into architecture objects without violating pure model invariants. Added canvas UI components `<CodeMappingBadge />`, `<OpenInRepoButton />`, and `<CodeMappingEditorDrawer />`, 4 domain unit tests, and 4 web integration tests.
 
 Prior: F074 — Repository discovery. Implemented organization and group-wide repository discovery, filtering, and scan scoping (Phase 09 — Code Integrations). Enables engineering teams to enumerate repositories across GitHub organizations or GitLab groups/namespaces, filter by technology (languages, frameworks, search query, archived flag), and multi-select an active subset of repositories. Strictly enforces scoping invariant: user repository selection strictly scopes downstream scans, guaranteeing unselected repositories are excluded from downstream modeling scans. Added canvas UI component `<RepoDiscoveryModal />`, 5 domain unit tests, and 4 web integration tests.
 

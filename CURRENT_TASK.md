@@ -1,29 +1,30 @@
-# Current Task: F076 — OpenAPI import
+# Current Task: F077 — Repository synchronization
 
 **Status**: NOT STARTED
 
 ## Description
-OpenAPI specification importer and API catalog population engine for DiagramHQ. Enables importing OpenAPI 3.0/3.1 (and Swagger 2.0) JSON or YAML specifications to extract REST API endpoints, operations (GET, POST, PUT, DELETE, PATCH), route parameters, request/response schemas, and automatically bind them to target architecture services in the API catalog:
-- Parses OpenAPI 3.x / Swagger 2.x JSON or YAML specs.
-- Extracts endpoint paths, HTTP methods, operation IDs, summary/descriptions, tags, parameters, and response schemas.
-- Automatically links imported endpoints to a target service/application `ModelObject` and repository.
-- Populates the discoverable API catalog with parsed endpoints.
-- Strict Invariant Enforced: Importing an OpenAPI spec strictly populates API catalog entries and maintains deterministic links to the hosting architecture service.
+Continuous repository synchronization and background architecture freshness engine for DiagramHQ. Enables keeping the architecture model fresh and aligned with remote code repositories over time:
+- Periodic scheduled sync and webhook-triggered synchronization (`onPush`, `onPullRequestMerged`, `onSchedule`).
+- Compares previous scan fingerprint/hash against current repository commit state to detect code changes.
+- Detects added, modified, and removed services, routes, datastores, and message queues.
+- Generates non-destructive model update proposals with concrete evidence diffs.
+- Feeds architectural drift detection (F084) when code deviates from documented C4 architecture models.
+- Strict Invariant Enforced: A repo change triggers a model synchronization pass; mutations are formulated as reviewable proposals or safe drift feeds without silent unreviewed commits.
 
 Acceptance Criteria:
-- Import an OpenAPI spec; endpoints populate the API catalog + link to a service.
-- Test: import a spec -> endpoints in the catalog.
+- Re-scan on a schedule / webhook; update the model; feed drift (F084).
+- Test: a repo change triggers a model refresh.
 
-- Feature ID: F076
+- Feature ID: F077
 - Phase: 09 — Code Integrations
-- Dependencies: F075, F122
+- Dependencies: F072, F084
 
 ## Next Steps
-1. In `packages/domain/src/`, implement OpenAPI parser and API catalog domain logic (`openapi-import.ts` & `api-catalog.ts`):
-   - Model `ApiEndpoint`, `ApiCatalog`, `OpenApiImportResult`.
-   - Parse OpenAPI JSON/YAML specs, validate schemas, link to `serviceId` / `ObjectId`.
-   - Unit tests in `packages/domain/src/openapi-import.test.ts`.
+1. In `packages/domain/src/`, implement repository synchronization domain logic (`repo-sync.ts`):
+   - Model `SyncTrigger` (`schedule`, `webhook`, `manual`), `SyncStatus`, `RepoSyncJob`, `SyncDriftReport`, `SyncChangeSummary`.
+   - Implement `triggerRepoSync`, `evaluateRepoSyncDrift`, `applySyncProposalToModel`.
+   - Unit tests in `packages/domain/src/repo-sync.test.ts`.
 2. In `apps/web/`, implement canvas UI components:
-   - `<OpenApiImportModal />` and `<ApiCatalogDrawer />` in `apps/web/components/canvas/openapi-import-panel.tsx`.
-   - Integration specs in `apps/web/openapi-import.spec.tsx`.
+   - `<RepoSyncDrawer />` and `<SyncScheduleModal />` in `apps/web/components/canvas/repo-sync-panel.tsx`.
+   - Integration specs in `apps/web/repo-sync.spec.tsx`.
 3. Verify with `pnpm typecheck && pnpm lint && pnpm check-architecture && pnpm test && pnpm build`.

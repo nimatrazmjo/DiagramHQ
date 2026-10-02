@@ -64,3 +64,4 @@ export * from './github-scanner';
 export * from './gitlab-scanner';
 export * from './repository-discovery';
 export * from './code-mapping';
+export * from './openapi-import';
