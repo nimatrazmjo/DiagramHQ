@@ -2,6 +2,33 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F073 — GitLab (Phase 09 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `gitlab-scanner.ts`: Implemented GitLab project connectivity and static repository code analysis with full feature parity to the GitHub scanner (Phase 09 — Code Integrations). Analyzes GitLab repositories across groups, subgroups, and project namespaces (`namespace/project`), scanning manifests (`package.json`, `pom.xml`, `requirements.txt`, `go.mod`), configuration files (`docker-compose.yml`, `.gitlab-ci.yml`), and route handlers to detect services, exposed APIs, persistent datastores (PostgreSQL, MySQL, Redis, MongoDB), message queues (Kafka, RabbitMQ), frameworks (NestJS, Express, Next.js, Fastify), cloud SDKs (AWS SDK, GCP, Azure), and GitLab CI services & test containers defined in `.gitlab-ci.yml`.
+  - Strict invariant enforced: every detected object and connection carries concrete code evidence (`AIEvidence` with project path, file path, line numbers) and calibrated confidence assessment (high/medium/low).
+  - Human-in-the-loop review: all detected items are formulated as proposed additions for review before model import.
+  - `gitlab-scanner.test.ts`: Added 3 unit tests verifying parity with GitHub scanner on equivalent repositories, `.gitlab-ci.yml` service discovery, and heuristic fallback for minimal repositories.
+  - `index.ts`: Exported `gitlab-scanner`.
+- Web layer (`apps/web/`):
+  - `components/canvas/gitlab-scanner-panel.tsx`: Implemented `<GitLabConnectModal />` (GitLab project connection modal with support for project namespaces and ref/branch selection) and `<GitLabScanResultDrawer />` (reviewable proposal drawer displaying discovered entities with GitLab project badge 🦊, confidence badges, code citations, and model import action).
+  - `components/canvas/index.ts`: Exported GitLab scanner components.
+  - `gitlab-scanner.spec.tsx`: Added 4 integration tests verifying scanner parity, modal and drawer rendering, and empty states.
+- Milestone:
+  - **Phase 09 — Code Integrations is now 20% COMPLETE (2/10 features completed, 81/135 total, 60.0% milestone reached)!**
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (175 test suites, 1076 tests passed)
+```
+
 ## 2026-10-02 — F072 — GitHub (Phase 09 Started)
 
 Status: COMPLETE
