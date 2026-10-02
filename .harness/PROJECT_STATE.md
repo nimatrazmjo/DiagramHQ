@@ -13,21 +13,23 @@ Phase Name: AI Copilot
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F067
-Feature Name: Security analysis
+Feature ID: F068
+Feature Name: AI documentation
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 72
+Completed: 73
 In Progress: 0
 Blocked: 0
-Not Started: 63
-Progress: 53.3%
+Not Started: 62
+Progress: 54.1%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F066 — Impact analysis. Pure AI Architecture Impact Analysis and blast radius drawer for DiagramHQ (Phase 08 — AI Copilot). Provides comprehensive topological blast radius calculations and AI-narrated operational impact assessments when an architecture object is modified, replaced, or decommissioned: direct and indirect downstream dependents, upstream dependencies, affected execution flows traversing impacted components, affected engineering teams owning impacted objects, critical path and Single Point of Failure (SPOF) detection, risk scoring (low, medium, high, critical), and AI-synthesized narrative strictly guaranteed to match the computed structural impact set. Added UI components `<ImpactMetricsBadge />` and `<AIImpactDrawer />`, 4 domain unit tests, and 3 web integration tests.
+F067 — Security analysis. Pure AI Architecture Security Review and automated vulnerability audit engine for DiagramHQ (Phase 08 — AI Copilot). Analyzes architecture model graphs for security anti-patterns, data privacy risks, and network perimeter vulnerabilities: unauthenticated public ingress endpoints bypassing edge gateways, PII and sensitive data transmission over cleartext / unencrypted network paths, missing authentication / authorization boundaries on internal datastores and microservices, and unencrypted sensitive PII datastores. Computes an architectural security rating (0 to 100) with category-weighted penalty scoring, and synthesizes an AI narrative strictly guaranteed to match detected structural security issues and entity citations. Added UI components `<SecurityScoreGauge />`, `<SecurityFindingCard />`, and `<AISecurityDrawer />`, 3 domain unit tests, and 4 web integration tests.
+
+Prior: F066 — Impact analysis. Pure AI Architecture Impact Analysis and blast radius drawer for DiagramHQ (Phase 08 — AI Copilot). Provides comprehensive topological blast radius calculations and AI-narrated operational impact assessments when an architecture object is modified, replaced, or decommissioned: direct and indirect downstream dependents, upstream dependencies, affected execution flows traversing impacted components, affected engineering teams owning impacted objects, critical path and Single Point of Failure (SPOF) detection, risk scoring (low, medium, high, critical), and AI-synthesized narrative strictly guaranteed to match the computed structural impact set. Added UI components `<ImpactMetricsBadge />` and `<AIImpactDrawer />`, 4 domain unit tests, and 3 web integration tests.
 
 Prior: F065 — Architecture explanation. Pure AI Architecture Explanation engine and audience-calibrated narrative drawer for DiagramHQ (Phase 08 — AI Copilot). Generates grounded textual, structural, and operational explanations of systems, flows, components, and architectural decision records (ADRs) tailored across three distinct altitudes: Engineer (low-level protocols, sync/async RPCs, ports, error boundaries), Architect (bounded contexts, coupling degrees, CAP trade-offs, scalability bottlenecks), and Executive / CTO (business capabilities, operational continuity, blast radius, risk posture). Strictly grounded with concrete citations referencing real `ObjectId` and `ConnectionId` instances. Added UI components `<AltitudeSelector />` and `<ArchitectureExplanationPanel />`, 4 domain unit tests, and 3 web integration tests.
 

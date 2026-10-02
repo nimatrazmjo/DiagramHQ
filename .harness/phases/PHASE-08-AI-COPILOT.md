@@ -74,7 +74,7 @@ Test: AI impact matches the computed set.
 
 ### F067 — Security analysis
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: AI security review.
 

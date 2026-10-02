@@ -1,29 +1,26 @@
-# Current Task: F067 — Security analysis
+# Current Task: F068 — AI documentation
 
 **Status**: NOT STARTED
 
 ## Description
-AI-driven architectural security review engine. Evaluates the architecture model graph for security anti-patterns, data privacy violations, and network perimeter risks:
-- Unauthenticated public ingress endpoints (public/internet actors accessing internal services directly without gateway/auth termination)
-- PII and sensitive data transit leakage (PII flowing across unencrypted or unapproved channels or stored in unencrypted stores)
-- Missing authentication / authorization on sensitive inter-service communication
-- Insecure direct object references or cross-tenant data flow violations
-- Synthesizes actionable security risk findings with severity ratings (critical, high, medium, low) and remediation recommendations
-- Strict invariant: AI security findings match seeded issues and structural security analysis.
+AI-driven architectural documentation generation engine. Generates comprehensive, grounded Markdown documentation for components, services, datastores, and macro architectures:
+- Object and architecture docs automatically grounded in model metadata, connection topologies, dependencies, and technology tags
+- Synthesizes technical overview, integration contracts, operational runbooks, and data schemas
+- Strict invariant: Generated documentation is grounded in live model objects and connections, never hallucinating or inventing non-existent endpoints.
+- Auto-refresh mechanism to sync and keep docs current on model updates.
 
-- Feature ID: F067
+- Feature ID: F068
 - Phase: 08 — AI Copilot
-- Dependencies: Phase 03, Phase 04, Phase 05, Phase 07, F062, F066
+- Dependencies: Phase 03, Phase 04, Phase 05, Phase 07, F062, F065
 - Acceptance criteria:
-  - Find PII paths, public endpoints, missing auth; narrate risks
-  - Test: AI security findings match seeded issues.
+  - Auto-generate object/architecture docs grounded in metadata + connections; keep current on change
+  - Test: generated docs are grounded, not invented.
 
 ## Next Steps
-1. In `packages/domain/src/`, implement AI security review engine (`ai-security.ts`):
-   - Interfaces: `SecurityFinding`, `SecurityAnalysisReport`, `auditArchitectureSecurity`.
-   - Seeded issue detection: unauthenticated ingress, cleartext/missing auth on PII paths, unencrypted sensitive stores.
-   - Unit tests in `packages/domain/src/ai-security.test.ts`.
+1. In `packages/domain/src/`, implement AI documentation engine (`ai-documentation.ts`):
+   - Interfaces: `ArchitectureDocumentationPage`, `generateObjectDocumentation`, `generateSystemArchitectureDocumentation`, `refreshDocumentationOnModelChange`.
+   - Unit tests in `packages/domain/src/ai-documentation.test.ts`.
 2. In `apps/web/`, implement canvas UI components:
-   - `<SecurityFindingCard />` and `<AISecurityDrawer />`.
-   - Integration specs in `apps/web/ai-security.spec.tsx`.
+   - `<DocumentationViewerModal />` and `<AIDocumentationCard />`.
+   - Integration specs in `apps/web/ai-documentation.spec.tsx`.
 3. Verify with `pnpm typecheck && pnpm lint && pnpm check-architecture && pnpm test && pnpm build`.
