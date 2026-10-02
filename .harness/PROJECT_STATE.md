@@ -13,21 +13,23 @@ Phase Name: Code Integrations
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F073
-Feature Name: GitLab
+Feature ID: F074
+Feature Name: Repository discovery
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 80
+Completed: 81
 In Progress: 0
 Blocked: 0
-Not Started: 55
-Progress: 59.3%
+Not Started: 54
+Progress: 60.0%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F072 — GitHub. Implemented GitHub repository connectivity and static code analysis for automated architecture discovery (Phase 09 — Code Integrations). Statically analyzes repository file trees (`package.json`, `docker-compose.yml`, route controllers) to identify services, exposed APIs, persistent datastores (PostgreSQL, MySQL, Redis, MongoDB), message queues (Kafka, RabbitMQ), frameworks (NestJS, Express, Next.js), and cloud provider SDKs (AWS SDK, GCP, Azure). Strictly enforces grounding invariant: every detected entity and connection carries concrete code evidence (`AIEvidence` with repo, file path, line numbers) and calibrated confidence assessment (high/medium/low). All detected items are formulated as proposed additions for human-in-the-loop review before model import. Added canvas UI components `<GitHubConnectModal />` and `<GitHubScanResultDrawer />`, 2 domain unit tests, and 4 web integration tests.
+F073 — GitLab. Implemented GitLab project connectivity and static repository code analysis with full feature parity to the GitHub scanner (Phase 09 — Code Integrations). Analyzes GitLab repositories across groups, subgroups, and project namespaces (`namespace/project`), scanning manifests (`package.json`, `pom.xml`, `requirements.txt`, `go.mod`), configuration files (`docker-compose.yml`, `.gitlab-ci.yml`), and route handlers to detect services, exposed APIs, persistent datastores (PostgreSQL, MySQL, Redis, MongoDB), message queues (Kafka, RabbitMQ), frameworks (NestJS, Express, Next.js, Fastify), cloud SDKs (AWS SDK, GCP, Azure), and GitLab CI services & test containers defined in `.gitlab-ci.yml`. Strictly enforces grounding invariant: every detected entity and connection carries concrete code evidence (`AIEvidence` with project path, file path, line numbers) and calibrated confidence assessment (high/medium/low). Added canvas UI components `<GitLabConnectModal />` and `<GitLabScanResultDrawer />`, 3 domain unit tests, and 4 web integration tests.
+
+Prior: F072 — GitHub. Implemented GitHub repository connectivity and static code analysis for automated architecture discovery (Phase 09 — Code Integrations). Statically analyzes repository file trees (`package.json`, `docker-compose.yml`, route controllers) to identify services, exposed APIs, persistent datastores (PostgreSQL, MySQL, Redis, MongoDB), message queues (Kafka, RabbitMQ), frameworks (NestJS, Express, Next.js), and cloud provider SDKs (AWS SDK, GCP, Azure). Strictly enforces grounding invariant: every detected entity and connection carries concrete code evidence (`AIEvidence` with repo, file path, line numbers) and calibrated confidence assessment (high/medium/low). All detected items are formulated as proposed additions for human-in-the-loop review before model import. Added canvas UI components `<GitHubConnectModal />` and `<GitHubScanResultDrawer />`, 2 domain unit tests, and 4 web integration tests.
 
 Prior: F121 — Specialized agents. Implemented the 7 specialized role-based architectural AI agents operating directly over DiagramHQ's Model Context Protocol (MCP) tool surface: Analyst Agent (domain boundaries, cohesion, coupling indices, fan-in/fan-out), Designer Agent (C4 container topologies, component boundaries, interface contracts, yielding reviewable proposals), Security Agent (zero-trust threat modeling, perimeter ingress validation, blast-radius calculations), Cloud Agent (infrastructure mapping, multi-AZ high availability resilience, persistent datastores), Documentation Agent (C4 architecture catalog cards and Markdown technical specifications), Migration Agent (phased cutover strategies, Strangler Fig pattern, dual-write replication plans, decommissioning change proposals), and Code Agent (repository-to-model alignment, AST static analysis grounding, drift detection). Strict invariant enforced: mutating operations yield reviewable proposals (`isProposal: true, requiresApproval: true`), never silent commits. Added canvas UI components `<SpecializedAgentSelector />`, `<SpecializedAgentResultCard />`, and `<SpecializedAgentDrawer />`, 8 domain unit tests, and 5 web integration tests. **Phase 08 — AI Copilot is now 100% COMPLETE (12/12 features)!**
 

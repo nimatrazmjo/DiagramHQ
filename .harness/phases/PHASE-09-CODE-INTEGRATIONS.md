@@ -26,7 +26,7 @@ Test: scan a sample repo -> expected objects proposed with evidence.
 
 ### F073 — GitLab
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: GitLab parity.
 

@@ -45,3 +45,4 @@ export * from './mcp-integration-modal';
 export * from './ai-confidence-badge';
 export * from './specialized-agents-panel';
 export * from './github-scanner-panel';
+export * from './gitlab-scanner-panel';
