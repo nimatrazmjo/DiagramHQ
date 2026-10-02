@@ -62,3 +62,4 @@ export * from './gcp-panel';
 export * from './terraform-panel';
 export * from './kubernetes-panel';
 export * from './cloud-discovery-panel';
+export * from './cost-panel';

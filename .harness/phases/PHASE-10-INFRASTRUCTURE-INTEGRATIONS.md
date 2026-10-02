@@ -1,6 +1,6 @@
 # Phase 10 — Infrastructure Integrations
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Description
 Import real infrastructure into the model: AWS/Azure/GCP, Terraform, Kubernetes, plus cloud resource discovery and cost.
@@ -92,7 +92,7 @@ Test: discovery proposes resources with evidence.
 
 ### F128 — Cost visualization
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Cost per service.
 

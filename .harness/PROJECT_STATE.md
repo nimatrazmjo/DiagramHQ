@@ -8,28 +8,28 @@ Name: DiagramHQ
 Description: Model-first architecture intelligence platform (a "better than IcePanel" Architecture OS). The model — objects + connections — is the product; diagrams are projections of it. Full spec: `product/PRODUCT.md`. CLI: `dhq`.
 
 ## Current Phase
-Phase: 10
-Phase Name: Infrastructure Integrations
+Phase: 11
+Phase Name: Drift and Governance
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F128
-Feature Name: Cost visualization
+Feature ID: F084
+Feature Name: Architecture drift
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 97
+Completed: 98
 In Progress: 0
 Blocked: 0
-Not Started: 38
-Progress: 71.9%
+Not Started: 37
+Progress: 72.6%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F083 — Cloud resource discovery. Implemented live multi-cloud resource discovery and architecture proposal engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Discovers live infrastructure resources across accounts and subscriptions (AWS, Azure, GCP, Kubernetes), classifying resources into functional categories (compute, database, storage, networking, messaging, security) with deterministic C4 ModelObjectKind mapping. Reconciles live resources against existing architecture models, generating proposals with concrete CloudDiscoveryEvidence (sourceType: 'cloud_discovery', confidence >= 0.9, provider, account, region, matchReason) for creates (unmapped assets), updates (reconfigured attributes/status), drifts (terminated backing resources), and exact matches. Supports proposal execution (applyDiscoveryProposals). Added canvas UI component <CloudDiscoveryModal />, 7 domain unit tests, and 3 web integration tests.
+F128 — Cost visualization. Implemented cloud infrastructure cost estimation and architectural cost overlay engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Attaches cloud cost data to infrastructure architecture model objects without mutating original objects (attachCostToObject), computes per-service rollups with subtotals across categories (calculateServiceCostRollup across compute, database, storage, networking), generates architecture-wide cost summaries (calculateArchitectureCostReport), and preserves grounded CostEvidence (sourceType: 'cloud_billing', billing account, meter ID, provider, timestamp). Added canvas UI component <CostVisualizationModal />, 4 domain unit tests, and 3 web integration tests. **Phase 10 — Infrastructure Integrations is now 100% COMPLETE (7/7 features)!**
 
-Prior: F082 — Kubernetes. Implemented Google Cloud Platform cloud infrastructure import and topology mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Maps all 17 canonical GCP resource types (GCE, GKE, Cloud Run, Cloud Functions, App Engine, Cloud SQL, Spanner, Bigtable, Firestore, GCS, VPC, Cloud LB, Cloud CDN, API Gateway, Pub/Sub, Eventarc, Cloud Tasks) to typed `ModelObject` instances with hierarchical VPC containment, derives inter-service `ModelConnection` interactions (origin cache fetch, LB ingress, API Gateway proxying, database queries, async pub/sub, Eventarc triggers, Cloud Tasks dispatch), and preserves traceable `GcpCloudEvidence`. Added canvas UI component `<GcpImportModal />`, 7 domain unit tests, and 3 web integration tests.
+Prior: F083 — Cloud resource discovery. Implemented Google Cloud Platform cloud infrastructure import and topology mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Maps all 17 canonical GCP resource types (GCE, GKE, Cloud Run, Cloud Functions, App Engine, Cloud SQL, Spanner, Bigtable, Firestore, GCS, VPC, Cloud LB, Cloud CDN, API Gateway, Pub/Sub, Eventarc, Cloud Tasks) to typed `ModelObject` instances with hierarchical VPC containment, derives inter-service `ModelConnection` interactions (origin cache fetch, LB ingress, API Gateway proxying, database queries, async pub/sub, Eventarc triggers, Cloud Tasks dispatch), and preserves traceable `GcpCloudEvidence`. Added canvas UI component `<GcpImportModal />`, 7 domain unit tests, and 3 web integration tests.
 
 Prior: F079 — Azure. Implemented Microsoft Azure cloud infrastructure import and topology mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Maps all 15 canonical Azure resource types (VM, App Service, Function App, AKS, Container App, SQL Database, Cosmos DB, Storage Account, VNet, App Gateway, Front Door, API Management, Service Bus, Event Hubs, Event Grid) to typed `ModelObject` instances with hierarchical VNet containment, derives inter-service `ModelConnection` interactions (ingress routing, backend API calls, database queries, async pub/sub), and preserves traceable `AzureCloudEvidence`. Added canvas UI component `<AzureImportModal />`, 7 domain unit tests, and 3 web integration tests.
 
