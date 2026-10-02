@@ -2,6 +2,35 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F049 — Presence
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `presence.ts`: Pure multi-user presence engine tracking `UserPresence`, `CursorPosition`, `PresenceRoomState`. Implemented `createPresenceRoom()`, `upsertPeerPresence()`, `updatePeerCursor()`, `updatePeerSelection()`, `removePeerPresence()`, `pruneInactivePeers()`, `getActivePeersInView()`, `getRemoteCursorsForView()`, `getRemoteSelections()`, and `getRemoteActiveObjects()`.
+  - `presence.test.ts`: Added 8 unit tests covering room lifecycle, cursor position updates, dual user presence with cursors, multi-object selections, view filtering, and heartbeat pruning.
+  - `index.ts`: Exported `presence`.
+- Web layer (`apps/web/`):
+  - `components/canvas/presence-cursors.tsx`: Added `<PresenceCursors />` component rendering live remote cursors with SVG arrows, user color theming, and object badges.
+  - `components/canvas/presence-indicators.tsx`: Added `<PresenceIndicators />` component displaying collaborator count, live pulse dot, colored initials avatars, and hover tooltips.
+  - `components/canvas/index.ts`: Exported `PresenceCursors` and `PresenceIndicators`.
+  - `presence.spec.tsx`: Added 6 integration tests verifying dual-user cursor visualization, selection tracking, view filtering, idle detection, and React component rendering.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm --filter @diagramhq/domain test → 221 passed (32 test files)
+pnpm --filter @diagramhq/web test    → 348 passed (46 test files)
+pnpm test                            → 839 passed across all workspaces (221 domain, 348 web, 270 api)
+branch: feat/F049-presence
+```
+
+Evaluator scores: acceptance=5, correctness=5, boundaries=5, modularity=5, evidence=5 => avg 5.0 — PASS
+
 ## 2026-10-02 — F048 — Real-time collaboration
 
 Status: COMPLETE

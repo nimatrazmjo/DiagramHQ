@@ -24,7 +24,7 @@ Test: two clients: an edit in one appears in the other.
 
 ### F049 — Presence
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Cursors + presence.
 

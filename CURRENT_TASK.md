@@ -1,24 +1,25 @@
-# Current Task: F049 — Presence
+# Current Task: F050 — Comments
 
 **Status**: NOT STARTED
 
 ## Description
-Real-time user presence, live cursors, remote selection, current-object indicators, and peer badges.
-- Feature ID: F049
+Threaded comments on objects, connections, diagrams, flows, docs, and changes with reply and resolve functionality.
+- Feature ID: F050
 - Phase: 06 — Collaboration
 - Acceptance criteria:
-  - Cursors, selection, current-object, presence indicators
-  - Test: presence shows both users + cursors.
+  - Comments on objects, connections, diagrams, flows, docs, changes
+  - Reply + resolve
+  - Test: comment CRUD + resolve on the right entity.
 
 ## Next Steps
-1. Review `PHASE-06-COLLABORATION.md` for F049 acceptance criteria.
-2. In `packages/domain/src/`, implement presence state types and pure management functions:
-   - `UserPresence` (userId, userName, userColor, avatarUrl, cursor: {x, y, viewId} | null, selectedObjectIds: string[], currentObjectId: string | null, lastActiveAt: number)
-   - Pure presence manager: `createPresenceState()`, `updateLocalPresence()`, `updateRemotePresence()`, `removePresencePeer()`, `pruneInactivePeers()`, `filterPresenceByView()`.
-   - Unit tests in `packages/domain/src/presence.test.ts`.
-3. In `apps/web/`, implement canvas presence overlay:
-   - `<PresenceCursors />`: live animated cursors with name tags and color branding.
-   - Remote selection outlines / halos on canvas nodes.
-   - Presence indicators / avatars in toolbar / header.
-   - Web integration specs in `apps/web/presence.spec.tsx`.
+1. Review `PHASE-06-COLLABORATION.md` for F050 acceptance criteria.
+2. In `packages/domain/src/`, implement comment domain model and pure functions (`comments.ts`):
+   - `CommentTargetType`: `'object' | 'connection' | 'diagram' | 'flow' | 'doc' | 'change'`
+   - `Comment`: id, authorId, authorName, authorColor, targetType, targetId, content, createdAt, updatedAt, resolved, resolvedBy, resolvedAt, parentCommentId (for replies).
+   - Functions: `createComment()`, `replyComment()`, `resolveComment()`, `reopenComment()`, `editComment()`, `deleteComment()`, `filterCommentsByTarget()`, `getCommentThreads()`.
+   - Unit tests in `packages/domain/src/comments.test.ts`.
+3. In `apps/web/`, implement comments UI components:
+   - `<CommentsPanel />`: thread list, replies, resolve button, comment composer, target badge.
+   - Canvas comment pin / bubble indicators on nodes/connections.
+   - Web integration specs in `apps/web/comments.spec.tsx`.
 4. Verify with `pnpm typecheck && pnpm lint && pnpm check-architecture && pnpm test && pnpm build`.

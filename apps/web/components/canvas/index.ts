@@ -14,5 +14,5 @@ export * from './user-journey-overlay';
 export * from './data-flow-overlay';
 export * from './api-flow-overlay';
 export * from './collaboration-banner';
-
-
+export * from './presence-cursors';
+export * from './presence-indicators';
