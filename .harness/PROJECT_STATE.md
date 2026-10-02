@@ -13,21 +13,23 @@ Phase Name: AI Copilot
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F063
-Feature Name: Architecture generation
+Feature ID: F064
+Feature Name: Natural-language editing
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 68
+Completed: 69
 In Progress: 0
 Blocked: 0
-Not Started: 67
-Progress: 50.4%
+Not Started: 66
+Progress: 51.1%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F062 — AI chat. Pure AI Architecture Copilot grounded Q&A engine and persistent UI panel for DiagramHQ (starting Phase 08 — AI Copilot!). The Copilot operates with full grounding over the live architecture model graph (objects, connections, flows, ADRs). Provides dedicated dependency rationale resolution (`resolveDependencyRationale`) to explain direct and transitive multi-hop dependencies ("why does X depend on Y?"), discovering graph paths via breadth-first search and always citing concrete `ObjectId` and `ConnectionId` identifiers. Added accessible canvas UI components `<CitationBadge />` and `<AICopilotPanel />`, 4 domain unit tests, and 3 web integration tests.
+F063 — Architecture generation. Pure AI Architecture Generation engine and interactive modal for DiagramHQ (Phase 08 — AI Copilot). Natural language prompt synthesizes complete, structurally sound C4 architecture elements: objects with C4 kinds, coordinates, tech stacks, and descriptions; valid connections between components with sync/async kinds; end-to-end flows with ordered, numbered steps; view container definitions; markdown documentation; and integrated change set proposals. Delivered as explicit reviewable proposals with Apply/Reject actions to ensure AI never commits silent model mutations. Added UI components `<GenerationProposalCard />` and `<AIGenerationModal />`, 4 domain unit tests, and 4 web integration tests.
+
+Prior: F062 — AI chat. Pure AI Architecture Copilot grounded Q&A engine and persistent UI panel for DiagramHQ (starting Phase 08 — AI Copilot!). The Copilot operates with full grounding over the live architecture model graph (objects, connections, flows, ADRs). Provides dedicated dependency rationale resolution (`resolveDependencyRationale`) to explain direct and transitive multi-hop dependencies ("why does X depend on Y?"), discovering graph paths via breadth-first search and always citing concrete `ObjectId` and `ConnectionId` identifiers. Added accessible canvas UI components `<CitationBadge />` and `<AICopilotPanel />`, 4 domain unit tests, and 3 web integration tests.
 
 Prior: F119 — Roadmap items. Pure Architecture Roadmap Items engine and quarterly timeline UI for DiagramHQ (completing Phase 07 — Versioning!). Enables architecture and engineering teams to organize architectural evolutions into chronological quarters (e.g., `2026-Q1`, `2026-Q2`), track lifecycle statuses (`planned`, `in_progress`, `completed`, `deferred`), assign priorities and team ownership, and directly link roadmap milestones to concrete architecture change sets and pull requests. Provides quarterly grouping, progress tracking calculations, and accessible canvas UI components `<RoadmapItemCard />` and `<RoadmapTimelinePanel />`, 4 domain unit tests, and 3 web integration tests. Completes Phase 07 — Versioning (10/10 features)!
 

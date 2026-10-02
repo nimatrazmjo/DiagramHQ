@@ -2,6 +2,29 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F063 — Architecture generation
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ai-generation.ts`: Pure AI Architecture Generation engine. Synthesizes complete, valid architecture elements from natural language prompts: objects with C4 kinds (`application`, `store`, `system`, `actor`), coordinates, tech stacks, and descriptions; valid connections with sync/async kinds; end-to-end flows with numbered execution steps; container views; markdown documentation; and integrated change set proposals. Enforces invariant that AI proposals cannot commit silent mutations: exposed `generateArchitectureFromPrompt`, `applyGeneratedProposalToModel`, and `rejectGeneratedProposal`. Applying validates all invariants (unique IDs, no dangling connections, no self-connections) and updates the live model state. Rejection records rationale without mutating model state.
+  - `ai-generation.test.ts`: Added 4 unit tests verifying acceptance test for a prompt yielding a valid model on apply, rejecting proposals without mutating model, prevention of double-applying, and prompt validation.
+  - `index.ts`: Exported `ai-generation`.
+- Web layer (`apps/web/`):
+  - `components/canvas/ai-generation-modal.tsx`: Implemented `<GenerationProposalCard />` (status badge, summary metrics, action buttons) and `<AIGenerationModal />` (prompt input form, quick suggestions, and interactive tabs for inspecting generated components, connections, flows, and docs).
+  - `components/canvas/index.ts`: Exported AI generation modal components.
+  - `ai-generation.spec.tsx`: Added 4 integration tests verifying acceptance test for prompt generation yielding valid model on apply, rejection preserving context, `<GenerationProposalCard />` rendering, and `<AIGenerationModal />` multi-tab inspection.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (147 test suites, 983 tests passed)
+```
+
 ## 2026-10-02 — F062 — AI chat
 
 Status: COMPLETE
