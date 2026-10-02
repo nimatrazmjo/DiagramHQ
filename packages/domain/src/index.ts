@@ -70,3 +70,5 @@ export * from './api-catalog';
 export * from './event-catalog';
 export * from './database-catalog';
 export * from './model-as-code';
+export * from './webhooks';
+
