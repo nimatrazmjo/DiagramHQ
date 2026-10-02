@@ -52,7 +52,7 @@ Test: import mocked GCP resources.
 
 ### F081 — Terraform
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Parse Terraform.
 

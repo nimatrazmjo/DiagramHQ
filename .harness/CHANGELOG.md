@@ -2,6 +2,32 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F081 — Terraform (Phase 10 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `terraform.ts`: Implemented Terraform Infrastructure as Code (IaC) configuration parser and architecture mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Parses Terraform configurations (`.tf`, `.tfvars`) and state JSON (`.tfstate`, plan JSON), extracting resources, modules, outputs, and variables across multi-cloud providers (AWS, Azure, GCP, Kubernetes, generic). Maps resources to `ModelObject` records with proper C4 kinds (`store`, `group`, `component`, `application`), generates module containment hierarchies (`groupByModule`), infers inter-resource `ModelConnection` dependencies with protocols (`TCP:5432`, `HTTPS`, `AMQP`), and preserves traceable `TerraformEvidence` (`sourceType: 'iac_terraform'`).
+  - Implemented `detectProvider`, `determineObjectKindForTerraform`, `formatTerraformResourceName`, `parseTerraformHcl`, `parseTerraformStateJson`, `deriveTerraformConnection`, `importTerraformConfig`, and `createMockTerraformRepo`.
+  - `terraform.test.ts`: Added 7 unit tests verifying provider and kind detection, HCL parsing, state JSON parsing, connection derivation, acceptance test on sample repo, and provider filtering.
+  - `index.ts`: Exported `terraform`.
+- Web layer (`apps/web/`):
+  - `components/canvas/terraform-panel.tsx`: Implemented `<TerraformImportModal />` (interactive modal featuring repository URL input, sample repo loader, provider filter pills for AWS, Azure, GCP, Kubernetes, module grouping toggle, connection inference toggle, tabbed views for architecture preview, file editor, state JSON, and import execution).
+  - `components/canvas/index.ts`: Exported Terraform components.
+  - `terraform.spec.tsx`: Added 3 integration tests verifying modal rendering, closed state, and discovered sample resource rendering.
+- Milestone:
+  - **95 / 135 total features completed (70.4% milestone reached — crossed 70% threshold)!**
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (203 test suites, 1206 tests passed)
+```
+
 ## 2026-10-02 — F080 — GCP (Phase 10 Progress)
 
 Status: COMPLETE

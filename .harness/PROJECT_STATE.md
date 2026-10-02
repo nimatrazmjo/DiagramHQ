@@ -13,21 +13,23 @@ Phase Name: Infrastructure Integrations
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F081
-Feature Name: Terraform
+Feature ID: F082
+Feature Name: Kubernetes
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 94
+Completed: 95
 In Progress: 0
 Blocked: 0
-Not Started: 41
-Progress: 69.6%
+Not Started: 40
+Progress: 70.4%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F080 — GCP. Implemented Google Cloud Platform cloud infrastructure import and topology mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Maps all 17 canonical GCP resource types (GCE, GKE, Cloud Run, Cloud Functions, App Engine, Cloud SQL, Spanner, Bigtable, Firestore, GCS, VPC, Cloud LB, Cloud CDN, API Gateway, Pub/Sub, Eventarc, Cloud Tasks) to typed `ModelObject` instances with hierarchical VPC containment, derives inter-service `ModelConnection` interactions (origin cache fetch, LB ingress, API Gateway proxying, database queries, async pub/sub, Eventarc triggers, Cloud Tasks dispatch), and preserves traceable `GcpCloudEvidence`. Added canvas UI component `<GcpImportModal />`, 7 domain unit tests, and 3 web integration tests.
+F081 — Terraform. Implemented Terraform Infrastructure as Code (IaC) configuration parser and architecture mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Parses Terraform configurations (.tf, .tfvars) and state JSON (.tfstate, plan JSON), extracting resources, modules, outputs, and variables across multi-cloud providers (AWS, Azure, GCP, Kubernetes, generic). Maps resources to ModelObject records with proper C4 kinds (store, group, component, application), generates module containment hierarchies (groupByModule), infers inter-resource ModelConnection dependencies with protocols (TCP:5432, HTTPS, AMQP), and preserves traceable TerraformEvidence (sourceType: 'iac_terraform'). Added canvas UI component <TerraformImportModal />, 7 domain unit tests, and 3 web integration tests.
+
+Prior: F080 — GCP. Implemented Google Cloud Platform cloud infrastructure import and topology mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Maps all 17 canonical GCP resource types (GCE, GKE, Cloud Run, Cloud Functions, App Engine, Cloud SQL, Spanner, Bigtable, Firestore, GCS, VPC, Cloud LB, Cloud CDN, API Gateway, Pub/Sub, Eventarc, Cloud Tasks) to typed `ModelObject` instances with hierarchical VPC containment, derives inter-service `ModelConnection` interactions (origin cache fetch, LB ingress, API Gateway proxying, database queries, async pub/sub, Eventarc triggers, Cloud Tasks dispatch), and preserves traceable `GcpCloudEvidence`. Added canvas UI component `<GcpImportModal />`, 7 domain unit tests, and 3 web integration tests.
 
 Prior: F079 — Azure. Implemented Microsoft Azure cloud infrastructure import and topology mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Maps all 15 canonical Azure resource types (VM, App Service, Function App, AKS, Container App, SQL Database, Cosmos DB, Storage Account, VNet, App Gateway, Front Door, API Management, Service Bus, Event Hubs, Event Grid) to typed `ModelObject` instances with hierarchical VNet containment, derives inter-service `ModelConnection` interactions (ingress routing, backend API calls, database queries, async pub/sub), and preserves traceable `AzureCloudEvidence`. Added canvas UI component `<AzureImportModal />`, 7 domain unit tests, and 3 web integration tests.
 
