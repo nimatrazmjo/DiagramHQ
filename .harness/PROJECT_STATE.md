@@ -13,21 +13,23 @@ Phase Name: AI Copilot
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F064
-Feature Name: Natural-language editing
+Feature ID: F065
+Feature Name: Architecture explanation
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 69
+Completed: 70
 In Progress: 0
 Blocked: 0
-Not Started: 66
-Progress: 51.1%
+Not Started: 65
+Progress: 51.9%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F063 — Architecture generation. Pure AI Architecture Generation engine and interactive modal for DiagramHQ (Phase 08 — AI Copilot). Natural language prompt synthesizes complete, structurally sound C4 architecture elements: objects with C4 kinds, coordinates, tech stacks, and descriptions; valid connections between components with sync/async kinds; end-to-end flows with ordered, numbered steps; view container definitions; markdown documentation; and integrated change set proposals. Delivered as explicit reviewable proposals with Apply/Reject actions to ensure AI never commits silent model mutations. Added UI components `<GenerationProposalCard />` and `<AIGenerationModal />`, 4 domain unit tests, and 4 web integration tests.
+F064 — Natural-language editing. Pure AI Natural-Language Editing engine and reviewable proposal modal for DiagramHQ (Phase 08 — AI Copilot). Translates natural language editing commands (such as "add Redis between Service A and Service B", "remove Legacy Auth Proxy", or "rename Edge Gateway to Global API Gateway") into explicit, non-destructive proposed change sets with itemized added, modified, and removed entities. Adheres strictly to the invariant that AI edits are never committed silently; every mutation requires human Apply/Reject action. Applying verifies integrity invariants and updates live model state; rejecting preserves complete model immutability. Added UI components `<NLEditProposalCard />` and `<NLEditModal />`, 5 domain unit tests, and 3 web integration tests.
+
+Prior: F063 — Architecture generation. Pure AI Architecture Generation engine and interactive modal for DiagramHQ (Phase 08 — AI Copilot). Natural language prompt synthesizes complete, structurally sound C4 architecture elements: objects with C4 kinds, coordinates, tech stacks, and descriptions; valid connections between components with sync/async kinds; end-to-end flows with ordered, numbered steps; view container definitions; markdown documentation; and integrated change set proposals. Delivered as explicit reviewable proposals with Apply/Reject actions to ensure AI never commits silent model mutations. Added UI components `<GenerationProposalCard />` and `<AIGenerationModal />`, 4 domain unit tests, and 4 web integration tests.
 
 Prior: F062 — AI chat. Pure AI Architecture Copilot grounded Q&A engine and persistent UI panel for DiagramHQ (starting Phase 08 — AI Copilot!). The Copilot operates with full grounding over the live architecture model graph (objects, connections, flows, ADRs). Provides dedicated dependency rationale resolution (`resolveDependencyRationale`) to explain direct and transitive multi-hop dependencies ("why does X depend on Y?"), discovering graph paths via breadth-first search and always citing concrete `ObjectId` and `ConnectionId` identifiers. Added accessible canvas UI components `<CitationBadge />` and `<AICopilotPanel />`, 4 domain unit tests, and 3 web integration tests.
 

@@ -50,3 +50,4 @@ export * from './scenarios';
 export * from './roadmap-items';
 export * from './ai-chat';
 export * from './ai-generation';
+export * from './ai-editing';

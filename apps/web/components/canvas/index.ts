@@ -34,3 +34,4 @@ export * from './scenario-modal';
 export * from './roadmap-panel';
 export * from './ai-copilot-panel';
 export * from './ai-generation-modal';
+export * from './nl-edit-modal';

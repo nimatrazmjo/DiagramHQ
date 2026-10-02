@@ -36,7 +36,7 @@ Test: a prompt yields a valid model on apply.
 
 ### F064 — Natural-language editing
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: NL edits as proposals.
 
