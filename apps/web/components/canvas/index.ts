@@ -67,3 +67,4 @@ export * from './drift-panel';
 export * from './lint-panel';
 export * from './rules-panel';
 export * from './dependency-panel';
+export * from './blast-radius-panel';

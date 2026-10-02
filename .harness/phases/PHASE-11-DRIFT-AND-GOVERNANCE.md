@@ -51,7 +51,7 @@ Test: a rule fires on a violating model.
 
 ### F087 — Dependency analysis
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Dependency graph.
 

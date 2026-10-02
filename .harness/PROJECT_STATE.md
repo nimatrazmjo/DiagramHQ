@@ -13,21 +13,21 @@ Phase Name: Drift and Governance
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F087
-Feature Name: Dependency analysis
+Feature ID: F088
+Feature Name: Blast-radius analysis
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 101
+Completed: 102
 In Progress: 0
 Blocked: 0
-Not Started: 34
-Progress: 74.8%
+Not Started: 33
+Progress: 75.6%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F086 — Architecture rules. Implemented organization architecture governance rules engine for DiagramHQ (Phase 11 — Drift and Governance). Evaluates architecture models against the 4 canonical enterprise governance rules: Owner Required (ORG-RULE-001), External API Authentication Required (ORG-RULE-002), No Cross-Service Direct Database Access (ORG-RULE-003, Database-Per-Service pattern enforcement), and PII Flow Restrictions (ORG-RULE-004, cryptographic encryption and unapproved third-party DPA restrictions). Supports policy configuration for rule disabling and severity overrides. Added canvas UI component <ArchitectureRulesModal />, 6 domain unit tests, and 3 web integration tests.
+F087 — Dependency analysis. Implemented architecture dependency graph and path analysis engine for DiagramHQ (Phase 11 — Drift and Governance). Built a dedicated graph engine (`dependency-graph.ts`) with cycle detection (DFS back-edge analysis), transitive path finding (BFS/DFS up to 6 hops), and full edge classification: `inferDependencyCategory` classifies each connection as runtime/compile-time/data/external based on source/target object kinds and connection metadata. `analyzeArchitectureDependencies` builds direct + indirect edge sets, applies type/category/node-focus filters, computes per-category metrics (runtimeCount, compileTimeCount, dataCount, externalCount, cycleCount). Added canvas UI component `<DependencyAnalysisModal />` with 8 KPI metric cards, cycle warning alert banner, type/category/node-focus filter controls, and an edge list with source→target, hop count, category/type badges. 3 domain unit tests (cycle detection, indirect paths, category filtering), 3 web integration tests (cycle warning render, indirect path render, closed state).
 
 Prior: F085 — Architecture linting. Implemented architecture linting engine and diagnostics for DiagramHQ (Phase 11 — Drift and Governance). Evaluates architecture models against canonical rules spanning structural integrity, hierarchy encapsulation, documentation completeness, and node coupling (dangling connections, store-to-store direct coupling, invalid containment hierarchy, orphaned objects, missing technology metadata, self-referencing connection loops, high coupling / god-services, missing descriptions, and missing actor entrypoints). Generates structured findings at error, warning, and info levels with actionable remediation advice and health scoring. Added canvas UI component <ArchitectureLintModal />, 4 domain unit tests, and 3 web integration tests. **Milestone: 100 / 135 features completed (74.1%)!**
 
