@@ -2,6 +2,29 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F117 — ADR system
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `adrs.ts`: Pure Architecture Decision Record (ADR) system for DiagramHQ. Supports structured architectural decision tracking with title, lifecycle status (`draft`, `proposed`, `accepted`, `rejected`, `superseded`, `deprecated`), context, decision, consequences, and alternatives considered. Provides polymorphic entity attachment to architecture objects, connections, changes, and version milestones. Implemented query helpers `getADRHistoryForObject`, `getADRsForVersion`, and `getADRsForConnection`.
+  - `adrs.test.ts`: Added 4 unit tests verifying acceptance test for creating an ADR, linking it to an object, and querying history; status updates and lifecycle transitions; polymorphic attachment/detachment; and field validations.
+  - `index.ts`: Exported `adrs`.
+- Web layer (`apps/web/`):
+  - `components/canvas/adr-drawer.tsx`: Implemented `<ADRBadge />` (displaying formatted ADR number, title, and status pill) and `<ADRHistoryDrawer />` (interactive side panel with ADR selector tabs, full decision details, status transition actions, and creation form).
+  - `components/canvas/index.ts`: Exported ADR components.
+  - `adrs.spec.tsx`: Added 3 integration tests verifying acceptance test for ADR creation and entity history inspection, `<ADRBadge />` rendering, and `<ADRHistoryDrawer />` open, empty, and populated states.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (143 test suites, 955 tests passed)
+```
+
 ## 2026-10-02 — F061 — Merge
 
 Status: COMPLETE
