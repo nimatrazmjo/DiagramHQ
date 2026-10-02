@@ -12,5 +12,6 @@ export * from './flow-badges';
 export * from './flow-playback-toolbar';
 export * from './user-journey-overlay';
 export * from './data-flow-overlay';
+export * from './api-flow-overlay';
 
 

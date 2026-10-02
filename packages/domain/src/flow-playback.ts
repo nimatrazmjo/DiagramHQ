@@ -298,4 +298,67 @@ export function getDataFlowPlaybackStepInfo(
   };
 }
 
+export interface ApiFlowPlaybackStepInfo {
+  readonly flowId: string;
+  readonly flowName: string;
+  readonly flowType: FlowType;
+  readonly endpoint: string | null;
+  readonly httpMethod: string | null;
+  readonly statusCode: number | null;
+  readonly requestSchema: string | null;
+  readonly responseSchema: string | null;
+  readonly stepIndex: number;
+  readonly stepNumber: number;
+  readonly totalSteps: number;
+  readonly connectionId: string | null;
+  readonly stepEndpoint: string | null;
+  readonly stepHttpMethod: string | null;
+  readonly stepStatusCode: number | null;
+  readonly stepRequestSchema: string | null;
+  readonly stepResponseSchema: string | null;
+  readonly note: string | null;
+  readonly isPlaying: boolean;
+}
+
+/**
+ * Extracts structured API flow playback context for the current step (F047).
+ * Returns null if the flow is not an api_flow or has no steps.
+ */
+export function getApiFlowPlaybackStepInfo(
+  flow: FlowWithSteps,
+  state: FlowPlaybackState,
+): ApiFlowPlaybackStepInfo | null {
+  if (flow.type !== 'api_flow' || !flow.steps || flow.steps.length === 0) {
+    return null;
+  }
+
+  const sortedSteps = [...flow.steps].sort((a, b) => a.stepIndex - b.stepIndex);
+  const currentStep = sortedSteps[state.currentStepIndex] ?? sortedSteps[0];
+  if (!currentStep) {
+    return null;
+  }
+
+  return {
+    flowId: flow.id,
+    flowName: flow.name,
+    flowType: 'api_flow',
+    endpoint: flow.endpoint ?? null,
+    httpMethod: flow.httpMethod ?? null,
+    statusCode: flow.statusCode ?? null,
+    requestSchema: flow.requestSchema ?? null,
+    responseSchema: flow.responseSchema ?? null,
+    stepIndex: state.currentStepIndex,
+    stepNumber: state.currentStepIndex + 1,
+    totalSteps: state.totalSteps,
+    connectionId: currentStep.connectionId,
+    stepEndpoint: currentStep.endpoint ?? flow.endpoint ?? null,
+    stepHttpMethod: currentStep.httpMethod ?? flow.httpMethod ?? null,
+    stepStatusCode: currentStep.statusCode ?? flow.statusCode ?? null,
+    stepRequestSchema: currentStep.requestSchema ?? flow.requestSchema ?? null,
+    stepResponseSchema: currentStep.responseSchema ?? flow.responseSchema ?? null,
+    note: currentStep.note ?? null,
+    isPlaying: state.isPlaying,
+  };
+}
+
 

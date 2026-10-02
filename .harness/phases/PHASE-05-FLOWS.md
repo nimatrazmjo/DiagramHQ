@@ -1,6 +1,6 @@
 # Phase 05 — Flows
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Description
 Flows: ordered sequences through existing connections, with playback. A flow is not a static line.
@@ -87,7 +87,7 @@ Test: a data flow plays back.
 
 ### F047 — API flows
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Flow type.
 

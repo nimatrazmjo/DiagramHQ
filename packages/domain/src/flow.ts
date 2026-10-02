@@ -8,6 +8,7 @@ import type {
   FlowWithSteps,
   ModelConnection,
   ModelObject,
+  SequenceDiagramExportOptions,
 } from './types';
 
 export interface CreateFlowStepInput {
@@ -20,6 +21,11 @@ export interface CreateFlowStepInput {
   dataElements?: string[];
   transformation?: string | null;
   dataClassification?: string | null;
+  endpoint?: string | null;
+  httpMethod?: string | null;
+  requestSchema?: string | null;
+  responseSchema?: string | null;
+  statusCode?: number | null;
 }
 
 export interface CreateFlowInput {
@@ -32,6 +38,11 @@ export interface CreateFlowInput {
   persona?: string | null;
   dataClassification?: string | null;
   dataElements?: string[];
+  endpoint?: string | null;
+  httpMethod?: string | null;
+  requestSchema?: string | null;
+  responseSchema?: string | null;
+  statusCode?: number | null;
   steps?: CreateFlowStepInput[];
 }
 
@@ -43,6 +54,11 @@ export interface UpdateFlowInput {
   persona?: string | null;
   dataClassification?: string | null;
   dataElements?: string[];
+  endpoint?: string | null;
+  httpMethod?: string | null;
+  requestSchema?: string | null;
+  responseSchema?: string | null;
+  statusCode?: number | null;
   steps?: CreateFlowStepInput[];
 }
 
@@ -66,10 +82,32 @@ export interface CreateDataFlowInput {
   steps?: CreateFlowStepInput[];
 }
 
+export interface CreateApiFlowInput {
+  id?: FlowId;
+  architectureId: ArchitectureId;
+  name: string;
+  endpoint: string;
+  httpMethod?: string | null;
+  description?: string | null;
+  requestSchema?: string | null;
+  responseSchema?: string | null;
+  statusCode?: number | null;
+  steps?: CreateFlowStepInput[];
+}
+
 export interface UserJourneyStepAnnotations {
   note?: string | null;
   actorAction?: string | null;
   userIntent?: string | null;
+}
+
+export interface ApiFlowStepAnnotations {
+  endpoint?: string | null;
+  httpMethod?: string | null;
+  requestSchema?: string | null;
+  responseSchema?: string | null;
+  statusCode?: number | null;
+  note?: string | null;
 }
 
 export interface FlowValidationResult {
@@ -175,6 +213,11 @@ export function createFlow(
     dataElements: s.dataElements ? [...s.dataElements] : undefined,
     transformation: s.transformation ?? null,
     dataClassification: s.dataClassification ?? null,
+    endpoint: s.endpoint ?? null,
+    httpMethod: s.httpMethod ? s.httpMethod.toUpperCase() : null,
+    requestSchema: s.requestSchema ?? null,
+    responseSchema: s.responseSchema ?? null,
+    statusCode: s.statusCode !== undefined ? s.statusCode : null,
   }));
 
   return {
@@ -187,6 +230,11 @@ export function createFlow(
     persona: input.persona ?? null,
     dataClassification: input.dataClassification ?? null,
     dataElements: input.dataElements ? [...input.dataElements] : undefined,
+    endpoint: input.endpoint ?? null,
+    httpMethod: input.httpMethod ? input.httpMethod.toUpperCase() : null,
+    requestSchema: input.requestSchema ?? null,
+    responseSchema: input.responseSchema ?? null,
+    statusCode: input.statusCode !== undefined ? input.statusCode : null,
     createdAt: now,
     updatedAt: now,
     steps,
@@ -224,6 +272,18 @@ export function updateFlow(
       : flow.dataClassification;
   const dataElements =
     input.dataElements !== undefined ? input.dataElements : flow.dataElements;
+  const endpoint =
+    input.endpoint !== undefined ? input.endpoint : flow.endpoint;
+  const httpMethod =
+    input.httpMethod !== undefined
+      ? input.httpMethod ? input.httpMethod.toUpperCase() : null
+      : flow.httpMethod;
+  const requestSchema =
+    input.requestSchema !== undefined ? input.requestSchema : flow.requestSchema;
+  const responseSchema =
+    input.responseSchema !== undefined ? input.responseSchema : flow.responseSchema;
+  const statusCode =
+    input.statusCode !== undefined ? input.statusCode : flow.statusCode;
 
   let steps = flow.steps;
   if (input.steps !== undefined) {
@@ -254,6 +314,11 @@ export function updateFlow(
       dataElements: s.dataElements ? [...s.dataElements] : undefined,
       transformation: s.transformation ?? null,
       dataClassification: s.dataClassification ?? null,
+      endpoint: s.endpoint ?? null,
+      httpMethod: s.httpMethod ? s.httpMethod.toUpperCase() : null,
+      requestSchema: s.requestSchema ?? null,
+      responseSchema: s.responseSchema ?? null,
+      statusCode: s.statusCode !== undefined ? s.statusCode : null,
     }));
   }
 
@@ -266,6 +331,11 @@ export function updateFlow(
     persona,
     dataClassification,
     dataElements,
+    endpoint,
+    httpMethod,
+    requestSchema,
+    responseSchema,
+    statusCode,
     updatedAt: new Date(),
     steps,
   };
@@ -360,6 +430,11 @@ export function addFlowStep(
     dataElements: stepInput.dataElements ? [...stepInput.dataElements] : undefined,
     transformation: stepInput.transformation ?? null,
     dataClassification: stepInput.dataClassification ?? null,
+    endpoint: stepInput.endpoint ?? null,
+    httpMethod: stepInput.httpMethod ? stepInput.httpMethod.toUpperCase() : null,
+    requestSchema: stepInput.requestSchema ?? null,
+    responseSchema: stepInput.responseSchema ?? null,
+    statusCode: stepInput.statusCode !== undefined ? stepInput.statusCode : null,
   };
 
   sortedSteps.splice(targetIndex, 0, newStep);
@@ -796,6 +871,327 @@ export function extractDataLineage(
     participatingObjectIds: Array.from(participatingObjectIds),
     exits,
   };
+}
+
+/**
+ * Creates an API-request flow (F047).
+ * Encapsulates endpoint, HTTP method, schemas, and HTTP status codes.
+ */
+export function createApiFlow(
+  input: CreateApiFlowInput,
+  availableConnections?: Set<ConnectionId> | ConnectionId[] | ModelConnection[],
+): FlowWithSteps {
+  const trimmedEndpoint = input.endpoint ? input.endpoint.trim() : '';
+  if (!trimmedEndpoint) {
+    throw new InvariantViolationError(
+      'API flow endpoint must not be empty',
+      'INVALID_API_ENDPOINT',
+    );
+  }
+
+  return createFlow(
+    {
+      id: input.id,
+      architectureId: input.architectureId,
+      name: input.name,
+      description: input.description,
+      type: 'api_flow',
+      endpoint: trimmedEndpoint,
+      httpMethod: input.httpMethod ? input.httpMethod.trim().toUpperCase() : 'GET',
+      requestSchema: input.requestSchema ?? null,
+      responseSchema: input.responseSchema ?? null,
+      statusCode: input.statusCode !== undefined ? input.statusCode : 200,
+      steps: input.steps,
+    },
+    availableConnections,
+  );
+}
+
+/**
+ * Annotates an individual flow step with API metadata (HTTP method, endpoint, schemas, status code).
+ */
+export function annotateApiFlowStep(
+  step: FlowStep,
+  annotations: ApiFlowStepAnnotations,
+): FlowStep {
+  return {
+    ...step,
+    endpoint:
+      annotations.endpoint !== undefined ? annotations.endpoint : step.endpoint,
+    httpMethod:
+      annotations.httpMethod !== undefined
+        ? annotations.httpMethod?.toUpperCase() ?? null
+        : step.httpMethod,
+    requestSchema:
+      annotations.requestSchema !== undefined
+        ? annotations.requestSchema
+        : step.requestSchema,
+    responseSchema:
+      annotations.responseSchema !== undefined
+        ? annotations.responseSchema
+        : step.responseSchema,
+    statusCode:
+      annotations.statusCode !== undefined
+        ? annotations.statusCode
+        : step.statusCode,
+    note: annotations.note !== undefined ? annotations.note : step.note,
+  };
+}
+
+function normalizeModelInput(
+  modelOrObjects:
+    | { objects: ModelObject[]; connections: ModelConnection[] }
+    | ModelObject[],
+  connections?: ModelConnection[],
+): {
+  objects: ModelObject[];
+  connections: ModelConnection[];
+} {
+  if (Array.isArray(modelOrObjects)) {
+    return {
+      objects: modelOrObjects,
+      connections: connections ?? [],
+    };
+  }
+  return {
+    objects: modelOrObjects.objects ?? [],
+    connections: modelOrObjects.connections ?? [],
+  };
+}
+
+/**
+ * Exports a FlowWithSteps sequence to Mermaid sequence diagram syntax (F047).
+ */
+export function exportFlowToMermaidSequence(
+  flow: FlowWithSteps,
+  modelOrObjects:
+    | { objects: ModelObject[]; connections: ModelConnection[] }
+    | ModelObject[],
+  connections?: ModelConnection[],
+  options?: SequenceDiagramExportOptions,
+): string {
+  const { objects, connections: modelConnections } = normalizeModelInput(
+    modelOrObjects,
+    connections,
+  );
+
+  const connectionMap = new Map<string, ModelConnection>(
+    modelConnections.map((c) => [c.id, c]),
+  );
+  const objectMap = new Map<string, ModelObject>(
+    objects.map((o) => [o.id, o]),
+  );
+
+  const sortedSteps = [...flow.steps].sort((a, b) => a.stepIndex - b.stepIndex);
+
+  const participantIds: string[] = [];
+  const participantIdSet = new Set<string>();
+
+  for (const step of sortedSteps) {
+    const conn = connectionMap.get(step.connectionId);
+    if (!conn) {
+      throw new InvariantViolationError(
+        `Connection "${step.connectionId}" for flow step ${step.stepIndex} not found in model connections`,
+        'CONNECTION_NOT_FOUND',
+      );
+    }
+    if (!participantIdSet.has(conn.sourceObjectId)) {
+      participantIdSet.add(conn.sourceObjectId);
+      participantIds.push(conn.sourceObjectId);
+    }
+    if (!participantIdSet.has(conn.targetObjectId)) {
+      participantIdSet.add(conn.targetObjectId);
+      participantIds.push(conn.targetObjectId);
+    }
+  }
+
+  const lines: string[] = ['sequenceDiagram'];
+
+  if (options?.autonumber !== false) {
+    lines.push('    autonumber');
+  }
+
+  const title = options?.title ?? flow.name;
+  if (title) {
+    lines.push(`    %% ${title}`);
+  }
+
+  const aliasMap = new Map<string, string>();
+  for (const objId of participantIds) {
+    const obj = objectMap.get(objId as ObjectId);
+    const alias = `p_${objId.replace(/[^a-zA-Z0-9_]/g, '_')}`;
+    aliasMap.set(objId, alias);
+    const label = obj ? obj.name.replace(/["\n\r;]/g, '') : objId;
+    if (obj?.kind === 'actor') {
+      lines.push(`    actor ${alias} as ${label}`);
+    } else {
+      lines.push(`    participant ${alias} as ${label}`);
+    }
+  }
+
+  for (const step of sortedSteps) {
+    const conn = connectionMap.get(step.connectionId)!;
+    const sourceAlias = aliasMap.get(conn.sourceObjectId) ?? conn.sourceObjectId;
+    const targetAlias = aliasMap.get(conn.targetObjectId) ?? conn.targetObjectId;
+
+    const method = step.httpMethod ?? (step.stepIndex === 0 ? flow.httpMethod : null);
+    const endpoint = step.endpoint ?? (step.stepIndex === 0 ? flow.endpoint : null);
+
+    let messageText = '';
+    if (method && endpoint) {
+      messageText = `${method} ${endpoint}`;
+    } else if (endpoint) {
+      messageText = endpoint;
+    } else if (step.note) {
+      messageText = step.note;
+    } else if (conn.description) {
+      messageText = conn.description;
+    } else {
+      messageText = method ?? 'call';
+    }
+
+    lines.push(`    ${sourceAlias}->>${targetAlias}: ${messageText}`);
+
+    if (options?.includeNotes !== false && step.note && (method || endpoint)) {
+      lines.push(`    Note over ${targetAlias}: ${step.note}`);
+    }
+
+    if (options?.includeSchemas) {
+      if (step.requestSchema) {
+        lines.push(`    Note over ${sourceAlias},${targetAlias}: Req: ${step.requestSchema}`);
+      }
+      if (step.responseSchema) {
+        lines.push(`    Note over ${targetAlias},${sourceAlias}: Res: ${step.responseSchema}`);
+      }
+    }
+
+    const statusCode =
+      step.statusCode ?? (step.stepIndex === sortedSteps.length - 1 ? flow.statusCode : null);
+    if (options?.includeReturnArrows || (options?.includeStatusCodes !== false && statusCode)) {
+      const returnLabel = statusCode ? `${statusCode}` : '200 OK';
+      lines.push(`    ${targetAlias}-->>${sourceAlias}: ${returnLabel}`);
+    }
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Exports a FlowWithSteps sequence to PlantUML sequence diagram syntax (F047).
+ */
+export function exportFlowToPlantUMLSequence(
+  flow: FlowWithSteps,
+  modelOrObjects:
+    | { objects: ModelObject[]; connections: ModelConnection[] }
+    | ModelObject[],
+  connections?: ModelConnection[],
+  options?: SequenceDiagramExportOptions,
+): string {
+  const { objects, connections: modelConnections } = normalizeModelInput(
+    modelOrObjects,
+    connections,
+  );
+
+  const connectionMap = new Map<string, ModelConnection>(
+    modelConnections.map((c) => [c.id, c]),
+  );
+  const objectMap = new Map<string, ModelObject>(
+    objects.map((o) => [o.id, o]),
+  );
+
+  const sortedSteps = [...flow.steps].sort((a, b) => a.stepIndex - b.stepIndex);
+
+  const participantIds: string[] = [];
+  const participantIdSet = new Set<string>();
+
+  for (const step of sortedSteps) {
+    const conn = connectionMap.get(step.connectionId);
+    if (!conn) {
+      throw new InvariantViolationError(
+        `Connection "${step.connectionId}" for flow step ${step.stepIndex} not found in model connections`,
+        'CONNECTION_NOT_FOUND',
+      );
+    }
+    if (!participantIdSet.has(conn.sourceObjectId)) {
+      participantIdSet.add(conn.sourceObjectId);
+      participantIds.push(conn.sourceObjectId);
+    }
+    if (!participantIdSet.has(conn.targetObjectId)) {
+      participantIdSet.add(conn.targetObjectId);
+      participantIds.push(conn.targetObjectId);
+    }
+  }
+
+  const lines: string[] = ['@startuml'];
+
+  const title = options?.title ?? flow.name;
+  if (title) {
+    lines.push(`title ${title}`);
+  }
+
+  if (options?.autonumber !== false) {
+    lines.push('autonumber');
+  }
+
+  const aliasMap = new Map<string, string>();
+  for (const objId of participantIds) {
+    const obj = objectMap.get(objId as ObjectId);
+    const alias = `p_${objId.replace(/[^a-zA-Z0-9_]/g, '_')}`;
+    aliasMap.set(objId, alias);
+    const label = obj ? obj.name.replace(/["\n\r;]/g, '') : objId;
+    if (obj?.kind === 'actor') {
+      lines.push(`actor "${label}" as ${alias}`);
+    } else {
+      lines.push(`participant "${label}" as ${alias}`);
+    }
+  }
+
+  for (const step of sortedSteps) {
+    const conn = connectionMap.get(step.connectionId)!;
+    const sourceAlias = aliasMap.get(conn.sourceObjectId) ?? conn.sourceObjectId;
+    const targetAlias = aliasMap.get(conn.targetObjectId) ?? conn.targetObjectId;
+
+    const method = step.httpMethod ?? (step.stepIndex === 0 ? flow.httpMethod : null);
+    const endpoint = step.endpoint ?? (step.stepIndex === 0 ? flow.endpoint : null);
+
+    let messageText = '';
+    if (method && endpoint) {
+      messageText = `${method} ${endpoint}`;
+    } else if (endpoint) {
+      messageText = endpoint;
+    } else if (step.note) {
+      messageText = step.note;
+    } else if (conn.description) {
+      messageText = conn.description;
+    } else {
+      messageText = method ?? 'call';
+    }
+
+    lines.push(`${sourceAlias} -> ${targetAlias}: ${messageText}`);
+
+    if (options?.includeNotes !== false && step.note && (method || endpoint)) {
+      lines.push(`note over ${targetAlias}: ${step.note}`);
+    }
+
+    if (options?.includeSchemas) {
+      if (step.requestSchema) {
+        lines.push(`note over ${sourceAlias}, ${targetAlias}: Req: ${step.requestSchema}`);
+      }
+      if (step.responseSchema) {
+        lines.push(`note over ${targetAlias}, ${sourceAlias}: Res: ${step.responseSchema}`);
+      }
+    }
+
+    const statusCode =
+      step.statusCode ?? (step.stepIndex === sortedSteps.length - 1 ? flow.statusCode : null);
+    if (options?.includeReturnArrows || (options?.includeStatusCodes !== false && statusCode)) {
+      const returnLabel = statusCode ? `${statusCode}` : '200 OK';
+      lines.push(`${targetAlias} --> ${sourceAlias}: ${returnLabel}`);
+    }
+  }
+
+  lines.push('@enduml');
+  return lines.join('\n');
 }
 
 
