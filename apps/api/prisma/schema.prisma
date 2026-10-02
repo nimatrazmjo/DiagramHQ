@@ -55,6 +55,7 @@ enum MemberRole {
   admin
   editor
   viewer
+  guest
 }
 
 model Organization {

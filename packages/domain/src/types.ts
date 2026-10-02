@@ -34,7 +34,7 @@ export type ViewKind =
   | 'persona'
   | 'custom';
 
-export type MemberRole = 'owner' | 'admin' | 'editor' | 'viewer';
+export type MemberRole = 'owner' | 'admin' | 'editor' | 'viewer' | 'guest';
 
 export interface Organization {
   readonly id: OrgId;

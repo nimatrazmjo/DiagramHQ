@@ -13,21 +13,23 @@ Phase Name: Collaboration
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F053
-Feature Name: Permissions
+Feature ID: F054
+Feature Name: Team management
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 54
+Completed: 55
 In Progress: 0
 Blocked: 0
-Not Started: 81
-Progress: 40.0%
+Not Started: 80
+Progress: 40.7%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F052 — Share links. Read-only share links preserving viewer position, zoom, and active selection without requiring an account. Added pure share-links token engine (`createShareLink`, `encodeShareLinkToken`, `decodeShareLinkToken`, `verifyShareLink`, `resolveAnonymousViewState`, `generateShareLinkUrl`), `'shl'` prefix to `ids.ts`, `<ShareLinkModal />` and `<ReadOnlyBanner />` to web UI, 6 domain unit tests, and 4 web integration tests.
+F053 — Permissions. Full role catalog (Owner, Admin, Editor, Viewer, Guest) with permission evaluator, strict assertions, per-workspace overrides, and per-diagram overrides. Added pure domain permissions engine (`canPerform`, `assertPermission`, `getAllowedActions`, `PermissionDeniedError`), `<RoleBadge />` and `<PermissionGuard />` web components, 7 domain unit tests, and 5 web integration tests.
+
+Prior: F052 — Share links. Read-only share links preserving viewer position, zoom, and active selection without requiring an account. Added pure share-links token engine (`createShareLink`, `encodeShareLinkToken`, `decodeShareLinkToken`, `verifyShareLink`, `resolveAnonymousViewState`, `generateShareLinkUrl`), `'shl'` prefix to `ids.ts`, `<ShareLinkModal />` and `<ReadOnlyBanner />` to web UI, 6 domain unit tests, and 4 web integration tests.
 
 Prior: F051 — Mentions. @mentions in comments and descriptions with notifications, and converting comments into tracked architecture tasks. Added pure mention parser and task conversion engine (`extractMentionHandles`, `generateMentionNotifications`, `convertCommentToTask`, `updateTaskStatus`, `reassignTask`), `'tsk'` and `'ntf'` prefixes to `ids.ts`, `<MentionText />` and `<TaskCard />` to web UI, 5 domain unit tests, and 4 web integration tests.
 

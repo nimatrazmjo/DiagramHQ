@@ -19,3 +19,4 @@ export * from './presence-indicators';
 export * from './comments-panel';
 export * from './mention-task-badge';
 export * from './share-link-modal';
+export * from './permission-guard';
