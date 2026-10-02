@@ -82,3 +82,4 @@ export * from './cost-visualization';
 export * from './drift';
 export * from './linting';
 export * from './rules';
+export * from './dependency-graph';
