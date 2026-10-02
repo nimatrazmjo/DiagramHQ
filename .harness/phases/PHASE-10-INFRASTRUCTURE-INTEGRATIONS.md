@@ -78,7 +78,7 @@ Test: import sample manifests -> topology renders.
 
 ### F083 — Cloud resource discovery
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Live discovery.
 
