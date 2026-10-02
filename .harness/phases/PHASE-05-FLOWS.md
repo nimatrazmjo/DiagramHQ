@@ -75,7 +75,7 @@ Test: a user-journey flow plays back.
 
 ### F046 — Data flows
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Flow type (seeds lineage).
 

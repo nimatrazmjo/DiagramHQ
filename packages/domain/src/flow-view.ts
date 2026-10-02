@@ -27,6 +27,9 @@ export interface FlowEdgeData {
   flowStepNote?: string;
   actorAction?: string | null;
   userIntent?: string | null;
+  dataElements?: string[];
+  transformation?: string | null;
+  dataClassification?: string | null;
   isDimmed?: boolean;
   isActiveStep?: boolean;
   [key: string]: unknown;
@@ -45,11 +48,16 @@ export interface FlowProjectionResult {
     flowType?: FlowType;
     actorId?: string | null;
     persona?: string | null;
+    dataClassification?: string | null;
+    dataElements?: string[];
     stepCount: number;
     participatingObjectIds: string[];
     activeStepIndex?: number;
     activeActorAction?: string | null;
     activeUserIntent?: string | null;
+    activeDataElements?: string[];
+    activeTransformation?: string | null;
+    activeDataClassification?: string | null;
   };
 }
 
@@ -113,6 +121,9 @@ export function projectFlowToCanvas(
       note: string | null;
       actorAction: string | null;
       userIntent: string | null;
+      dataElements?: string[];
+      transformation?: string | null;
+      dataClassification?: string | null;
     }>
   >();
 
@@ -125,6 +136,9 @@ export function projectFlowToCanvas(
       note: step.note ?? null,
       actorAction: step.actorAction ?? null,
       userIntent: step.userIntent ?? null,
+      dataElements: step.dataElements ? [...step.dataElements] : undefined,
+      transformation: step.transformation ?? null,
+      dataClassification: step.dataClassification ?? null,
     });
     stepsByConnectionId.set(step.connectionId, existing);
   }
@@ -233,6 +247,9 @@ export function projectFlowToCanvas(
           flowStepNote: primaryNote,
           actorAction: primaryStep?.actorAction ?? null,
           userIntent: primaryStep?.userIntent ?? null,
+          dataElements: primaryStep?.dataElements,
+          transformation: primaryStep?.transformation ?? null,
+          dataClassification: primaryStep?.dataClassification ?? null,
           isActiveStep,
           isDimmed: false,
         },
@@ -261,11 +278,17 @@ export function projectFlowToCanvas(
       flowType: flow.type,
       actorId: flow.actorId ?? null,
       persona: flow.persona ?? null,
+      dataClassification: flow.dataClassification ?? null,
+      dataElements: flow.dataElements,
       stepCount: sortedSteps.length,
       participatingObjectIds: Array.from(participatingObjectIds),
       activeStepIndex: options?.activeStepIndex,
       activeActorAction: activeStep?.actorAction ?? null,
       activeUserIntent: activeStep?.userIntent ?? null,
+      activeDataElements: activeStep?.dataElements ?? flow.dataElements,
+      activeTransformation: activeStep?.transformation ?? null,
+      activeDataClassification:
+        activeStep?.dataClassification ?? flow.dataClassification ?? null,
     },
   };
 }

@@ -169,6 +169,8 @@ export interface Flow {
   type?: FlowType;
   actorId?: ObjectId | null;
   persona?: string | null;
+  dataClassification?: string | null;
+  dataElements?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -181,6 +183,36 @@ export interface FlowStep {
   note?: string | null;
   actorAction?: string | null;
   userIntent?: string | null;
+  dataElements?: string[];
+  transformation?: string | null;
+  dataClassification?: string | null;
+}
+
+export interface DataLineageHop {
+  readonly hopIndex: number;
+  readonly stepId: string;
+  readonly connectionId: ConnectionId;
+  readonly sourceObjectId: ObjectId;
+  readonly targetObjectId: ObjectId;
+  readonly dataElements: string[];
+  readonly transformation?: string | null;
+  readonly dataClassification?: string | null;
+  readonly note?: string | null;
+}
+
+export interface DataLineageTrace {
+  readonly flowId: FlowId;
+  readonly flowName: string;
+  readonly searchedElement?: string | null;
+  readonly hops: DataLineageHop[];
+  readonly participatingObjectIds: ObjectId[];
+  readonly exits: Array<{
+    readonly hopIndex: number;
+    readonly exitObjectId: ObjectId;
+    readonly connectionId: ConnectionId;
+    readonly dataElements: string[];
+    readonly dataClassification?: string | null;
+  }>;
 }
 
 export interface FlowWithSteps extends Flow {

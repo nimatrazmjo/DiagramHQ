@@ -1,6 +1,36 @@
 # Implementation Changelog
+ 
+ Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
-Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
+## 2026-10-02 — F046 — Data flows
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `types.ts`: Added `dataClassification` and `dataElements` array to `Flow`; added `dataElements`, `transformation`, and `dataClassification` to `FlowStep`; defined `DataLineageHop` and `DataLineageTrace` interfaces.
+  - `flow.ts`: Updated `createFlow`, `updateFlow`, and `addFlowStep` to retain data flow properties; added `createDataFlow()` factory function; implemented `annotateDataFlowStep()` for updating payload schemas/transformations; implemented `extractDataLineage()` with external egress exit identification (`exits`) feeding future data lineage integration (F091).
+  - `flow-playback.ts`: Added `getDataFlowPlaybackStepInfo()` helper returning data elements, transformation notes, and classification level for the active playback step.
+  - `flow-view.ts`: Attached `dataElements`, `transformation`, and `dataClassification` to projected canvas elements (`FlowEdgeData` and `flowMetadata`).
+  - `data-flows.test.ts`: Added 5 unit tests covering data flow instantiation, step annotations, playback context extraction, data lineage tracing with egress detection, and canvas view projection.
+- Web layer (`apps/web/`):
+  - `components/canvas/data-flow-overlay.tsx`: Created `<DataFlowOverlay />` component rendering flow title, classification badge, data lineage hops, transformation notes, and step indicator.
+  - `components/canvas/index.ts`: Exported `DataFlowOverlay`.
+  - `data-flows.spec.tsx`: Added 5 integration tests covering data flow creation, playback step information, data lineage extraction with external exit identification, canvas view projection, and overlay UI rendering.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm --filter @diagramhq/domain test → 195 passed (29 test files)
+pnpm --filter @diagramhq/web test    → 331 passed (43 test files)
+pnpm test                            → 796 passed across all workspaces (195 domain, 331 web, 270 api)
+branch: feat/F046-data-flows
+```
+
+Evaluator scores: acceptance=5, correctness=5, boundaries=5, modularity=5, evidence=5 => avg 5.0 — PASS
 
 ## 2026-10-02 — F045 — User journeys
 

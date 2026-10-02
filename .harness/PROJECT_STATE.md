@@ -13,21 +13,23 @@ Phase Name: Flows
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F046
-Feature Name: Data flows
+Feature ID: F047
+Feature Name: API flows
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 47
+Completed: 48
 In Progress: 0
 Blocked: 0
-Not Started: 88
-Progress: 34.8%
+Not Started: 87
+Progress: 35.6%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F045 — User journeys. User journey flow type with actor/persona step context and sequence playback. Added `createUserJourneyFlow` factory with model actor object validation, `annotateUserJourneyStep` step annotation, `FlowPlaybackState` support, `getUserJourneyPlaybackStepInfo`, user journey canvas overlay `<UserJourneyOverlay />`, toolbar context chips, 5 domain unit tests, and 4 web integration tests.
+F046 — Data flows. Data-flow flow type with schema/payload attribution feeding data lineage (F091). Added `createDataFlow` factory, `annotateDataFlowStep` step annotator, `extractDataLineage` lineage tracer with external egress exit identification, `getDataFlowPlaybackStepInfo` runtime helper, `<DataFlowOverlay />` component, 5 domain unit tests, and 5 web integration tests.
+
+Prior: F045 — User journeys. User journey flow type with actor/persona step context and sequence playback. Added `createUserJourneyFlow` factory with model actor object validation, `annotateUserJourneyStep` step annotation, `FlowPlaybackState` support, `getUserJourneyPlaybackStepInfo`, user journey canvas overlay `<UserJourneyOverlay />`, toolbar context chips, 5 domain unit tests, and 4 web integration tests.
 
 Prior: F044 — Flow playback. Animated step-by-step playback through sequence flows. Pure domain state machine in `flow-playback.ts` (8 unit tests), canvas playback toolbar `<FlowPlaybackToolbar />` with play/pause/step/restart/speed/loop controls, and web integration suite in `flow-playback.spec.ts` (4 tests).
 
@@ -52,16 +54,16 @@ Prior: F038 — Security views. Added projection wrappers and custom badge compo
 Prior: F037 — Saved views. Added `isStarred` property to views, with `PATCH /views/:viewId` endpoint. Validated by 2 new e2e tests in `saved-views.e2e.spec.ts`.
 
 ## Current Work
-F046 — Data flows. Data-flow flow type with schema/payload attribution feeding data lineage (F091).
+F047 — API flows. Flow type for API requests and exporter to Mermaid and PlantUML sequence diagrams.
 
 ## Next Task
-F046 — Data flows. Data-flow flow type with schema/payload attribution feeding data lineage (F091).
+F047 — API flows. Flow type for API requests and exporter to Mermaid and PlantUML sequence diagrams.
 
 ## Last Verified
-F045 @ feat/F045-user-journeys — typecheck / lint / tests (190 domain + 326 web + 270 api = 786 total) / check-architecture / pnpm build all green.
+F046 @ feat/F046-data-flows — typecheck / lint / tests (195 domain + 331 web + 270 api = 796 total) / check-architecture / pnpm build all green.
 
 ## Current Git Commit
-Working tree: on branch `feat/F045-user-journeys`.
+Working tree: on branch `feat/F046-data-flows`.
 
 
 
