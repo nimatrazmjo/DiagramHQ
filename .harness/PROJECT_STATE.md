@@ -13,21 +13,21 @@ Phase Name: Drift and Governance
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F088
-Feature Name: Blast-radius analysis
+Feature ID: F089
+Feature Name: Failure simulation
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 102
+Completed: 103
 In Progress: 0
 Blocked: 0
-Not Started: 33
-Progress: 75.6%
+Not Started: 32
+Progress: 76.3%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F087 — Dependency analysis. Implemented architecture dependency graph and path analysis engine for DiagramHQ (Phase 11 — Drift and Governance). Built a dedicated graph engine (`dependency-graph.ts`) with cycle detection (DFS back-edge analysis), transitive path finding (BFS/DFS up to 6 hops), and full edge classification: `inferDependencyCategory` classifies each connection as runtime/compile-time/data/external based on source/target object kinds and connection metadata. `analyzeArchitectureDependencies` builds direct + indirect edge sets, applies type/category/node-focus filters, computes per-category metrics (runtimeCount, compileTimeCount, dataCount, externalCount, cycleCount). Added canvas UI component `<DependencyAnalysisModal />` with 8 KPI metric cards, cycle warning alert banner, type/category/node-focus filter controls, and an edge list with source→target, hop count, category/type badges. 3 domain unit tests (cycle detection, indirect paths, category filtering), 3 web integration tests (cycle warning render, indirect path render, closed state).
+F088 — Blast-radius analysis. Implemented architecture blast-radius analysis engine for DiagramHQ (Phase 11 — Drift and Governance). Uses reverse BFS from a failing/changing node to discover all upstream dependents. Counts impacted services (application/system/component), databases (store), flows (disrupted edges), teams (from metadata.owner/team), and customer-facing nodes (actor kind or metadata.customerFacing). Severity classification: critical (customer-facing + no fallback path) → high (customer-facing) → medium (≥3 services or critical path) → low. Added canvas UI `<BlastRadiusModal />` with target node selector, severity banner, 6 KPI metric cards, and impacted-node list with hop count + customer/fallback badges. 3 domain unit tests, 3 web integration tests.
 
 Prior: F085 — Architecture linting. Implemented architecture linting engine and diagnostics for DiagramHQ (Phase 11 — Drift and Governance). Evaluates architecture models against canonical rules spanning structural integrity, hierarchy encapsulation, documentation completeness, and node coupling (dangling connections, store-to-store direct coupling, invalid containment hierarchy, orphaned objects, missing technology metadata, self-referencing connection loops, high coupling / god-services, missing descriptions, and missing actor entrypoints). Generates structured findings at error, warning, and info levels with actionable remediation advice and health scoring. Added canvas UI component <ArchitectureLintModal />, 4 domain unit tests, and 3 web integration tests. **Milestone: 100 / 135 features completed (74.1%)!**
 

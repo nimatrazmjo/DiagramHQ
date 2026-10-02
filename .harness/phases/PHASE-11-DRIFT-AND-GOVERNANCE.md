@@ -63,7 +63,7 @@ Test: graph renders; filters narrow correctly.
 
 ### F088 — Blast-radius analysis
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Impact of a node.
 

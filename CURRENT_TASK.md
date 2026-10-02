@@ -1,28 +1,27 @@
-# Current Task: F088 — Blast-radius analysis
+# Current Task: F089 — Failure simulation
 
 **Status**: NOT STARTED
 
 ## Description
-Blast-radius analysis engine for DiagramHQ (Phase 11 — Drift and Governance):
-- Given a target component/service/node, compute the full blast radius of a change or failure:
-  - Identify all **directly dependent** services (in-degree nodes).
-  - Identify all **transitively dependent** services (multi-hop upstream dependents).
-  - Categorize impact by type: services, flows, databases, teams, customer-facing features.
-  - Severity scoring: distinguish fallback-capable vs no-fallback paths.
+Architecture failure simulation engine for DiagramHQ (Phase 11 — Drift and Governance):
+- Mark one or more model objects as "down" / simulated failure
+- Highlight the blast radius with severity (using F088's blast-radius analysis)
+- Distinguish fallback vs no-fallback paths in the highlighted impact graph
 - Acceptance criteria:
-  - Counts: services, flows, databases, teams, customer-facing features
-  - Test: blast-radius counts are correct.
+  - Mark an object down; highlight the blast radius with severity; distinguish fallback vs no-fallback
+  - Test: simulate a DB outage; downstream flagged; fallbacks distinguished.
 
-- Feature ID: F088
+- Feature ID: F089
 - Phase: 11 — Drift and Governance
-- Dependencies: F087
+- Dependencies: F088
 
 ## Next Steps
-1. In `packages/domain/src/`, implement `blast-radius.ts`:
-   - `BlastRadiusReport` type with impactedServices, impactedFlows, impactedDatabases, impactedTeams, customerFacingCount, severityScore.
-   - `computeBlastRadius(model, targetNodeId)` using reverse-traversal of the dependency graph.
-   - Unit tests in `packages/domain/src/blast-radius.test.ts`.
+1. In `packages/domain/src/`, implement `failure-simulation.ts`:
+   - `SimulationConfig`: set of downed node IDs + optional metadata (reason, simulated-at timestamp)
+   - `SimulatedImpact` per node: status (degraded/down/fallback/healthy), cascadeChain, reason
+   - `simulateFailure(model, config)` → `FailureSimulationReport` with: per-node impact status, full blast-radius summary, fallback-capable vs no-fallback counts, affected customer journeys
+   - Unit tests in `packages/domain/src/failure-simulation.test.ts`
 2. In `apps/web/`, implement canvas UI:
-   - `<BlastRadiusModal />` in `apps/web/components/canvas/blast-radius-panel.tsx`.
-   - Integration specs in `apps/web/blast-radius.spec.tsx`.
+   - `<FailureSimulationModal />` in `apps/web/components/canvas/failure-simulation-panel.tsx`
+   - Integration specs in `apps/web/failure-simulation.spec.tsx`
 3. Verify with `pnpm typecheck && pnpm lint && pnpm check-architecture && pnpm test && pnpm build`.

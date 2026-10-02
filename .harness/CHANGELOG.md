@@ -2,6 +2,21 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F088 — Blast-Radius Analysis (Phase 11 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `blast-radius.ts`: Architecture blast-radius analysis engine using reverse BFS from a failing node. Computes: impacted services (application/system/component nodes), databases (store nodes), disrupted flows (edges), teams (distinct `metadata.owner`/`metadata.team` values), customer-facing node count (actor kind or `metadata.customerFacing`). Severity scoring: `critical` (customer-facing + no fallback) → `high` (customer-facing) → `medium` (≥3 services or critical path) → `low`. `ImpactedNode` carries hopCount, isCustomerFacing, hasFallback (resolved from `metadata.hasFallback/fallback/circuitBreaker/redundant`), and team label.
+  - `blast-radius.test.ts`: 3 unit tests verifying gateway failure counts, critical severity detection, and low severity for isolated internal services.
+  - `index.ts`: Exported `blast-radius`.
+- Web layer (`apps/web/`):
+  - `components/canvas/blast-radius-panel.tsx`: Implemented `<BlastRadiusModal />` with target node selector dropdown, severity banner (colored critical/high/medium/low), critical-path warning, 6 KPI metric cards (Services, Databases, Flows, Customer Facing, Teams, Max Hops), impacted node list sorted by hop count with customer-facing badge and no-fallback badge.
+  - `components/canvas/index.ts`: Exported `blast-radius-panel`.
+  - `blast-radius.spec.tsx`: 3 integration tests.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 84 test files / 471 tests ✓, web 98 test files / 525 tests ✓, `pnpm build ✓`.
+
 ## 2026-10-02 — F087 — Dependency Analysis (Phase 11 Progress)
 
 Status: COMPLETE
