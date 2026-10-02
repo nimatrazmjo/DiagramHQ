@@ -1,35 +1,36 @@
-# Current Task: F084 — Architecture drift
+# Current Task: F085 — Architecture linting
 
 **Status**: NOT STARTED
 
 ## Description
-Documented vs. actual architecture drift detection and governance engine for DiagramHQ (Phase 11 — Drift and Governance):
-- Compare documented architecture model against actual imported infrastructure and discovered code state:
-  - Surface the delta: added unmanaged objects/connections, modified attributes/properties, removed/missing entities, ungrounded dependencies.
-  - Severity classification: `critical`, `high`, `medium`, `low`, `informational`.
-  - Evidence-backed delta: includes concrete evidence links from code scanning (F072, F073) and cloud infrastructure discovery (F078-F083).
-- User Actions:
-  - `Update Model`: Directly reconcile and accept the actual state into the active model.
-  - `Ignore`: Suppress specific drift items with reasoning and expiration/waiver.
-  - `Create Change Request`: Formulate the detected drift into a structured DiagramHQ Pull Request / Change Proposal (`createChangeRequest` produces a PR ready for architectural review).
-- Acceptance test: seeded drift detected; create-change-request produces a PR.
+Architecture linting engine for DiagramHQ (Phase 11 — Drift and Governance):
+- Lint the architecture model against standard architectural best practices and structural rules:
+  - Orphaned objects (components/systems with no incoming or outgoing connections).
+  - Missing descriptions / missing technology metadata.
+  - Redundant or cyclic connections where prohibited.
+  - Invalid parent-child containment hierarchy (e.g. system inside component).
+  - High blast radius / high unmanaged coupling warnings.
+- Structured findings:
+  - Severity levels: `error`, `warning`, `info`.
+  - Category: `structural`, `metadata`, `security`, `naming`, `best-practice`.
+  - Grounded location: target object or connection ID, property name, rule ID, message, remediation suggestion.
+- Summary and metrics:
+  - Total violations, error count, warning count, info count, clean score.
+- Acceptance criteria & tests:
+  - Findings at error/warning/info against the rules.
+  - Test: seeded violations produce expected lint findings; a clean model is clean.
 
-Acceptance Criteria:
-- Compare documented vs imported/actual; surface the delta
-- Actions: Update Model / Ignore / Create Change Request
-- Test: seeded drift detected; create-change-request produces a PR.
-
-- Feature ID: F084
+- Feature ID: F085
 - Phase: 11 — Drift and Governance
-- Dependencies: F057, F060, F072, F078, F083, Phase 03, Phase 09, Phase 10
+- Dependencies: Phase 03, Phase 09, Phase 10
 
 ## Next Steps
-1. In `packages/domain/src/`, implement the drift detection engine (`drift.ts`):
-   - Type definitions: `DriftItem`, `DriftAction`, `DriftDeltaReport`, `DriftSuppression`, `CreateChangeRequestResult`.
-   - Comparison engine computing deltas between documented `ArchitectureModel` and actual `ArchitectureModel` / discovered telemetry.
-   - Action executors: `applyDriftUpdate`, `ignoreDriftItem`, `createChangeRequestFromDrift`.
-   - Unit tests in `packages/domain/src/drift.test.ts`.
+1. In `packages/domain/src/`, implement the architecture linting engine (`linting.ts`):
+   - Type definitions: `LintRule`, `LintSeverity`, `LintFinding`, `LintReport`.
+   - Built-in canonical rules: orphaned objects, missing metadata/technology, invalid hierarchy nesting, disconnected stores.
+   - Core runner: `lintArchitectureModel(model, config?)`.
+   - Unit tests in `packages/domain/src/linting.test.ts` verifying seeded violations and clean model.
 2. In `apps/web/`, implement canvas UI components:
-   - `<ArchitectureDriftModal />` / Drift inspection drawer in `apps/web/components/canvas/drift-panel.tsx`.
-   - Integration specs in `apps/web/drift.spec.tsx`.
+   - `<ArchitectureLintModal />` in `apps/web/components/canvas/lint-panel.tsx`.
+   - Integration specs in `apps/web/linting.spec.tsx`.
 3. Verify with `pnpm typecheck && pnpm lint && pnpm check-architecture && pnpm test && pnpm build`.

@@ -1,6 +1,6 @@
 # Phase 11 — Drift and Governance
 
-Status: NOT STARTED
+Status: IN PROGRESS
 
 ## Description
 Make the model trustworthy: drift detection, linting, rules, dependency + blast-radius analysis, failure simulation, security architecture, data lineage, health.
@@ -12,7 +12,7 @@ Phase 03, Phase 09, Phase 10
 
 ### F084 — Architecture drift
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Documented vs actual.
 

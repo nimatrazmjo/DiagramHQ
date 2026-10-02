@@ -2,6 +2,37 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F084 — Architecture Drift (Phase 11 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `drift.ts`: Implemented architecture drift detection and governance engine for DiagramHQ (Phase 11 — Drift and Governance). Compares documented architecture model (objects and connections) against imported/discovered actual infrastructure and code state, surfacing the full delta: unmanaged resources, missing resources, attribute mismatches, undocumented connections, and missing connections. Every drift item carries grounded `DriftEvidence` (`sourceType`, `sourceRef`, `confidence`, `detectedAt`, `details`) and severity classification (`critical`, `high`, `medium`, `low`, `informational`).
+  - Implemented 3 canonical action workflows:
+    1. **Update Model (`reconcileDriftDirectly`)**: Directly synchronizes selected or all drift items into the documented architecture model without destructive side-effects.
+    2. **Ignore (`ignoreDriftItem`)**: Suppresses specific drift items with an audit-logged justification reason and timestamp for compliance tracking.
+    3. **Create Change Request (`createChangeRequestFromDrift`)**: Formulates detected drift into an `ArchitecturePullRequest` complete with visual diff (`computeVisualArchitectureDiff`), structured change set (`computeArchitectureChangeSet`), risk scoring, and affected systems list.
+  - Implemented `detectArchitectureDrift`, `reconcileDriftDirectly`, `ignoreDriftItem`, and `createChangeRequestFromDrift`.
+  - `drift.test.ts`: Added 4 unit tests verifying delta surfacing, direct model updating, item ignoring with reasons, and change request PR generation from seeded drift.
+  - `index.ts`: Exported `drift`.
+- Web layer (`apps/web/`):
+  - `components/canvas/drift-panel.tsx`: Implemented `<ArchitectureDriftModal />` (interactive drift inspection and governance modal with KPI summary cards, severity & type filters, selectable drift items, attribute diff comparison table, expandable evidence drawers, and action triggers for Update Model, Ignore, and Create Change Request PR).
+  - `components/canvas/index.ts`: Exported drift panel.
+  - `drift.spec.tsx`: Added 3 integration tests verifying modal rendering, closed state, and interactive action buttons.
+- Milestone:
+  - **99 / 135 total features completed (73.3% milestone reached)!**
+  - **Phase 11 — Drift and Governance is now IN PROGRESS (1/8 features completed)!**
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean, 0 errors, 0 warnings)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (all domain and web tests passing)
+```
+
 ## 2026-10-02 — F128 — Cost Visualization (Phase 10 COMPLETE!)
 
 Status: COMPLETE
