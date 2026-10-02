@@ -1,28 +1,29 @@
-# Current Task: F075 — Code-to-architecture mapping
+# Current Task: F076 — OpenAPI import
 
 **Status**: NOT STARTED
 
 ## Description
-Code-to-architecture mapping engine for DiagramHQ. Establishes bidirectional traceability linking C4 architecture model objects (components, services, datastores) directly to their underlying code repositories, folders, file paths, and symbol definitions:
-- Maps `ModelObject` -> repository (`provider`, `owner`, `repo`), branch/ref, directory path, file path, line numbers.
-- Computes canonical remote repository deep links: "Open in GitHub" (`https://github.com/owner/repo/blob/main/path/to/file#L10-L20`) and "Open in GitLab" (`https://gitlab.com/owner/repo/-/blob/main/path/to/file#L10-L20`).
-- Validates repository path integrity and updates code mappings when repository paths change.
-- Strict Invariant Enforced: Every code-mapped component deterministically links to its repo path and generates valid remote URLs.
+OpenAPI specification importer and API catalog population engine for DiagramHQ. Enables importing OpenAPI 3.0/3.1 (and Swagger 2.0) JSON or YAML specifications to extract REST API endpoints, operations (GET, POST, PUT, DELETE, PATCH), route parameters, request/response schemas, and automatically bind them to target architecture services in the API catalog:
+- Parses OpenAPI 3.x / Swagger 2.x JSON or YAML specs.
+- Extracts endpoint paths, HTTP methods, operation IDs, summary/descriptions, tags, parameters, and response schemas.
+- Automatically links imported endpoints to a target service/application `ModelObject` and repository.
+- Populates the discoverable API catalog with parsed endpoints.
+- Strict Invariant Enforced: Importing an OpenAPI spec strictly populates API catalog entries and maintains deterministic links to the hosting architecture service.
 
 Acceptance Criteria:
-- Map component -> repository -> folder -> file; open-in-GitHub / open-in-GitLab.
-- Test: a component links to its repo path.
+- Import an OpenAPI spec; endpoints populate the API catalog + link to a service.
+- Test: import a spec -> endpoints in the catalog.
 
-- Feature ID: F075
+- Feature ID: F076
 - Phase: 09 — Code Integrations
-- Dependencies: F072, F073
+- Dependencies: F075, F122
 
 ## Next Steps
-1. In `packages/domain/src/`, implement code-to-architecture mapping domain logic (`code-mapping.ts`):
-   - Model `CodeMapping`, `RepositoryRef`, `CodeLocationSpec`.
-   - Implement `createCodeMapping`, `generateRemoteRepositoryUrl`, `getCodeMappingForObject`, `updateCodeMapping`.
-   - Domain unit tests in `packages/domain/src/code-mapping.test.ts`.
+1. In `packages/domain/src/`, implement OpenAPI parser and API catalog domain logic (`openapi-import.ts` & `api-catalog.ts`):
+   - Model `ApiEndpoint`, `ApiCatalog`, `OpenApiImportResult`.
+   - Parse OpenAPI JSON/YAML specs, validate schemas, link to `serviceId` / `ObjectId`.
+   - Unit tests in `packages/domain/src/openapi-import.test.ts`.
 2. In `apps/web/`, implement canvas UI components:
-   - `<CodeMappingInspector />`, `<OpenInRepoButton />` in `apps/web/components/canvas/code-mapping-panel.tsx`.
-   - Integration specs in `apps/web/code-mapping.spec.tsx`.
+   - `<OpenApiImportModal />` and `<ApiCatalogDrawer />` in `apps/web/components/canvas/openapi-import-panel.tsx`.
+   - Integration specs in `apps/web/openapi-import.spec.tsx`.
 3. Verify with `pnpm typecheck && pnpm lint && pnpm check-architecture && pnpm test && pnpm build`.

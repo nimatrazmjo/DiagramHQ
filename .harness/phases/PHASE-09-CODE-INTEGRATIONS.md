@@ -52,7 +52,7 @@ Test: discovery lists repos; selection scopes the scan.
 
 ### F075 — Code-to-architecture mapping
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Component -> code.
 

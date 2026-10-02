@@ -13,21 +13,23 @@ Phase Name: Code Integrations
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F075
-Feature Name: Code-to-architecture mapping
+Feature ID: F076
+Feature Name: OpenAPI import
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 82
+Completed: 83
 In Progress: 0
 Blocked: 0
-Not Started: 53
-Progress: 60.7%
+Not Started: 52
+Progress: 61.5%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F074 — Repository discovery. Implemented organization and group-wide repository discovery, filtering, and scan scoping (Phase 09 — Code Integrations). Enables engineering teams to enumerate repositories across GitHub organizations or GitLab groups/namespaces, filter by technology (languages, frameworks, search query, archived flag), and multi-select an active subset of repositories. Strictly enforces scoping invariant: user repository selection strictly scopes downstream scans, guaranteeing unselected repositories are excluded from downstream modeling scans. Added canvas UI component `<RepoDiscoveryModal />`, 5 domain unit tests, and 4 web integration tests.
+F075 — Code-to-architecture mapping. Implemented bidirectional code-to-architecture mapping and traceability linking architecture model objects (services, components, datastores) directly to their underlying code repositories, directory folders, source file paths, and line ranges (Phase 09 — Code Integrations). Computes canonical remote repository deep links: "Open in GitHub" (`https://github.com/owner/repo/blob/main/path/to/file#L10-L20`) and "Open in GitLab" (`https://gitlab.com/owner/repo/-/blob/main/path/to/file#L10-20`). Normalizes repository coordinates across HTTPS URLs, SSH URIs (`git@`), and project slugs. Injects code mapping metadata into architecture objects without violating pure model invariants. Added canvas UI components `<CodeMappingBadge />`, `<OpenInRepoButton />`, and `<CodeMappingEditorDrawer />`, 4 domain unit tests, and 4 web integration tests.
+
+Prior: F074 — Repository discovery. Implemented organization and group-wide repository discovery, filtering, and scan scoping (Phase 09 — Code Integrations). Enables engineering teams to enumerate repositories across GitHub organizations or GitLab groups/namespaces, filter by technology (languages, frameworks, search query, archived flag), and multi-select an active subset of repositories. Strictly enforces scoping invariant: user repository selection strictly scopes downstream scans, guaranteeing unselected repositories are excluded from downstream modeling scans. Added canvas UI component `<RepoDiscoveryModal />`, 5 domain unit tests, and 4 web integration tests.
 
 Prior: F073 — GitLab. Implemented GitLab project connectivity and static repository code analysis with full feature parity to the GitHub scanner (Phase 09 — Code Integrations). Analyzes GitLab repositories across groups, subgroups, and project namespaces (`namespace/project`), scanning manifests (`package.json`, `pom.xml`, `requirements.txt`, `go.mod`), configuration files (`docker-compose.yml`, `.gitlab-ci.yml`), and route handlers to detect services, exposed APIs, persistent datastores (PostgreSQL, MySQL, Redis, MongoDB), message queues (Kafka, RabbitMQ), frameworks (NestJS, Express, Next.js, Fastify), cloud SDKs (AWS SDK, GCP, Azure), and GitLab CI services & test containers defined in `.gitlab-ci.yml`. Strictly enforces grounding invariant: every detected entity and connection carries concrete code evidence (`AIEvidence` with project path, file path, line numbers) and calibrated confidence assessment (high/medium/low). Added canvas UI components `<GitLabConnectModal />` and `<GitLabScanResultDrawer />`, 3 domain unit tests, and 4 web integration tests.
 
