@@ -13,21 +13,23 @@ Phase Name: Code Integrations
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F074
-Feature Name: Repository discovery
+Feature ID: F075
+Feature Name: Code-to-architecture mapping
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 81
+Completed: 82
 In Progress: 0
 Blocked: 0
-Not Started: 54
-Progress: 60.0%
+Not Started: 53
+Progress: 60.7%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F073 — GitLab. Implemented GitLab project connectivity and static repository code analysis with full feature parity to the GitHub scanner (Phase 09 — Code Integrations). Analyzes GitLab repositories across groups, subgroups, and project namespaces (`namespace/project`), scanning manifests (`package.json`, `pom.xml`, `requirements.txt`, `go.mod`), configuration files (`docker-compose.yml`, `.gitlab-ci.yml`), and route handlers to detect services, exposed APIs, persistent datastores (PostgreSQL, MySQL, Redis, MongoDB), message queues (Kafka, RabbitMQ), frameworks (NestJS, Express, Next.js, Fastify), cloud SDKs (AWS SDK, GCP, Azure), and GitLab CI services & test containers defined in `.gitlab-ci.yml`. Strictly enforces grounding invariant: every detected entity and connection carries concrete code evidence (`AIEvidence` with project path, file path, line numbers) and calibrated confidence assessment (high/medium/low). Added canvas UI components `<GitLabConnectModal />` and `<GitLabScanResultDrawer />`, 3 domain unit tests, and 4 web integration tests.
+F074 — Repository discovery. Implemented organization and group-wide repository discovery, filtering, and scan scoping (Phase 09 — Code Integrations). Enables engineering teams to enumerate repositories across GitHub organizations or GitLab groups/namespaces, filter by technology (languages, frameworks, search query, archived flag), and multi-select an active subset of repositories. Strictly enforces scoping invariant: user repository selection strictly scopes downstream scans, guaranteeing unselected repositories are excluded from downstream modeling scans. Added canvas UI component `<RepoDiscoveryModal />`, 5 domain unit tests, and 4 web integration tests.
+
+Prior: F073 — GitLab. Implemented GitLab project connectivity and static repository code analysis with full feature parity to the GitHub scanner (Phase 09 — Code Integrations). Analyzes GitLab repositories across groups, subgroups, and project namespaces (`namespace/project`), scanning manifests (`package.json`, `pom.xml`, `requirements.txt`, `go.mod`), configuration files (`docker-compose.yml`, `.gitlab-ci.yml`), and route handlers to detect services, exposed APIs, persistent datastores (PostgreSQL, MySQL, Redis, MongoDB), message queues (Kafka, RabbitMQ), frameworks (NestJS, Express, Next.js, Fastify), cloud SDKs (AWS SDK, GCP, Azure), and GitLab CI services & test containers defined in `.gitlab-ci.yml`. Strictly enforces grounding invariant: every detected entity and connection carries concrete code evidence (`AIEvidence` with project path, file path, line numbers) and calibrated confidence assessment (high/medium/low). Added canvas UI components `<GitLabConnectModal />` and `<GitLabScanResultDrawer />`, 3 domain unit tests, and 4 web integration tests.
 
 Prior: F072 — GitHub. Implemented GitHub repository connectivity and static code analysis for automated architecture discovery (Phase 09 — Code Integrations). Statically analyzes repository file trees (`package.json`, `docker-compose.yml`, route controllers) to identify services, exposed APIs, persistent datastores (PostgreSQL, MySQL, Redis, MongoDB), message queues (Kafka, RabbitMQ), frameworks (NestJS, Express, Next.js), and cloud provider SDKs (AWS SDK, GCP, Azure). Strictly enforces grounding invariant: every detected entity and connection carries concrete code evidence (`AIEvidence` with repo, file path, line numbers) and calibrated confidence assessment (high/medium/low). All detected items are formulated as proposed additions for human-in-the-loop review before model import. Added canvas UI components `<GitHubConnectModal />` and `<GitHubScanResultDrawer />`, 2 domain unit tests, and 4 web integration tests.
 

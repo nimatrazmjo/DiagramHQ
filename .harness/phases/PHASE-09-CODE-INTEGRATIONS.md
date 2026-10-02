@@ -40,7 +40,7 @@ Test: scan a sample GitLab repo -> parity with GitHub.
 
 ### F074 — Repository discovery
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Enumerate an org's repos.
 

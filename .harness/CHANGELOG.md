@@ -2,6 +2,32 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F074 — Repository discovery (Phase 09 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `repository-discovery.ts`: Implemented organization and group-wide repository discovery, filtering, and scan scoping (Phase 09 — Code Integrations). Enables engineering teams to enumerate repositories across GitHub organizations or GitLab groups/namespaces, filter by technology (languages, frameworks, search query, archived flag), and multi-select an active subset of repositories.
+  - Strict invariant enforced: user repository selection strictly scopes downstream scans, guaranteeing unselected repositories are excluded from downstream modeling scans.
+  - `repository-discovery.test.ts`: Added 5 unit tests verifying repository listing, query and language filtering, strict selection scoping, summary statistics, and empty selections.
+  - `index.ts`: Exported `repository-discovery`.
+- Web layer (`apps/web/`):
+  - `components/canvas/repo-discovery-panel.tsx`: Implemented `<RepoDiscoveryModal />` (interactive discovery modal with provider switcher GitHub 🐙 / GitLab 🦊, organization input, text search, language filters, Select All/Clear controls, repository cards with metadata badges, and a scoped summary footer).
+  - `components/canvas/index.ts`: Exported repository discovery components.
+  - `repo-discovery.spec.tsx`: Added 4 integration tests verifying modal rendering, filter interactions, strict selection scoping, and modal dismiss states.
+- Milestone:
+  - **Phase 09 — Code Integrations is now 30% COMPLETE (3/10 features completed, 82/135 total, 60.7% milestone reached)!**
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (177 test suites, 1085 tests passed)
+```
+
 ## 2026-10-02 — F073 — GitLab (Phase 09 Progress)
 
 Status: COMPLETE
