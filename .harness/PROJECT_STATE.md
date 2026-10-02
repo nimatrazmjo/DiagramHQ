@@ -13,21 +13,23 @@ Phase Name: Drift and Governance
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F086
-Feature Name: Architecture rules
+Feature ID: F087
+Feature Name: Dependency analysis
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 100
+Completed: 101
 In Progress: 0
 Blocked: 0
-Not Started: 35
-Progress: 74.1%
+Not Started: 34
+Progress: 74.8%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F085 — Architecture linting. Implemented architecture linting engine and diagnostics for DiagramHQ (Phase 11 — Drift and Governance). Evaluates architecture models against canonical rules spanning structural integrity, hierarchy encapsulation, documentation completeness, and node coupling (dangling connections, store-to-store direct coupling, invalid containment hierarchy, orphaned objects, missing technology metadata, self-referencing connection loops, high coupling / god-services, missing descriptions, and missing actor entrypoints). Generates structured findings at error, warning, and info levels with actionable remediation advice and health scoring. Added canvas UI component <ArchitectureLintModal />, 4 domain unit tests, and 3 web integration tests. **Milestone: 100 / 135 features completed (74.1%)!**
+F086 — Architecture rules. Implemented organization architecture governance rules engine for DiagramHQ (Phase 11 — Drift and Governance). Evaluates architecture models against the 4 canonical enterprise governance rules: Owner Required (ORG-RULE-001), External API Authentication Required (ORG-RULE-002), No Cross-Service Direct Database Access (ORG-RULE-003, Database-Per-Service pattern enforcement), and PII Flow Restrictions (ORG-RULE-004, cryptographic encryption and unapproved third-party DPA restrictions). Supports policy configuration for rule disabling and severity overrides. Added canvas UI component <ArchitectureRulesModal />, 6 domain unit tests, and 3 web integration tests.
+
+Prior: F085 — Architecture linting. Implemented architecture linting engine and diagnostics for DiagramHQ (Phase 11 — Drift and Governance). Evaluates architecture models against canonical rules spanning structural integrity, hierarchy encapsulation, documentation completeness, and node coupling (dangling connections, store-to-store direct coupling, invalid containment hierarchy, orphaned objects, missing technology metadata, self-referencing connection loops, high coupling / god-services, missing descriptions, and missing actor entrypoints). Generates structured findings at error, warning, and info levels with actionable remediation advice and health scoring. Added canvas UI component <ArchitectureLintModal />, 4 domain unit tests, and 3 web integration tests. **Milestone: 100 / 135 features completed (74.1%)!**
 
 Prior: F084 — Architecture drift. Implemented architecture drift detection and governance engine for DiagramHQ (Phase 11 — Drift and Governance). Compares documented architecture model (objects and connections) against imported/discovered actual infrastructure and code state, surfacing all categories of drift (unmanaged resources, missing resources, attribute mismatches, undocumented connections, missing connections) with grounded DriftEvidence. Supports 3 canonical action workflows: Update Model (reconcileDriftDirectly), Ignore with audit justification (ignoreDriftItem), and Create Change Request (createChangeRequestFromDrift) which generates an ArchitecturePullRequest with visual diff (computeVisualArchitectureDiff), structured change set (computeArchitectureChangeSet), risk scoring, and affected systems. Added canvas UI component <ArchitectureDriftModal />, 4 domain unit tests, and 3 web integration tests.
 

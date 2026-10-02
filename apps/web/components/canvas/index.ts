@@ -65,3 +65,4 @@ export * from './cloud-discovery-panel';
 export * from './cost-panel';
 export * from './drift-panel';
 export * from './lint-panel';
+export * from './rules-panel';

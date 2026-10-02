@@ -2,6 +2,37 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F086 — Architecture Rules (Phase 11 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `rules.ts`: Implemented organization architecture governance rules engine for DiagramHQ (Phase 11 — Drift and Governance). Evaluates architecture models against the 4 canonical enterprise governance rules:
+    1. **`ORG-RULE-001` (Owner Required)**: Every architectural application, store, and service must have an explicitly assigned team or owner in `metadata.owner` or `metadata.team`.
+    2. **`ORG-RULE-002` (External API Authentication Required)**: All external ingress connections and boundary interfaces must enforce an authentication scheme (e.g. OAuth2, JWT, API Key, mTLS) and cannot be unauthenticated ('none' / 'public').
+    3. **`ORG-RULE-003` (No Cross-Service Direct Database Access)**: Enforces the Database-Per-Service pattern. Datastores owned by a microservice cannot be directly connected to or queried by foreign microservices; cross-service communication must route through APIs or events.
+    4. **`ORG-RULE-004` (PII Flow Restrictions)**: Connections transmitting Personally Identifiable Information (PII) or sensitive/restricted data must enforce cryptographic encryption (TLS/HTTPS/mTLS) and cannot flow to untrusted or external third-party endpoints without a verified Data Processing Agreement (DPA).
+  - Implemented `evaluateArchitectureRules` supporting policy configuration for rule disabling (`disabledRuleIds`) and severity overrides (`severityOverrides`).
+  - `rules.test.ts`: Added 6 unit tests verifying that a compliant model satisfies all 4 rules, each individual rule fires on violating models, and policy configuration (disabling and severity overrides) works.
+  - `index.ts`: Exported `rules`.
+- Web layer (`apps/web/`):
+  - `components/canvas/rules-panel.tsx`: Implemented `<ArchitectureRulesModal />` (interactive policy governance modal with compliant/non-compliant hero banner, 4 interactive rule cards with pass/fail counts, rule filter dropdown, search bar, violation cards with remediation advice, and canvas element focus trigger).
+  - `components/canvas/index.ts`: Exported `rules-panel`.
+  - `rules.spec.tsx`: Added 3 integration tests verifying compliant state banner, non-compliant state with violation cards, and closed state.
+- Milestone:
+  - **101 / 135 total features completed (74.8% milestone reached)!**
+  - **Phase 11 — Drift and Governance is 37.5% complete (3/8 features)!**
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean, 0 errors, 0 warnings)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (all domain and web tests passing)
+```
+
 ## 2026-10-02 — F085 — Architecture Linting (100 Features Complete Milestone!)
 
 Status: COMPLETE

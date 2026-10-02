@@ -81,3 +81,4 @@ export * from './cloud-discovery';
 export * from './cost-visualization';
 export * from './drift';
 export * from './linting';
+export * from './rules';
