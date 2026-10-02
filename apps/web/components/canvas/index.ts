@@ -58,5 +58,6 @@ export * from './webhooks-panel';
 export * from './sdk-panel';
 export * from './aws-panel';
 export * from './azure-panel';
+export * from './gcp-panel';
 
 

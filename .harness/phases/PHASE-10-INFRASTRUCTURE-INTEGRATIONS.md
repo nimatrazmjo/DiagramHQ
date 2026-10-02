@@ -38,7 +38,7 @@ Test: import mocked Azure resources.
 
 ### F080 — GCP
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Import GCP resources.
 
