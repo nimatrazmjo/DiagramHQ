@@ -35,3 +35,4 @@ export * from './presence';
 export * from './comments';
 export * from './mentions';
 export * from './share-links';
+export * from './permissions';

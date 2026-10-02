@@ -75,7 +75,7 @@ Test: anonymous open preserves state.
 
 ### F053 — Permissions
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Full role catalog.
 
