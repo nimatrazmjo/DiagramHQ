@@ -2,7 +2,23 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F089 — Failure Simulation (Phase 11 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `failure-simulation.ts`: Architecture failure simulation engine. Allows marking one or more model objects as "down", cascades failure through the architecture via reverse BFS blast-radius analysis, and classifies each node into `down`, `degraded`, `fallback`, or `healthy`. Distinguishes resilient nodes with active fallback mechanisms (`status: 'fallback'`) from unmitigated services (`status: 'degraded'`). Provides `getAffectedConnections` to identify disrupted edges. Computes failure metrics: totalDownedNodes, totalDegradedNodes, totalFallbackNodes, totalHealthyNodes, impactedCustomerFacingCount, impactedTeamCount, maxCascadeDepth, and hasFullOutage.
+  - `failure-simulation.test.ts`: 3 unit tests verifying DB outage downstream propagation, fallback vs no-fallback distinction, and affected connection filtering.
+  - `index.ts`: Exported `failure-simulation`.
+- Web layer (`apps/web/`):
+  - `components/canvas/failure-simulation-panel.tsx`: Implemented `<FailureSimulationModal />` with multi-node outage selector, custom reason input, severity banner, 6 KPI cards (Downed Nodes, Degraded, Fallback Active, Healthy, Customer Facing, Max Cascade Depth), status filter tabs + search, and impacted node cards with fallback capability badges (`FALLBACK READY` vs `NO FALLBACK`) and interactive Mark Down / Restore buttons.
+  - `components/canvas/index.ts`: Exported `failure-simulation-panel`.
+  - `failure-simulation.spec.tsx`: 3 integration tests.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 85 test files / 474 tests ✓, web 99 test files / 528 tests ✓, api 37 test files / 270 tests ✓, `pnpm build ✓`.
+
 ## 2026-10-02 — F088 — Blast-Radius Analysis (Phase 11 Progress)
+
 
 Status: COMPLETE
 

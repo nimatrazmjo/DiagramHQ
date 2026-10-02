@@ -1,27 +1,25 @@
-# Current Task: F089 — Failure simulation
+# Current Task: F090 — Security architecture
 
 **Status**: NOT STARTED
 
 ## Description
-Architecture failure simulation engine for DiagramHQ (Phase 11 — Drift and Governance):
-- Mark one or more model objects as "down" / simulated failure
-- Highlight the blast radius with severity (using F088's blast-radius analysis)
-- Distinguish fallback vs no-fallback paths in the highlighted impact graph
+Security architecture model and analysis engine for DiagramHQ (Phase 11 — Drift and Governance):
+- Deep security model: trust boundaries, public endpoints, auth/authz schemes, encryption (in-transit/at-rest), secrets management, compliance classifications (PII / PCI / HIPAA), and compliance zones
+- Flag security exposures (e.g. unauthenticated public endpoints, unencrypted data stores with PII, cross-boundary connections missing TLS/auth, unmanaged secrets)
 - Acceptance criteria:
-  - Mark an object down; highlight the blast radius with severity; distinguish fallback vs no-fallback
-  - Test: simulate a DB outage; downstream flagged; fallbacks distinguished.
+  - Trust boundaries, public endpoints, auth/authz, encryption, secrets, PII/PCI/HIPAA, compliance zones
+  - Test: security model renders boundaries + flags exposures.
 
-- Feature ID: F089
+- Feature ID: F090
 - Phase: 11 — Drift and Governance
-- Dependencies: F088
+- Dependencies: F086, F087
 
 ## Next Steps
-1. In `packages/domain/src/`, implement `failure-simulation.ts`:
-   - `SimulationConfig`: set of downed node IDs + optional metadata (reason, simulated-at timestamp)
-   - `SimulatedImpact` per node: status (degraded/down/fallback/healthy), cascadeChain, reason
-   - `simulateFailure(model, config)` → `FailureSimulationReport` with: per-node impact status, full blast-radius summary, fallback-capable vs no-fallback counts, affected customer journeys
-   - Unit tests in `packages/domain/src/failure-simulation.test.ts`
+1. In `packages/domain/src/`, implement `security-architecture.ts`:
+   - Data types for TrustBoundary, SecurityClassification, SecurityExposure, SecurityPolicy
+   - `analyzeSecurityArchitecture(model)` → returns `SecurityArchitectureReport` with trust boundaries, exposed public endpoints, unencrypted sensitive stores, compliance flags
+   - Unit tests in `packages/domain/src/security-architecture.test.ts`
 2. In `apps/web/`, implement canvas UI:
-   - `<FailureSimulationModal />` in `apps/web/components/canvas/failure-simulation-panel.tsx`
-   - Integration specs in `apps/web/failure-simulation.spec.tsx`
+   - `<SecurityArchitectureModal />` in `apps/web/components/canvas/security-architecture-panel.tsx`
+   - Integration specs in `apps/web/security-architecture.spec.tsx`
 3. Verify with `pnpm typecheck && pnpm lint && pnpm check-architecture && pnpm test && pnpm build`.
