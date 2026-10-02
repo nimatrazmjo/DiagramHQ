@@ -80,7 +80,7 @@ Test: import a spec -> endpoints in the catalog.
 
 ### F077 — Repository synchronization
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Keep the model fresh.
 
