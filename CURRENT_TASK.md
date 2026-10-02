@@ -1,37 +1,38 @@
-# Current Task: F082 — Kubernetes
+# Current Task: F083 — Cloud resource discovery
 
 **Status**: NOT STARTED
 
 ## Description
-Import and map Kubernetes cluster topology and workload manifests into the DiagramHQ architecture model (Phase 10 — Infrastructure Integrations):
-- Import Kubernetes resources across namespaces and clusters:
-  - Cluster / Namespaces: `Namespace` (mapped as group objects for multi-tenant containment)
-  - Workloads: `Deployment`, `StatefulSet`, `DaemonSet`, `Job`, `CronJob`, `Pod` (mapped as application objects)
-  - Networking & Routing: `Ingress`, `Service` (ClusterIP, NodePort, LoadBalancer) (mapped as application/proxy objects)
-  - Storage: `PersistentVolume`, `PersistentVolumeClaim`, `StorageClass` (mapped as store objects)
-  - Configuration & Secrets: `ConfigMap`, `Secret` (mapped as store/configuration objects)
-- Topology and Dependency Resolution:
-  - Ingress -> Service routing rules (hosts, paths)
-  - Service -> Pod / Deployment label selectors (`selector: { app: "orders" }`)
-  - Workload -> PVC storage mounts (`persistentVolumeClaim.claimName`)
-  - Workload -> ConfigMap/Secret env bindings (`valueFrom.configMapKeyRef`, `envFrom`)
-- Acceptance test: import sample Kubernetes YAML manifests -> topology renders with namespaces, workloads, services, and storage.
+Unified multi-cloud resource discovery and automated architecture proposal engine for DiagramHQ (Phase 10 — Infrastructure Integrations):
+- Multi-cloud live resource discovery across accounts and subscriptions:
+  - Supports multiple cloud providers (AWS, Azure, GCP, Kubernetes) and accounts/projects/subscriptions.
+  - Discover resources: compute (instances, container clusters, serverless functions), databases (relational, NoSQL, caches), storage (buckets, volumes), networking (VPCs, VNets, load balancers, API gateways), messaging (queues, topics, streams).
+  - Collects discovered inventory with metadata (resource ARN/ID, type, region, tags, network coordinates).
+- Automated architecture reconciliation and proposal generation:
+  - Compares discovered cloud resources against active architecture model objects.
+  - Categorizes discovered assets:
+    - `matched`: Resource already mapped to an existing model object (updates metadata/tags/freshness).
+    - `unmanaged`: Resource detected in cloud account but not yet present in architecture model (proposes new model object).
+    - `drifted`: Previously mapped model object whose backing cloud resource is missing or modified.
+  - Grounded evidence: each proposal attaches traceable `CloudDiscoveryEvidence` with resource ID/ARN, provider, region, account/project ID, discovery timestamp, and confidence score.
+  - Human-in-the-loop review: interactive acceptance/rejection of proposed additions before applying to the model.
 
 Acceptance Criteria:
-- Import cluster, namespace, deployment, statefulset, pod, service, ingress, configmap, secret, pv, job, cronjob; render topology
-- Test: import sample manifests -> topology renders.
+- Discover live resources across accounts; propose objects with evidence
+- Test: discovery proposes resources with evidence.
 
-- Feature ID: F082
+- Feature ID: F083
 - Phase: 10 — Infrastructure Integrations
-- Dependencies: F072, F078, F079, F080, F081, Phase 03, Phase 09
+- Dependencies: F078, F079, F080, F081, F082, Phase 03, Phase 09
 
 ## Next Steps
-1. In `packages/domain/src/`, implement the Kubernetes parser and topology mapping engine (`kubernetes.ts`):
-   - Type definitions: `K8sResource`, `K8sResourceType`, `K8sManifestScanInput`, `K8sImportResult`, etc.
-   - Multi-document YAML / manifest parser for Kubernetes specs.
-   - Resource-to-model object mapping and selector-based connection derivation.
-   - Unit tests in `packages/domain/src/kubernetes.test.ts`.
+1. In `packages/domain/src/`, implement the cloud resource discovery engine (`cloud-discovery.ts`):
+   - Type definitions: `DiscoveredResource`, `CloudAccountConfig`, `DiscoveryProposal`, `CloudDiscoveryEvidence`, `DiscoveryRunResult`, etc.
+   - Resource discovery scanner across providers (AWS, Azure, GCP, K8s).
+   - Reconciliation logic matching discovered resources against existing `ModelObject` records.
+   - Generation of typed additions/updates with concrete evidence and confidence.
+   - Unit tests in `packages/domain/src/cloud-discovery.test.ts`.
 2. In `apps/web/`, implement canvas UI components:
-   - `<KubernetesImportModal />` in `apps/web/components/canvas/kubernetes-panel.tsx`.
-   - Integration specs in `apps/web/kubernetes.spec.tsx`.
+   - `<CloudDiscoveryPanel />` / `<CloudDiscoveryModal />` in `apps/web/components/canvas/cloud-discovery-panel.tsx`.
+   - Integration specs in `apps/web/cloud-discovery.spec.tsx`.
 3. Verify with `pnpm typecheck && pnpm lint && pnpm check-architecture && pnpm test && pnpm build`.
