@@ -117,7 +117,7 @@ Test: seeded violations produce the expected verdict.
 
 ### F070 — ADR generation
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: AI-drafted ADRs.
 
