@@ -1,32 +1,32 @@
-# Current Task: F120 — AI evidence + confidence
+# Current Task: F121 — Specialized agents
 
 **Status**: NOT STARTED
 
 ## Description
-Grounding and confidence scoring for every AI assertion, proposal, and architecture edit in DiagramHQ. Ensures all synthesized architecture elements, inferred dependencies, and proposed edits are explicitly anchored to source evidence (repo, file path, line numbers, commit SHA, or documentation references) with calibrated confidence metrics:
-- Grounded Evidence Model:
-  - `AIEvidence`: specifies `sourceType` ('code', 'repo', 'file', 'doc', 'ast_call', 'network_trace', 'manual'), `uri`, `repo`, `file`, `lineRange` (`{ start: number; end: number }`), `snippet`, `commitSha`, and `explanation`.
-  - `ConfidenceRating`: numerical confidence score `0.00` to `1.00`, categorized into `ConfidenceTier` ('high' >= 0.85, 'medium' >= 0.60, 'low' < 0.60).
-  - Low confidence threshold detection: any assertion/edit below 0.60 is flagged with `isLowConfidence: true` and actionable warning notices (`requiresHumanVerification: true`, `reasonsForLowConfidence`).
-- Grounded Dependency / Assertion Generation:
-  - Generates dependencies or architecture connections with explicit attached evidence and confidence scores.
-  - Automatically computes confidence based on evidence quality (e.g. AST direct function call vs fuzzy textual match).
-  - Flags low-confidence inferences to alert architects during review.
+Specialized AI role-based subagents operating over the Model Context Protocol (MCP) tool surface in DiagramHQ. Dispatches domain-calibrated AI agents tailored to specific architectural disciplines:
+- Specialized Agent Roles:
+  - `Analyst`: inspects models for domain boundaries, cohesion, coupling, and requirement alignment.
+  - `Designer`: generates and evaluates C4 component topology, container layout, and interface schemas.
+  - `Security`: performs automated threat modeling, perimeter ingress validation, and PII exfiltration scans.
+  - `Cloud`: audits infrastructure mapping, multi-AZ high availability, and cloud vendor service selection.
+  - `Documentation`: synthesizes C4 architecture diagrams, Markdown catalogs, and linked ADRs.
+  - `Migration`: formulates transition scenarios, phasing roadmaps, and decommissioning sequences.
+  - `Code`: validates repository code-to-architecture mapping, AST call graphs, and drift detection.
 - Acceptance criteria:
-  - Every AI assertion/edit carries evidence (repo/file/line where applicable) + a confidence score
-  - Test: a generated dependency includes evidence; low confidence flagged.
+  - Analyst, Designer, Security, Cloud, Documentation, Migration, Code agents on the MCP surface
+  - Test: each agent completes a scoped task.
 
-- Feature ID: F120
+- Feature ID: F121
 - Phase: 08 — AI Copilot
-- Dependencies: F063, F064, F066, F071
+- Dependencies: F071, F120
 
 ## Next Steps
-1. In `packages/domain/src/`, implement AI evidence and confidence domain logic (`ai-confidence.ts`):
-   - Define `AIEvidence`, `ConfidenceTier`, `GroundedAssertion`, `GroundedDependency`.
-   - Function `createGroundedDependency`: creates an architecture dependency with concrete code evidence and calibrated confidence score.
-   - Function `assessAssertionConfidence`: computes confidence scores and flags low-confidence assertions with clear diagnostic reasoning.
-   - Unit tests in `packages/domain/src/ai-confidence.test.ts`.
+1. In `packages/domain/src/`, implement specialized role agents (`specialized-agents.ts`):
+   - Define role types (`SpecializedAgentRole = 'analyst' | 'designer' | 'security' | 'cloud' | 'documentation' | 'migration' | 'code'`).
+   - Define agent interface and task execution dispatch (`SpecializedAgentContext`, `SpecializedAgentTask`, `SpecializedAgentResult`).
+   - Implement execution logic for all 7 role agents executing scoped tasks on the MCP tool surface.
+   - Unit tests in `packages/domain/src/specialized-agents.test.ts`.
 2. In `apps/web/`, implement canvas UI components:
-   - `<ConfidenceBadge />` and `<AIEvidenceInspector />` in `apps/web/components/canvas/ai-confidence-badge.tsx`.
-   - Integration specs in `apps/web/ai-confidence.spec.tsx`.
+   - `<SpecializedAgentSelector />` and `<SpecializedAgentDrawer />` in `apps/web/components/canvas/specialized-agents-panel.tsx`.
+   - Integration specs in `apps/web/specialized-agents.spec.tsx`.
 3. Verify with `pnpm typecheck && pnpm lint && pnpm check-architecture && pnpm test && pnpm build`.

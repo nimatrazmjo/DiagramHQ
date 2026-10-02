@@ -144,7 +144,7 @@ Test: each tool callable; create_object returns a proposal.
 
 ### F120 — AI evidence + confidence
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Grounding on every claim.
 
