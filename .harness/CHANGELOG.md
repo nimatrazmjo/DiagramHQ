@@ -2,6 +2,32 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F078 — AWS (Phase 10 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `aws.ts`: Implemented AWS cloud infrastructure import and topology mapping engine for DiagramHQ (Phase 10 — Infrastructure Integrations). Maps all 13 canonical AWS resource types (EC2, ECS, EKS, Lambda, RDS, DynamoDB, S3, CloudFront, API Gateway, SQS, SNS, EventBridge, VPC) to typed `ModelObject` instances with hierarchical VPC containment, derives inter-service `ModelConnection` interactions (origin fetch, proxy integration, database queries, async pub/sub), and preserves traceable `AwsCloudEvidence`.
+  - Implemented `parseAwsArn`, `determineObjectKindForAws`, `determineConnectionKindForAws`, `importAwsAccount`, and `createMockAwsAccount`.
+  - `aws.test.ts`: Added 7 unit tests verifying ARN parsing, resource-to-kind mapping, connection inference, mocked account import with all 13 resource types, VPC containment, filtering, and cloud evidence retention.
+  - `index.ts`: Exported `aws`.
+- Web layer (`apps/web/`):
+  - `components/canvas/aws-panel.tsx`: Implemented `<AwsImportModal />` (AWS import modal featuring account ID, cross-account IAM role ARN, primary region selector, resource type filter chips for all 13 types, VPC containment toggle, connection derivation toggle, discovered inventory listing, and import execution).
+  - `components/canvas/index.ts`: Exported AWS components.
+  - `aws.spec.tsx`: Added 3 integration tests verifying modal rendering, closed state, and inventory items for all 13 AWS resource types.
+- Milestone:
+  - **92 / 135 total features completed (68.1% milestone reached)!**
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (197 test suites, 1176 tests passed)
+```
+
 ## 2026-10-02 — F127 — SDK (Phase 09 COMPLETE!)
 
 Status: COMPLETE

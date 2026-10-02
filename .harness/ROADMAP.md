@@ -13,12 +13,12 @@ Statuses (use ONLY these): NOT STARTED · IN PROGRESS · BLOCKED · IN REVIEW ·
 _Computed from this file. Update on every status change. Contract for an auto-counter: `scripts/SCRIPTS.md` -> progress-counter._
 
 - Total features: **135**
-- Complete: 91
+- Complete: 92
 - In Progress: 0
 - In Review: 0
 - Blocked: 0
-- Not Started: 44
-- **Progress: 67.4%**
+- Not Started: 43
+- **Progress: 68.1%**
 
 
 Feature IDs are permanent. Never reuse or repurpose an ID. Split a large feature into new IDs (e.g. F018 -> F018 + F135) and keep the history. F001–F108 follow the reference roadmap; F109+ cover master-spec items not in the reference list.
@@ -206,11 +206,11 @@ Status: COMPLETE  ·  Depends on: Phase 03, Phase 08  ·  File: `phases/PHASE-09
 
 # Phase 10 — Infrastructure Integrations
 
-Status: NOT STARTED  ·  Depends on: Phase 03, Phase 09  ·  File: `phases/PHASE-10-INFRASTRUCTURE-INTEGRATIONS.md`
+Status: IN PROGRESS  ·  Depends on: Phase 03, Phase 09  ·  File: `phases/PHASE-10-INFRASTRUCTURE-INTEGRATIONS.md`
 
 ## Features
 
-- [ ] F078 — AWS
+- [x] F078 — AWS
 - [ ] F079 — Azure
 - [ ] F080 — GCP
 - [ ] F081 — Terraform
