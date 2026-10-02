@@ -29,3 +29,4 @@ export * from './visual-diff-viewer';
 export * from './change-set-summary';
 export * from './pull-request-modal';
 export * from './merge-modal';
+export * from './adr-drawer';

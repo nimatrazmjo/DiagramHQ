@@ -13,21 +13,23 @@ Phase Name: Versioning
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F117
-Feature Name: ADR system
+Feature ID: F118
+Feature Name: Scenarios
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 64
+Completed: 65
 In Progress: 0
 Blocked: 0
-Not Started: 71
-Progress: 47.4%
+Not Started: 70
+Progress: 48.1%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F061 — Merge. Pure 3-way architecture branch merge engine and conflict detection system. Compares base ancestor, source feature branch, and target branch (main). Accurately detects merge conflicts on identical object IDs (concurrent modifications on the same object ID, concurrent additions with differing attributes, or modify/delete collisions). Provides automated and manual resolution strategies ('theirs', 'ours', per-entity manual selection). Upon clean merge or conflict resolution, updates main's architecture state while transitioning the source branch status to `'merged'`. Added UI components `<ConflictResolutionBanner />` and `<MergeBranchModal />`, 2 domain unit tests, and 3 web integration tests.
+F117 — ADR system. Pure Architecture Decision Record (ADR) system for DiagramHQ. Supports structured architectural decision tracking with title, lifecycle status (`draft`, `proposed`, `accepted`, `rejected`, `superseded`, `deprecated`), context, decision, consequences, and alternatives considered. Provides polymorphic entity attachment to architecture objects, connections, changes, and version milestones. Implemented query helpers `getADRHistoryForObject`, `getADRsForVersion`, and `getADRsForConnection`. Added accessible, reactive UI components `<ADRBadge />` and `<ADRHistoryDrawer />`, 4 domain unit tests, and 3 web integration tests.
+
+Prior: F061 — Merge. Pure 3-way architecture branch merge engine and conflict detection system. Compares base ancestor, source feature branch, and target branch (main). Accurately detects merge conflicts on identical object IDs (concurrent modifications on the same object ID, concurrent additions with differing attributes, or modify/delete collisions). Provides automated and manual resolution strategies ('theirs', 'ours', per-entity manual selection). Upon clean merge or conflict resolution, updates main's architecture state while transitioning the source branch status to `'merged'`. Added UI components `<ConflictResolutionBanner />` and `<MergeBranchModal />`, 2 domain unit tests, and 3 web integration tests.
 
 Prior: F060 — Pull requests. Pure architecture pull request review engine and canvas UI. Supports titled pull requests linking source to target branch, embedded visual diff (added, modified, removed, moved objects & connections with semantic colors), downstream affected systems impact analysis, automatic risk scoring (low, medium, high, critical) with human-readable rationale, and full review workflows (commenting, reviewing, approving, and rejecting). Added UI components `<PullRequestBadge />` and `<PullRequestModal />`, 3 domain unit tests, and 3 web integration tests.
 

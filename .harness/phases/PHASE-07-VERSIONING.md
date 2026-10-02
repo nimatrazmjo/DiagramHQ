@@ -96,7 +96,7 @@ Test: merge applies to main; a conflict is detected.
 
 ### F117 — ADR system
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Decision records (non-AI).
 
