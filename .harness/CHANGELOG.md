@@ -2,6 +2,33 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F072 — GitHub (Phase 09 Started)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `github-scanner.ts`: Implemented GitHub repository connectivity and static code analysis for automated architecture discovery (Phase 09 — Code Integrations). Statically analyzes repository file trees (`package.json`, `docker-compose.yml`, route controllers) to detect services, APIs, persistent datastores (PostgreSQL, MySQL, Redis, MongoDB), message queues (Kafka, RabbitMQ), frameworks (NestJS, Express, Next.js), and cloud provider SDKs (AWS SDK, GCP, Azure).
+  - Strict invariant enforced: every detected object and connection carries concrete code evidence (`AIEvidence` with repo, file path, line numbers) and calibrated confidence assessment (high/medium/low).
+  - Human-in-the-loop review: all detected items are formulated as proposed additions for review before model import.
+  - `github-scanner.test.ts`: Added 2 unit tests verifying that scanning sample repository trees extracts expected objects, datastores, queues, and frameworks with evidence and confidence scores.
+  - `index.ts`: Exported `github-scanner`.
+- Web layer (`apps/web/`):
+  - `components/canvas/github-scanner-panel.tsx`: Implemented `<GitHubConnectModal />` (repo connect dialogue with owner/repo input and branch selector) and `<GitHubScanResultDrawer />` (comprehensive drawer displaying detected services, APIs, datastores, and message queues with confidence badges, code citations, and one-click import into architecture model).
+  - `components/canvas/index.ts`: Exported GitHub scanner components.
+  - `github-scanner.spec.tsx`: Added 4 integration tests verifying end-to-end repository scanning, modal and drawer rendering, and empty states.
+- Milestone:
+  - **Phase 09 — Code Integrations is now IN PROGRESS (1/10 features completed, 80/135 total, 59.3%)!**
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (173 test suites, 1069 tests passed)
+```
+
 ## 2026-10-02 — F121 — Specialized agents (Phase 08 Complete)
 
 Status: COMPLETE

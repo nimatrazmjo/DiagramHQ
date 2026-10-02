@@ -1,6 +1,6 @@
 # Phase 09 — Code Integrations
 
-Status: NOT STARTED
+Status: IN PROGRESS
 
 ## Description
 Close the code -> architecture loop: GitHub/GitLab discovery + code mapping, OpenAPI import, repo sync, catalogs, model-as-code + CLI, webhooks, SDK. Every detected object carries evidence.
@@ -12,7 +12,7 @@ Phase 03, Phase 08
 
 ### F072 — GitHub
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Connect + scan repos.
 
