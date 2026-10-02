@@ -36,7 +36,7 @@ Test: presence shows both users + cursors.
 
 ### F050 — Comments
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Threaded comments.
 
