@@ -41,3 +41,4 @@ export * from './notifications';
 export * from './version-history';
 export * from './snapshots';
 export * from './branches';
+export * from './diff';

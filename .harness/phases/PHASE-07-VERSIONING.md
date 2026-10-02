@@ -48,7 +48,7 @@ Test: a branch is independent of main.
 
 ### F058 — Architecture diff
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Visual diff.
 

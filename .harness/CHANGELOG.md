@@ -2,6 +2,29 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F058 — Architecture diff
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `diff.ts`: Architecture visual diff engine and semantic color classification. Implemented `computeVisualArchitectureDiff` comparing two versions or branches across added, modified, removed, moved, and unchanged buckets with standard semantic colors (emerald for added, amber for modified, rose for removed, purple for moved). Differentiates between moved entities (position change only) and modified entities (attribute changes).
+  - `diff.test.ts`: Added 3 unit tests verifying acceptance test for diff matching seeded changes with semantic colors, custom diff color theme support, and empty architecture handling.
+  - `index.ts`: Exported `diff`.
+- Web layer (`apps/web/`):
+  - `components/canvas/visual-diff-viewer.tsx`: Implemented `<DiffLegend />` (category filter buttons with prefixed delta counters: `+`, `~`, `-`, `↕`) and `<VisualDiffViewer />` (diff details, position deltas, and field change lists).
+  - `components/canvas/index.ts`: Exported visual diff components.
+  - `diff.spec.tsx`: Added 3 integration tests verifying acceptance test for diff matching seeded changes, `<DiffLegend />` counter rendering, and `<VisualDiffViewer />` details rendering.
+
+Verification evidence:
+```
+pnpm typecheck          → exit 0 (all workspace packages clean)
+pnpm lint               → exit 0 (ESLint clean)
+pnpm check-architecture → exit 0 (check-architecture: clean)
+pnpm build              → exit 0 (all apps and packages built)
+pnpm test               → exit 0 (135 test suites, 932 tests passed)
+```
+
 ## 2026-10-02 — F057 — Branches
 
 Status: COMPLETE

@@ -13,21 +13,23 @@ Phase Name: Versioning
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F058
-Feature Name: Architecture diff
+Feature ID: F059
+Feature Name: Architecture changes
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 60
+Completed: 61
 In Progress: 0
 Blocked: 0
-Not Started: 75
-Progress: 44.4%
+Not Started: 74
+Progress: 45.2%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F057 — Branches. Pure architecture branching engine supporting branch creation off main or parent branches. Carries all 6 architecture dimensions plus ADRs and threaded comments (`objects`, `connections`, `views`, `flows`, `metadata`, `adrs`, `comments`). Deep cloning guarantees complete memory and state isolation such that additions, removals, or edits on child branches never pollute or mutate main. Added UI components `<BranchBadge />` and `<BranchSelector />`, 4 domain unit tests, and 3 web integration tests.
+F058 — Architecture diff. Pure visual architecture diff engine comparing two architecture versions or branches. Categorizes all entity variations into semantic buckets: added (new entities in target), modified (attributes or connections changed), removed (deleted in target), moved (position changed without attribute modifications), and unchanged. Maps each category to standardized semantic colors (emerald for added, amber for modified, rose for removed, purple for moved). Added UI components `<DiffLegend />` and `<VisualDiffViewer />`, 3 domain unit tests, and 3 web integration tests.
+
+Prior: F057 — Branches. Pure architecture branching engine supporting branch creation off main or parent branches. Carries all 6 architecture dimensions plus ADRs and threaded comments (`objects`, `connections`, `views`, `flows`, `metadata`, `adrs`, `comments`). Deep cloning guarantees complete memory and state isolation such that additions, removals, or edits on child branches never pollute or mutate main. Added UI components `<BranchBadge />` and `<BranchSelector />`, 4 domain unit tests, and 3 web integration tests.
 
 Prior: F056 — Architecture snapshots. Full-state architecture snapshot capture across all 6 model dimensions: objects, connections, views, flows (with steps), metadata, and documentation (markdown pages) with complete restoration back to active architecture state (`captureFullArchitectureSnapshot`, `restoreFullArchitectureSnapshot`, and `diffArchitectureStates`). Added `<SnapshotDetailsModal />` and `<SnapshotDiffModal />` UI components, 4 domain unit tests, and 3 web integration tests.
 
