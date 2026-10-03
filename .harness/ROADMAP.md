@@ -251,7 +251,7 @@ Status: IN PROGRESS  ·  Depends on: Phase 03, Phase 04  ·  File: `phases/PHASE
 - [x] F093 — Markdown editor
 - [x] F094 — Public documentation
 - [x] F095 — Architecture portal
-- [ ] F096 — Export
+- [x] F096 — Export
 - [ ] F097 — Mermaid
 - [ ] F098 — PlantUML
 - [ ] F099 — PDF
