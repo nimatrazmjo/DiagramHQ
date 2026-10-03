@@ -73,3 +73,4 @@ export * from './security-architecture-panel';
 export * from './data-lineage-panel';
 export * from './architecture-health-panel';
 export * from './circular-spof-panel';
+export * from './architecture-documentation-panel';

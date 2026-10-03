@@ -243,11 +243,11 @@ Status: COMPLETE  ·  Depends on: Phase 03, Phase 09, Phase 10  ·  File: `phase
 
 # Phase 12 — Documentation
 
-Status: NOT STARTED  ·  Depends on: Phase 03, Phase 04  ·  File: `phases/PHASE-12-DOCUMENTATION.md`
+Status: IN PROGRESS  ·  Depends on: Phase 03, Phase 04  ·  File: `phases/PHASE-12-DOCUMENTATION.md`
 
 ## Features
 
-- [ ] F092 — Architecture documentation
+- [x] F092 — Architecture documentation
 - [ ] F093 — Markdown editor
 - [ ] F094 — Public documentation
 - [ ] F095 — Architecture portal

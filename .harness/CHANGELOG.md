@@ -2,6 +2,29 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-03 — F092 — Architecture Documentation (Phase 12 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `architecture-documentation.ts`: Model-first living documentation and doc tree navigation engine.
+    - `buildArchitectureDocTree(model, options)`: Builds hierarchical navigation tree preserving parent-child containment (`parentId`), paths (`/docs/system/container/component`), tree depths, and connection counts with cycle prevention.
+    - `generateObjectDocPage(objectId, model, context)`: Compiles comprehensive object doc page from metadata and topology connections (identity, governance, technical stack, environment, domain, criticality, compliance, inbound callers table, outbound dependencies table, contained subcomponents, SLA resilience, associated ADRs, flows, and views).
+    - `generateArchitectureOverviewDocPage(model, context)`: System-level documentation page synthesizing high-level architecture stats, technologies, and subsystem hierarchy.
+    - `generateArchitectureDocPages(model, context)`: Batch generates doc pages for all objects in the model.
+    - `exportArchitectureDocsAsCatalog(model, context)`: Bundles navigation tree, overview, and all object pages into a unified doc catalog.
+    - `renderDocPageToMarkdown(page)`: Serializes structured documentation pages to clean GitHub Flavored Markdown with markdown tables.
+    - `findDocTreeNode`, `flattenDocTree`, `getDocBreadcrumbs`, `searchDocTree`: Tree traversal and search utilities.
+  - `architecture-documentation.test.ts`: 11 unit tests.
+  - `index.ts`: Exported `architecture-documentation`.
+- Web layer (`apps/web/`):
+  - `components/canvas/architecture-documentation-panel.tsx`: Implemented `<ArchitectureDocumentationModal />` with header banner, breadcrumb bar, searchable tree sidebar, 5 view tabs (Overview & Metadata, Connections & Interfaces, Hierarchy, Markdown Spec, Artifacts), copy markdown action, and target-in-canvas focus.
+  - `components/canvas/index.ts`: Exported `architecture-documentation-panel`.
+  - `architecture-documentation.spec.tsx`: 3 integration tests.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 90 test files / 504 tests ✓, web 104 test files / 541 tests ✓, `pnpm build ✓`.
+- **Milestone: 110 / 135 features completed overall (81.5%)!**
+
 ## 2026-10-03 — F130 — Circular + SPOF Detection (Phase 11 COMPLETE)
 
 Status: COMPLETE

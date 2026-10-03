@@ -10,24 +10,26 @@ Description: Model-first architecture intelligence platform (a "better than IceP
 ## Current Phase
 Phase: 12
 Phase Name: Documentation
-Status: NOT STARTED
+Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F092
-Feature Name: Architecture documentation
+Feature ID: F093
+Feature Name: Markdown editor
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 109
+Completed: 110
 In Progress: 0
 Blocked: 0
-Not Started: 26
-Progress: 80.7%
+Not Started: 25
+Progress: 81.5%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F130 — Circular + SPOF detection. Implemented Circular Dependency and Single Point of Failure (SPOF) detection engine for DiagramHQ (Phase 11 — Drift and Governance). Pure domain engine (`circular-spof.ts`) detects all directed circular dependency loops with cycle hop paths, synchronicity classification, severity scoring, and breaking edge recommendations. Detects Single Points of Failure across 5 risk categories: high fan-in bottlenecks, sole downstream providers, Tarjan cut-vertex articulation points, unreplicated datastores, and unmitigated central hubs. Computes `StructuralRiskMetrics` with structural health score (0-100), overall risk level (`healthy`, `warning`, `critical`), and prioritized architectural recommendations. Added canvas UI `<CircularSpofModal />` with structural score badge, 6 KPI cards, recommendations banner, 3 tabs (All Risks, Cycles, SPOFs), severity/search filters, breaking edge guidance, dependent service lists, and mitigation advice. 6 domain unit tests, 2 web integration tests. **Phase 11 — Drift and Governance is now 100% COMPLETE (10/10 features)! Milestone: 109 / 135 features completed (80.7%)!**
+F092 — Architecture documentation. Implemented model-first Architecture Documentation engine and navigation tree for DiagramHQ (Phase 12 — Documentation). Pure domain engine (`architecture-documentation.ts`) builds hierarchical navigation tree (`buildArchitectureDocTree`) respecting parent-child containment (`parentId`), paths (`/docs/system/container/component`), and connection counts with cycle prevention. Generates rich object doc pages (`generateObjectDocPage`) compiling grounded identity, governance/ownership, technical specifications, inbound callers table, outbound dependencies table, contained subcomponents, SLA resilience, and associated artifacts (ADRs, execution flows, views). Synthesizes standardized GitHub-flavored Markdown (`renderDocPageToMarkdown`), generates high-level architecture overview documentation (`generateArchitectureOverviewDocPage`), and bundles unified doc catalogs (`exportArchitectureDocsAsCatalog`). Added canvas UI `<ArchitectureDocumentationModal />` with header banner, breadcrumb bar, searchable tree sidebar, 5 view tabs (Overview & Metadata, Connections & Interfaces, Hierarchy, Markdown Spec, Artifacts), copy markdown action, and target-in-canvas focus. 11 domain unit tests, 3 web integration tests. **Milestone: 110 / 135 features completed (81.5%)!**
+
+Prior: F130 — Circular + SPOF detection. Implemented Circular Dependency and Single Point of Failure (SPOF) detection engine for DiagramHQ (Phase 11 — Drift and Governance). Pure domain engine (`circular-spof.ts`) detects all directed circular dependency loops with cycle hop paths, synchronicity classification, severity scoring, and breaking edge recommendations. Detects Single Points of Failure across 5 risk categories: high fan-in bottlenecks, sole downstream providers, Tarjan cut-vertex articulation points, unreplicated datastores, and unmitigated central hubs. Computes `StructuralRiskMetrics` with structural health score (0-100), overall risk level (`healthy`, `warning`, `critical`), and prioritized architectural recommendations. Added canvas UI `<CircularSpofModal />` with structural score badge, 6 KPI cards, recommendations banner, 3 tabs (All Risks, Cycles, SPOFs), severity/search filters, breaking edge guidance, dependent service lists, and mitigation advice. 6 domain unit tests, 2 web integration tests. **Phase 11 — Drift and Governance is now 100% COMPLETE (10/10 features)! Milestone: 109 / 135 features completed (80.7%)!**
 
 Prior: F129 — Architecture health. Implemented Architecture Health Scorecard and Analytics engine for DiagramHQ (Phase 11 — Drift and Governance). Pure domain evaluation engine (`architecture-health.ts`) aggregates 5 core categories with findings and scores: Dependencies & Topology (cyclic dependencies via `detectDependencyCycles`, dangling connections, isolated components), Documentation Coverage (descriptions across components and architecture overview), Security Architecture (exposures and encryption posture via `analyzeSecurityArchitecture`), Ownership Governance (service ownership coverage excluding actors/groups), and Architecture Drift (unmanaged/missing resources vs actual state via `detectArchitectureDrift`). Computes weighted composite health score and overall status (`healthy`, `warning`, `critical`), detailed analytics counts, and grounded Change Analytics against baseline models (score delta, trend, risk level, added/modified/removed entities, and affected component/flow counts via F059 change sets). Added canvas UI `<ArchitectureHealthModal />` with score indicator, 6 KPI cards, change analytics banner, 5 interactive category progress cards, findings filter (category, severity, search), inspect target links, JSON export, and clipboard summary copy. 7 domain unit tests, 3 web integration tests.
 

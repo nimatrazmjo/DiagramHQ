@@ -1,6 +1,6 @@
 # Phase 12 — Documentation
 
-Status: NOT STARTED
+Status: IN PROGRESS
 
 ## Description
 The model as living documentation: object docs, a markdown editor, a public portal, and exports.
@@ -12,7 +12,7 @@ Phase 03, Phase 04
 
 ### F092 — Architecture documentation
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Object -> doc page.
 
@@ -21,6 +21,13 @@ Acceptance Criteria:
 - Every object renders to a documentation page; an architecture doc tree
 
 Test: an object doc page renders from metadata + connections.
+
+Evidence:
+- Domain engine: `packages/domain/src/architecture-documentation.ts`
+- Unit tests: `packages/domain/src/architecture-documentation.test.ts` (11 tests passing)
+- Canvas UI: `apps/web/components/canvas/architecture-documentation-panel.tsx`
+- Integration tests: `apps/web/architecture-documentation.spec.tsx` (3 tests passing)
+- PR and Review records: `.harness/reviews/F092-PR.md`, `.harness/reviews/F092-review.md`
 
 ### F093 — Markdown editor
 
