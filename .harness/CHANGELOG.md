@@ -2,6 +2,29 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-03 — F129 — Architecture Health (Phase 11 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `architecture-health.ts`: Architecture health scorecard and analytics engine. Aggregates 5 core categories with findings and scores:
+    1. **Dependencies & Topology**: Evaluates circular dependency chains via `detectDependencyCycles`, dangling connections pointing to non-existent objects, and isolated unlinked components.
+    2. **Documentation Coverage**: Evaluates component-level and high-level architecture overview descriptions.
+    3. **Security Architecture**: Assesses exposures, sensitive datastore encryption, and unauthenticated public endpoints via `analyzeSecurityArchitecture` (F090).
+    4. **Ownership Governance**: Evaluates service and store ownership coverage (excluding external actors and grouping boundaries).
+    5. **Architecture Drift**: Detects unmanaged resources and missing connections vs actual discovered infrastructure via `detectArchitectureDrift` (F084).
+    - Computes weighted composite health score and overall status (`healthy`, `warning`, `critical`).
+    - Calculates detailed analytics counts (totalObjects, totalConnections, ownershipCoverage, documentationCoverage, cyclicDependencyCount, securityScore, driftItemCount, lintFindingCount, ruleViolationCount).
+    - Calculates grounded **Change Analytics** when evaluated against a baseline model (score delta, trend, risk level, added/modified/removed entities, and affected component/flow counts via F059 change sets).
+  - `architecture-health.test.ts`: 7 unit tests covering clean baseline high score, seeded gaps across all 5 categories, and change analytics regressions/improvements.
+  - `index.ts`: Exported `architecture-health`.
+- Web layer (`apps/web/`):
+  - `components/canvas/architecture-health-panel.tsx`: Implemented `<ArchitectureHealthModal />` with score badge and status, 6 KPI cards, change analytics banner, 5 interactive category progress cards, findings filter (category, severity, search), inspect target links, JSON export, and clipboard summary copy.
+  - `components/canvas/index.ts`: Exported `architecture-health-panel`.
+  - `architecture-health.spec.tsx`: 3 integration tests.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 88 test files / 487 tests ✓, web 102 test files / 536 tests ✓, `pnpm build ✓`.
+
 ## 2026-10-02 — F091 — Data Lineage (Phase 11 Progress)
 
 Status: COMPLETE

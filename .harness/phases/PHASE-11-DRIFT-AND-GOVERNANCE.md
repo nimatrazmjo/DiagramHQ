@@ -119,7 +119,7 @@ Test: lineage returns the ordered path incl. the external exit.
 
 ### F129 — Architecture health
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Scorecard + analytics.
 

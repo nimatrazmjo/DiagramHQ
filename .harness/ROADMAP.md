@@ -236,7 +236,7 @@ Status: IN PROGRESS  ·  Depends on: Phase 03, Phase 09, Phase 10  ·  File: `ph
 
 
 - [x] F091 — Data lineage
-- [ ] F129 — Architecture health
+- [x] F129 — Architecture health
 - [ ] F130 — Circular + SPOF detection
 
 ---
