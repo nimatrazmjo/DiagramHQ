@@ -2,6 +2,30 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-03 — F098 — PlantUML (Phase 12 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `plantuml.ts`: Pure PlantUML syntax export and import engine.
+    - `toPlantUmlId`, `sanitizePlantUmlText`: Identifier and text sanitizers for compliant PlantUML aliases and escaped quotes/newlines.
+    - `exportViewToPlantUml`, `exportViewToPlantUmlResult`: C4 and native component diagram exporter supporting C4-PlantUML standard library includes (`C4_Context.puml`, `C4_Container.puml`, `C4_Component.puml`), C4 macros (`Person`, `Person_Ext`, `System`, `System_Ext`, `Container`, `ContainerDb`, `ContainerQueue`, `Component`), boundary grouping (`System_Boundary`, `Container_Boundary`, `package`) discovering parent containers from model hierarchy, and relationship macros (`Rel`). Native mode supports `actor`, `database`, `queue`, `component [...] as alias`, and `-->` arrows.
+    - `exportFlowToPlantUmlSequence`: Sequence diagram exporter producing `@startuml ... @enduml` with `autonumber`, participant and actor declarations, synchronous (`->`) and asynchronous (`->>`) messages, return status codes (`-->`), notes (`note over`), and schema annotations.
+    - `importPlantUml`: Robust parser supporting C4 macros, standard components, and sequence diagrams with warnings and errors diagnostics.
+  - `plantuml.test.ts`: 11 unit tests covering identifier/text sanitization, C4 context export, C4 container export with boundaries and `ContainerDb`, native component export, sequence export, C4 import, native component import, sequence diagram import, and error diagnostics.
+  - `index.ts`: Exported `plantuml`.
+- Web layer (`apps/web/`):
+  - `components/canvas/plantuml-modal.tsx`: Implemented `<PlantUmlModal />` canvas UI:
+    - Navigation tabs: `Export PlantUML` and `Import PlantUML`.
+    - Export controls: Flavor switcher (`C4 Macro`, `Component`, `Sequence`), direction buttons (`Top to Bottom`, `Left to Right`), execution flow picker, legend and notes toggles, live metrics summary (target view, nodes, relationships), copy to clipboard, and `.puml` download.
+    - Live script preview pane with formatted syntax.
+    - Import controls: textarea input with quick "Load Sample C4" and "Load Sample Sequence" buttons, live parser analysis (detected diagram type, objects count, connections count, sequence steps count, syntax badge), discovered entity list, diagnostic alerts, and model import action button.
+  - `components/canvas/index.ts`: Exported `plantuml-modal`.
+  - `plantuml.spec.tsx`: 4 integration tests verifying closed modal, export tab controls and script generation, node and relationship metrics summary, and import tab parser analysis with valid syntax status and apply button.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 96 test files / 580 tests ✓, web 110 test files / 565 tests ✓, `pnpm build ✓`.
+- **Milestone: 116 / 135 features completed overall (85.9%)!**
+
 ## 2026-10-03 — F097 — Mermaid (Phase 12 Progress)
 
 Status: COMPLETE

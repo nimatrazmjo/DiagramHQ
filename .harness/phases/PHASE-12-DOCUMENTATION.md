@@ -128,7 +128,7 @@ Evidence:
 
 ### F098 — PlantUML
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Export PlantUML.
 
@@ -137,6 +137,13 @@ Acceptance Criteria:
 - Export diagrams/flows to PlantUML
 
 Test: export -> valid PlantUML.
+
+Evidence:
+- Domain engine: `packages/domain/src/plantuml.ts`
+- Unit tests: `packages/domain/src/plantuml.test.ts` (11 tests passing)
+- Canvas UI: `apps/web/components/canvas/plantuml-modal.tsx`
+- Integration tests: `apps/web/plantuml.spec.tsx` (4 tests passing)
+- PR and Review records: `.harness/reviews/F098-PR.md`, `.harness/reviews/F098-review.md`
 
 ### F099 — PDF
 

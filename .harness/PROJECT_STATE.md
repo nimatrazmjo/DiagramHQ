@@ -13,21 +13,23 @@ Phase Name: Documentation
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F098
-Feature Name: PlantUML
+Feature ID: F099
+Feature Name: PDF
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 115
+Completed: 116
 In Progress: 0
 Blocked: 0
-Not Started: 20
-Progress: 85.2%
+Not Started: 19
+Progress: 85.9%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F097 — Mermaid. Implemented bidirectional Mermaid.js integration for DiagramHQ: exporting architecture views into Mermaid flowcharts and execution flows into sequence diagrams, as well as importing Mermaid flowchart scripts and sequence diagrams into DiagramHQ domain models (`ModelObject`, `ModelConnection`, `FlowWithSteps`). Pure domain engine (`mermaid.ts`) provides identifier and label sanitizers, C4 node shape formatting (stadiums for actors, cylinders for stores, subroutines for components, rounded boxes for applications/systems), subgraph hierarchy grouping, edge styling, and color themes (`classDef`). Implements sequence diagram export with actors, participants, synchronous/asynchronous calls, and notes. Implements flowchart and sequence diagram tokenizers/parsers (`importMermaidFlowchart`, `importMermaidSequence`) that build model objects, connections, and flow steps with warnings and errors diagnostics. Added canvas UI `<MermaidModal />` with dual tabs (Export Mermaid with direction controls, execution flow picker, metrics summary, copy, and `.mmd` download; Import Mermaid with live parser preview, entity breakdown, syntax badge, and model insertion action). 8 domain unit tests, 4 web integration tests. **Milestone: 115 / 135 features completed (85.2%)!**
+F098 — PlantUML. Implemented bidirectional PlantUML integration for DiagramHQ: exporting architecture views into C4-PlantUML and native PlantUML component diagrams, exporting execution flows into PlantUML sequence diagrams, and importing PlantUML scripts into DiagramHQ domain models (`ModelObject`, `ModelConnection`, `FlowWithSteps`). Pure domain engine (`plantuml.ts`) provides identifier and label sanitizers, C4 macro mappings (`Person`, `System`, `Container`, `ContainerDb`, `ContainerQueue`, `Component`), boundary grouping (`System_Boundary`, `Container_Boundary`, `package`) discovering parent containers from model hierarchy, and relationship macros (`Rel`). Implements sequence diagram export with actors, participants, databases, queues, step notes, schemas, and return messages. Implements robust parser (`importPlantUml`) supporting C4 macros, standard components, and sequence diagrams with warnings and errors diagnostics. Added canvas UI `<PlantUmlModal />` with dual tabs (Export PlantUML with flavor selector for C4 Macro, Native Component, and Sequence, direction buttons, execution flow picker, metrics summary, copy, and `.puml` download; Import PlantUML with live parser preview, entity breakdown, syntax badge, and model insertion action). 11 domain unit tests, 4 web integration tests. **Milestone: 116 / 135 features completed (85.9%)!**
+
+Prior: F097 — Mermaid. Implemented bidirectional Mermaid.js integration for DiagramHQ: exporting architecture views into Mermaid flowcharts and execution flows into sequence diagrams, as well as importing Mermaid flowchart scripts and sequence diagrams into DiagramHQ domain models (`ModelObject`, `ModelConnection`, `FlowWithSteps`). Pure domain engine (`mermaid.ts`) provides identifier and label sanitizers, C4 node shape formatting (stadiums for actors, cylinders for stores, subroutines for components, rounded boxes for applications/systems), subgraph hierarchy grouping, edge styling, and color themes (`classDef`). Implements sequence diagram export with actors, participants, synchronous/asynchronous calls, and notes. Implements flowchart and sequence diagram tokenizers/parsers (`importMermaidFlowchart`, `importMermaidSequence`) that build model objects, connections, and flow steps with warnings and errors diagnostics. Added canvas UI `<MermaidModal />` with dual tabs (Export Mermaid with direction controls, execution flow picker, metrics summary, copy, and `.mmd` download; Import Mermaid with live parser preview, entity breakdown, syntax badge, and model insertion action). 8 domain unit tests, 4 web integration tests. **Milestone: 115 / 135 features completed (85.2%)!**
 
 Prior: F096 — Export. Implemented multi-format diagram and architecture view export engine for DiagramHQ supporting SVG, PNG, PDF, and JSON (Phase 12 — Documentation). Pure domain engine (`export.ts`) renders views into scalable vector SVG (`renderViewToSvg`) with dark, light, and transparent theme palettes, responsive `viewBox` coordinates, embedded CSS typography, kind badges (`system`, `application`, `store`, `component`, `actor`), arrow markers (`marker-arrow-sync`, `marker-arrow-async`), connection labels, metadata banners, and component legends. Implements pure vector PDF 1.4 document engine (`renderViewToPdf`) with document catalog, page tree, A4 landscape media box (842 × 595 pt), metadata stream, and embedded vector data. Implements structured JSON snapshot serialization (`exportViewAsJson`) and unified exporter (`exportArchitectureView`, `exportMultipleViews`) with deterministic FNV-1a checksums, scale multipliers (1x, 2x, 3x, 4x), and sanitized timestamped filenames. Added canvas UI `<ExportModal />` with format selector tabs (PNG, SVG, PDF, JSON), view selector dropdown, live interactive preview pane with dimensions/size pills, settings sidebar (custom title override, resolution/scale grid, background theme buttons, metadata & legend toggles), filename indicator, "Copy to Clipboard", and "Download [FORMAT]" buttons. 15 domain unit tests, 3 web integration tests. **Milestone: 114 / 135 features completed (84.4%)!**
 

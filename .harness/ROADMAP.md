@@ -253,7 +253,7 @@ Status: IN PROGRESS  ·  Depends on: Phase 03, Phase 04  ·  File: `phases/PHASE
 - [x] F095 — Architecture portal
 - [x] F096 — Export
 - [x] F097 — Mermaid
-- [ ] F098 — PlantUML
+- [x] F098 — PlantUML
 - [ ] F099 — PDF
 - [ ] F100 — SVG
 
