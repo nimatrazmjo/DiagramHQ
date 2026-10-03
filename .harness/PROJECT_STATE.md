@@ -13,21 +13,23 @@ Phase Name: Documentation
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F095
-Feature Name: Architecture portal
+Feature ID: F096
+Feature Name: Export
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 112
+Completed: 113
 In Progress: 0
 Blocked: 0
-Not Started: 23
-Progress: 83.0%
+Not Started: 22
+Progress: 83.7%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F094 — Public documentation. Implemented static site generation and public documentation publishing engine for DiagramHQ (Phase 12 — Documentation). Pure domain engine (`public-documentation.ts`) manages publication lifecycle (`createPublicDocPublication`, `publishDocPublication`, `unpublishDocPublication`), anonymous reader access control (`verifyPublicDocAccess` supporting public, unlisted secret link, and passkey-protected docs viewable without an account), public share URL generator (`generatePublicShareUrl`), site compilation engine (`compilePublicSiteBundle`) synthesizing overview docs, subsystem/component docs, ADRs, diagram views, and execution flows with SEO sitemaps (`sitemap.xml`) and `robots.txt`, client-side full-text search with token ranking (`searchPublicSite`), and standalone offline single-page HTML site generator (`renderStandalonePublicSiteHtml`). Added canvas UI `<PublicDocumentationModal />` with header banner, public link copy, publisher dashboard (General & Branding, Access & Security, Content Selection, Releases & Versioning, Reader Analytics, Offline HTML Export), and simulated external reader preview mode with passkey unlock and client search. 19 domain unit tests, 4 web integration tests. **Milestone: 112 / 135 features completed (83.0%)!**
+F095 — Architecture portal. Implemented interactive public architecture portal and read-only explorer for external visitors without an account (Phase 12 — Documentation). Pure domain engine (`architecture-portal.ts`) manages C4 multi-level hierarchical projections (`buildPortalLevelProjection`) across Context (L1), Container (L2), and Component (L3) with deterministic coordinate layout, dynamic breadcrumb trails, click-to-ascend navigation (`navigatePortalUp`), and drill-down into systems and containers (`drillDownPortalToObject`). Implemented pure camera viewport controls (`zoomPortalCamera`, `panPortalCamera`, `fitPortalCameraToNodes`), deep object inspector (`inspectPortalObject`) compiling contained subcomponents, direct inbound callers, outbound dependencies, associated ADRs, and execution flows, dependency highlighting (`getDependencyHighlighting`), interactive step-by-step flow playback (`initPortalFlowPlayback`, `stepPortalFlowPlayback`), and global multi-entity full-text search with relevance ranking (`searchArchitecturePortal`). Added canvas UI `<ArchitecturePortalModal />` with public read-only explorer header banner ("PUBLIC EXPLORER • NO ACCOUNT REQUIRED"), global search bar with popover, C4 breadcrumbs bar with level badge, viewport controls (Fit View, Reset, Zoom In/Out), interactive node cards with "Drill Down →" action, and collapsible side drawer featuring Object Inspector and Execution Flow Playback modes. 13 domain unit tests, 5 web integration tests. **Milestone: 113 / 135 features completed (83.7%)!**
+
+Prior: F094 — Public documentation. Implemented static site generation and public documentation publishing engine for DiagramHQ (Phase 12 — Documentation). Pure domain engine (`public-documentation.ts`) manages publication lifecycle (`createPublicDocPublication`, `publishDocPublication`, `unpublishDocPublication`), anonymous reader access control (`verifyPublicDocAccess` supporting public, unlisted secret link, and passkey-protected docs viewable without an account), public share URL generator (`generatePublicShareUrl`), site compilation engine (`compilePublicSiteBundle`) synthesizing overview docs, subsystem/component docs, ADRs, diagram views, and execution flows with SEO sitemaps (`sitemap.xml`) and `robots.txt`, client-side full-text search with token ranking (`searchPublicSite`), and standalone offline single-page HTML site generator (`renderStandalonePublicSiteHtml`). Added canvas UI `<PublicDocumentationModal />` with header banner, public link copy, publisher dashboard (General & Branding, Access & Security, Content Selection, Releases & Versioning, Reader Analytics, Offline HTML Export), and simulated external reader preview mode with passkey unlock and client search. 19 domain unit tests, 4 web integration tests. **Milestone: 112 / 135 features completed (83.0%)!**
 
 Prior: F093 — Markdown editor. Implemented rich model-first Markdown documentation editor with architecture embeds, diagrams, tables, code, links, mentions, and threaded comments for DiagramHQ (Phase 12 — Documentation). Pure domain engine (`markdown-editor.ts`) parses markdown documents (`parseMarkdownDocument`), generates Table of Contents, extracts architecture embeds (`diagram`, `object`, `flow`, `adr`, `image`), and validates embedded references against the architecture model with reference warnings. Built directive builders (`createDiagramEmbedDirective`, `createObjectEmbedDirective`, `insertTableMarkdown`, `insertCodeBlockMarkdown`, `insertImageMarkdown`), semantic HTML renderer (`renderMarkdownToHtml`) transforming embedded diagrams into interactive visual cards with studio jump targets and object metadata cards, and document comments management (`addDocumentComment`, `resolveDocumentComment`). Added canvas UI `<MarkdownEditorModal />` with live word counter, 3 view modes (Split, Edit, Preview), formatting toolbar, Architecture Embed dropdown hub, live rendered preview pane, and threaded review comments sidebar. 10 domain unit tests, 4 web integration tests. **Milestone: 111 / 135 features completed (82.2%)!**
 
