@@ -1,31 +1,37 @@
-# Current Task: F096 — Export
+# Current Task: F097 — Mermaid
 
-**Status**: COMPLETE
+**Status**: NOT STARTED
 
 ## Description
-Multi-format Diagram and Architecture View Export Engine (Phase 12 — Documentation):
-- Export diagram views and models to high-resolution formats:
-  - SVG: Scalable vector format with embedded styles, markers, text elements, and metadata tags.
-  - PNG: Raster image rendering with scale factor selection (1x, 2x, 4x retina), background selection (transparent, dark, light), and content padding.
-  - PDF: Formatted vector document representation with title, timestamp, metadata banner, and aspect-ratio preservation.
-  - JSON / Model snapshot: Clean structured export of view objects, geometry, and connections.
-- Configuration options:
-  - Resolution / Scale (1x, 2x, 3x, 4x).
-  - Background: transparent, dark (`#090d16`), light (`#ffffff`).
-  - Viewport bounds: "Crop to diagram content" vs "Current camera viewport".
-  - Metadata inclusion: Title, timestamp, version tag, legend.
-- Interactive Export Modal / Drawer in Canvas:
-  - Live preview of selected view.
-  - Format selector tab (PNG, SVG, PDF, JSON).
-  - Scale and background controls.
-  - One-click Download and "Copy to Clipboard" (where supported).
+Bidirectional Mermaid Export and Import Engine for Diagrams and Execution Flows (Phase 12 — Documentation):
+- Export capabilities:
+  - C4 / Architecture Views -> Mermaid Flowcharts (`flowchart TB`, `flowchart LR`):
+    - Subgraphs for hierarchy boundaries (System, Container, Component).
+    - Node definitions with custom shapes (rectangles, cylinders for databases, rounded boxes, circles for actors).
+    - Connections with labels, solid arrows (`-->`), dashed arrows (`-.->`), and bidirectional links.
+    - Styling classes (`classDef system`, `classDef container`, `classDef store`, `classDef component`).
+  - Execution Flows -> Mermaid Sequence Diagrams (`sequenceDiagram`):
+    - `autonumber` support.
+    - `participant` and `actor` definitions with aliases.
+    - Sequence call messages (`->>`, `-->>`, `-)`), return messages, notes (`Note over`, `Note right of`).
+- Import capabilities:
+  - Mermaid Flowchart Parser (`importMermaidFlowchart`):
+    - Parses subgraphs, nodes, and links into DiagramHQ `ModelObject` and `ModelConnection` representations.
+    - Preserves hierarchy (`parentId`) from subgraphs.
+    - Auto-classifies node kinds based on shapes (cylinders `[(...)]` -> store, rects `[...]` -> application/system).
+  - Mermaid Sequence Diagram Parser (`importMermaidSequence`):
+    - Parses participants, message arrows, notes, and order into DiagramHQ `Flow` and `FlowStep` models.
+- Round-trip validation:
+  - Export -> Import -> Export preservation test.
+- Interactive Canvas UI (`MermaidModal`):
+  - Dual tabs: Export (copy Mermaid markdown, download `.mmd`) and Import (paste Mermaid script, preview converted nodes/edges, apply to active architecture).
 - Acceptance criteria:
-  - Export a diagram/view to PNG and SVG (baseline in Phase 01; PDF here)
-  - Test: export a view -> non-empty file; visual check.
+  - Export flows/diagrams to Mermaid; import Mermaid
+  - Test: export -> Mermaid renders; round-trip import.
 
-- Feature ID: F096
+- Feature ID: F097
 - Phase: 12 — Documentation
 - Dependencies: Phase 03, Phase 04
 
 ## Next Feature
-- **F097 — Mermaid**
+- **F098 — PlantUML**
