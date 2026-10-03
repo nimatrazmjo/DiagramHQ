@@ -243,7 +243,7 @@ Status: COMPLETE  ·  Depends on: Phase 03, Phase 09, Phase 10  ·  File: `phase
 
 # Phase 12 — Documentation
 
-Status: IN PROGRESS  ·  Depends on: Phase 03, Phase 04  ·  File: `phases/PHASE-12-DOCUMENTATION.md`
+Status: COMPLETE  ·  Depends on: Phase 03, Phase 04  ·  File: `phases/PHASE-12-DOCUMENTATION.md`
 
 ## Features
 
@@ -255,13 +255,13 @@ Status: IN PROGRESS  ·  Depends on: Phase 03, Phase 04  ·  File: `phases/PHASE
 - [x] F097 — Mermaid
 - [x] F098 — PlantUML
 - [x] F099 — PDF
-- [ ] F100 — SVG
+- [x] F100 — SVG
 
 ---
 
 # Phase 13 — Enterprise
 
-Status: NOT STARTED  ·  Depends on: Phase 01, Phase 06, Phase 11  ·  File: `phases/PHASE-13-ENTERPRISE.md`
+Status: IN PROGRESS  ·  Depends on: Phase 01, Phase 06, Phase 11  ·  File: `phases/PHASE-13-ENTERPRISE.md`
 
 ## Features
 

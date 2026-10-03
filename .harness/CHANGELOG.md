@@ -2,6 +2,34 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-03 — F100 — SVG (Phase 12 Complete)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `svg-export.ts`: Pure vector SVG architecture diagram export engine at fidelity.
+    - Theme palettes (`SVG_THEME_PALETTES`): Dark Canvas (`#090D16`), Light Paper (`#F8FAFC`), Transparent Vector.
+    - Distinctive C4 shape silhouettes and inline kind icons (`getNodeKindIconPath`): Actor (user silhouette), Store (cylinder database), Application (browser window), Component (modular puzzle), System (cloud server).
+    - Edge routing calculation (`calculateSvgEdgePath`): Smooth cubic Bezier curves matching IcePanel Edge, right-angle stepped orthogonal paths, and direct straight lines.
+    - Full SVG document compiler (`renderViewToFidelitySvg`): Element cards with header accent bars, kind icons, kind badges, active health dot indicators, title, description, and technology/owner pills. Parent system and group boundary boxes with dashed borders and header pills. Relationship connections with centered protocol/label pills, distinct sync/async line styling, and arrow markers (`#arrow-sync`, `#arrow-async`).
+    - Background dot grid alignment pattern and C4 component kind legend.
+    - Interactive `<title>` tooltips on nodes and edges for hover inspection.
+    - Base64 data URI, FNV-1a checksum, and sanitized filename generation.
+  - `svg-export.test.ts`: 10 unit tests covering edge routing calculations, node kind icon paths, XML escaping, full SVG document generation, orthogonal routing, light/transparent themes, display toggles, and resolution scaling.
+  - `index.ts`: Exported `svg-export`.
+- Web layer (`apps/web/`):
+  - `components/canvas/svg-export-modal.tsx`: Implemented `<SvgExportModal />` canvas UI:
+    - 3 Navigation tabs: `Interactive Preview`, `Fidelity & Styling Options`, and `SVG XML Markup`.
+    - Interactive Preview: Live rendered SVG graphic container with viewport zoom controls (Zoom In, Zoom Out, Reset 100%) and ViewBox coordinate indicator.
+    - Fidelity & Styling Options: Theme palette switcher (Dark, Light, Transparent), Edge routing switcher (Curved, Orthogonal, Straight), Resolution scale selector (1x, 2x, 3x) with live pixel dimensions readout, display toggles (Dot Grid, Badges, Header Banner, Legend, Tooltips), and diagram title override input.
+    - SVG XML Markup: Formatted XML source viewer with character count and verification badge.
+    - Modal Footer: Quick metrics badges (Elements, Connections, File Size), and actions: "Copy Data URI", "Copy SVG Markup", "Download SVG File".
+  - `components/canvas/index.ts`: Exported `svg-export-modal`.
+  - `svg-export.spec.tsx`: 3 integration tests verifying modal closed state, open modal layout with tabs and action buttons, and live SVG graphic rendering with canvas elements and connections.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 98 test files / 599 tests ✓, web 112 test files / 572 tests ✓, `pnpm build ✓`.
+- **Phase 12 — Documentation is now 100% COMPLETE (9/9 features)! Milestone: 118 / 135 features completed overall (87.4%)!**
+
 ## 2026-10-03 — F099 — PDF (Phase 12 Progress)
 
 Status: COMPLETE

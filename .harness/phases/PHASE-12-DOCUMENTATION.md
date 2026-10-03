@@ -1,6 +1,6 @@
 # Phase 12 — Documentation
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Description
 The model as living documentation: object docs, a markdown editor, a public portal, and exports.
@@ -166,7 +166,7 @@ Evidence:
 
 ### F100 — SVG
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Export SVG.
 
@@ -175,6 +175,13 @@ Acceptance Criteria:
 - Export a view to SVG at fidelity
 
 Test: export -> valid SVG matching the canvas.
+
+Evidence:
+- Domain engine: `packages/domain/src/svg-export.ts`
+- Unit tests: `packages/domain/src/svg-export.test.ts` (10 tests passing)
+- Canvas UI: `apps/web/components/canvas/svg-export-modal.tsx`
+- Integration tests: `apps/web/svg-export.spec.tsx` (3 tests passing)
+- PR and Review records: `.harness/reviews/F100-PR.md`, `.harness/reviews/F100-review.md`
 
 ---
 
