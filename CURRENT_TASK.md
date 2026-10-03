@@ -1,27 +1,24 @@
-# Current Task: F091 — Data lineage
+# Current Task: F129 — Architecture health
 
-**Status**: NOT STARTED
+**Status**: COMPLETE
 
 ## Description
-Data lineage tracing and compliance path engine for DiagramHQ (Phase 11 — Drift and Governance):
-- End-to-end data lineage trace from source of truth datastores to upstream consumption entrypoints and downstream pipelines
-- Multi-hop data tracing across 4+ hops
-- Highlight compliance zones (PII / PCI / HIPAA / GDPR) along the data path and flag compliance boundary crossings
+Architecture Health Scorecard and Analytics engine for DiagramHQ (Phase 11 — Drift and Governance):
+- Composite architecture health scorecard aggregating 5 core categories:
+  - Dependencies & Topology (cyclic dependencies, dangling connections, isolated nodes)
+  - Documentation Coverage (component & architecture descriptions)
+  - Security Architecture (exposures, sensitive datastore encryption, public ingress authentication)
+  - Ownership Governance (team & engineer ownership coverage)
+  - Architecture Drift (unmanaged resources, missing connections vs actual infra)
+- Analytics counts + grounded Change Analytics (delta, trends, risk level, and affected component counts)
 - Acceptance criteria:
-  - End-to-end trace from source of truth to consumption
-  - Highlight compliance zones (PII / PCI) along the path
-  - Test: trace renders across 4+ hops; compliance boundary crossings flagged.
+  - Categorized health (dependencies, documentation, security, ownership, drift) with findings
+  - Analytics counts + change analytics
+  - Test: health computed on a sample matches seeded gaps.
 
-- Feature ID: F091
+- Feature ID: F129
 - Phase: 11 — Drift and Governance
-- Dependencies: F046, F090
+- Dependencies: F085
 
-## Next Steps
-1. In `packages/domain/src/`, implement `data-lineage.ts`:
-   - Data types for `DataLineageTrace`, `LineageHop`, `LineagePath`, `DataClassification`, `LineageBoundaryCrossing`
-   - `traceDataLineage(model, sourceStoreId, options?)` → returns `DataLineageReport` tracing upstream sources and downstream consumers across 4+ hops with compliance zone crossings highlighted
-   - Unit tests in `packages/domain/src/data-lineage.test.ts`
-2. In `apps/web/`, implement canvas UI:
-   - `<DataLineageModal />` in `apps/web/components/canvas/data-lineage-panel.tsx`
-   - Integration specs in `apps/web/data-lineage.spec.tsx`
-3. Verify with `pnpm typecheck && pnpm lint && pnpm check-architecture && pnpm test && pnpm build`.
+## Next Feature
+- **F130 — Circular + SPOF detection** (Phase 11 — Drift and Governance)
