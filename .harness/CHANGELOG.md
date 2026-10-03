@@ -2,6 +2,34 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-03 — F096 — Export (Phase 12 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `export.ts`: Multi-format architecture diagram and view export engine.
+    - `renderViewToSvg(view, model, options, viewObjects)`: Pure vector SVG generator with responsive `viewBox` coordinates, resolution scaling (1x, 2x, 3x, 4x), background themes (dark, light, transparent), embedded CSS typography, kind badges (`system`, `application`, `store`, `component`, `actor`), arrow markers (`marker-arrow-sync`, `marker-arrow-async`), centered edge labels, metadata title banner, and component kind legend.
+    - `renderViewToPdf(view, model, options, viewObjects)`: Native vector PDF 1.4 document generator producing valid `%PDF-1.4 ... %%EOF` files with document catalog, page tree, A4 landscape media box (842 × 595 pt), metadata stream, and embedded vector data.
+    - `exportViewAsJson(view, model, options, viewObjects)`: Structured JSON snapshot serializer producing `ViewExportJsonPayload` capturing architectural entities, coordinates, bounding geometry, and connection topologies.
+    - `exportArchitectureView`: Unified exporter dispatching to SVG, PNG, PDF, and JSON formats with FNV-1a checksum validation, data URI generation, and dimension calculations.
+    - `exportMultipleViews`: Batch export utility for multi-view downloads.
+    - `sanitizeFilename`, `generateExportFilename`, `calculateExportBoundingBox`, `computeContentChecksum`.
+  - `export.test.ts`: 15 unit tests covering filename sanitization, timestamped filenames, checksum calculation, bounding box geometry, SVG rendering (elements, themes, scales), PDF 1.4 generation, JSON snapshot serialization, unified exporter dispatches, and batch multi-view exports.
+  - `index.ts`: Exported `export`.
+- Web layer (`apps/web/`):
+  - `components/canvas/export-modal.tsx`: Implemented `<ExportModal />` canvas UI:
+    - Format selector tab bar: `PNG (Raster Image)`, `SVG (Vector)`, `PDF (Print Document)`, `JSON (Model Data)`.
+    - View switcher dropdown when multiple views are available.
+    - Live interactive preview container displaying rendered SVG, formatted JSON, or PDF document card.
+    - Preview status pill displaying live dimensions, file size, and scale multiplier.
+    - Settings sidebar: custom title override input, resolution/scale selector grid (1x, 2x, 3x, 4x), canvas background theme selector (Dark, Light, Transparent), and toggles for Title & Metadata Banner and Component Legend.
+    - Bottom action bar with filename display, "Copy to Clipboard", and "Download [FORMAT]".
+  - `components/canvas/index.ts`: Exported `export-modal`.
+  - `export.spec.tsx`: 3 integration tests verifying closed modal, export modal rendering with controls and actions, and live diagram preview pane containing nodes and connections.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 94 test files / 561 tests ✓, web 108 test files / 557 tests ✓, `pnpm build ✓`.
+- **Milestone: 114 / 135 features completed overall (84.4%)!**
+
 ## 2026-10-03 — F095 — Architecture Portal (Phase 12 Progress)
 
 Status: COMPLETE

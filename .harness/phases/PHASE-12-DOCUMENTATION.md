@@ -90,7 +90,7 @@ Evidence:
 
 ### F096 — Export
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Export baseline.
 
@@ -99,6 +99,13 @@ Acceptance Criteria:
 - Export a diagram/view to PNG and SVG (baseline in Phase 01; PDF here)
 
 Test: export a view -> non-empty file; visual check.
+
+Evidence:
+- Domain engine: `packages/domain/src/export.ts`
+- Unit tests: `packages/domain/src/export.test.ts` (15 tests passing)
+- Canvas UI: `apps/web/components/canvas/export-modal.tsx`
+- Integration tests: `apps/web/export.spec.tsx` (3 tests passing)
+- PR and Review records: `.harness/reviews/F096-PR.md`, `.harness/reviews/F096-review.md`
 
 ### F097 — Mermaid
 
