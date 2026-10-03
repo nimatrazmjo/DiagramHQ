@@ -96,3 +96,4 @@ export * from './architecture-portal';
 export * from './export';
 export * from './mermaid';
 export * from './plantuml';
+export * from './pdf-export';

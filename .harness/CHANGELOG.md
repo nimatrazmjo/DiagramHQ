@@ -2,6 +2,37 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-03 — F099 — PDF (Phase 12 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `pdf-export.ts`: Pure PDF 1.4 vector documentation and book compilation engine.
+    - PDF 1.4 binary stream conformance (`%PDF-1.4\n%\xE2\xE3\xCF\xD3\n`, font dictionaries for Helvetica and Helvetica-Bold, catalog, page tree, byte-accurate XREF offsets table, info dictionary, and trailer `%%EOF`).
+    - Standard page dimensions (`getPdfPageDimensions`) for ISO A4 and US Letter in landscape and portrait geometry with literal string escaping (`escapePdf`).
+    - Multi-page section generators:
+      - `buildCoverPageStream`: Executive cover sheet with branding header, document title, subtitle, version badge, and metadata cards (organization, author, date, watermark).
+      - `buildOverviewPageStream`: Architecture summary, key KPI metric cards (systems, containers, components, databases, connections), and system boundary breakdown table.
+      - `buildViewPageStream`: Vector diagram projection with auto-grid layout, color-coded node boxes, kind badges, technology tags, and connection lines.
+      - `buildCatalogPageStream`: Paginated multi-page service and entity catalog table (up to 12 items/page) with part indicators.
+      - `buildAdrsPageStream`: Architecture Decision Records cards with status pills, context, decision, and consequences.
+      - `buildFlowsPageStream`: Step-by-step transaction walkthrough table.
+    - Export helpers: `exportArchitecturePdfBook` and `exportDocumentToPdf` returning binary string, base64 data URI, page count, byte size, sanitized filename, and FNV-1a checksum.
+  - `pdf-export.test.ts`: 9 unit tests covering page dimensions across formats/orientations, multi-page book generation, selective section export, vector diagram box rendering, catalog table multi-page wrapping, ADR and flow rendering, special character escaping, and single view export.
+  - `index.ts`: Exported `pdf-export`.
+- Web layer (`apps/web/`):
+  - `components/canvas/pdf-export-modal.tsx`: Implemented `<PdfExportModal />` canvas UI:
+    - 3 Navigation tabs: `Live Preview`, `Document Sections & Options`, and `PDF Syntax Inspector`.
+    - Live Preview: Interactive page carousel navigation buttons (`Page 1`, `Page 2`, ...) with current page indicator, visual sheet preview in landscape/portrait geometry, dynamic section renderer, watermark overlay, and running headers/footers with dynamic page numbers.
+    - Document Sections & Options: Checkbox toggles for 6 document sections (Cover, Overview, Diagrams, Catalog, ADRs, Flows), page format (A4, Letter), orientation (Landscape, Portrait), page number toggle, metadata inputs (Custom title, author/team, organization, watermark).
+    - PDF Syntax Inspector: Raw stream viewer displaying `%PDF-1.4` objects, streams, XREF, and trailer.
+    - Modal Footer: Live file size and page count badges, "Copy Data URI" action, and "Download PDF Book" action creating and triggering browser download.
+  - `components/canvas/index.ts`: Exported `pdf-export-modal`.
+  - `pdf-export.spec.tsx`: 4 integration tests verifying closed modal state, modal dialog rendering with header and action buttons, multi-page carousel controls, and document metadata preview.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 97 test files / 589 tests ✓, web 111 test files / 569 tests ✓, `pnpm build ✓`.
+- **Milestone: 117 / 135 features completed overall (86.7%)!**
+
 ## 2026-10-03 — F098 — PlantUML (Phase 12 Progress)
 
 Status: COMPLETE

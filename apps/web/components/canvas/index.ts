@@ -80,3 +80,4 @@ export * from './architecture-portal-panel';
 export * from './export-modal';
 export * from './mermaid-modal';
 export * from './plantuml-modal';
+export * from './pdf-export-modal';
