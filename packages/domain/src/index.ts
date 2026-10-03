@@ -90,3 +90,4 @@ export * from './data-lineage';
 export * from './architecture-health';
 export * from './circular-spof';
 export * from './architecture-documentation';
+export * from './markdown-editor';

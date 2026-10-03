@@ -2,6 +2,28 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-03 — F093 — Markdown Editor (Phase 12 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `markdown-editor.ts`: Rich Markdown editor and architecture embedding engine.
+    - Embed Directives: Supports syntax `:::diagram[id]{options}`, `:::object[id]{options}`, `:::flow[id]{options}`, and `:::adr[id]{options}` with parameter extraction.
+    - `parseMarkdownDocument(content, metadata)`: Parses markdown into abstract AST nodes (headers, paragraphs, lists, blockquotes, code blocks, tables, architecture embeds, callouts, horizontal rules), extracting table of contents headings and embedded architecture entity references.
+    - `generateTableOfContents(nodes)`: Builds structured TOC navigation with anchors, levels, and hierarchy.
+    - `validateEmbedReferences(doc, model)`: Cross-references embedded diagram IDs, object IDs, flow IDs, and ADR IDs against the active architectural model, identifying valid and dangling references.
+    - `renderDocumentToSemanticHtml(doc)`: Produces clean semantic HTML with CSS classes for styling embeds, callouts, and code blocks.
+    - `addCommentToDocument`, `resolveCommentInDocument`, `replyToComment`: Threaded inline and document-level commenting.
+  - `markdown-editor.test.ts`: 10 unit tests covering AST parsing, directives, embed extraction, reference validation, semantic HTML rendering, and commenting.
+  - `index.ts`: Exported `markdown-editor`.
+- Web layer (`apps/web/`):
+  - `components/canvas/markdown-editor-modal.tsx`: Implemented `<MarkdownEditorModal />` with 3 view modes (Split, Edit, Preview), stats bar (words, chars, reading time, references), formatting toolbar (bold, italic, code, headings, lists, tables), architecture embed insert menu (Diagrams, Components, Flows, ADRs), live interactive diagram view preview cards with metadata and node counts, and threaded discussion comments sidebar.
+  - `components/canvas/index.ts`: Exported `markdown-editor-modal`.
+  - `markdown-editor.spec.tsx`: 4 integration tests verifying view switching, toolbar formatting, interactive diagram embed preview card rendering, and thread commenting.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 91 test files / 514 tests ✓, web 105 test files / 545 tests ✓, `pnpm build ✓`.
+- **Milestone: 111 / 135 features completed overall (82.2%)!**
+
 ## 2026-10-03 — F092 — Architecture Documentation (Phase 12 Progress)
 
 Status: COMPLETE

@@ -1,21 +1,26 @@
-# Current Task: F092 — Architecture documentation
+# Current Task: F093 — Markdown editor
 
 **Status**: COMPLETE
 
 ## Description
-Object -> doc page and architecture doc tree (Phase 12 — Documentation):
-- Model-first architecture documentation engine transforming every architecture object into a comprehensive living doc page:
-  - Architecture doc tree hierarchy (`buildArchitectureDocTree`): organizes systems, containers, components, stores, actors, external services into a navigable tree structure with parent-child nesting, breadcrumbs, search/filtering, and badge metadata.
-  - Object documentation page generation (`generateObjectDocPage`): compiles grounded documentation from object metadata, inbound caller connections, outbound dependency connections, technology stack, ownership, lifecycle stage, associated views, execution flows, ADRs, and structural risk summaries.
-  - Markdown synthesis (`renderDocPageToMarkdown`): renders high-fidelity documentation pages to GitHub-flavored Markdown with structured sections, tables, dependency matrices, and links.
-  - Canvas UI: `<ArchitectureDocumentationModal />` / panel providing interactive tree navigation, search/filter, full doc view, metadata cards, connection tables, breadcrumbs, markdown view, and clipboard export.
+Rich Markdown editor with architecture embeds, diagrams, tables, code, links, mentions, and comments (Phase 12 — Documentation):
+- Model-first rich documentation editor:
+  - Markdown authoring with live split-pane preview and formatting toolbar (headings, bold, italic, quotes, lists, tables, code).
+  - Architecture embeds:
+    - Embedded diagrams / views (````diagram id: ... ````) with interactive visual card previews, node previews, and canvas jump buttons.
+    - Embedded architecture objects (````object id: ... ````) with live metadata, kind badges, and connection summaries.
+    - Embedded execution flows (````flow id: ... ````) and ADRs (````adr id: ... ````).
+    - Image attachments (`![alt](url)`) and code blocks with syntax highlighting.
+    - Entity mentions (`@object-name` or `@username`) with link resolution.
+    - Inline / document comment threads (`targetType: 'doc'`).
+  - Validation: verifies embedded diagram/view/object IDs against live architecture models, flagging broken references.
 - Acceptance criteria:
-  - Every object renders to a documentation page; an architecture doc tree
-  - Test: an object doc page renders from metadata + connections.
+  - Markdown, rich text, images, architecture embeds, diagrams, tables, code, links, mentions, comments
+  - Test: edit a doc; embed a diagram; it renders.
 
-- Feature ID: F092
+- Feature ID: F093
 - Phase: 12 — Documentation
 - Dependencies: Phase 03, Phase 04
 
 ## Next Feature
-- **F093 — Markdown editor**
+- **F094 — Public documentation**

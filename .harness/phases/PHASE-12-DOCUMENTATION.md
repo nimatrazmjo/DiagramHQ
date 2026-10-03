@@ -31,7 +31,7 @@ Evidence:
 
 ### F093 — Markdown editor
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Rich editor.
 
@@ -40,6 +40,13 @@ Acceptance Criteria:
 - Markdown, rich text, images, architecture embeds, diagrams, tables, code, links, mentions, comments
 
 Test: edit a doc; embed a diagram; it renders.
+
+Evidence:
+- Domain engine: `packages/domain/src/markdown-editor.ts`
+- Unit tests: `packages/domain/src/markdown-editor.test.ts` (10 tests passing)
+- Canvas UI: `apps/web/components/canvas/markdown-editor-modal.tsx`
+- Integration tests: `apps/web/markdown-editor.spec.tsx` (4 tests passing)
+- PR and Review records: `.harness/reviews/F093-PR.md`, `.harness/reviews/F093-review.md`
 
 ### F094 — Public documentation
 
