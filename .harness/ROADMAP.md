@@ -248,7 +248,7 @@ Status: IN PROGRESS  ·  Depends on: Phase 03, Phase 04  ·  File: `phases/PHASE
 ## Features
 
 - [x] F092 — Architecture documentation
-- [ ] F093 — Markdown editor
+- [x] F093 — Markdown editor
 - [ ] F094 — Public documentation
 - [ ] F095 — Architecture portal
 - [ ] F096 — Export
