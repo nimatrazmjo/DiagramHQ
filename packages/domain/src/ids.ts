@@ -35,7 +35,8 @@ export type IdPrefix =
   | 'pr'
   | 'scn'
   | 'rdm'
-  | 'msg';
+  | 'msg'
+  | 'pub';
 
 export type Id<P extends IdPrefix> = string & { readonly __brand: P };
 
@@ -65,6 +66,7 @@ export type PullRequestId = Id<'pr'>;
 export type ScenarioId = Id<'scn'>;
 export type RoadmapItemId = Id<'rdm'>;
 export type MessageId = Id<'msg'>;
+export type PublicationId = Id<'pub'>;
 
 let sequence = 0;
 

@@ -1,26 +1,28 @@
-# Current Task: F093 — Markdown editor
+# Current Task: F094 — Public documentation
 
 **Status**: COMPLETE
 
 ## Description
-Rich Markdown editor with architecture embeds, diagrams, tables, code, links, mentions, and comments (Phase 12 — Documentation):
-- Model-first rich documentation editor:
-  - Markdown authoring with live split-pane preview and formatting toolbar (headings, bold, italic, quotes, lists, tables, code).
-  - Architecture embeds:
-    - Embedded diagrams / views (````diagram id: ... ````) with interactive visual card previews, node previews, and canvas jump buttons.
-    - Embedded architecture objects (````object id: ... ````) with live metadata, kind badges, and connection summaries.
-    - Embedded execution flows (````flow id: ... ````) and ADRs (````adr id: ... ````).
-    - Image attachments (`![alt](url)`) and code blocks with syntax highlighting.
-    - Entity mentions (`@object-name` or `@username`) with link resolution.
-    - Inline / document comment threads (`targetType: 'doc'`).
-  - Validation: verifies embedded diagram/view/object IDs against live architecture models, flagging broken references.
+Publish architecture documentation for external readers viewable without an account (Phase 12 — Documentation):
+- Static site generation and public publishing engine:
+  - Documentation publication configuration:
+    - Custom slugs, vanity URLs, custom domains, branding (logo, primary color, company name).
+    - Access visibility modes: `'public'` (open to all), `'unlisted'` (secret token link), `'password_protected'` (passkey required, no account needed).
+    - Content selection: select architecture overview, component doc pages, ADRs, views, and flows to include.
+    - Publication lifecycle: publish, update/republish with versioning (e.g. v1.0.0 -> v1.0.1), unpublish/archive.
+  - External reader experience:
+    - Fully standalone, accessible without user account or login authentication.
+    - Responsive documentation layout: sidebar tree navigation, breadcrumbs, search index for instant client-side full-text search.
+    - Interactive architecture embed cards (diagram views, components, ADRs, flows).
+    - Passkey unlock modal for password-protected publications without requiring account registration.
+    - Dark / light theme toggle, reading time, and print/export readiness.
 - Acceptance criteria:
-  - Markdown, rich text, images, architecture embeds, diagrams, tables, code, links, mentions, comments
-  - Test: edit a doc; embed a diagram; it renders.
+  - Publish documentation for external readers.
+  - Test: published docs are viewable without an account.
 
-- Feature ID: F093
+- Feature ID: F094
 - Phase: 12 — Documentation
 - Dependencies: Phase 03, Phase 04
 
 ## Next Feature
-- **F094 — Public documentation**
+- **F095 — Architecture portal**

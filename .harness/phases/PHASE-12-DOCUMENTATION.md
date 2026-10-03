@@ -50,7 +50,7 @@ Evidence:
 
 ### F094 — Public documentation
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Publish docs.
 
@@ -59,6 +59,13 @@ Acceptance Criteria:
 - Publish documentation for external readers
 
 Test: published docs are viewable without an account.
+
+Evidence:
+- Domain engine: `packages/domain/src/public-documentation.ts`
+- Unit tests: `packages/domain/src/public-documentation.test.ts` (19 tests passing)
+- Canvas UI: `apps/web/components/canvas/public-documentation-panel.tsx`
+- Integration tests: `apps/web/public-documentation.spec.tsx` (4 tests passing)
+- PR and Review records: `.harness/reviews/F094-PR.md`, `.harness/reviews/F094-review.md`
 
 ### F095 — Architecture portal
 

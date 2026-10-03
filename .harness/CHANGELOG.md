@@ -2,6 +2,38 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-03 — F094 — Public Documentation (Phase 12 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ids.ts`: Added `'pub'` prefix to `IdPrefix` and exported `PublicationId`.
+  - `public-documentation.ts`: Public documentation and static site generation engine.
+    - `createPublicDocPublication(params)`: Initializes public doc publication with slug generation, default branding, SEO metadata, and draft status.
+    - `publishDocPublication`, `unpublishDocPublication`, `updatePublicDocPublication`: Manages publication lifecycle, version history records (`versionHistory`), and publication timestamps.
+    - `recordPublicDocView`: Tracks total pageviews, unique visitors, and last viewed timestamp.
+    - `verifyPublicDocAccess(publication, request)`: Evaluates anonymous visitor access for `'public'` (open to internet without login), `'unlisted'` (secret token link without login), and `'password_protected'` (passkey verification without account registration). Enforces publication status and expiration checks.
+    - `generatePublicShareUrl(publication, baseUrl)`: Generates clean external reader URLs or custom domain paths.
+    - `compilePublicSiteBundle(publication, model, options)`: Compiles complete static documentation portal bundle with Overview page, Subsystem & Component entity pages, Architecture Decision Records (ADRs), Diagram Views, and Execution Flows. Generates sitemap.xml (`<urlset>`), robots.txt, and client-side full-text search index.
+    - `searchPublicSite(bundle, query)`: Client-side full-text search with token ranking and snippet generation.
+    - `renderStandalonePublicSiteHtml(bundle)`: Emits self-contained, single-page responsive HTML document with embedded CSS, navigation sidebar, and offline search.
+  - `public-documentation.test.ts`: 19 unit tests covering slugification, reading time estimation, excerpt generation, publication creation, publishing/unpublishing, version history, view counting, anonymous access verification (public, unlisted, password protected with passkey, expired, draft), site compilation, content filtering, search ranking, and standalone HTML rendering.
+  - `index.ts`: Exported `public-documentation`.
+- Web layer (`apps/web/`):
+  - `components/canvas/public-documentation-panel.tsx`: Implemented `<PublicDocumentationModal />` canvas UI:
+    - Status header banner with portal title, status badge (`published` vs `draft`), version tag, visibility badge, and public URL.
+    - Share link banner with public URL display, "Copy Public Link" button, and "View as External Reader (No Account Required)".
+    - Publisher settings dashboard with 6 configuration tabs: General & Branding, Access & Security, Content Selection, Releases & Versioning, Reader Analytics, Offline HTML Export.
+    - External Reader Simulation Mode:
+      - Reader mode banner indicating anonymous access without account.
+      - Password protection lock screen with passkey prompt for external readers.
+      - Responsive documentation layout with navigation sidebar, instant client-side search, breadcrumbs, tags, reading time, and rich HTML document body.
+  - `components/canvas/index.ts`: Exported `public-documentation-panel`.
+  - `public-documentation.spec.tsx`: 4 integration tests verifying closed modal, publisher portal rendering with public URL viewable without an account, settings navigation tabs, and published state with unpublish action.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 92 test files / 533 tests ✓, web 106 test files / 549 tests ✓, `pnpm build ✓`.
+- **Milestone: 112 / 135 features completed overall (83.0%)!**
+
 ## 2026-10-03 — F093 — Markdown Editor (Phase 12 Progress)
 
 Status: COMPLETE

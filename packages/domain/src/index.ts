@@ -91,3 +91,4 @@ export * from './architecture-health';
 export * from './circular-spof';
 export * from './architecture-documentation';
 export * from './markdown-editor';
+export * from './public-documentation';
