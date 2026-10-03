@@ -2,6 +2,38 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-03 — F095 — Architecture Portal (Phase 12 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ids.ts`: Added `'ptl'` prefix to `IdPrefix` and exported `type PortalId = Id<'ptl'>`.
+  - `architecture-portal.ts`: Interactive architecture portal and public explorer engine.
+    - `buildPortalLevelProjection(model, parentId)`: Computes multi-level C4 hierarchy projections (Context L1, Container L2, Component L3) with auto-layout positioning, containment breadcrumb trails, and visible nodes/connections calculation.
+    - `drillDownPortalToObject(state, model, targetObjectId)`: Drills down into systems (Context -> Container) and containers (Container -> Component).
+    - `navigatePortalUp(state, model, targetBreadcrumbIndex)`: Ascends breadcrumb hierarchy to return to higher abstraction levels.
+    - Pure Camera Viewport Controls: `zoomPortalCamera` (bounded zoom [0.2x, 3.0x]), `panPortalCamera` (viewport panning), and `fitPortalCameraToNodes` (bounds-fitting auto-zoom and center alignment).
+    - Deep Object Inspector & Highlighting: `inspectPortalObject` gathers metadata (technology, owner, SLA, status), direct inbound callers, outbound dependencies, contained subcomponents, associated ADRs, and execution flows; `getDependencyHighlighting` extracts upstream/downstream dependency subgraphs and active connection IDs.
+    - Interactive Flow Playback: `initPortalFlowPlayback` and `stepPortalFlowPlayback` enable step-by-step sequence navigation with active source/target participant identification and edge highlighting.
+    - Global Multi-Entity Search: `searchArchitecturePortal` indexes and scores objects, views, flows, ADRs, and doc pages with token relevance ranking.
+  - `architecture-portal.test.ts`: 13 unit tests covering initialization, C4 projections (Context, Container, Component), drill-down, upward navigation, camera zoom/pan/fit, inspector extraction, dependency highlighting, flow playback stepping, and multi-entity search scoring.
+  - `index.ts`: Exported `architecture-portal`.
+- Web layer (`apps/web/`):
+  - `components/canvas/architecture-portal-panel.tsx`: Implemented `<ArchitecturePortalModal />` canvas UI:
+    - Public read-only explorer header banner: `"PUBLIC EXPLORER • NO ACCOUNT REQUIRED"`.
+    - Global multi-entity search bar with popover and keyboard navigation.
+    - C4 Breadcrumb navigation bar with current level badge (`CONTEXT (L1)`, `CONTAINER (L2)`, `COMPONENT (L3)`) and drill-up button.
+    - Canvas viewport with zoom in/out, reset, and fit-to-view controls.
+    - Interactive C4 node cards displaying kind, status, technology, inbound/outbound connection counts, and "Drill Down →" action.
+    - Side drawer with dual modes:
+      - Object Inspector: Displays detailed properties, SLA, contained components, upstream callers, downstream dependencies, and associated ADRs.
+      - Execution Flow Playback: Step progression bar, step description, active participants, and Previous/Next navigation.
+  - `components/canvas/index.ts`: Exported `architecture-portal-panel`.
+  - `architecture-portal.spec.tsx`: 5 integration tests verifying closed state, public read-only header/banner, C4 level breadcrumbs and node cards, container level drill-down with inspector, and global search/flow selector.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 93 test files / 546 tests ✓, web 107 test files / 554 tests ✓, `pnpm build ✓`.
+- **Milestone: 113 / 135 features completed overall (83.7%)!**
+
 ## 2026-10-03 — F094 — Public Documentation (Phase 12 Progress)
 
 Status: COMPLETE

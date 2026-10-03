@@ -76,3 +76,4 @@ export * from './circular-spof-panel';
 export * from './architecture-documentation-panel';
 export * from './markdown-editor-modal';
 export * from './public-documentation-panel';
+export * from './architecture-portal-panel';

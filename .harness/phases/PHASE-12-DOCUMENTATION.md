@@ -69,7 +69,7 @@ Evidence:
 
 ### F095 — Architecture portal
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Public explorer.
 
@@ -80,6 +80,13 @@ Acceptance Criteria:
 - Read-only site: search, zoom, navigate, drill-down, flows, docs, objects, dependencies; no account
 
 Test: an anonymous visitor can browse and drill down.
+
+Evidence:
+- Domain engine: `packages/domain/src/architecture-portal.ts`
+- Unit tests: `packages/domain/src/architecture-portal.test.ts` (13 tests passing)
+- Canvas UI: `apps/web/components/canvas/architecture-portal-panel.tsx`
+- Integration tests: `apps/web/architecture-portal.spec.tsx` (5 tests passing)
+- PR and Review records: `.harness/reviews/F095-PR.md`, `.harness/reviews/F095-review.md`
 
 ### F096 — Export
 
