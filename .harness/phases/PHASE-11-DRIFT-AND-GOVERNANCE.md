@@ -1,6 +1,6 @@
 # Phase 11 — Drift and Governance
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Description
 Make the model trustworthy: drift detection, linting, rules, dependency + blast-radius analysis, failure simulation, security architecture, data lineage, health.
@@ -134,7 +134,7 @@ Test: health computed on a sample matches seeded gaps.
 
 ### F130 — Circular + SPOF detection
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Structural risks.
 

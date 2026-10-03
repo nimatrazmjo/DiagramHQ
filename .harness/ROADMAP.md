@@ -222,7 +222,7 @@ Status: COMPLETE  ·  Depends on: Phase 03, Phase 09  ·  File: `phases/PHASE-10
 
 # Phase 11 — Drift and Governance
 
-Status: IN PROGRESS  ·  Depends on: Phase 03, Phase 09, Phase 10  ·  File: `phases/PHASE-11-DRIFT-AND-GOVERNANCE.md`
+Status: COMPLETE  ·  Depends on: Phase 03, Phase 09, Phase 10  ·  File: `phases/PHASE-11-DRIFT-AND-GOVERNANCE.md`
 
 ## Features
 
@@ -237,7 +237,7 @@ Status: IN PROGRESS  ·  Depends on: Phase 03, Phase 09, Phase 10  ·  File: `ph
 
 - [x] F091 — Data lineage
 - [x] F129 — Architecture health
-- [ ] F130 — Circular + SPOF detection
+- [x] F130 — Circular + SPOF detection
 
 ---
 
