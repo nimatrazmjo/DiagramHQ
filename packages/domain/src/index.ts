@@ -94,3 +94,4 @@ export * from './markdown-editor';
 export * from './public-documentation';
 export * from './architecture-portal';
 export * from './export';
+export * from './mermaid';

@@ -78,3 +78,4 @@ export * from './markdown-editor-modal';
 export * from './public-documentation-panel';
 export * from './architecture-portal-panel';
 export * from './export-modal';
+export * from './mermaid-modal';

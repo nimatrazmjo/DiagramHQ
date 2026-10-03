@@ -109,7 +109,7 @@ Evidence:
 
 ### F097 — Mermaid
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Export/import Mermaid.
 
@@ -118,6 +118,13 @@ Acceptance Criteria:
 - Export flows/diagrams to Mermaid; import Mermaid
 
 Test: export -> Mermaid renders; round-trip import.
+
+Evidence:
+- Domain engine: `packages/domain/src/mermaid.ts`
+- Unit tests: `packages/domain/src/mermaid.test.ts` (8 tests passing)
+- Canvas UI: `apps/web/components/canvas/mermaid-modal.tsx`
+- Integration tests: `apps/web/mermaid.spec.tsx` (4 tests passing)
+- PR and Review records: `.harness/reviews/F097-PR.md`, `.harness/reviews/F097-review.md`
 
 ### F098 — PlantUML
 
