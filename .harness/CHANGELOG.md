@@ -2,6 +2,35 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-03 — F101 — SSO (Phase 13 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ids.ts`: Added `idp` and `sso` prefixes to `IdPrefix` union and created branded types `SsoProviderId` and `SsoSessionId`.
+  - `sso.ts`: Pure TypeScript Enterprise Single Sign-On (SSO) engine.
+    - IdP configuration model (`SsoProviderConfig`, `validateSsoProviderConfig`) supporting OIDC, OAuth2, and Test IdP.
+    - Corporate email domain matching and auto-routing (`findSsoProviderForEmail`, `isSsoEnforcedForEmail`, `normalizeDomain`, `extractDomainFromEmail`).
+    - Cryptographically secure PKCE and state/nonce generator (`generateSsoChallenge`, `generateRandomToken`).
+    - OIDC claim extraction and normalization (`extractSsoClaims`).
+    - Enterprise group-to-role attribute mapping (`mapSsoClaimsToRole`, `DEFAULT_SSO_ATTRIBUTE_MAPPING`).
+    - Just-In-Time (JIT) user provisioning and account linking (`provisionSsoUser`).
+    - Callback validation and enterprise session generator (`processSsoCallback`).
+    - Deterministic Test IdP simulation harness (`createTestIdpConfig`, `simulateTestIdpLogin`).
+  - `sso.test.ts`: 19 unit tests covering configuration validation, email domain routing, strict enforcement checks, PKCE challenge generation, group-to-role attribute mapping, JIT user provisioning, existing user linking, callback error validation (invalid code, state mismatch, expired session), and full Test IdP simulation.
+  - `index.ts`: Exported `sso` module.
+- Web layer (`apps/web/`):
+  - `auth.config.ts`: Added enterprise demo IdP providers (Acme Okta, Stark Entra ID, Strict Corp IdP), SSO authentication handler in `authorizeUser`, and strict SSO enforcement blocking password logins for enforced corporate domains.
+  - `auth.spec.ts`: Added tests for enterprise SSO authentication and domain enforcement.
+  - `components/enterprise/sso-settings-modal.tsx`: Implemented `<SsoSettingsModal />` with 3 tabs (`Configured IdPs`, `⚡ Test IdP Simulation`, `+ Add Provider`), status & enforcement toggles, and live claims inspection.
+  - `components/enterprise/index.ts`: Exported enterprise components.
+  - `app/login/login-form.tsx`: Added `Password` vs `Enterprise SSO` authentication mode tabs, live corporate domain auto-detection indicator (e.g. Acme Enterprise Okta), 1-Click "⚡ Sign In with Test IdP (Acme Enterprise)" quick login, and direct launcher for Enterprise SSO Settings modal.
+  - `sso.spec.tsx`: 6 integration tests verifying LoginForm rendering with Password and Enterprise SSO modes, SsoSettingsModal open/closed states, enforcement badges, and end-to-end Test IdP simulation.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 99 test files / 618 tests ✓, web 113 test files / 580 tests ✓, `pnpm build ✓`.
+- **Phase 13 — Enterprise launched! Milestone: 119 / 135 features completed overall (88.1%)!**
+
+
 ## 2026-10-03 — F100 — SVG (Phase 12 Complete)
 
 Status: COMPLETE

@@ -37,7 +37,9 @@ export type IdPrefix =
   | 'rdm'
   | 'msg'
   | 'pub'
-  | 'ptl';
+  | 'ptl'
+  | 'idp'
+  | 'sso';
 
 export type Id<P extends IdPrefix> = string & { readonly __brand: P };
 
@@ -69,6 +71,8 @@ export type RoadmapItemId = Id<'rdm'>;
 export type MessageId = Id<'msg'>;
 export type PublicationId = Id<'pub'>;
 export type PortalId = Id<'ptl'>;
+export type SsoProviderId = Id<'idp'>;
+export type SsoSessionId = Id<'sso'>;
 
 let sequence = 0;
 
