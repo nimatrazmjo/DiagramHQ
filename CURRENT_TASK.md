@@ -1,24 +1,24 @@
-# Current Task: F129 — Architecture health
+# Current Task: F130 — Circular + SPOF detection
 
 **Status**: COMPLETE
 
 ## Description
-Architecture Health Scorecard and Analytics engine for DiagramHQ (Phase 11 — Drift and Governance):
-- Composite architecture health scorecard aggregating 5 core categories:
-  - Dependencies & Topology (cyclic dependencies, dangling connections, isolated nodes)
-  - Documentation Coverage (component & architecture descriptions)
-  - Security Architecture (exposures, sensitive datastore encryption, public ingress authentication)
-  - Ownership Governance (team & engineer ownership coverage)
-  - Architecture Drift (unmanaged resources, missing connections vs actual infra)
-- Analytics counts + grounded Change Analytics (delta, trends, risk level, and affected component counts)
+Structural risk analysis engine detecting circular dependencies and single points of failure (Phase 11 — Drift and Governance):
+- Detect all circular dependency loops with cycle hop paths, synchronicity classification, severity scoring, and breaking edge recommendations.
+- Detect Single Points of Failure (SPOFs):
+  - High fan-in bottlenecks
+  - Sole downstream providers
+  - Tarjan cut-vertex articulation points
+  - Unreplicated datastores
+  - Unmitigated central hubs
 - Acceptance criteria:
-  - Categorized health (dependencies, documentation, security, ownership, drift) with findings
-  - Analytics counts + change analytics
-  - Test: health computed on a sample matches seeded gaps.
+  - Detect circular dependencies; detect single points of failure
+  - Test: seeded cycle detected; SPOF flagged on a fan-in.
 
-- Feature ID: F129
+- Feature ID: F130
 - Phase: 11 — Drift and Governance
-- Dependencies: F085
+- Dependencies: F087
 
-## Next Feature
-- **F130 — Circular + SPOF detection** (Phase 11 — Drift and Governance)
+## Next Phase & Feature
+- **Phase 12 — Documentation**
+- **F092 — Architecture documentation**

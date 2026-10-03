@@ -2,6 +2,26 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-03 — F130 — Circular + SPOF Detection (Phase 11 COMPLETE)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `circular-spof.ts`: Structural risk detection engine.
+    - `detectCircularDependencies(model)`: Detects directed circular dependency loops via DFS, categorizes synchronicity, assigns severity (`critical`, `high`, `medium`), generates ordered hop chains (`A ➔ B ➔ C ➔ A`), and provides actionable breaking edge decoupling suggestions.
+    - `findArticulationPoints(nodes, connections)`: Tarjan's cut-vertex algorithm ($O(V+E)$) detecting single nodes whose failure partitions graph topology into disconnected subgraphs.
+    - `detectSinglePointsOfFailure(model, options)`: Detects SPOF components across 5 risk categories (`fan_in_bottleneck`, `sole_provider`, `articulation_point`, `unreplicated_store`, `unmitigated_hub`), respecting active redundancy metadata (`ha`, `redundant`, `replicas > 1`, `multiAz`).
+    - `analyzeStructuralRisks(model, options)`: Computes composite `StructuralRiskMetrics` with structural health score (0–100), overall risk level (`healthy`, `warning`, `critical`), and prioritized architectural recommendations.
+  - `circular-spof.test.ts`: 6 unit tests covering seeded cycles, high fan-in SPOF, articulation points, unreplicated datastores, HA redundancy elimination, and structural risk reporting.
+  - `index.ts`: Exported `circular-spof`.
+- Web layer (`apps/web/`):
+  - `components/canvas/circular-spof-panel.tsx`: Implemented `<CircularSpofModal />` with score badge and risk level, 6 KPI cards, recommendations banner, 3 tabs (All Risks / Cycles / SPOFs), severity and search filters, breaking edge guidance, dependent service lists, and mitigation advice.
+  - `components/canvas/index.ts`: Exported `circular-spof-panel`.
+  - `circular-spof.spec.tsx`: 2 integration tests.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 89 test files / 493 tests ✓, web 103 test files / 538 tests ✓, `pnpm build ✓`.
+- **Milestone: Phase 11 — Drift and Governance is now 100% COMPLETE (10 / 10 features)! 108 / 135 features completed overall (80.0%)!**
+
 ## 2026-10-03 — F129 — Architecture Health (Phase 11 Progress)
 
 Status: COMPLETE

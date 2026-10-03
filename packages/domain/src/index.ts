@@ -88,3 +88,4 @@ export * from './failure-simulation';
 export * from './security-architecture';
 export * from './data-lineage';
 export * from './architecture-health';
+export * from './circular-spof';

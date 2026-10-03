@@ -8,26 +8,28 @@ Name: DiagramHQ
 Description: Model-first architecture intelligence platform (a "better than IcePanel" Architecture OS). The model — objects + connections — is the product; diagrams are projections of it. Full spec: `product/PRODUCT.md`. CLI: `dhq`.
 
 ## Current Phase
-Phase: 11
-Phase Name: Drift and Governance
-Status: IN PROGRESS
+Phase: 12
+Phase Name: Documentation
+Status: NOT STARTED
 
 ## Current Feature
-Feature ID: F130
-Feature Name: Circular + SPOF detection
+Feature ID: F092
+Feature Name: Architecture documentation
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 107
+Completed: 108
 In Progress: 0
 Blocked: 0
-Not Started: 28
-Progress: 79.3%
+Not Started: 27
+Progress: 80.0%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F129 — Architecture health. Implemented Architecture Health Scorecard and Analytics engine for DiagramHQ (Phase 11 — Drift and Governance). Pure domain evaluation engine (`architecture-health.ts`) aggregates 5 core categories with findings and scores: Dependencies & Topology (cyclic dependencies via `detectDependencyCycles`, dangling connections, isolated components), Documentation Coverage (descriptions across components and architecture overview), Security Architecture (exposures and encryption posture via `analyzeSecurityArchitecture`), Ownership Governance (service ownership coverage excluding actors/groups), and Architecture Drift (unmanaged/missing resources vs actual state via `detectArchitectureDrift`). Computes weighted composite health score and overall status (`healthy`, `warning`, `critical`), detailed analytics counts, and grounded Change Analytics against baseline models (score delta, trend, risk level, added/modified/removed entities, and affected component/flow counts via F059 change sets). Added canvas UI `<ArchitectureHealthModal />` with score indicator, 6 KPI cards, change analytics banner, 5 interactive category progress cards, findings filter (category, severity, search), inspect target links, JSON export, and clipboard summary copy. 7 domain unit tests, 3 web integration tests.
+F130 — Circular + SPOF detection. Implemented Circular Dependency and Single Point of Failure (SPOF) detection engine for DiagramHQ (Phase 11 — Drift and Governance). Pure domain engine (`circular-spof.ts`) detects all directed circular dependency loops with cycle hop paths, synchronicity classification, severity scoring, and breaking edge recommendations. Detects Single Points of Failure across 5 risk categories: high fan-in bottlenecks, sole downstream providers, Tarjan cut-vertex articulation points, unreplicated datastores, and unmitigated central hubs. Computes `StructuralRiskMetrics` with structural health score (0-100), overall risk level (`healthy`, `warning`, `critical`), and prioritized architectural recommendations. Added canvas UI `<CircularSpofModal />` with structural score badge, 6 KPI cards, recommendations banner, 3 tabs (All Risks, Cycles, SPOFs), severity/search filters, breaking edge guidance, dependent service lists, and mitigation advice. 6 domain unit tests, 2 web integration tests. **Phase 11 — Drift and Governance is now 100% COMPLETE (10/10 features)! Milestone: 108 / 135 features completed (80.0%)!**
+
+Prior: F129 — Architecture health. Implemented Architecture Health Scorecard and Analytics engine for DiagramHQ (Phase 11 — Drift and Governance). Pure domain evaluation engine (`architecture-health.ts`) aggregates 5 core categories with findings and scores: Dependencies & Topology (cyclic dependencies via `detectDependencyCycles`, dangling connections, isolated components), Documentation Coverage (descriptions across components and architecture overview), Security Architecture (exposures and encryption posture via `analyzeSecurityArchitecture`), Ownership Governance (service ownership coverage excluding actors/groups), and Architecture Drift (unmanaged/missing resources vs actual state via `detectArchitectureDrift`). Computes weighted composite health score and overall status (`healthy`, `warning`, `critical`), detailed analytics counts, and grounded Change Analytics against baseline models (score delta, trend, risk level, added/modified/removed entities, and affected component/flow counts via F059 change sets). Added canvas UI `<ArchitectureHealthModal />` with score indicator, 6 KPI cards, change analytics banner, 5 interactive category progress cards, findings filter (category, severity, search), inspect target links, JSON export, and clipboard summary copy. 7 domain unit tests, 3 web integration tests.
 
 Prior: F091 — Data lineage. Implemented data lineage tracing and compliance engine for DiagramHQ (Phase 11 — Drift and Governance). Traces data flow paths from any source node across the entire architecture model graph via depth-first search with cycle prevention. Supports edge reversal for read/query/pull operations (store→service directionality), compliance boundary crossing detection with TLS/HTTPS validation, and multi-hop tracing up to configurable `maxHops` (default 10). Produces `DataLineageReport` with `LineagePath[]` (ordered hop chains), `LineageBoundaryCrossing[]` (trust-zone transitions with TLS status), `DataLineageMetrics` (Max Hops, End Consumers, Nodes Reached, Boundary Crossings, Unencrypted Crossings, Compliance Nodes), and per-hop compliance zone tracking (PII, PCI, HIPAA, GDPR, SOC2). Added `<DataLineageModal />` canvas UI with source selector, posture banner (unencrypted crossing warning), 6 KPI cards, 3 tabs (Lineage Paths / Nodes / Boundary Crossings), hop-by-hop visual chain. 3 domain unit tests, 2 web integration tests.
 
