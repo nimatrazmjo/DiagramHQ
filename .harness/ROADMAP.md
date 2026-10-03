@@ -249,7 +249,7 @@ Status: IN PROGRESS  ·  Depends on: Phase 03, Phase 04  ·  File: `phases/PHASE
 
 - [x] F092 — Architecture documentation
 - [x] F093 — Markdown editor
-- [ ] F094 — Public documentation
+- [x] F094 — Public documentation
 - [ ] F095 — Architecture portal
 - [ ] F096 — Export
 - [ ] F097 — Mermaid

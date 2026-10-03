@@ -707,7 +707,7 @@ export function generateObjectDocPage(
   const associatedAdrs: DocAssociatedAdr[] = [];
   if (context?.adrs) {
     for (const adr of context.adrs) {
-      const matches = adr.attachments.some(
+      const matches = (adr.attachments || []).some(
         (att) => att.targetType === 'object' && att.targetId === objectId,
       );
       if (matches) {

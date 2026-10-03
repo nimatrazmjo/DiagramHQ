@@ -13,21 +13,23 @@ Phase Name: Documentation
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F094
-Feature Name: Public documentation
+Feature ID: F095
+Feature Name: Architecture portal
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 111
+Completed: 112
 In Progress: 0
 Blocked: 0
-Not Started: 24
-Progress: 82.2%
+Not Started: 23
+Progress: 83.0%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F093 — Markdown editor. Implemented rich model-first Markdown documentation editor with architecture embeds, diagrams, tables, code, links, mentions, and threaded comments for DiagramHQ (Phase 12 — Documentation). Pure domain engine (`markdown-editor.ts`) parses markdown documents (`parseMarkdownDocument`), generates Table of Contents, extracts architecture embeds (`diagram`, `object`, `flow`, `adr`, `image`), and validates embedded references against the architecture model with reference warnings. Built directive builders (`createDiagramEmbedDirective`, `createObjectEmbedDirective`, `insertTableMarkdown`, `insertCodeBlockMarkdown`, `insertImageMarkdown`), semantic HTML renderer (`renderMarkdownToHtml`) transforming embedded diagrams into interactive visual cards with studio jump targets and object metadata cards, and document comments management (`addDocumentComment`, `resolveDocumentComment`). Added canvas UI `<MarkdownEditorModal />` with live word counter, 3 view modes (Split, Edit, Preview), formatting toolbar, Architecture Embed dropdown hub, live rendered preview pane, and threaded review comments sidebar. 10 domain unit tests, 4 web integration tests. **Milestone: 111 / 135 features completed (82.2%)!**
+F094 — Public documentation. Implemented static site generation and public documentation publishing engine for DiagramHQ (Phase 12 — Documentation). Pure domain engine (`public-documentation.ts`) manages publication lifecycle (`createPublicDocPublication`, `publishDocPublication`, `unpublishDocPublication`), anonymous reader access control (`verifyPublicDocAccess` supporting public, unlisted secret link, and passkey-protected docs viewable without an account), public share URL generator (`generatePublicShareUrl`), site compilation engine (`compilePublicSiteBundle`) synthesizing overview docs, subsystem/component docs, ADRs, diagram views, and execution flows with SEO sitemaps (`sitemap.xml`) and `robots.txt`, client-side full-text search with token ranking (`searchPublicSite`), and standalone offline single-page HTML site generator (`renderStandalonePublicSiteHtml`). Added canvas UI `<PublicDocumentationModal />` with header banner, public link copy, publisher dashboard (General & Branding, Access & Security, Content Selection, Releases & Versioning, Reader Analytics, Offline HTML Export), and simulated external reader preview mode with passkey unlock and client search. 19 domain unit tests, 4 web integration tests. **Milestone: 112 / 135 features completed (83.0%)!**
+
+Prior: F093 — Markdown editor. Implemented rich model-first Markdown documentation editor with architecture embeds, diagrams, tables, code, links, mentions, and threaded comments for DiagramHQ (Phase 12 — Documentation). Pure domain engine (`markdown-editor.ts`) parses markdown documents (`parseMarkdownDocument`), generates Table of Contents, extracts architecture embeds (`diagram`, `object`, `flow`, `adr`, `image`), and validates embedded references against the architecture model with reference warnings. Built directive builders (`createDiagramEmbedDirective`, `createObjectEmbedDirective`, `insertTableMarkdown`, `insertCodeBlockMarkdown`, `insertImageMarkdown`), semantic HTML renderer (`renderMarkdownToHtml`) transforming embedded diagrams into interactive visual cards with studio jump targets and object metadata cards, and document comments management (`addDocumentComment`, `resolveDocumentComment`). Added canvas UI `<MarkdownEditorModal />` with live word counter, 3 view modes (Split, Edit, Preview), formatting toolbar, Architecture Embed dropdown hub, live rendered preview pane, and threaded review comments sidebar. 10 domain unit tests, 4 web integration tests. **Milestone: 111 / 135 features completed (82.2%)!**
 
 Prior: F092 — Architecture documentation. Implemented model-first Architecture Documentation engine and navigation tree for DiagramHQ (Phase 12 — Documentation). Pure domain engine (`architecture-documentation.ts`) builds hierarchical navigation tree (`buildArchitectureDocTree`) respecting parent-child containment (`parentId`), paths (`/docs/system/container/component`), and connection counts with cycle prevention. Generates rich object doc pages (`generateObjectDocPage`) compiling grounded identity, governance/ownership, technical specifications, inbound callers table, outbound dependencies table, contained subcomponents, SLA resilience, and associated artifacts (ADRs, execution flows, views). Synthesizes standardized GitHub-flavored Markdown (`renderDocPageToMarkdown`), generates high-level architecture overview documentation (`generateArchitectureOverviewDocPage`), and bundles unified doc catalogs (`exportArchitectureDocsAsCatalog`). Added canvas UI `<ArchitectureDocumentationModal />` with header banner, breadcrumb bar, searchable tree sidebar, 5 view tabs (Overview & Metadata, Connections & Interfaces, Hierarchy, Markdown Spec, Artifacts), copy markdown action, and target-in-canvas focus. 11 domain unit tests, 3 web integration tests. **Milestone: 110 / 135 features completed (81.5%)!**
 
