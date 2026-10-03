@@ -13,21 +13,24 @@ Phase Name: Drift and Governance
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F090
-Feature Name: Security architecture
+Feature ID: F091
+Feature Name: Data lineage
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 104
+Completed: 105
 In Progress: 0
 Blocked: 0
-Not Started: 31
-Progress: 77.0%
+Not Started: 30
+Progress: 77.8%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F089 — Failure simulation. Implemented architecture failure simulation engine for DiagramHQ (Phase 11 — Drift and Governance). Allows marking one or more model objects as down, cascades the failure through the architecture via reverse BFS blast-radius analysis, and classifies each node status as down, degraded, fallback, or healthy. Distinguishes nodes with active fallback mechanisms (status: 'fallback') from vulnerable unmitigated services (status: 'degraded'). Surfaces disrupted connections via `getAffectedConnections`. Added canvas UI `<FailureSimulationModal />` with multi-node outage selector, custom reason input, severity banner, 6 KPI cards, status filters + search, and interactive node impact list with fallback badges and mark down/restore toggles. 3 domain unit tests, 3 web integration tests.
+F090 — Security architecture. Implemented deep security architecture modeling and governance analysis engine for DiagramHQ (Phase 11 — Drift and Governance). Discovers Trust Boundaries (with isolation levels: untrusted, dmz, trusted, restricted, critical), audits Public Endpoints for missing auth/authz schemes (OAuth2, JWT, API Key), evaluates sensitive data encryption at rest (PII, PCI, HIPAA, GDPR, SOC2 stores), detects unmanaged or hardcoded secrets, identifies cross-boundary plaintext network links missing TLS or mutual auth, maps regulatory Compliance Zones, and computes a comprehensive Security Score (0-100). Added canvas UI `<SecurityArchitectureModal />` with posture banner, 6 KPI cards, 6 navigation tabs, remediation guidance, and live search. 3 domain unit tests, 3 web integration tests.
+
+Prior: F089 — Failure simulation. Implemented architecture failure simulation engine for DiagramHQ (Phase 11 — Drift and Governance). Allows marking one or more model objects as down, cascades the failure through the architecture via reverse BFS blast-radius analysis, and classifies each node status as down, degraded, fallback, or healthy. Distinguishes nodes with active fallback mechanisms (status: 'fallback') from vulnerable unmitigated services (status: 'degraded'). Surfaces disrupted connections via `getAffectedConnections`. Added canvas UI `<FailureSimulationModal />` with multi-node outage selector, custom reason input, severity banner, 6 KPI cards, status filters + search, and interactive node impact list with fallback badges and mark down/restore toggles. 3 domain unit tests, 3 web integration tests.
+
 
 Prior: F088 — Blast-radius analysis. Implemented architecture blast-radius analysis engine for DiagramHQ (Phase 11 — Drift and Governance). Uses reverse BFS from a failing/changing node to discover all upstream dependents. Counts impacted services (application/system/component), databases (store), flows (disrupted edges), teams (from metadata.owner/team), and customer-facing nodes (actor kind or metadata.customerFacing). Severity classification: critical (customer-facing + no fallback path) → high (customer-facing) → medium (≥3 services or critical path) → low. Added canvas UI `<BlastRadiusModal />` with target node selector, severity banner, 6 KPI metric cards, and impacted-node list with hop count + customer/fallback badges. 3 domain unit tests, 3 web integration tests.
 
