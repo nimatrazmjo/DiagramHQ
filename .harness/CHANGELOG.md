@@ -2,6 +2,21 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F091 — Data Lineage (Phase 11 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `data-lineage.ts`: Data lineage tracing and compliance engine. Traces data flow paths from any source node across the architecture model graph via DFS with per-path cycle prevention (`visitedInPath` Set). Supports edge reversal for read/query/pull operations (store→service), compliance boundary crossing detection with TLS/HTTPS validation, and multi-hop tracing up to `maxHops` (default 10). Produces `DataLineageReport` with `LineagePath[]` (ordered hop chains), `LineageBoundaryCrossing[]` (trust-zone transitions with TLS status), `DataLineageMetrics` (maxHops, endConsumers, nodesReached, boundaryCrossings, unencryptedCrossings, complianceNodes), per-hop compliance zone tracking (PII, PCI, HIPAA, GDPR, SOC2), and unencrypted crossing flag.
+  - `data-lineage.test.ts`: 3 unit tests verifying path enumeration, boundary crossing detection with TLS status, and edge reversal for read/query directionality.
+  - `index.ts`: Exported `data-lineage`.
+- Web layer (`apps/web/`):
+  - `components/canvas/data-lineage-panel.tsx`: Implemented `<DataLineageModal />` with source node selector, posture banner (unencrypted crossing warning), 6 KPI cards (Max Hops, End Consumers, Nodes Reached, Boundary Crossings, Unencrypted Crossings, Compliance Nodes), 3 tabs (Lineage Paths / Nodes / Boundary Crossings), hop-by-hop visual chain with compliance zone badges.
+  - `components/canvas/index.ts`: Exported `data-lineage-panel`.
+  - `data-lineage.spec.tsx`: 2 integration tests.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 87 test files / 480 tests ✓, web 101 test files / 533 tests ✓, api 37 test files / 270 tests ✓, `pnpm build ✓`.
+
 ## 2026-10-02 — F090 — Security Architecture (Phase 11 Progress)
 
 Status: COMPLETE

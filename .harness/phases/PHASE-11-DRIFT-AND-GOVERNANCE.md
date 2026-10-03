@@ -105,7 +105,7 @@ Test: security model renders boundaries + flags exposures.
 
 ### F091 — Data lineage
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Trace data.
 

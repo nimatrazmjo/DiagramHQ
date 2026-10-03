@@ -86,5 +86,7 @@ export * from './dependency-graph';
 export * from './blast-radius';
 export * from './failure-simulation';
 export * from './security-architecture';
+export * from './data-lineage';
+
 
 

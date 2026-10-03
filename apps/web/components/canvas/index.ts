@@ -70,5 +70,7 @@ export * from './dependency-panel';
 export * from './blast-radius-panel';
 export * from './failure-simulation-panel';
 export * from './security-architecture-panel';
+export * from './data-lineage-panel';
+
 
 
