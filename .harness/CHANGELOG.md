@@ -2,6 +2,32 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-03 — F097 — Mermaid (Phase 12 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `mermaid.ts`: Pure bidirectional Mermaid export and import engine.
+    - `toMermaidId`, `sanitizeMermaidLabel`: Identifiers and label sanitization ensuring compliant Mermaid identifiers and escaping special characters.
+    - `formatMermaidNodeShape`: Formats C4 nodes to Mermaid shapes (cylinders `[(...)]` for stores, stadiums `([ ... ])` for actors, subroutines `[[ ... ]]` for components, rounded rectangles `[...]` for applications/systems).
+    - `exportViewToMermaidFlowchart`, `exportViewToMermaid`: Exports any architecture view to Mermaid flowchart (`TB`, `TD`, `LR`, `RL`) with subgraph hierarchy containment, edge types (`-->`, `-.->`, `==>`), labels, and color theme styling classes (`classDef`).
+    - `exportFlowToMermaid`, `exportFlowToMermaidResult`: Exports execution flows to Mermaid sequence diagrams with participants, actors, sync/async calls, return messages, schemas, and notes.
+    - `importMermaidFlowchart`: Parses Mermaid flowchart script extracting subgraphs, nodes with shapes/labels, and edges with labels into `ModelObject` and `ModelConnection` representations.
+    - `importMermaidSequence`: Parses Mermaid sequence diagrams extracting participants, actors, notes, and messages into `ModelObject`, `ModelConnection`, and `FlowWithSteps` with indexed steps.
+  - `mermaid.test.ts`: 8 unit tests covering identifier/label sanitization, node shapes, flowchart export with subgraphs, sequence diagram export, flowchart import, sequence diagram import, and error diagnostics.
+  - `index.ts`: Exported `mermaid`.
+- Web layer (`apps/web/`):
+  - `components/canvas/mermaid-modal.tsx`: Implemented `<MermaidModal />` canvas UI:
+    - Navigation tabs: `Export Mermaid` and `Import Mermaid`.
+    - Export controls: Flowchart vs Sequence diagram mode, direction buttons (`TB`, `TD`, `LR`, `RL`), execution flow selector, subgraph and notes toggles, live metrics summary (target view, nodes, edges), copy to clipboard, and `.mmd` download.
+    - Live script preview pane with line counts and formatted syntax.
+    - Import controls: textarea input with quick "Load Sample Flowchart" and "Load Sample Sequence" buttons, live parser analysis (detected diagram type, objects count, connections count, steps count, valid syntax badge), discovered entity list, diagnostic alerts, and model import action button.
+  - `components/canvas/index.ts`: Exported `mermaid-modal`.
+  - `mermaid.spec.tsx`: 4 integration tests verifying closed modal, export tab controls and script generation, node and connection metrics summary, and import tab parser analysis with valid syntax status and apply button.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 95 test files / 569 tests ✓, web 109 test files / 561 tests ✓, `pnpm build ✓`.
+- **Milestone: 115 / 135 features completed overall (85.2%)!**
+
 ## 2026-10-03 — F096 — Export (Phase 12 Progress)
 
 Status: COMPLETE
