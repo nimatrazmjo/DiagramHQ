@@ -31,6 +31,29 @@ describe('authorizeUser', () => {
     expect(user?.name).toBe('architect');
     expect(user?.id.startsWith('usr_')).toBe(true);
   });
+
+  it('authenticates enterprise user via SSO with test IdP', async () => {
+    const ssoUser = await authorizeUser({
+      email: 'alex@acme-enterprise.com',
+      password: 'sso-login',
+      isSso: 'true',
+    });
+
+    expect(ssoUser).not.toBeNull();
+    expect(ssoUser?.email).toBe('alex@acme-enterprise.com');
+    expect(ssoUser?.id.startsWith('usr_')).toBe(true);
+    expect(ssoUser?.ssoProvider).toBe('Acme Enterprise Okta');
+    expect(ssoUser?.role).toBe('editor');
+  });
+
+  it('blocks password login when SSO is strictly enforced for domain', async () => {
+    const user = await authorizeUser({
+      email: 'employee@strictcorp.com',
+      password: 'password123',
+    });
+
+    expect(user).toBeNull();
+  });
 });
 
 describe('signApiToken', () => {

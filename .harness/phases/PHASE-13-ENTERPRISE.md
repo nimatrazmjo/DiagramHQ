@@ -1,6 +1,6 @@
 # Phase 13 — Enterprise
 
-Status: NOT STARTED
+Status: IN PROGRESS
 
 ## Description
 Enterprise readiness: SSO/SAML/SCIM, advanced RBAC + org policies, audit logs, enterprise security, private deployment, compliance packs, billing, marketplace, mobile.
@@ -12,7 +12,7 @@ Phase 01, Phase 06, Phase 11
 
 ### F101 — SSO
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Single sign-on.
 
@@ -21,6 +21,11 @@ Acceptance Criteria:
 - SSO login via an IdP
 
 Test: SSO login via a test IdP.
+
+Evidence:
+- Domain: `packages/domain/src/sso.ts`, `packages/domain/src/sso.test.ts` (19 tests passing)
+- Web: `apps/web/auth.config.ts`, `apps/web/auth.spec.ts` (8 tests passing), `apps/web/app/login/login-form.tsx`, `apps/web/components/enterprise/sso-settings-modal.tsx`, `apps/web/sso.spec.tsx` (6 tests passing)
+- Reviews: `.harness/reviews/F101-PR.md`, `.harness/reviews/F101-review.md`
 
 ### F102 — SAML
 
