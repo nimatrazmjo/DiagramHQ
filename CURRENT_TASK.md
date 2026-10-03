@@ -1,39 +1,40 @@
-# Current Task: F098 — PlantUML
+# Current Task: F099 — PDF
 
 **Status**: COMPLETE
 
 ## Description
-PlantUML Export and Import Engine for Architecture Diagrams and Execution Flows (Phase 12 — Documentation):
-- Export capabilities:
-  - C4 / Architecture Views -> PlantUML:
-    - Support for official C4-PlantUML macro syntax (`C4_Context.puml`, `C4_Container.puml`, `C4_Component.puml`):
-      - `Person(alias, label, desc)`
-      - `System(alias, label, desc)`
-      - `Container(alias, label, technology, desc)`
-      - `ContainerDb(alias, label, technology, desc)`
-      - `Component(alias, label, technology, desc)`
-      - `Rel(src, tgt, label, tech)`
-      - `System_Boundary`, `Container_Boundary`
-    - Support for Native PlantUML component diagram syntax (`component`, `database`, `actor`, `package`, `folder`, `-->`).
-    - Configurable layout direction (`top to bottom`, `left to right`), title, styling, and legend (`SHOW_LEGEND()`).
-  - Execution Flows -> PlantUML Sequence Diagrams:
-    - Standard sequence headers: `@startuml ... @enduml`.
-    - `autonumber` support.
-    - `actor`, `participant`, `database`, `queue` declarations with aliases.
-    - Message requests (`->`, `->>`), responses (`-->`), status codes, notes (`note over`, `note right of`), and divider markers (`== Step Name ==`).
-- Import capabilities:
-  - PlantUML Parser (`importPlantUml`):
-    - Parses both C4 macros (`System(...)`, `Container(...)`, etc.) and standard PlantUML (`component`, `database`, `actor`, `-->`) into DiagramHQ `ModelObject` and `ModelConnection`.
-    - Parses PlantUML sequence diagrams into `FlowWithSteps`.
-- Interactive Canvas UI (`PlantUmlModal`):
-  - Dual tabs: Export (mode selector, live syntax-highlighted preview, copy, download `.puml`) and Import (paste PlantUML script, live validation and entity preview, apply to active model).
+Comprehensive Architecture Document and Diagram PDF Export Engine (Phase 12 — Documentation):
+- Capabilities:
+  - Multi-page PDF 1.4 compilation engine (`exportArchitecturePdfBook` / `exportDocumentToPdf`):
+    - Clean cover page with title, subtitle, author/organization, version pill, and generation timestamp.
+    - Executive Summary / Architecture Overview page with grounded metrics (objects count, systems, containers, components, connections).
+    - High-fidelity vector Diagram pages with title headers, metadata banners, and component legends.
+    - Architecture Decision Records (ADR) section compiling decision status, context, and consequences.
+    - System & Service Catalog table compiling owners, technology stacks, descriptions, and interfaces.
+    - Execution Flows catalog with step-by-step sequence transaction tables.
+  - Page Geometry & Formats:
+    - Standard page sizes: `A4` (595 × 842 pt), `Letter` (612 × 792 pt) in portrait and landscape orientations.
+    - Page header and running footer with document title, timestamp, and page numbers (`Page X of Y`).
+    - Security watermark (`CONFIDENTIAL`, `DRAFT`, `INTERNAL ONLY`, or custom).
+  - Pure framework-agnostic vector PDF rendering without external binary dependencies.
+- Interactive Canvas UI (`PdfExportModal`):
+  - Section selector checklist: Cover Page, Overview, Diagram Views, ADRs, Component Catalog, Execution Flows.
+  - Page orientation & size selector.
+  - Watermark selector & custom text input.
+  - Live multi-page preview simulator showing total page count and file size estimate.
+  - Direct download `.pdf` action with deterministic filename.
 - Acceptance criteria:
-  - Export diagrams/flows to PlantUML
-  - Test: export -> valid PlantUML.
+  - Export a view/doc to PDF
+  - Test: export -> valid PDF.
 
-- Feature ID: F098
+- Feature ID: F099
 - Phase: 12 — Documentation
 - Dependencies: Phase 03, Phase 04
 
+## Evidence
+- Domain: `packages/domain/src/pdf-export.ts`, `packages/domain/src/pdf-export.test.ts` (9 tests passing)
+- Web: `apps/web/components/canvas/pdf-export-modal.tsx`, `apps/web/pdf-export.spec.tsx` (4 tests passing)
+- Reviews: `.harness/reviews/F099-PR.md`, `.harness/reviews/F099-review.md`
+
 ## Next Feature
-- **F099 — PDF**
+- **F100 — SVG** (Export a view to SVG at fidelity)

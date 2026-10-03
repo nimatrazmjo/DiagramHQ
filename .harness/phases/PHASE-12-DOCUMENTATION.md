@@ -147,7 +147,7 @@ Evidence:
 
 ### F099 — PDF
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Export PDF.
 
@@ -156,6 +156,13 @@ Acceptance Criteria:
 - Export a view/doc to PDF
 
 Test: export -> valid PDF.
+
+Evidence:
+- Domain engine: `packages/domain/src/pdf-export.ts`
+- Unit tests: `packages/domain/src/pdf-export.test.ts` (9 tests passing)
+- Canvas UI: `apps/web/components/canvas/pdf-export-modal.tsx`
+- Integration tests: `apps/web/pdf-export.spec.tsx` (4 tests passing)
+- PR and Review records: `.harness/reviews/F099-PR.md`, `.harness/reviews/F099-review.md`
 
 ### F100 — SVG
 

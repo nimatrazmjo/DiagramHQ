@@ -254,7 +254,7 @@ Status: IN PROGRESS  ·  Depends on: Phase 03, Phase 04  ·  File: `phases/PHASE
 - [x] F096 — Export
 - [x] F097 — Mermaid
 - [x] F098 — PlantUML
-- [ ] F099 — PDF
+- [x] F099 — PDF
 - [ ] F100 — SVG
 
 ---
