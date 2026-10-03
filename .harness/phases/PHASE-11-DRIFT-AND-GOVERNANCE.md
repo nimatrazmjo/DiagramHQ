@@ -92,7 +92,8 @@ Test: simulate a DB outage; downstream flagged; fallbacks distinguished.
 
 ### F090 — Security architecture
 
-Status: NOT STARTED
+Status: COMPLETE
+
 
 Description: Deep security model.
 

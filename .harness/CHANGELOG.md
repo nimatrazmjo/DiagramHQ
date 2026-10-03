@@ -2,7 +2,30 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-02 — F090 — Security Architecture (Phase 11 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `security-architecture.ts`: Deep security architecture model and governance analysis engine. Analyzes:
+    1. **Trust Boundaries**: Groups objects by isolation levels (`untrusted`, `dmz`, `trusted`, `restricted`, `critical`) and enclosed components.
+    2. **Public Endpoints**: Audits public/internet-facing entrypoints, verifying authentication schemes (`oauth2`, `jwt`, `apiKey`, `mTLS`).
+    3. **Data Encryption**: Audits sensitive datastores (PII, PCI, HIPAA, GDPR, SOC2) and evaluates encryption at rest (`AES-256`, cloud KMS).
+    4. **Secrets Management**: Detects unmanaged or hardcoded credentials versus secure vaults (HashiCorp Vault, Cloud KMS).
+    5. **Cross-Boundary Connections**: Flags cross-boundary traffic missing in-transit TLS encryption or missing authentication into restricted zones.
+    6. **Compliance Zones**: Maps regulatory frameworks (PII, PCI, HIPAA, GDPR, SOC2) to enrolled objects and sensitive datastores.
+    7. **Metrics & Score**: Computes full metrics and a normalized Security Score (0-100) penalized by exposure severity.
+  - `security-architecture.test.ts`: 3 unit tests verifying boundary discovery, exposure detection (public unauth endpoints, unencrypted PCI stores, unencrypted transit, hardcoded secrets), compliance zone mapping, and clean score evaluation.
+  - `index.ts`: Exported `security-architecture`.
+- Web layer (`apps/web/`):
+  - `components/canvas/security-architecture-panel.tsx`: Implemented `<SecurityArchitectureModal />` with posture banner, score badge (0-100), 6 KPI metric cards (Score, Trust Boundaries, Public Ingress, Sensitive Stores, Cross-Boundary Links, Exposures), 6 interactive tabs (Exposures, Boundaries, Endpoints, Encryption, Compliance, Cross-Boundary), remediation guidance, and live search.
+  - `components/canvas/index.ts`: Exported `security-architecture-panel`.
+  - `security-architecture.spec.tsx`: 3 integration tests.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 86 test files / 477 tests ✓, web 100 test files / 531 tests ✓, api 37 test files / 270 tests ✓, `pnpm build ✓`.
+
 ## 2026-10-02 — F089 — Failure Simulation (Phase 11 Progress)
+
 
 Status: COMPLETE
 
