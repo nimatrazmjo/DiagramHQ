@@ -13,21 +13,21 @@ Phase Name: Drift and Governance
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F091
-Feature Name: Data lineage
+Feature ID: F129
+Feature Name: Architecture health
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 105
+Completed: 106
 In Progress: 0
 Blocked: 0
-Not Started: 30
-Progress: 77.8%
+Not Started: 29
+Progress: 78.5%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F090 — Security architecture. Implemented deep security architecture modeling and governance analysis engine for DiagramHQ (Phase 11 — Drift and Governance). Discovers Trust Boundaries (with isolation levels: untrusted, dmz, trusted, restricted, critical), audits Public Endpoints for missing auth/authz schemes (OAuth2, JWT, API Key), evaluates sensitive data encryption at rest (PII, PCI, HIPAA, GDPR, SOC2 stores), detects unmanaged or hardcoded secrets, identifies cross-boundary plaintext network links missing TLS or mutual auth, maps regulatory Compliance Zones, and computes a comprehensive Security Score (0-100). Added canvas UI `<SecurityArchitectureModal />` with posture banner, 6 KPI cards, 6 navigation tabs, remediation guidance, and live search. 3 domain unit tests, 3 web integration tests.
+F091 — Data lineage. Implemented data lineage tracing and compliance engine for DiagramHQ (Phase 11 — Drift and Governance). Traces data flow paths from any source node across the entire architecture model graph via depth-first search with cycle prevention. Supports edge reversal for read/query/pull operations (store→service directionality), compliance boundary crossing detection with TLS/HTTPS validation, and multi-hop tracing up to configurable `maxHops` (default 10). Produces `DataLineageReport` with `LineagePath[]` (ordered hop chains), `LineageBoundaryCrossing[]` (trust-zone transitions with TLS status), `DataLineageMetrics` (Max Hops, End Consumers, Nodes Reached, Boundary Crossings, Unencrypted Crossings, Compliance Nodes), and per-hop compliance zone tracking (PII, PCI, HIPAA, GDPR, SOC2). Added `<DataLineageModal />` canvas UI with source selector, posture banner (unencrypted crossing warning), 6 KPI cards, 3 tabs (Lineage Paths / Nodes / Boundary Crossings), hop-by-hop visual chain. 3 domain unit tests, 2 web integration tests.
 
 Prior: F089 — Failure simulation. Implemented architecture failure simulation engine for DiagramHQ (Phase 11 — Drift and Governance). Allows marking one or more model objects as down, cascades the failure through the architecture via reverse BFS blast-radius analysis, and classifies each node status as down, degraded, fallback, or healthy. Distinguishes nodes with active fallback mechanisms (status: 'fallback') from vulnerable unmitigated services (status: 'degraded'). Surfaces disrupted connections via `getAffectedConnections`. Added canvas UI `<FailureSimulationModal />` with multi-node outage selector, custom reason input, severity banner, 6 KPI cards, status filters + search, and interactive node impact list with fallback badges and mark down/restore toggles. 3 domain unit tests, 3 web integration tests.
 
