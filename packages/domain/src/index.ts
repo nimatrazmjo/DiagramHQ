@@ -108,3 +108,4 @@ export * from './enterprise-security';
 export * from './private-deployment';
 export * from './compliance-packs';
 export * from './billing-plans';
+export * from './marketplace';

@@ -194,7 +194,7 @@ Evidence:
 
 ### F133 — Marketplace
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Extensions.
 
@@ -205,6 +205,11 @@ Acceptance Criteria:
 - Templates, integration plugins, technology catalogs, AI agents, rules, compliance packs; install flow
 
 Test: install a template pack; assets appear.
+
+Evidence:
+- Domain: `packages/domain/src/marketplace.ts`, `packages/domain/src/marketplace.test.ts` (5 tests passing)
+- Web: `apps/web/components/enterprise/marketplace-modal.tsx`, `apps/web/marketplace.spec.tsx` (3 tests passing)
+- Reviews: `.harness/reviews/F133-PR.md`, `.harness/reviews/F133-review.md`
 
 ### F134 — Mobile
 

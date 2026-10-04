@@ -13,21 +13,23 @@ Phase Name: Enterprise
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F133
-Feature Name: Marketplace
+Feature ID: F134
+Feature Name: Mobile
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 128
+Completed: 129
 In Progress: 0
 Blocked: 0
-Not Started: 7
-Progress: 94.8%
+Not Started: 6
+Progress: 95.6%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F132 — Billing & plans. Implemented enterprise monetization tiers, feature gating, and consumption quota enforcement for DiagramHQ (Phase 13 — Enterprise). Built pure TypeScript domain logic (`billing-plans.ts`) providing: (1) 4 Standard tiers: Free, Pro ($20-24/seat/mo), Business ($49-59/seat/mo), and Enterprise ($120-149/seat/mo) with monthly/annual billing cycles; (2) Enterprise feature gating matrix (`FEATURE_MINIMUM_TIERS`) covering AI Copilot, collaboration, Git sync, watermark-free vector export, SSO/SAML, SCIM, org policies, advanced RBAC, compliance packs, private VPC, custom audit retention, and SLA support; (3) Quantitative usage limits for seats, model objects, diagram views, AI query credits, and audit retention; (4) Strict enforcement mechanisms: `enforceTierGating` (throwing `TierGatingError` when locked) and `enforceUsageLimit` (throwing `UsageLimitExceededError` when over-quota); (5) Subscription upgrade and invoice calculation (`calculateInvoice`) with automated annual discount rates. Added Web layer enterprise modal (`BillingModal`) with tier comparison cards, live usage consumption progress meters with warning thresholds, feature entitlement matrix, interactive enforcement simulator, and upgrade checkout flows. 9 domain unit tests, 3 web integration tests (`billing.spec.tsx`). **Milestone: 128 / 135 features completed overall (94.8%)!**
+F133 — Marketplace. Implemented enterprise extension marketplace ecosystem, curated extension catalogs, and automated workspace asset installation for DiagramHQ (Phase 13 — Enterprise). Built pure TypeScript domain logic (`marketplace.ts`) providing: (1) 6 core extension types: Architecture Templates, Integration Plugins, Technology Catalogs, Autonomous AI Agents, Guardrail Rules, and Regulatory Compliance Packs (`BUILTIN_MARKETPLACE_CATALOG`); (2) Curated extensions including PCI DSS v4.0 blueprint, active-active event-driven mesh, Datadog live APM telemetry adapter, CNCF 2026 tech catalog, Autonomous FinOps Cost Guard agent, Zero-Trust network guardrails, and FedRAMP Moderate compliance pack; (3) Multi-tier publisher system (Official DiagramHQ, Verified Partner, Community); (4) Workspace installation engine (`installMarketplaceItem`, `uninstallMarketplaceItem`, `upgradeMarketplaceItem`) injecting architectural model objects, diagram views, and rules into target workspaces; (5) Acceptance criteria verified: installing a template pack injects and registers all architectural assets. Added Web layer enterprise modal (`MarketplaceModal`) with category tabs, search bar, item detail drawer, asset inspector, and workspace installation inventory manager. 5 domain unit tests, 3 web integration tests (`marketplace.spec.tsx`). **Milestone: 129 / 135 features completed overall (95.6%)!**
+
+Prior: F132 — Billing & plans. Implemented enterprise monetization tiers, feature gating, and consumption quota enforcement for DiagramHQ (Phase 13 — Enterprise). Built pure TypeScript domain logic (`billing-plans.ts`) providing: (1) 4 Standard tiers: Free, Pro ($20-24/seat/mo), Business ($49-59/seat/mo), and Enterprise ($120-149/seat/mo) with monthly/annual billing cycles; (2) Enterprise feature gating matrix (`FEATURE_MINIMUM_TIERS`) covering AI Copilot, collaboration, Git sync, watermark-free vector export, SSO/SAML, SCIM, org policies, advanced RBAC, compliance packs, private VPC, custom audit retention, and SLA support; (3) Quantitative usage limits for seats, model objects, diagram views, AI query credits, and audit retention; (4) Strict enforcement mechanisms: `enforceTierGating` (throwing `TierGatingError` when locked) and `enforceUsageLimit` (throwing `UsageLimitExceededError` when over-quota); (5) Subscription upgrade and invoice calculation (`calculateInvoice`) with automated annual discount rates. Added Web layer enterprise modal (`BillingModal`) with tier comparison cards, live usage consumption progress meters with warning thresholds, feature entitlement matrix, interactive enforcement simulator, and upgrade checkout flows. 9 domain unit tests, 3 web integration tests (`billing.spec.tsx`). **Milestone: 128 / 135 features completed overall (94.8%)!**
 
 Prior: F131 — Compliance packs. Implemented regulatory framework mappings and enterprise compliance packs for DiagramHQ (Phase 13 — Enterprise). Built pure TypeScript domain logic (`compliance-packs.ts`) providing: (1) Built-in framework catalogs for SOC 2 Type II, ISO/IEC 27001:2022, EU GDPR, HIPAA Security Rule, PCI DSS v4.0, NIST SP 800-53 Rev. 5, and CIS Controls; (2) Control-to-Architecture mapping engine (`createControlMapping`, `attachEvidenceToControlMapping`, `updateControlMappingStatus`) establishing bidirectional links between compliance controls, architecture objects (gateways, vaults, databases, services), evidence artifacts, and control owners; (3) Multi-state attestation progression (`not_started`, `in_progress`, `evidence_collected`, `under_audit_review`, `attested`); (4) Auditor Integrity Invariant strictly prohibiting automated or synthetic 'compliant' badges, maintaining `hasAutoClaimedCompliance: false` and providing audit readiness KPIs and third-party auditor attestation disclaimers. Added Web layer enterprise modal (`CompliancePacksModal`) with framework switcher, readiness KPI counters, object linker, evidence attachment drawer, and control catalog. 4 domain unit tests, 3 web integration tests (`compliance-packs.spec.tsx`). **Milestone: 127 / 135 features completed overall (94.1%)!**
 
