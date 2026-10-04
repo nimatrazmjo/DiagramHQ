@@ -1,31 +1,30 @@
-# Current Task: F108 — Private deployment
+# Current Task: F131 — Compliance packs
 
 **Status**: COMPLETE
 
 ## Description
-Self-Hosted Customer VPC & Air-Gapped Deployment Architecture (Phase 13 — Enterprise):
-- VPC Architecture & Offline Infrastructure (`@diagramhq/domain`):
-  - Customer VPC deployment profiles (AWS VPC, GCP VPC, Azure VNet, On-Premises bare metal, Air-Gapped Enclave).
-  - Air-gapped zero-outbound-egress configuration (`AirGappedConfig`): internal container registry, local private AI engines (vLLM / Ollama), local embedded static assets, and offline cryptographic license validation.
-  - Manifest generators: Automated generation of offline `docker-compose.yml` and Kubernetes Helm `values.yaml` with network egress filtering.
-  - Clean Environment Automated Smoke Test Suite (`runPrivateDeploymentSmokeTests`): 6 automated readiness probes (Web gateway `/healthz`, NestJS API `/api/health`, PostgreSQL connection pool, S3/MinIO bucket read/write, local AI endpoint, and strict egress barrier firewall checks).
-  - Deployment Documentation: `.harness/deployment/PRIVATE_DEPLOYMENT.md`.
+Regulatory Framework Mappings & Compliance Packs (Phase 13 — Enterprise):
+- Framework Catalogs & Governance Engine (`@diagramhq/domain`):
+  - Built-in framework catalogs for SOC 2 Type II, ISO/IEC 27001:2022, EU GDPR, HIPAA Security Rule, PCI DSS v4.0, NIST SP 800-53 Rev. 5, and CIS Controls.
+  - Domain mapping engine: Maps regulatory controls to architecture objects, attached evidence artifacts, and designated control owners.
+  - Attestation progression tracking: `not_started`, `in_progress`, `evidence_collected`, `under_audit_review`, `attested`.
+  - Auditor integrity invariant: Strictly prohibits automated/synthetic 'compliant' badges. Provides readiness summaries, evidence counts, attestation metrics, and explicit auditor disclaimers (`hasAutoClaimedCompliance: false`).
 - Web & Component Layer (`@diagramhq/web`):
-  - `apps/web/components/enterprise/private-deployment-modal.tsx`: Interactive modal with deployment status ribbon, configuration forms, manifest viewer with copy action, and live clean environment smoke test runner.
-  - `apps/web/components/enterprise/index.ts`: Exported `PrivateDeploymentModal`.
+  - `apps/web/components/enterprise/compliance-packs-modal.tsx`: Interactive modal with framework switcher tabs, readiness KPI cards, evidence attachment, object binding, and filterable control catalog.
+  - `apps/web/components/enterprise/index.ts`: Exported `CompliancePacksModal`.
 - Acceptance criteria:
-  - Deployable to a customer VPC; air-gapped config; deployment docs
-  - Test: deploy to a clean environment; smoke passes.
+  - SOC2, ISO 27001, GDPR, HIPAA, PCI DSS, NIST, CIS mappings
+  - Control -> objects -> evidence -> owner -> status; never auto-claims compliance
+  - Test: map a control; evidence + status shown; no false 'compliant' badge.
 
-- Feature ID: F108
+- Feature ID: F131
 - Phase: 13 — Enterprise
-- Dependencies: None
+- Dependencies: F085
 
 ## Evidence
-- Domain: `packages/domain/src/private-deployment.ts`, `packages/domain/src/private-deployment.test.ts` (7 tests passing)
-- Web: `apps/web/components/enterprise/private-deployment-modal.tsx`, `apps/web/components/enterprise/index.ts`, `apps/web/private-deployment.spec.tsx` (4 tests passing)
-- Documentation: `.harness/deployment/PRIVATE_DEPLOYMENT.md`
-- Reviews: `.harness/reviews/F108-PR.md`, `.harness/reviews/F108-review.md`
+- Domain: `packages/domain/src/compliance-packs.ts`, `packages/domain/src/compliance-packs.test.ts` (4 tests passing)
+- Web: `apps/web/components/enterprise/compliance-packs-modal.tsx`, `apps/web/components/enterprise/index.ts`, `apps/web/compliance-packs.spec.tsx` (3 tests passing)
+- Reviews: `.harness/reviews/F131-PR.md`, `.harness/reviews/F131-review.md`
 
 ## Next Feature
-- **Phase 13 — Enterprise**: **F131 — Compliance packs** (SOC2, ISO 27001, GDPR, HIPAA, PCI DSS, NIST, CIS mappings; control -> objects -> evidence -> owner -> status; no false 'compliant' badge)
+- **Phase 13 — Enterprise**: **F132 — Billing & plans** (Free/Pro/Business/Enterprise tiers gate features; usage limits; test: tier gating enforced, over-limit blocked)

@@ -273,7 +273,7 @@ Status: IN PROGRESS  ·  Depends on: Phase 01, Phase 06, Phase 11  ·  File: `ph
 - [x] F106 — Organization policies
 - [x] F107 — Enterprise security
 - [x] F108 — Private deployment
-- [ ] F131 — Compliance packs
+- [x] F131 — Compliance packs
 - [ ] F132 — Billing & plans
 - [ ] F133 — Marketplace
 - [ ] F134 — Mobile

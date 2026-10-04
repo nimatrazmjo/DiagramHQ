@@ -106,3 +106,4 @@ export * from './audit-log';
 export * from './organization-policies';
 export * from './enterprise-security';
 export * from './private-deployment';
+export * from './compliance-packs';
