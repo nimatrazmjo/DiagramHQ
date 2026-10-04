@@ -10,5 +10,7 @@ module.exports = {
     '**/node_modules/**',
     '**/coverage/**',
     '**/next-env.d.ts',
+    '**/test-results/**',
+    '**/playwright-report/**',
   ],
 };
