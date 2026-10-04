@@ -62,17 +62,19 @@ test.describe('React Flow Studio Canvas Navigation & C4 Hierarchy', () => {
     await expect(level2Btn).toBeVisible();
     await expect(level3Btn).toBeVisible();
 
+    const breadcrumbLevel = page.locator('[data-testid="studio-breadcrumb-level"]');
+
     // Switch to Containers
     await level2Btn.click();
-    await expect(page.getByRole('banner').getByText('Containers & Apps')).toBeVisible();
+    await expect(breadcrumbLevel).toHaveText('Containers & Apps');
 
     // Switch to Components
     await level3Btn.click();
-    await expect(page.getByRole('banner').getByText('Components', { exact: true })).toBeVisible();
+    await expect(breadcrumbLevel).toHaveText('Components');
 
     // Switch back to Context
     await level1Btn.click();
-    await expect(page.getByRole('banner').getByText('System Context')).toBeVisible();
+    await expect(breadcrumbLevel).toHaveText('System Context');
   });
 
   test('filters views across perspectives (Security, Data, Ownership, All)', async ({ page }) => {
