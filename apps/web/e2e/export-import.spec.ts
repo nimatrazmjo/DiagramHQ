@@ -19,7 +19,9 @@ test.describe('Diagram Exports, Code Generation & Sharing Suite', () => {
     await expect(page.locator('.react-flow__node').first()).toBeVisible();
   });
 
-  test('1. Multi-format export modal allows format switching with dynamic previews', async ({ page }) => {
+  test('1. Multi-format export modal allows format switching with dynamic previews', async ({
+    page,
+  }) => {
     const exportBtn = page.locator('[data-testid="toggle-export-btn"]');
     await expect(exportBtn).toBeVisible();
     await exportBtn.click();
@@ -97,7 +99,9 @@ test.describe('Diagram Exports, Code Generation & Sharing Suite', () => {
     await expect(modalContainer).not.toBeVisible();
   });
 
-  test('3. Mermaid.js diagram-as-code modal generates flowchart and sequence scripts', async ({ page }) => {
+  test('3. Mermaid.js diagram-as-code modal generates flowchart and sequence scripts', async ({
+    page,
+  }) => {
     const mermaidBtn = page.locator('[data-testid="toggle-mermaid-btn"]');
     await expect(mermaidBtn).toBeVisible();
     await mermaidBtn.click();
@@ -136,7 +140,9 @@ test.describe('Diagram Exports, Code Generation & Sharing Suite', () => {
     await expect(mermaidModal).not.toBeVisible();
   });
 
-  test('4. PlantUML diagram-as-code modal generates C4 syntax and allows copying', async ({ page }) => {
+  test('4. PlantUML diagram-as-code modal generates C4 syntax and allows copying', async ({
+    page,
+  }) => {
     const plantumlBtn = page.locator('[data-testid="toggle-plantuml-btn"]');
     await expect(plantumlBtn).toBeVisible();
     await plantumlBtn.click();
@@ -165,7 +171,9 @@ test.describe('Diagram Exports, Code Generation & Sharing Suite', () => {
     await expect(plantumlModal).not.toBeVisible();
   });
 
-  test('5. Public read-only share link modal generates URL with configuration options', async ({ page }) => {
+  test('5. Public read-only share link modal generates URL with configuration options', async ({
+    page,
+  }) => {
     const shareBtn = page.locator('[data-testid="toggle-share-link-btn"]');
     await expect(shareBtn).toBeVisible();
     await shareBtn.click();
@@ -179,7 +187,7 @@ test.describe('Diagram Exports, Code Generation & Sharing Suite', () => {
     const linkInput = page.locator('[data-testid="share-link-input"]');
     await expect(linkInput).toBeVisible();
     const linkValue = await linkInput.inputValue();
-    expect(linkValue).toContain('https://diagramhq.com/share?');
+    expect(linkValue).toMatch(/(https:\/\/diagramhq\.com|http:\/\/localhost:3000)\/share\?/);
 
     // Camera preservation option
     const cameraOpt = page.locator('[data-testid="share-opt-camera"]');
@@ -202,7 +210,9 @@ test.describe('Diagram Exports, Code Generation & Sharing Suite', () => {
     await expect(shareModal).not.toBeVisible();
   });
 
-  test('6. Canvas clear reset action empties diagram and allows restoring baseline', async ({ page }) => {
+  test('6. Canvas clear reset action empties diagram and allows restoring baseline', async ({
+    page,
+  }) => {
     // Handle window confirm dialog
     page.on('dialog', async (dialog) => {
       await dialog.accept();

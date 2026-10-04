@@ -1,0 +1,778 @@
+{
+  "title": "Online Boutique - IcePanel Architecture & Sequence Diagrams",
+  "sourceArticle": "https://icepanel.io/blog/reimagining-uml-sequence-diagrams-in-icepanel",
+  "nodes": [
+    {
+      "id": "obj-customers",
+      "type": "person",
+      "position": {
+        "x": 580,
+        "y": 40
+      },
+      "data": {
+        "label": "Customers",
+        "kind": "actor",
+        "icon": "person",
+        "description": "User clicks checkout and pay",
+        "badge": "Actor",
+        "color": "#ba1a1a"
+      }
+    },
+    {
+      "id": "obj-load-generator",
+      "type": "person",
+      "position": {
+        "x": 860,
+        "y": 40
+      },
+      "data": {
+        "label": "Load Generator",
+        "kind": "actor",
+        "icon": "person",
+        "description": "Sends continuous requests to",
+        "badge": "Actor",
+        "color": "#ba1a1a"
+      }
+    },
+    {
+      "id": "obj-frontend",
+      "type": "app",
+      "position": {
+        "x": 560,
+        "y": 320
+      },
+      "data": {
+        "label": "Frontend",
+        "kind": "application",
+        "icon": "desktop_windows",
+        "description": "Exposes an HTTP server to serve the website",
+        "badge": "App Service",
+        "metadata": {
+          "technology": "Go / HTTP"
+        },
+        "color": "#006194"
+      }
+    },
+    {
+      "id": "obj-cart-service",
+      "type": "app",
+      "position": {
+        "x": 260,
+        "y": 150
+      },
+      "data": {
+        "label": "Cart Service",
+        "kind": "application",
+        "icon": "shopping_cart",
+        "description": "Stores the items in the user's shopping cart in Redis and retrieves it.",
+        "badge": "App Service",
+        "metadata": {
+          "technology": "C# / gRPC"
+        },
+        "color": "#4648d4"
+      }
+    },
+    {
+      "id": "obj-cart-cache",
+      "type": "database",
+      "position": {
+        "x": 480,
+        "y": 150
+      },
+      "data": {
+        "label": "Cart Cache",
+        "kind": "store",
+        "icon": "database",
+        "description": "Store items added to cart.",
+        "badge": "Data Store",
+        "metadata": {
+          "technology": "Redis"
+        },
+        "color": "#006947"
+      }
+    },
+    {
+      "id": "obj-checkout-service",
+      "type": "app",
+      "position": {
+        "x": 240,
+        "y": 340
+      },
+      "data": {
+        "label": "Checkout Service",
+        "kind": "application",
+        "icon": "payment",
+        "description": "Retrieves user cart, prepares orders and orchestrates payment, shipping, and email.",
+        "badge": "App Service",
+        "metadata": {
+          "technology": "Go / gRPC"
+        },
+        "color": "#4648d4"
+      }
+    },
+    {
+      "id": "obj-email-service",
+      "type": "app",
+      "position": {
+        "x": 40,
+        "y": 150
+      },
+      "data": {
+        "label": "Email Service",
+        "kind": "application",
+        "icon": "mail",
+        "description": "Sends users an order confirmation email.",
+        "badge": "App Service",
+        "metadata": {
+          "technology": "Python / gRPC"
+        },
+        "color": "#4648d4"
+      }
+    },
+    {
+      "id": "obj-payment-service",
+      "type": "app",
+      "position": {
+        "x": 40,
+        "y": 560
+      },
+      "data": {
+        "label": "Payment Service",
+        "kind": "application",
+        "icon": "credit_card",
+        "description": "Charges given credit card and returns transaction ID.",
+        "badge": "App Service",
+        "metadata": {
+          "technology": "Node.js / gRPC"
+        },
+        "color": "#4648d4"
+      }
+    },
+    {
+      "id": "obj-shipping-service",
+      "type": "app",
+      "position": {
+        "x": 240,
+        "y": 560
+      },
+      "data": {
+        "label": "Shipping Service",
+        "kind": "application",
+        "icon": "local_shipping",
+        "description": "Gives shipping estimates and ships items to given address.",
+        "badge": "App Service",
+        "metadata": {
+          "technology": "Go / gRPC"
+        },
+        "color": "#4648d4"
+      }
+    },
+    {
+      "id": "obj-product-catalogue-service",
+      "type": "app",
+      "position": {
+        "x": 440,
+        "y": 590
+      },
+      "data": {
+        "label": "Product Catalogue Service",
+        "kind": "application",
+        "icon": "inventory",
+        "description": "Provides product list and search capabilities.",
+        "badge": "App Service",
+        "metadata": {
+          "technology": "Go / gRPC"
+        },
+        "color": "#4648d4"
+      }
+    },
+    {
+      "id": "obj-currency-service",
+      "type": "app",
+      "position": {
+        "x": 620,
+        "y": 500
+      },
+      "data": {
+        "label": "Currency Service",
+        "kind": "application",
+        "icon": "currency_exchange",
+        "description": "Converts money amount to target currency.",
+        "badge": "App Service",
+        "metadata": {
+          "technology": "Node.js / gRPC"
+        },
+        "color": "#4648d4"
+      }
+    },
+    {
+      "id": "obj-ad-service",
+      "type": "app",
+      "position": {
+        "x": 880,
+        "y": 220
+      },
+      "data": {
+        "label": "Ad Service",
+        "kind": "application",
+        "icon": "campaign",
+        "description": "Provides text ads based on context words.",
+        "badge": "App Service",
+        "metadata": {
+          "technology": "Java / gRPC"
+        },
+        "color": "#4648d4"
+      }
+    },
+    {
+      "id": "obj-recommendation-service",
+      "type": "app",
+      "position": {
+        "x": 880,
+        "y": 440
+      },
+      "data": {
+        "label": "Recommendation Service",
+        "kind": "application",
+        "icon": "recommend",
+        "description": "Recommends products based on user cart contents.",
+        "badge": "App Service",
+        "metadata": {
+          "technology": "Python / gRPC"
+        },
+        "color": "#4648d4"
+      }
+    },
+    {
+      "id": "obj-currency-api",
+      "type": "external",
+      "position": {
+        "x": 620,
+        "y": 720
+      },
+      "data": {
+        "label": "Currency Exchange API",
+        "kind": "application",
+        "icon": "account_balance",
+        "description": "European Central Bank public exchange rate feed.",
+        "badge": "External App",
+        "metadata": {
+          "technology": "REST HTTPS"
+        },
+        "color": "#707881"
+      }
+    },
+    {
+      "id": "obj-payment-gateway",
+      "type": "external",
+      "position": {
+        "x": 40,
+        "y": 720
+      },
+      "data": {
+        "label": "Payment Gateway",
+        "kind": "system",
+        "icon": "payments",
+        "description": "External card transaction processing gateway.",
+        "badge": "External System",
+        "metadata": {
+          "technology": "WebSocket mTLS"
+        },
+        "color": "#707881"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-cust-front",
+      "source": "obj-customers",
+      "target": "obj-frontend",
+      "label": "Real user traffic",
+      "data": {
+        "protocol": "HTTP : 80",
+        "kind": "sync"
+      }
+    },
+    {
+      "id": "edge-load-front",
+      "source": "obj-load-generator",
+      "target": "obj-frontend",
+      "label": "Continuous requests",
+      "data": {
+        "protocol": "HTTP",
+        "kind": "sync"
+      }
+    },
+    {
+      "id": "edge-front-checkout",
+      "source": "obj-frontend",
+      "target": "obj-checkout-service",
+      "label": "Initiate checkout process",
+      "data": {
+        "protocol": "gRPC",
+        "kind": "sync"
+      }
+    },
+    {
+      "id": "edge-checkout-catalog",
+      "source": "obj-checkout-service",
+      "target": "obj-product-catalogue-service",
+      "label": "Check stock & reserve",
+      "data": {
+        "protocol": "gRPC",
+        "kind": "sync"
+      }
+    },
+    {
+      "id": "edge-checkout-cart",
+      "source": "obj-checkout-service",
+      "target": "obj-cart-service",
+      "label": "Get user cart details",
+      "data": {
+        "protocol": "gRPC",
+        "kind": "sync"
+      }
+    },
+    {
+      "id": "edge-cart-cache",
+      "source": "obj-cart-service",
+      "target": "obj-cart-cache",
+      "label": "Check user cached cart",
+      "data": {
+        "protocol": "TCP 6379",
+        "kind": "sync"
+      }
+    },
+    {
+      "id": "edge-checkout-shipping",
+      "source": "obj-checkout-service",
+      "target": "obj-shipping-service",
+      "label": "Get shipping details",
+      "data": {
+        "protocol": "gRPC",
+        "kind": "sync"
+      }
+    },
+    {
+      "id": "edge-checkout-payment",
+      "source": "obj-checkout-service",
+      "target": "obj-payment-service",
+      "label": "Make payment after checkout",
+      "data": {
+        "protocol": "gRPC",
+        "kind": "sync"
+      }
+    },
+    {
+      "id": "edge-payment-currency",
+      "source": "obj-payment-service",
+      "target": "obj-currency-api",
+      "label": "Fetch exchange rate",
+      "data": {
+        "protocol": "REST HTTPS",
+        "kind": "sync"
+      }
+    },
+    {
+      "id": "edge-payment-gateway",
+      "source": "obj-payment-service",
+      "target": "obj-payment-gateway",
+      "label": "Create card transactions",
+      "data": {
+        "protocol": "WebSocket",
+        "kind": "sync"
+      }
+    },
+    {
+      "id": "edge-checkout-email",
+      "source": "obj-checkout-service",
+      "target": "obj-email-service",
+      "label": "Confirm order placed",
+      "data": {
+        "protocol": "gRPC",
+        "kind": "async"
+      }
+    },
+    {
+      "id": "edge-email-cust",
+      "source": "obj-email-service",
+      "target": "obj-customers",
+      "label": "Send confirmation email",
+      "data": {
+        "protocol": "SMTP",
+        "kind": "async"
+      }
+    },
+    {
+      "id": "edge-front-ad",
+      "source": "obj-frontend",
+      "target": "obj-ad-service",
+      "label": "Fetches relevant ads",
+      "data": {
+        "protocol": "gRPC",
+        "kind": "sync"
+      }
+    },
+    {
+      "id": "edge-front-rec",
+      "source": "obj-frontend",
+      "target": "obj-recommendation-service",
+      "label": "Get recommendations",
+      "data": {
+        "protocol": "gRPC",
+        "kind": "sync"
+      }
+    },
+    {
+      "id": "edge-front-currency",
+      "source": "obj-frontend",
+      "target": "obj-currency-service",
+      "label": "Get currency quote",
+      "data": {
+        "protocol": "gRPC",
+        "kind": "sync"
+      }
+    }
+  ],
+  "flows": [
+    {
+      "id": "flow-user-purchase",
+      "architectureId": "arch-icepanel-boutique",
+      "name": "User purchase flows",
+      "description": "Complete 27-step purchase sequence with alternate success, failed, and timeout branches as depicted in IcePanel.",
+      "type": "user_journey",
+      "actorId": "obj-customers",
+      "persona": "Customer",
+      "steps": [
+        {
+          "id": "step-1",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-cust-self",
+          "stepIndex": 0,
+          "note": "User clicks checkout and pay",
+          "actorAction": "Clicks Checkout & Pay button",
+          "userIntent": "Complete shopping basket checkout"
+        },
+        {
+          "id": "step-2",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-cust-front",
+          "stepIndex": 1,
+          "note": "User requests to make a purchase via Real user traffic",
+          "actorAction": "Submits order request",
+          "endpoint": "/api/checkout",
+          "httpMethod": "POST",
+          "statusCode": 200
+        },
+        {
+          "id": "step-3",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-front-checkout",
+          "stepIndex": 2,
+          "note": "Initiate checkout process via Start checkout process for product",
+          "endpoint": "hipstershop.CheckoutService/PlaceOrder",
+          "httpMethod": "gRPC"
+        },
+        {
+          "id": "step-4",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-checkout-catalog",
+          "stepIndex": 3,
+          "note": "Check products are in stock and reserve via Request price of product",
+          "endpoint": "hipstershop.ProductCatalogService/GetProduct",
+          "httpMethod": "gRPC"
+        },
+        {
+          "id": "step-5",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-catalog-checkout",
+          "stepIndex": 4,
+          "note": "Send confirmation of reservation via Request price of product",
+          "statusCode": 200
+        },
+        {
+          "id": "step-6",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-checkout-cart",
+          "stepIndex": 5,
+          "note": "Fetches the users cart details via Get's in stock items in cart from",
+          "endpoint": "hipstershop.CartService/GetCart",
+          "httpMethod": "gRPC"
+        },
+        {
+          "id": "step-7",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-cart-cache",
+          "stepIndex": 6,
+          "note": "Checks user cached cart via Checks items from",
+          "endpoint": "HGETALL cart:{userId}",
+          "httpMethod": "TCP"
+        },
+        {
+          "id": "step-8",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-cache-cart",
+          "stepIndex": 7,
+          "note": "Returns cached items via Checks items from",
+          "statusCode": 200
+        },
+        {
+          "id": "step-9",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-cart-checkout",
+          "stepIndex": 8,
+          "note": "Returns cached items via Get's in stock items in cart from",
+          "statusCode": 200
+        },
+        {
+          "id": "step-10",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-checkout-shipping",
+          "stepIndex": 9,
+          "note": "Get shipping details via Send shipping instructions",
+          "endpoint": "hipstershop.ShippingService/GetQuote",
+          "httpMethod": "gRPC"
+        },
+        {
+          "id": "step-11",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-shipping-checkout",
+          "stepIndex": 10,
+          "note": "Returns shipping details via Send shipping instructions",
+          "statusCode": 200
+        },
+        {
+          "id": "step-12",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-checkout-payment",
+          "stepIndex": 11,
+          "note": "Send payment to process via Make payment after checkout",
+          "endpoint": "hipstershop.PaymentService/Charge",
+          "httpMethod": "gRPC"
+        },
+        {
+          "id": "step-13",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-payment-currency",
+          "stepIndex": 12,
+          "note": "Fetch currency exchange of local currency via Fetch latest exchange rate for payment",
+          "endpoint": "GET /latest?base=USD",
+          "httpMethod": "HTTPS"
+        },
+        {
+          "id": "step-14",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-currency-payment",
+          "stepIndex": 13,
+          "note": "Return exchange rate via Fetch latest exchange rate for payment",
+          "statusCode": 200
+        },
+        {
+          "id": "step-15",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-payment-checkout",
+          "stepIndex": 14,
+          "note": "[Success] Payment confirmation via Make payment after checkout",
+          "statusCode": 200
+        },
+        {
+          "id": "step-16",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-checkout-email",
+          "stepIndex": 15,
+          "note": "[Success] Create automated email confirmation to customer via Confirm order has been placed",
+          "endpoint": "hipstershop.EmailService/SendOrderConfirmation",
+          "httpMethod": "gRPC"
+        },
+        {
+          "id": "step-17",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-email-cust",
+          "stepIndex": 16,
+          "note": "[Success] Send confirmation email via Email",
+          "actorAction": "Delivers receipt to customer inbox"
+        },
+        {
+          "id": "step-18",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-checkout-front",
+          "stepIndex": 17,
+          "note": "[Success] Payment and order confirmation message via Start checkout process for product",
+          "statusCode": 200
+        },
+        {
+          "id": "step-19",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-front-cust",
+          "stepIndex": 18,
+          "note": "[Success] Confirm user purchase via Real user traffic",
+          "statusCode": 200,
+          "actorAction": "Displays Order Success confirmation page"
+        },
+        {
+          "id": "step-20",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-payment-checkout",
+          "stepIndex": 19,
+          "note": "[Failed] Payment unsuccessful message via Make payment after checkout",
+          "statusCode": 402
+        },
+        {
+          "id": "step-21",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-checkout-front",
+          "stepIndex": 20,
+          "note": "[Failed] Payment failed via Start checkout process for product",
+          "statusCode": 402
+        },
+        {
+          "id": "step-22",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-front-cust",
+          "stepIndex": 21,
+          "note": "[Failed] Payment unsuccessful message via Real user traffic",
+          "statusCode": 402,
+          "actorAction": "Displays payment declined notification and prompts retry"
+        },
+        {
+          "id": "step-23",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-payment-self",
+          "stepIndex": 22,
+          "note": "[Timeout] Payment timeout (2 mins)",
+          "statusCode": 504
+        },
+        {
+          "id": "step-24",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-payment-self",
+          "stepIndex": 23,
+          "note": "[Timeout] Retry payment gateway transaction"
+        },
+        {
+          "id": "step-25",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-payment-checkout",
+          "stepIndex": 24,
+          "note": "[Timeout] Payment timeout via Make payment after checkout",
+          "statusCode": 504
+        },
+        {
+          "id": "step-26",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-checkout-front",
+          "stepIndex": 25,
+          "note": "[Timeout] Payment timeout via Start checkout process for product",
+          "statusCode": 504
+        },
+        {
+          "id": "step-27",
+          "flowId": "flow-user-purchase",
+          "connectionId": "conn-front-cust",
+          "stepIndex": 26,
+          "note": "[Timeout] Payment timeout via Real user traffic",
+          "statusCode": 504,
+          "actorAction": "Notifies customer of payment processing delay and status check"
+        }
+      ],
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "flow-user-adverts",
+      "architectureId": "arch-icepanel-boutique",
+      "name": "User see's adverts",
+      "description": "9-step flow retrieving targeted ads, personalized recommendations, and localized currency rates.",
+      "type": "user_journey",
+      "actorId": "obj-customers",
+      "persona": "Customer",
+      "steps": [
+        {
+          "id": "adv-1",
+          "flowId": "flow-user-adverts",
+          "connectionId": "conn-cust-front",
+          "stepIndex": 0,
+          "note": "User navigates to store catalogue page",
+          "actorAction": "Browses product items"
+        },
+        {
+          "id": "adv-2",
+          "flowId": "flow-user-adverts",
+          "connectionId": "conn-front-ad",
+          "stepIndex": 1,
+          "note": "Fetches relevant ads from Ad Service",
+          "endpoint": "hipstershop.AdService/GetAds",
+          "httpMethod": "gRPC"
+        },
+        {
+          "id": "adv-3",
+          "flowId": "flow-user-adverts",
+          "connectionId": "conn-front-ad",
+          "stepIndex": 2,
+          "note": "Context keyword matcher ranks applicable banner ads"
+        },
+        {
+          "id": "adv-4",
+          "flowId": "flow-user-adverts",
+          "connectionId": "conn-front-ad",
+          "stepIndex": 3,
+          "note": "Returns targeted advertisement payloads",
+          "statusCode": 200
+        },
+        {
+          "id": "adv-5",
+          "flowId": "flow-user-adverts",
+          "connectionId": "conn-front-rec",
+          "stepIndex": 4,
+          "note": "Get recommended items for customer session",
+          "endpoint": "hipstershop.RecommendationService/ListRecommendations",
+          "httpMethod": "gRPC"
+        },
+        {
+          "id": "adv-6",
+          "flowId": "flow-user-adverts",
+          "connectionId": "conn-front-rec",
+          "stepIndex": 5,
+          "note": "Calculates product similarity matrix"
+        },
+        {
+          "id": "adv-7",
+          "flowId": "flow-user-adverts",
+          "connectionId": "conn-front-rec",
+          "stepIndex": 6,
+          "note": "Returns 4 recommended product IDs",
+          "statusCode": 200
+        },
+        {
+          "id": "adv-8",
+          "flowId": "flow-user-adverts",
+          "connectionId": "conn-front-currency",
+          "stepIndex": 7,
+          "note": "Get quote for currency conversion",
+          "endpoint": "hipstershop.CurrencyService/Convert",
+          "httpMethod": "gRPC"
+        },
+        {
+          "id": "adv-9",
+          "flowId": "flow-user-adverts",
+          "connectionId": "conn-front-currency",
+          "stepIndex": 8,
+          "note": "Returns prices converted to local currency",
+          "statusCode": 200
+        }
+      ],
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "views": [
+    {
+      "id": "view-boutique-apps",
+      "architectureId": "arch-icepanel-boutique",
+      "name": "Apps and stores (Online Boutique)",
+      "kind": "container",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ]
+}

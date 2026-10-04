@@ -26,6 +26,12 @@ export interface ShareLinkPayload {
   createdByUserId?: string;
   expiresAt: number | null; // null means never expires
   createdAt: number;
+  diagramData?: {
+    nodes?: unknown[];
+    edges?: unknown[];
+    flows?: unknown[];
+    title?: string;
+  };
 }
 
 export interface AnonymousViewState {
@@ -37,6 +43,12 @@ export interface AnonymousViewState {
   isReadOnly: true;
   allowComments: boolean;
   expiresAt: number | null;
+  diagramData?: {
+    nodes?: unknown[];
+    edges?: unknown[];
+    flows?: unknown[];
+    title?: string;
+  };
 }
 
 export type ShareLinkVerificationResult =
@@ -57,6 +69,12 @@ export function createShareLink(params: {
   createdByUserId?: string;
   expiresInMs?: number | null;
   now?: number;
+  diagramData?: {
+    nodes?: unknown[];
+    edges?: unknown[];
+    flows?: unknown[];
+    title?: string;
+  };
 }): ShareLinkPayload {
   const { workspaceId, viewId } = params;
   const now = params.now ?? Date.now();
@@ -74,8 +92,7 @@ export function createShareLink(params: {
     zoom: params.camera?.zoom !== undefined ? Math.max(0.1, params.camera.zoom) : 1,
   };
 
-  const expiresAt =
-    params.expiresInMs && params.expiresInMs > 0 ? now + params.expiresInMs : null;
+  const expiresAt = params.expiresInMs && params.expiresInMs > 0 ? now + params.expiresInMs : null;
 
   return {
     id: params.id ?? (createId('shl') as ShareLinkId),
@@ -89,6 +106,7 @@ export function createShareLink(params: {
     createdByUserId: params.createdByUserId,
     expiresAt,
     createdAt: now,
+    diagramData: params.diagramData,
   };
 }
 
@@ -155,7 +173,7 @@ export function decodeShareLinkToken(token: string): ShareLinkPayload {
  */
 export function verifyShareLink(
   tokenOrPayload: string | ShareLinkPayload,
-  now: number = Date.now()
+  now: number = Date.now(),
 ): ShareLinkVerificationResult {
   let payload: ShareLinkPayload;
 
@@ -193,6 +211,7 @@ export function resolveAnonymousViewState(payload: ShareLinkPayload): AnonymousV
     isReadOnly: true,
     allowComments: payload.allowComments,
     expiresAt: payload.expiresAt,
+    diagramData: payload.diagramData,
   };
 }
 

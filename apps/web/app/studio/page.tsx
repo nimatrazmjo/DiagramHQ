@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import {
   type CanvasNode,
@@ -52,6 +52,9 @@ import {
   generateArchitectureFromPrompt,
   runArchitectureReview,
   draftADRFromChange,
+  createIcePanelBoutiqueModel,
+  createShareLink,
+  generateShareLinkUrl,
 } from '@diagramhq/domain';
 import {
   InfiniteCanvas,
@@ -119,8 +122,26 @@ const CURRENT_AUTHOR: CommentAuthor = {
 const INITIAL_BRANCHES: ArchitectureBranch[] = (() => {
   const main = createMainBranch('ws-demo' as WorkspaceId, 'arch-studio-init' as ArchitectureId, {
     objects: [
-      { id: 'app-gateway' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Edge API Gateway', kind: 'application', position: { x: 50, y: 50 }, createdAt: new Date(), updatedAt: new Date() },
-      { id: 'app-auth' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Auth Service', kind: 'application', position: { x: 200, y: 200 }, createdAt: new Date(), updatedAt: new Date() },
+      {
+        id: 'app-gateway' as ObjectId,
+        architectureId: 'arch-studio-init' as ArchitectureId,
+        versionId: 'v1' as VersionId,
+        name: 'Edge API Gateway',
+        kind: 'application',
+        position: { x: 50, y: 50 },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'app-auth' as ObjectId,
+        architectureId: 'arch-studio-init' as ArchitectureId,
+        versionId: 'v1' as VersionId,
+        name: 'Auth Service',
+        kind: 'application',
+        position: { x: 200, y: 200 },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ],
     connections: [],
   });
@@ -154,7 +175,16 @@ const INITIAL_SNAPSHOTS: NumberedSnapshot[] = [
     isImmutable: true,
     snapshotData: {
       objects: [
-        { id: 'app-gateway' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Edge API Gateway', kind: 'application', position: { x: 50, y: 50 }, createdAt: new Date(), updatedAt: new Date() },
+        {
+          id: 'app-gateway' as ObjectId,
+          architectureId: 'arch-studio-init' as ArchitectureId,
+          versionId: 'v1' as VersionId,
+          name: 'Edge API Gateway',
+          kind: 'application',
+          position: { x: 50, y: 50 },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       ],
       connections: [],
     },
@@ -170,8 +200,26 @@ const INITIAL_SNAPSHOTS: NumberedSnapshot[] = [
     isImmutable: true,
     snapshotData: {
       objects: [
-        { id: 'app-gateway' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Edge API Gateway', kind: 'application', position: { x: 50, y: 50 }, createdAt: new Date(), updatedAt: new Date() },
-        { id: 'app-auth' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Auth Service', kind: 'application', position: { x: 200, y: 200 }, createdAt: new Date(), updatedAt: new Date() },
+        {
+          id: 'app-gateway' as ObjectId,
+          architectureId: 'arch-studio-init' as ArchitectureId,
+          versionId: 'v1' as VersionId,
+          name: 'Edge API Gateway',
+          kind: 'application',
+          position: { x: 50, y: 50 },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 'app-auth' as ObjectId,
+          architectureId: 'arch-studio-init' as ArchitectureId,
+          versionId: 'v1' as VersionId,
+          name: 'Auth Service',
+          kind: 'application',
+          position: { x: 200, y: 200 },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       ],
       connections: [],
     },
@@ -189,17 +237,60 @@ const SAMPLE_FULL_SNAPSHOT: FullArchitectureSnapshot = {
   isImmutable: true,
   state: {
     objects: [
-      { id: 'app-gateway' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Edge API Gateway', kind: 'application', position: { x: 50, y: 50 }, createdAt: new Date(), updatedAt: new Date() },
-      { id: 'app-auth' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Auth Service', kind: 'application', position: { x: 200, y: 200 }, createdAt: new Date(), updatedAt: new Date() },
+      {
+        id: 'app-gateway' as ObjectId,
+        architectureId: 'arch-studio-init' as ArchitectureId,
+        versionId: 'v1' as VersionId,
+        name: 'Edge API Gateway',
+        kind: 'application',
+        position: { x: 50, y: 50 },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'app-auth' as ObjectId,
+        architectureId: 'arch-studio-init' as ArchitectureId,
+        versionId: 'v1' as VersionId,
+        name: 'Auth Service',
+        kind: 'application',
+        position: { x: 200, y: 200 },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ],
     connections: [
-      { id: 'con-1' as ConnectionId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v1' as VersionId, sourceObjectId: 'app-gateway' as ObjectId, targetObjectId: 'app-auth' as ObjectId, label: 'Auth Token', kind: 'sync', createdAt: new Date(), updatedAt: new Date() },
+      {
+        id: 'con-1' as ConnectionId,
+        architectureId: 'arch-studio-init' as ArchitectureId,
+        versionId: 'v1' as VersionId,
+        sourceObjectId: 'app-gateway' as ObjectId,
+        targetObjectId: 'app-auth' as ObjectId,
+        label: 'Auth Token',
+        kind: 'sync',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ],
     views: [
-      { id: 'view-1' as ViewId, architectureId: 'arch-studio-init' as ArchitectureId, name: 'System Context', kind: 'context', createdAt: new Date(), updatedAt: new Date() },
+      {
+        id: 'view-1' as ViewId,
+        architectureId: 'arch-studio-init' as ArchitectureId,
+        name: 'System Context',
+        kind: 'context',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ],
     flows: [
-      { id: 'flw-1' as FlowId, architectureId: 'arch-studio-init' as ArchitectureId, name: 'Authentication Trace', type: 'api_flow', steps: [], createdAt: new Date(), updatedAt: new Date() },
+      {
+        id: 'flw-1' as FlowId,
+        architectureId: 'arch-studio-init' as ArchitectureId,
+        name: 'Authentication Trace',
+        type: 'api_flow',
+        steps: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ],
     metadata: { env: 'production' },
     documentation: {
@@ -250,7 +341,9 @@ export default function StudioPage(): JSX.Element {
     }
   });
 
-  const [activeView, setActiveView] = useState<'all' | 'context' | 'container' | 'security' | 'data' | 'ownership'>('all');
+  const [activeView, setActiveView] = useState<
+    'all' | 'context' | 'container' | 'security' | 'data' | 'ownership'
+  >('all');
   const [activePersona, setActivePersona] = useState<PersonaMode | 'all'>('all');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
@@ -372,7 +465,8 @@ export default function StudioPage(): JSX.Element {
     return createArchitecturePullRequest({
       number: 14,
       title: 'feat(auth): Upgrade Auth Service to OAuth2 / OIDC & Deploy Billing',
-      description: 'Replaces legacy authentication with OIDC standard and provisions billing microservice.',
+      description:
+        'Replaces legacy authentication with OIDC standard and provisions billing microservice.',
       sourceBranch: 'feat/auth-v2',
       targetBranch: 'main',
       author: {
@@ -383,29 +477,121 @@ export default function StudioPage(): JSX.Element {
       diff: computeVisualArchitectureDiff(
         {
           objects: [
-            { id: 'app-gateway' as ObjectId, architectureId: 'arch-demo' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Edge API Gateway', kind: 'application', position: { x: 50, y: 50 }, createdAt: new Date(), updatedAt: new Date() },
-            { id: 'app-auth' as ObjectId, architectureId: 'arch-demo' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Auth Service', kind: 'application', position: { x: 200, y: 200 }, createdAt: new Date(), updatedAt: new Date() },
+            {
+              id: 'app-gateway' as ObjectId,
+              architectureId: 'arch-demo' as ArchitectureId,
+              versionId: 'v1' as VersionId,
+              name: 'Edge API Gateway',
+              kind: 'application',
+              position: { x: 50, y: 50 },
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+            {
+              id: 'app-auth' as ObjectId,
+              architectureId: 'arch-demo' as ArchitectureId,
+              versionId: 'v1' as VersionId,
+              name: 'Auth Service',
+              kind: 'application',
+              position: { x: 200, y: 200 },
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
           ],
           connections: [],
         },
         {
           objects: [
-            { id: 'app-gateway' as ObjectId, architectureId: 'arch-demo' as ArchitectureId, versionId: 'v2' as VersionId, name: 'Edge API Gateway', kind: 'application', position: { x: 50, y: 50 }, createdAt: new Date(), updatedAt: new Date() },
-            { id: 'app-auth' as ObjectId, architectureId: 'arch-demo' as ArchitectureId, versionId: 'v2' as VersionId, name: 'OAuth2 / OIDC Auth Service', kind: 'application', position: { x: 200, y: 200 }, createdAt: new Date(), updatedAt: new Date() },
-            { id: 'app-billing' as ObjectId, architectureId: 'arch-demo' as ArchitectureId, versionId: 'v2' as VersionId, name: 'Billing Microservice', kind: 'application', position: { x: 400, y: 400 }, createdAt: new Date(), updatedAt: new Date(), metadata: { ownerTeamId: 'team-billing' as TeamId } },
+            {
+              id: 'app-gateway' as ObjectId,
+              architectureId: 'arch-demo' as ArchitectureId,
+              versionId: 'v2' as VersionId,
+              name: 'Edge API Gateway',
+              kind: 'application',
+              position: { x: 50, y: 50 },
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+            {
+              id: 'app-auth' as ObjectId,
+              architectureId: 'arch-demo' as ArchitectureId,
+              versionId: 'v2' as VersionId,
+              name: 'OAuth2 / OIDC Auth Service',
+              kind: 'application',
+              position: { x: 200, y: 200 },
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+            {
+              id: 'app-billing' as ObjectId,
+              architectureId: 'arch-demo' as ArchitectureId,
+              versionId: 'v2' as VersionId,
+              name: 'Billing Microservice',
+              kind: 'application',
+              position: { x: 400, y: 400 },
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              metadata: { ownerTeamId: 'team-billing' as TeamId },
+            },
           ],
           connections: [],
-        }
+        },
       ),
       changeSet: computeArchitectureChangeSet({
         baseObjects: [
-          { id: 'app-gateway' as ObjectId, architectureId: 'arch-demo' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Edge API Gateway', kind: 'application', position: { x: 50, y: 50 }, createdAt: new Date(), updatedAt: new Date() },
-          { id: 'app-auth' as ObjectId, architectureId: 'arch-demo' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Auth Service', kind: 'application', position: { x: 200, y: 200 }, createdAt: new Date(), updatedAt: new Date() },
+          {
+            id: 'app-gateway' as ObjectId,
+            architectureId: 'arch-demo' as ArchitectureId,
+            versionId: 'v1' as VersionId,
+            name: 'Edge API Gateway',
+            kind: 'application',
+            position: { x: 50, y: 50 },
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            id: 'app-auth' as ObjectId,
+            architectureId: 'arch-demo' as ArchitectureId,
+            versionId: 'v1' as VersionId,
+            name: 'Auth Service',
+            kind: 'application',
+            position: { x: 200, y: 200 },
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
         ],
         targetObjects: [
-          { id: 'app-gateway' as ObjectId, architectureId: 'arch-demo' as ArchitectureId, versionId: 'v2' as VersionId, name: 'Edge API Gateway', kind: 'application', position: { x: 50, y: 50 }, createdAt: new Date(), updatedAt: new Date() },
-          { id: 'app-auth' as ObjectId, architectureId: 'arch-demo' as ArchitectureId, versionId: 'v2' as VersionId, name: 'OAuth2 / OIDC Auth Service', kind: 'application', position: { x: 200, y: 200 }, createdAt: new Date(), updatedAt: new Date() },
-          { id: 'app-billing' as ObjectId, architectureId: 'arch-demo' as ArchitectureId, versionId: 'v2' as VersionId, name: 'Billing Microservice', kind: 'application', position: { x: 400, y: 400 }, createdAt: new Date(), updatedAt: new Date(), metadata: { ownerTeamId: 'team-billing' as TeamId } },
+          {
+            id: 'app-gateway' as ObjectId,
+            architectureId: 'arch-demo' as ArchitectureId,
+            versionId: 'v2' as VersionId,
+            name: 'Edge API Gateway',
+            kind: 'application',
+            position: { x: 50, y: 50 },
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            id: 'app-auth' as ObjectId,
+            architectureId: 'arch-demo' as ArchitectureId,
+            versionId: 'v2' as VersionId,
+            name: 'OAuth2 / OIDC Auth Service',
+            kind: 'application',
+            position: { x: 200, y: 200 },
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            id: 'app-billing' as ObjectId,
+            architectureId: 'arch-demo' as ArchitectureId,
+            versionId: 'v2' as VersionId,
+            name: 'Billing Microservice',
+            kind: 'application',
+            position: { x: 400, y: 400 },
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            metadata: { ownerTeamId: 'team-billing' as TeamId },
+          },
         ],
         baseConnections: [],
         targetConnections: [],
@@ -416,13 +602,15 @@ export default function StudioPage(): JSX.Element {
   const allCommentThreads = useMemo(() => buildCommentThreads(comments), [comments]);
   const unresolvedCommentCount = useMemo(
     () => comments.filter((c) => !c.parentCommentId && !c.resolved).length,
-    [comments]
+    [comments],
   );
 
   const commentTargetType = selectedNodeId ? 'object' : 'diagram';
   const commentTargetId = selectedNodeId || 'studio-diagram';
   const commentTargetName = selectedNode
-    ? (typeof selectedNode.data.label === 'string' ? selectedNode.data.label : selectedNode.id)
+    ? typeof selectedNode.data.label === 'string'
+      ? selectedNode.data.label
+      : selectedNode.id
     : 'Entire Architecture';
 
   const visibleThreads = useMemo(() => {
@@ -432,18 +620,21 @@ export default function StudioPage(): JSX.Element {
     return allCommentThreads;
   }, [allCommentThreads, selectedNodeId]);
 
-  const handleCreateComment = useCallback((content: string) => {
-    const targetId = selectedNodeId || 'studio-diagram';
-    const targetType = selectedNodeId ? 'object' : 'diagram';
-    const newComment = createComment({
-      workspaceId: 'ws-demo',
-      targetType,
-      targetId,
-      author: CURRENT_AUTHOR,
-      content,
-    });
-    setComments((prev) => [...prev, newComment]);
-  }, [selectedNodeId]);
+  const handleCreateComment = useCallback(
+    (content: string) => {
+      const targetId = selectedNodeId || 'studio-diagram';
+      const targetType = selectedNodeId ? 'object' : 'diagram';
+      const newComment = createComment({
+        workspaceId: 'ws-demo',
+        targetType,
+        targetId,
+        author: CURRENT_AUTHOR,
+        content,
+      });
+      setComments((prev) => [...prev, newComment]);
+    },
+    [selectedNodeId],
+  );
 
   const handleReplyComment = useCallback((parentComment: Comment, content: string) => {
     const reply = replyToComment(parentComment, {
@@ -455,14 +646,12 @@ export default function StudioPage(): JSX.Element {
 
   const handleResolveComment = useCallback((comment: Comment) => {
     setComments((prev) =>
-      prev.map((c) => (c.id === comment.id ? resolveComment(c, CURRENT_AUTHOR) : c))
+      prev.map((c) => (c.id === comment.id ? resolveComment(c, CURRENT_AUTHOR) : c)),
     );
   }, []);
 
   const handleReopenComment = useCallback((comment: Comment) => {
-    setComments((prev) =>
-      prev.map((c) => (c.id === comment.id ? reopenComment(c) : c))
-    );
+    setComments((prev) => prev.map((c) => (c.id === comment.id ? reopenComment(c) : c)));
   }, []);
 
   const handleSubmitPRReview = useCallback((decision: ReviewDecision, body?: string) => {
@@ -475,7 +664,7 @@ export default function StudioPage(): JSX.Element {
         },
         decision,
         body,
-      })
+      }),
     );
   }, []);
 
@@ -488,7 +677,7 @@ export default function StudioPage(): JSX.Element {
           email: CURRENT_AUTHOR.email,
         },
         content,
-      })
+      }),
     );
   }, []);
 
@@ -500,13 +689,14 @@ export default function StudioPage(): JSX.Element {
 
   const [snapshots, setSnapshots] = useState<NumberedSnapshot[]>(INITIAL_SNAPSHOTS);
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
-  const [selectedSnapshotModal, setSelectedSnapshotModal] = useState<FullArchitectureSnapshot | null>(null);
+  const [selectedSnapshotModal, setSelectedSnapshotModal] =
+    useState<FullArchitectureSnapshot | null>(null);
 
   const [isVisualDiffOpen, setIsVisualDiffOpen] = useState(false);
 
   const currentBranch: ArchitectureBranch = useMemo(
     () => branches.find((b) => b.id === currentBranchId) || defaultMainBranch,
-    [branches, currentBranchId, defaultMainBranch]
+    [branches, currentBranchId, defaultMainBranch],
   );
 
   const liveVersion: LiveArchitectureVersion = useMemo(
@@ -520,7 +710,8 @@ export default function StudioPage(): JSX.Element {
         architectureId: 'arch-studio-init' as ArchitectureId,
         versionId: 'v1' as VersionId,
         name: typeof n.data.label === 'string' ? n.data.label : n.id,
-        kind: ((typeof n.data.kind === 'string' ? n.data.kind : n.type) ?? 'application') as ObjectKind,
+        kind: ((typeof n.data.kind === 'string' ? n.data.kind : n.type) ??
+          'application') as ObjectKind,
         position: n.position,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -538,26 +729,71 @@ export default function StudioPage(): JSX.Element {
       })),
       updatedAt: Date.now(),
     }),
-    [currentBranch.name, currentNodes, currentEdges]
+    [currentBranch.name, currentNodes, currentEdges],
   );
 
   const visualDiffResult = useMemo(() => {
     return computeVisualArchitectureDiff(
       {
         objects: [
-          { id: 'app-gateway' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Edge API Gateway', kind: 'application', position: { x: 50, y: 50 }, createdAt: new Date(), updatedAt: new Date() },
-          { id: 'app-auth' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Auth Service', kind: 'application', position: { x: 200, y: 200 }, createdAt: new Date(), updatedAt: new Date() },
+          {
+            id: 'app-gateway' as ObjectId,
+            architectureId: 'arch-studio-init' as ArchitectureId,
+            versionId: 'v1' as VersionId,
+            name: 'Edge API Gateway',
+            kind: 'application',
+            position: { x: 50, y: 50 },
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            id: 'app-auth' as ObjectId,
+            architectureId: 'arch-studio-init' as ArchitectureId,
+            versionId: 'v1' as VersionId,
+            name: 'Auth Service',
+            kind: 'application',
+            position: { x: 200, y: 200 },
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
         ],
         connections: [],
       },
       {
         objects: [
-          { id: 'app-gateway' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v2' as VersionId, name: 'Edge API Gateway', kind: 'application', position: { x: 50, y: 50 }, createdAt: new Date(), updatedAt: new Date() },
-          { id: 'app-auth' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v2' as VersionId, name: 'OAuth2 / OIDC Auth Service', kind: 'application', position: { x: 200, y: 200 }, createdAt: new Date(), updatedAt: new Date() },
-          { id: 'app-billing' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v2' as VersionId, name: 'Billing Microservice', kind: 'application', position: { x: 400, y: 400 }, createdAt: new Date(), updatedAt: new Date() },
+          {
+            id: 'app-gateway' as ObjectId,
+            architectureId: 'arch-studio-init' as ArchitectureId,
+            versionId: 'v2' as VersionId,
+            name: 'Edge API Gateway',
+            kind: 'application',
+            position: { x: 50, y: 50 },
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            id: 'app-auth' as ObjectId,
+            architectureId: 'arch-studio-init' as ArchitectureId,
+            versionId: 'v2' as VersionId,
+            name: 'OAuth2 / OIDC Auth Service',
+            kind: 'application',
+            position: { x: 200, y: 200 },
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          {
+            id: 'app-billing' as ObjectId,
+            architectureId: 'arch-studio-init' as ArchitectureId,
+            versionId: 'v2' as VersionId,
+            name: 'Billing Microservice',
+            kind: 'application',
+            position: { x: 400, y: 400 },
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
         ],
         connections: [],
-      }
+      },
     );
   }, []);
 
@@ -566,12 +802,15 @@ export default function StudioPage(): JSX.Element {
     setIsBranchSelectorOpen(false);
   }, []);
 
-  const handleCreateBranch = useCallback((name: string, description?: string) => {
-    const newBranch = forkBranch(currentBranch, name, { description });
-    setBranches((prev) => [...prev, newBranch]);
-    setCurrentBranchId(newBranch.id);
-    setIsBranchSelectorOpen(false);
-  }, [currentBranch]);
+  const handleCreateBranch = useCallback(
+    (name: string, description?: string) => {
+      const newBranch = forkBranch(currentBranch, name, { description });
+      setBranches((prev) => [...prev, newBranch]);
+      setCurrentBranchId(newBranch.id);
+      setIsBranchSelectorOpen(false);
+    },
+    [currentBranch],
+  );
 
   // Area 9: Multi-Format Exports, Diagram-as-Code & Public Sharing
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -588,7 +827,7 @@ export default function StudioPage(): JSX.Element {
       createdAt: new Date(),
       updatedAt: new Date(),
     }),
-    []
+    [],
   );
 
   const currentStudioModel: ArchitectureModel = useMemo(() => {
@@ -609,7 +848,7 @@ export default function StudioPage(): JSX.Element {
         createdAt: new Date(),
       },
       liveVersion.objects,
-      liveVersion.connections
+      liveVersion.connections,
     );
   }, [currentBranch.name, liveVersion.objects, liveVersion.connections]);
 
@@ -628,20 +867,23 @@ export default function StudioPage(): JSX.Element {
       connections: liveVersion.connections,
       flows: SAMPLE_FULL_SNAPSHOT.state.flows,
     }),
-    [liveVersion.objects, liveVersion.connections]
+    [liveVersion.objects, liveVersion.connections],
   );
 
-  const handleGenerateArchitecture = useCallback((prompt: string) => {
-    const proposal = generateArchitectureFromPrompt({
-      prompt,
-      workspaceId: 'default' as WorkspaceId,
-      architectureId: 'arch-studio-init' as ArchitectureId,
-      versionId: 'v1' as VersionId,
-      baseObjects: liveVersion.objects,
-      baseConnections: liveVersion.connections,
-    });
-    setAiProposal(proposal);
-  }, [liveVersion.objects, liveVersion.connections]);
+  const handleGenerateArchitecture = useCallback(
+    (prompt: string) => {
+      const proposal = generateArchitectureFromPrompt({
+        prompt,
+        workspaceId: 'default' as WorkspaceId,
+        architectureId: 'arch-studio-init' as ArchitectureId,
+        versionId: 'v1' as VersionId,
+        baseObjects: liveVersion.objects,
+        baseConnections: liveVersion.connections,
+      });
+      setAiProposal(proposal);
+    },
+    [liveVersion.objects, liveVersion.connections],
+  );
 
   const handleApplyAiProposal = useCallback((proposal: GeneratedArchitectureProposal) => {
     const newCanvasNodes: CanvasNode[] = proposal.generatedObjects.map((o) => ({
@@ -669,7 +911,8 @@ export default function StudioPage(): JSX.Element {
     const drafted = draftADRFromChange({
       changeSet: architecturePR.changeSet,
       customTitle: 'Adopt Distributed Event Bus and Caching Layer',
-      problemStatement: 'Decouple high-throughput write path from read queries using Redis and Kafka cluster',
+      problemStatement:
+        'Decouple high-throughput write path from read queries using Redis and Kafka cluster',
       author: {
         id: CURRENT_AUTHOR.id,
         name: CURRENT_AUTHOR.name,
@@ -680,121 +923,149 @@ export default function StudioPage(): JSX.Element {
     setIsAiAdrOpen(true);
   }, [architecturePR.changeSet]);
 
-  const handleNodeSelect = useCallback((nodeId: string | null) => {
-    setSelectedNodeId(nodeId);
-    if (nodeId) {
-      setSelectedEdgeId(null);
-      if (!isInspectorOpen) setIsInspectorOpen(true);
-    }
-  }, [isInspectorOpen]);
+  const handleNodeSelect = useCallback(
+    (nodeId: string | null) => {
+      setSelectedNodeId(nodeId);
+      if (nodeId) {
+        setSelectedEdgeId(null);
+        if (!isInspectorOpen) setIsInspectorOpen(true);
+      }
+    },
+    [isInspectorOpen],
+  );
 
-  const handleEdgeSelect = useCallback((edgeId: string | null) => {
-    setSelectedEdgeId(edgeId);
-    if (edgeId) {
-      setSelectedNodeId(null);
-      if (!isInspectorOpen) setIsInspectorOpen(true);
-    }
-  }, [isInspectorOpen]);
+  const handleEdgeSelect = useCallback(
+    (edgeId: string | null) => {
+      setSelectedEdgeId(edgeId);
+      if (edgeId) {
+        setSelectedNodeId(null);
+        if (!isInspectorOpen) setIsInspectorOpen(true);
+      }
+    },
+    [isInspectorOpen],
+  );
 
-  const handleMetadataChange = useCallback((field: string, value: unknown) => {
-    if (!selectedNodeId) return;
-    setCurrentNodes((prev) =>
-      prev.map((n) => {
-        if (n.id !== selectedNodeId) return n;
-        const data = { ...n.data };
-        if (field === 'name') {
-          data.label = String(value);
-          data.name = String(value);
-        } else if (field === 'description') {
-          data.description = String(value);
-        } else {
-          data[field] = value;
-        }
-        return { ...n, data };
-      }),
-    );
-  }, [selectedNodeId]);
+  const handleMetadataChange = useCallback(
+    (field: string, value: unknown) => {
+      if (!selectedNodeId) return;
+      setCurrentNodes((prev) =>
+        prev.map((n) => {
+          if (n.id !== selectedNodeId) return n;
+          const data = { ...n.data };
+          if (field === 'name') {
+            data.label = String(value);
+            data.name = String(value);
+          } else if (field === 'description') {
+            data.description = String(value);
+          } else {
+            data[field] = value;
+          }
+          return { ...n, data };
+        }),
+      );
+    },
+    [selectedNodeId],
+  );
 
-  const handleEdgeMetadataChange = useCallback((edgeId: string, updates: { protocol?: string; description?: string }) => {
-    setCurrentEdges((prev) =>
-      prev.map((e) => {
-        if (e.id !== edgeId) return e;
-        const data = { ...(e.data || {}), ...updates };
-        const label = updates.protocol && updates.description
-          ? `${updates.protocol}: ${updates.description}`
-          : updates.protocol || updates.description || e.label;
-        return { ...e, label, data };
-      }),
-    );
-  }, []);
+  const handleEdgeMetadataChange = useCallback(
+    (edgeId: string, updates: { protocol?: string; description?: string }) => {
+      setCurrentEdges((prev) =>
+        prev.map((e) => {
+          if (e.id !== edgeId) return e;
+          const data = { ...(e.data || {}), ...updates };
+          const label =
+            updates.protocol && updates.description
+              ? `${updates.protocol}: ${updates.description}`
+              : updates.protocol || updates.description || e.label;
+          return { ...e, label, data };
+        }),
+      );
+    },
+    [],
+  );
 
-  const handleDeleteEdge = useCallback((edgeId: string) => {
-    setCurrentEdges((prev) => prev.filter((e) => e.id !== edgeId));
-    if (selectedEdgeId === edgeId) setSelectedEdgeId(null);
-  }, [selectedEdgeId]);
+  const handleDeleteEdge = useCallback(
+    (edgeId: string) => {
+      setCurrentEdges((prev) => prev.filter((e) => e.id !== edgeId));
+      if (selectedEdgeId === edgeId) setSelectedEdgeId(null);
+    },
+    [selectedEdgeId],
+  );
 
-  const handleDeleteNode = useCallback((nodeId: string) => {
-    setCurrentNodes((prev) => prev.filter((n) => n.id !== nodeId));
-    setCurrentEdges((prev) => prev.filter((e) => e.source !== nodeId && e.target !== nodeId));
-    if (selectedNodeId === nodeId) setSelectedNodeId(null);
-  }, [selectedNodeId]);
+  const handleDeleteNode = useCallback(
+    (nodeId: string) => {
+      setCurrentNodes((prev) => prev.filter((n) => n.id !== nodeId));
+      setCurrentEdges((prev) => prev.filter((e) => e.source !== nodeId && e.target !== nodeId));
+      if (selectedNodeId === nodeId) setSelectedNodeId(null);
+    },
+    [selectedNodeId],
+  );
 
   // Connect two nodes from the Inspector
-  const handleConnectNodesFromInspector = useCallback((targetId: string, protocol?: string, description?: string) => {
-    if (!selectedNodeId || !targetId || selectedNodeId === targetId) return;
+  const handleConnectNodesFromInspector = useCallback(
+    (targetId: string, protocol?: string, description?: string) => {
+      if (!selectedNodeId || !targetId || selectedNodeId === targetId) return;
 
-    const newEdge: CanvasEdge = {
-      id: `conn-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      source: selectedNodeId,
-      target: targetId,
-      type: 'icepanel',
-      label: protocol && description ? `${protocol}: ${description}` : protocol || description || 'connects to',
-      data: {
-        protocol: protocol || 'HTTPS',
-        description: description || undefined,
-      },
-    };
+      const newEdge: CanvasEdge = {
+        id: `conn-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        source: selectedNodeId,
+        target: targetId,
+        type: 'icepanel',
+        label:
+          protocol && description
+            ? `${protocol}: ${description}`
+            : protocol || description || 'connects to',
+        data: {
+          protocol: protocol || 'HTTPS',
+          description: description || undefined,
+        },
+      };
 
-    setCurrentEdges((prev) => [...prev, newEdge]);
-  }, [selectedNodeId]);
+      setCurrentEdges((prev) => [...prev, newEdge]);
+    },
+    [selectedNodeId],
+  );
 
   // Add node from Sidebar or Palette
-  const handleAddNode = useCallback((
-    kind: 'system' | 'application' | 'database' | 'queue' | 'person' | 'component',
-    customData?: { label?: string; technology?: string; icon?: string; description?: string }
-  ) => {
-    const id = `${kind}-${Date.now().toString().slice(-5)}`;
-    const defaultLabels: Record<string, string> = {
-      system: 'New System',
-      application: 'New Service',
-      database: 'New Database',
-      queue: 'New Message Queue',
-      person: 'New Actor',
-      component: 'New Component',
-    };
+  const handleAddNode = useCallback(
+    (
+      kind: 'system' | 'application' | 'database' | 'queue' | 'person' | 'component',
+      customData?: { label?: string; technology?: string; icon?: string; description?: string },
+    ) => {
+      const id = `${kind}-${Date.now().toString().slice(-5)}`;
+      const defaultLabels: Record<string, string> = {
+        system: 'New System',
+        application: 'New Service',
+        database: 'New Database',
+        queue: 'New Message Queue',
+        person: 'New Actor',
+        component: 'New Component',
+      };
 
-    const label = customData?.label || defaultLabels[kind] || 'New Object';
-    const offset = (currentNodes.length % 6) * 40;
+      const label = customData?.label || defaultLabels[kind] || 'New Object';
+      const offset = (currentNodes.length % 6) * 40;
 
-    const newNode: CanvasNode = {
-      id,
-      type: kind,
-      position: { x: 280 + offset, y: 160 + offset },
-      data: {
-        label,
-        kind,
-        technology: customData?.technology,
-        description: customData?.description || 'Newly created architecture element.',
-        icon: customData?.icon,
-        status: 'Active',
-      },
-    };
+      const newNode: CanvasNode = {
+        id,
+        type: kind,
+        position: { x: 280 + offset, y: 160 + offset },
+        data: {
+          label,
+          kind,
+          technology: customData?.technology,
+          description: customData?.description || 'Newly created architecture element.',
+          icon: customData?.icon,
+          status: 'Active',
+        },
+      };
 
-    setCurrentNodes((nds) => [...nds, newNode]);
-    setSelectedNodeId(id);
-    setSelectedEdgeId(null);
-    if (!isInspectorOpen) setIsInspectorOpen(true);
-  }, [currentNodes.length, isInspectorOpen]);
+      setCurrentNodes((nds) => [...nds, newNode]);
+      setSelectedNodeId(id);
+      setSelectedEdgeId(null);
+      if (!isInspectorOpen) setIsInspectorOpen(true);
+    },
+    [currentNodes.length, isInspectorOpen],
+  );
 
   const handleClearDiagram = useCallback(() => {
     if (window.confirm('Clear all objects and connections from the diagram?')) {
@@ -953,6 +1224,24 @@ export default function StudioPage(): JSX.Element {
     setCanvasKey((k) => k + 1);
   }, []);
 
+  const handleLoadIcePanelBoutique = useCallback(() => {
+    const boutique = createIcePanelBoutiqueModel();
+    setCurrentNodes(boutique.nodes);
+    setCurrentEdges(boutique.edges);
+    setSelectedNodeId(null);
+    setSelectedEdgeId(null);
+    setCanvasKey((k) => k + 1);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const sp = new URLSearchParams(window.location.search);
+      if (sp.get('template') === 'online-boutique' || sp.get('diagram') === 'online-boutique') {
+        handleLoadIcePanelBoutique();
+      }
+    }
+  }, [handleLoadIcePanelBoutique]);
+
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-950 text-slate-100 select-none">
       {/* Studio Top Navigation Bar (IcePanel style) */}
@@ -973,12 +1262,19 @@ export default function StudioPage(): JSX.Element {
           </span>
 
           {/* Breadcrumb Hierarchy (IcePanel style) */}
-          <div data-testid="studio-breadcrumb" className="hidden lg:flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+          <div
+            data-testid="studio-breadcrumb"
+            className="hidden lg:flex items-center gap-1.5 text-xs text-slate-400 font-medium"
+          >
             <span className="text-slate-600">/</span>
             <span>Model</span>
             <span className="text-slate-600">/</span>
             <span data-testid="studio-breadcrumb-level" className="text-white font-semibold">
-              {c4Level === 1 ? 'System Context' : c4Level === 2 ? 'Containers & Apps' : 'Components'}
+              {c4Level === 1
+                ? 'System Context'
+                : c4Level === 2
+                  ? 'Containers & Apps'
+                  : 'Components'}
             </span>
           </div>
         </div>
@@ -1061,14 +1357,30 @@ export default function StudioPage(): JSX.Element {
               onChange={(e) => setActivePersona(e.target.value as PersonaMode | 'all')}
               className="bg-transparent text-slate-200 text-xs py-1 px-1.5 focus:outline-none cursor-pointer"
             >
-              <option value="all" className="bg-slate-900 text-slate-200">Default (All)</option>
-              <option value="developer" className="bg-slate-900 text-slate-200">Developer</option>
-              <option value="architect" className="bg-slate-900 text-slate-200">Architect</option>
-              <option value="security" className="bg-slate-900 text-slate-200">Security</option>
-              <option value="devops" className="bg-slate-900 text-slate-200">DevOps</option>
-              <option value="executive" className="bg-slate-900 text-slate-200">Executive</option>
-              <option value="data-engineer" className="bg-slate-900 text-slate-200">Data Engineer</option>
-              <option value="compliance" className="bg-slate-900 text-slate-200">Compliance</option>
+              <option value="all" className="bg-slate-900 text-slate-200">
+                Default (All)
+              </option>
+              <option value="developer" className="bg-slate-900 text-slate-200">
+                Developer
+              </option>
+              <option value="architect" className="bg-slate-900 text-slate-200">
+                Architect
+              </option>
+              <option value="security" className="bg-slate-900 text-slate-200">
+                Security
+              </option>
+              <option value="devops" className="bg-slate-900 text-slate-200">
+                DevOps
+              </option>
+              <option value="executive" className="bg-slate-900 text-slate-200">
+                Executive
+              </option>
+              <option value="data-engineer" className="bg-slate-900 text-slate-200">
+                Data Engineer
+              </option>
+              <option value="compliance" className="bg-slate-900 text-slate-200">
+                Compliance
+              </option>
             </select>
           </div>
         </div>
@@ -1292,6 +1604,18 @@ export default function StudioPage(): JSX.Element {
             <span className="hidden sm:inline">Mobile</span>
           </Link>
 
+          {/* IcePanel Online Boutique Reference Architecture Button */}
+          <button
+            type="button"
+            data-testid="load-icepanel-demo-btn"
+            onClick={handleLoadIcePanelBoutique}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-sky-950/80 hover:bg-sky-900 border border-sky-600/50 text-xs font-semibold text-sky-200 transition-colors shadow-sm"
+            title="Load IcePanel Online Boutique Reference Architecture & Flows"
+          >
+            <span>🧊</span>
+            <span className="hidden sm:inline">Online Boutique</span>
+          </button>
+
           <label className="cursor-pointer px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors">
             📥 Import JSON
             <input type="file" accept=".json" onChange={handleImportJson} className="hidden" />
@@ -1396,7 +1720,8 @@ export default function StudioPage(): JSX.Element {
                 </div>
                 <h3 className="text-base font-semibold text-white mb-1">Canvas is ready</h3>
                 <p className="text-xs text-slate-400 mb-4 leading-relaxed">
-                  Use the Model Tree on the left or the Insert bar to add systems, services, and databases, or load a starter architecture.
+                  Use the Model Tree on the left or the Insert bar to add systems, services, and
+                  databases, or load a starter architecture.
                 </p>
                 <button
                   type="button"
@@ -1426,8 +1751,8 @@ export default function StudioPage(): JSX.Element {
                     s.currentStepIndex < s.totalSteps - 1
                       ? s.currentStepIndex + 1
                       : s.isLooping
-                      ? 0
-                      : s.currentStepIndex,
+                        ? 0
+                        : s.currentStepIndex,
                 }))
               }
               onPrev={() =>
@@ -1443,12 +1768,8 @@ export default function StudioPage(): JSX.Element {
                   isPlaying: false,
                 }))
               }
-              onSpeedChange={(speed) =>
-                setPlaybackState((s) => ({ ...s, speedMultiplier: speed }))
-              }
-              onToggleLoop={() =>
-                setPlaybackState((s) => ({ ...s, isLooping: !s.isLooping }))
-              }
+              onSpeedChange={(speed) => setPlaybackState((s) => ({ ...s, speedMultiplier: speed }))}
+              onToggleLoop={() => setPlaybackState((s) => ({ ...s, isLooping: !s.isLooping }))}
             />
           )}
         </div>
@@ -1458,8 +1779,16 @@ export default function StudioPage(): JSX.Element {
           isOpen={isInspectorOpen}
           onToggle={() => setIsInspectorOpen((prev) => !prev)}
           objectId={selectedNode?.id}
-          objectName={typeof selectedNode?.data.label === 'string' ? selectedNode.data.label : selectedNode?.id}
-          objectKind={typeof selectedNode?.data.kind === 'string' ? selectedNode.data.kind : selectedNode?.type}
+          objectName={
+            typeof selectedNode?.data.label === 'string'
+              ? selectedNode.data.label
+              : selectedNode?.id
+          }
+          objectKind={
+            typeof selectedNode?.data.kind === 'string'
+              ? selectedNode.data.kind
+              : selectedNode?.type
+          }
           metadata={selectedNode?.data as Record<string, unknown> | undefined}
           onMetadataChange={handleMetadataChange}
           onOpenIconPicker={() => setIsIconPickerOpen(true)}
@@ -1647,12 +1976,23 @@ export default function StudioPage(): JSX.Element {
           viewId={currentStudioView.id}
           selectedObjectId={selectedNodeId}
           onGenerateLink={({ preserveCamera, preserveSelection, expiresInMs }) => {
-            const params = new URLSearchParams();
-            params.set('token', `share_${Date.now()}`);
-            if (preserveCamera) params.set('cam', '1');
-            if (preserveSelection && selectedNodeId) params.set('sel', selectedNodeId);
-            if (expiresInMs) params.set('exp', String(Date.now() + expiresInMs));
-            return `https://diagramhq.com/share?${params.toString()}`;
+            const payload = createShareLink({
+              workspaceId: 'default',
+              viewId: currentStudioView.id,
+              camera: preserveCamera ? { panX: 0, panY: 0, zoom: 1 } : undefined,
+              selectedObjectId: preserveSelection ? selectedNodeId : null,
+              expiresInMs,
+              diagramData: {
+                nodes: currentNodes,
+                edges: currentEdges,
+                title: currentStudioView.name,
+              },
+            });
+            const origin =
+              typeof window !== 'undefined' && window.location.origin
+                ? window.location.origin
+                : 'https://diagramhq.com';
+            return generateShareLinkUrl(origin, payload);
           }}
         />
       )}

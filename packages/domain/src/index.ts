@@ -110,3 +110,4 @@ export * from './compliance-packs';
 export * from './billing-plans';
 export * from './marketplace';
 export * from './mobile';
+export * from './icepanel-boutique';

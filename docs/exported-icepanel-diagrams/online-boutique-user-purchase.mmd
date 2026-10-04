@@ -1,0 +1,65 @@
+sequenceDiagram
+    autonumber
+    %% User purchase flows
+    actor p_obj_customers as Customers
+    participant p_obj_frontend as Frontend
+    participant p_obj_checkout_service as Checkout Service
+    participant p_obj_product_catalogue_service as Product Catalogue Service
+    participant p_obj_cart_service as Cart Service
+    participant p_obj_cart_cache as Cart Cache
+    participant p_obj_shipping_service as Shipping Service
+    participant p_obj_payment_service as Payment Service
+    participant p_obj_currency_api as Currency Exchange API
+    participant p_obj_email_service as Email Service
+    p_obj_customers->>p_obj_customers: User clicks checkout and pay
+    p_obj_customers->>p_obj_frontend: POST /api/checkout
+    Note over p_obj_frontend: User requests to make a purchase via Real user traffic
+    p_obj_frontend-->>p_obj_customers: 200
+    p_obj_frontend->>p_obj_checkout_service: gRPC hipstershop.CheckoutService/PlaceOrder
+    Note over p_obj_checkout_service: Initiate checkout process via Start checkout process for product
+    p_obj_checkout_service->>p_obj_product_catalogue_service: gRPC hipstershop.ProductCatalogService/GetProduct
+    Note over p_obj_product_catalogue_service: Check products are in stock and reserve via Request price of product
+    p_obj_product_catalogue_service->>p_obj_checkout_service: Send confirmation of reservation via Request price of product
+    p_obj_checkout_service-->>p_obj_product_catalogue_service: 200
+    p_obj_checkout_service->>p_obj_cart_service: gRPC hipstershop.CartService/GetCart
+    Note over p_obj_cart_service: Fetches the users cart details via Get's in stock items in cart from
+    p_obj_cart_service->>p_obj_cart_cache: TCP HGETALL cart:{userId}
+    Note over p_obj_cart_cache: Checks user cached cart via Checks items from
+    p_obj_cart_cache->>p_obj_cart_service: Returns cached items via Checks items from
+    p_obj_cart_service-->>p_obj_cart_cache: 200
+    p_obj_cart_service->>p_obj_checkout_service: Returns cached items via Get's in stock items in cart from
+    p_obj_checkout_service-->>p_obj_cart_service: 200
+    p_obj_checkout_service->>p_obj_shipping_service: gRPC hipstershop.ShippingService/GetQuote
+    Note over p_obj_shipping_service: Get shipping details via Send shipping instructions
+    p_obj_shipping_service->>p_obj_checkout_service: Returns shipping details via Send shipping instructions
+    p_obj_checkout_service-->>p_obj_shipping_service: 200
+    p_obj_checkout_service->>p_obj_payment_service: gRPC hipstershop.PaymentService/Charge
+    Note over p_obj_payment_service: Send payment to process via Make payment after checkout
+    p_obj_payment_service->>p_obj_currency_api: HTTPS GET /latest?base=USD
+    Note over p_obj_currency_api: Fetch currency exchange of local currency via Fetch latest exchange rate for payment
+    p_obj_currency_api->>p_obj_payment_service: Return exchange rate via Fetch latest exchange rate for payment
+    p_obj_payment_service-->>p_obj_currency_api: 200
+    p_obj_payment_service->>p_obj_checkout_service: [Success] Payment confirmation via Make payment after checkout
+    p_obj_checkout_service-->>p_obj_payment_service: 200
+    p_obj_checkout_service->>p_obj_email_service: gRPC hipstershop.EmailService/SendOrderConfirmation
+    Note over p_obj_email_service: [Success] Create automated email confirmation to customer via Confirm order has been placed
+    p_obj_email_service->>p_obj_customers: [Success] Send confirmation email via Email
+    p_obj_checkout_service->>p_obj_frontend: [Success] Payment and order confirmation message via Start checkout process for product
+    p_obj_frontend-->>p_obj_checkout_service: 200
+    p_obj_frontend->>p_obj_customers: [Success] Confirm user purchase via Real user traffic
+    p_obj_customers-->>p_obj_frontend: 200
+    p_obj_payment_service->>p_obj_checkout_service: [Failed] Payment unsuccessful message via Make payment after checkout
+    p_obj_checkout_service-->>p_obj_payment_service: 402
+    p_obj_checkout_service->>p_obj_frontend: [Failed] Payment failed via Start checkout process for product
+    p_obj_frontend-->>p_obj_checkout_service: 402
+    p_obj_frontend->>p_obj_customers: [Failed] Payment unsuccessful message via Real user traffic
+    p_obj_customers-->>p_obj_frontend: 402
+    p_obj_payment_service->>p_obj_payment_service: [Timeout] Payment timeout (2 mins)
+    p_obj_payment_service-->>p_obj_payment_service: 504
+    p_obj_payment_service->>p_obj_payment_service: [Timeout] Retry payment gateway transaction
+    p_obj_payment_service->>p_obj_checkout_service: [Timeout] Payment timeout via Make payment after checkout
+    p_obj_checkout_service-->>p_obj_payment_service: 504
+    p_obj_checkout_service->>p_obj_frontend: [Timeout] Payment timeout via Start checkout process for product
+    p_obj_frontend-->>p_obj_checkout_service: 504
+    p_obj_frontend->>p_obj_customers: [Timeout] Payment timeout via Real user traffic
+    p_obj_customers-->>p_obj_frontend: 504
