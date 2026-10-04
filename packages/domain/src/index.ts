@@ -104,3 +104,4 @@ export * from './scim';
 export * from './advanced-rbac';
 export * from './audit-log';
 export * from './organization-policies';
+export * from './enterprise-security';

@@ -271,7 +271,7 @@ Status: IN PROGRESS  ·  Depends on: Phase 01, Phase 06, Phase 11  ·  File: `ph
 - [x] F104 — Advanced RBAC
 - [x] F105 — Audit logs
 - [x] F106 — Organization policies
-- [ ] F107 — Enterprise security
+- [x] F107 — Enterprise security
 - [ ] F108 — Private deployment
 - [ ] F131 — Compliance packs
 - [ ] F132 — Billing & plans

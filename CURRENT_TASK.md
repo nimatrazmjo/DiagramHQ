@@ -1,30 +1,30 @@
-# Current Task: F106 — Organization policies
+# Current Task: F107 — Enterprise security
 
 **Status**: COMPLETE
 
 ## Description
-Organization Governance & Security Policies (Phase 13 — Enterprise):
-- Centralized Organization Governance Policies (`@diagramhq/domain`):
-  - IP Restrictions: Allowlist / denylist evaluation with CIDR subnet prefix parsing and unsigned 32-bit integer matching (`isIpInCidr`, `ipToNumber`), plus role-based bypass exemptions (`owner`).
-  - Session Management: Maximum session duration limits, inactivity idle timeouts, concurrent active session caps, mandatory MFA verification, and corporate device trust enforcement.
-  - Data Retention Lifecycle: Automated retention cutoffs (`calculateRetentionCutoffDate`) and permanent purge eligibility (`isItemEligibleForRetentionPurge`) across soft-deleted items, version history, audit logs, and inactive workspaces.
-  - Export Controls: Format whitelisting (PNG, SVG, PDF, JSON, CSV, Markdown), mandatory security watermarks on visual exports, external recipient email domain constraints, and sensitive data classification tag blocking (`pci`, `phi`, `secret`).
-  - Governance Engine: Centralized policy evaluation (`evaluateIpRestriction`, `evaluateSessionPolicy`, `evaluateDataRetentionPolicy`, `evaluateExportControl`) with global enforcement mode switcher (`enforce`, `audit_only`, `disabled`) and factory defaults (`createDefaultOrganizationPolicies`).
+Enterprise Security, Hardening & Compliance Checklist (Phase 13 — Enterprise):
+- Cryptographic Hardening & Resilience (`@diagramhq/domain`):
+  - Authenticated AES-256-GCM encryption at rest with Customer-Managed Encryption Keys (CMEK) via KMS, envelope encryption, and automated 90-day key rotation (`EncryptionAtRestConfig`).
+  - Transport security enforcing minimum TLS 1.3, 1-year HSTS preload, and Perfect Forward Secrecy (`EncryptionInTransitConfig`).
+  - Automated continuous Point-In-Time Recovery (PITR) with 30-day retention, multi-region replication, WORM ransomware protection, and automated restore drill simulator (`simulateBackupRestoreDrill`).
+  - NIST SP 800-88 Rev 1 compliant cryptographic shredding (`executeCryptoShredding`) with active legal hold preservation safeguards.
+  - Enterprise Security Review Checklist evaluation engine (`evaluateEnterpriseSecurityChecklist`) scoring 14 controls across 6 domains (Network/Transport, Cryptography, Identity & Access, Audit Logging, Resilience/DR, Vulnerability Management) against SOC2, ISO 27001, and NIST SP 800-53 benchmarks.
 - Web & Component Layer (`@diagramhq/web`):
-  - `apps/web/components/enterprise/org-policies-modal.tsx`: Organization governance modal with tabbed configuration for IP restrictions, session lifetimes, retention lifecycles, export controls, and an interactive Live Policy Enforcement Simulator.
-  - `apps/web/components/enterprise/index.ts`: Exported `OrgPoliciesModal`.
+  - `apps/web/components/enterprise/enterprise-security-modal.tsx`: Interactive modal with executive KPI ribbon, multi-domain checklist filters, live DR drill simulator, and crypto-shredding tester.
+  - `apps/web/components/enterprise/index.ts`: Exported `EnterpriseSecurityModal`.
 - Acceptance criteria:
-  - Org policies, IP restrictions, session management, data retention, export controls
-  - Test: a policy is enforced in test.
+  - Encryption, backup, retention, export controls, security review checklist
+  - Test: the enterprise security checklist passes.
 
-- Feature ID: F106
+- Feature ID: F107
 - Phase: 13 — Enterprise
-- Dependencies: F086 (Architecture rules)
+- Dependencies: None
 
 ## Evidence
-- Domain: `packages/domain/src/organization-policies.ts`, `packages/domain/src/organization-policies.test.ts` (26 tests passing)
-- Web: `apps/web/components/enterprise/org-policies-modal.tsx`, `apps/web/components/enterprise/index.ts`, `apps/web/org-policies.spec.tsx` (6 tests passing)
-- Reviews: `.harness/reviews/F106-PR.md`, `.harness/reviews/F106-review.md`
+- Domain: `packages/domain/src/enterprise-security.ts`, `packages/domain/src/enterprise-security.test.ts` (10 tests passing)
+- Web: `apps/web/components/enterprise/enterprise-security-modal.tsx`, `apps/web/components/enterprise/index.ts`, `apps/web/enterprise-security.spec.tsx` (5 tests passing)
+- Reviews: `.harness/reviews/F107-PR.md`, `.harness/reviews/F107-review.md`
 
 ## Next Feature
-- **Phase 13 — Enterprise**: **F107 — Enterprise security** (Encryption, backup, retention, export controls, security review checklist)
+- **Phase 13 — Enterprise**: **F108 — Private deployment** (Deployable to a customer VPC, air-gapped config, deployment docs & smoke tests)

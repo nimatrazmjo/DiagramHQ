@@ -122,7 +122,7 @@ Evidence:
 
 ### F107 — Enterprise security
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Hardening.
 
@@ -131,6 +131,11 @@ Acceptance Criteria:
 - Encryption, backup, retention, export controls, security review checklist
 
 Test: the enterprise security checklist passes.
+
+Evidence:
+- Domain: `packages/domain/src/enterprise-security.ts`, `packages/domain/src/enterprise-security.test.ts` (10 tests passing)
+- Web: `apps/web/components/enterprise/enterprise-security-modal.tsx`, `apps/web/components/enterprise/index.ts`, `apps/web/enterprise-security.spec.tsx` (5 tests passing)
+- Reviews: `.harness/reviews/F107-PR.md`, `.harness/reviews/F107-review.md`
 
 ### F108 — Private deployment
 
