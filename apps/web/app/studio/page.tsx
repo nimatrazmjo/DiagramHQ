@@ -645,8 +645,6 @@ export default function StudioPage(): JSX.Element {
             key={canvasKey}
             initialNodes={displayNodes}
             initialEdges={currentEdges}
-            selectedNodeIds={selectedNodeId ? [selectedNodeId] : []}
-            selectedEdgeIds={selectedEdgeId ? [selectedEdgeId] : []}
             onNodeSelect={handleNodeSelect}
             onEdgeSelect={handleEdgeSelect}
             showPalette

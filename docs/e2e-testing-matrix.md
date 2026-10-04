@@ -75,6 +75,17 @@ This document maintains an up-to-date tracker of all end-to-end (E2E) browser te
 | 6 | Play/pause, speed & loop controls | Auto-advances steps, toggles speed multiplier (2.0x), restarts to step 1, and enables loop | ✅ Passed |
 | 7 | Workspace to studio cross-link | Clicking "Interactive Studio" on flows explorer navigates to `/studio` canvas | ✅ Passed |
 
+### Suite 6: Advanced Canvas Interactions, Multi-Select & Auto-Layout (`apps/web/e2e/canvas-advanced.spec.ts`)
+| # | Test Case Description | Verified Behavior | Status |
+|---|---|---|:---:|
+| 1 | Auto-layout engines catalog | Opens layout menu and renders registered engines (Grid, Radial, Force-Directed, Hierarchical) | ✅ Passed |
+| 2 | Auto-layout coordinate recomputation | Applying Grid layout updates node coordinates across the graph and enables Undo | ✅ Passed |
+| 3 | Undo & Redo buttons | Reverts graph coordinates on Undo and re-applies layout on Redo | ✅ Passed |
+| 4 | Undo / Redo keyboard shortcuts | Executes command undo (`Meta+Z`) and redo (`Meta+Shift+Z`) via key combinations | ✅ Passed |
+| 5 | Box-select marquee toggle | Toggles marquee box select mode between default and active (`✦ BOX SELECT`) | ✅ Passed |
+| 6 | Shift+Click multi-selection & alignment | Selects multiple nodes, mounts Alignment Toolbar (Align Left, Snap-to-Grid), and clears | ✅ Passed |
+| 7 | Focus mode & Minimap tools | Toggles element isolation via Focus Mode and minimap visibility in DOM | ✅ Passed |
+
 ---
 
 ## 3. What is Left — Playwright E2E Implementation Backlog
@@ -92,8 +103,8 @@ The following suites represent upcoming areas to achieve 100% end-to-end browser
 │ 3. Drag-Drop & Quick Connect   │ 6 tests           │ ✅ COMPLETED      │
 │ 4. Visual Regression           │ 5 tests           │ ✅ COMPLETED      │
 │ 5. Flows & Sequence Playback   │ 7 tests           │ ✅ COMPLETED      │
+│ 6. Advanced Canvas & Layouts   │ 7 tests           │ ✅ COMPLETED      │
 ├────────────────────────────────┼───────────────────┼───────────────────┤
-│ 6. Advanced Canvas & Layouts   │ ~6 tests          │ ⏳ BACKLOG (P1)   │
 │ 7. Collaboration & Comments    │ ~6 tests          │ ⏳ BACKLOG (P2)   │
 │ 8. Versioning & Visual Diff    │ ~5 tests          │ ⏳ BACKLOG (P2)   │
 │ 9. Exports & Diagram Sharing   │ ~6 tests          │ ⏳ BACKLOG (P2)   │
@@ -102,12 +113,6 @@ The following suites represent upcoming areas to achieve 100% end-to-end browser
 │ 12. CI & Cross-Browser Matrix  │ Matrix Config     │ ⏳ BACKLOG (P3)   │
 └────────────────────────────────┴───────────────────┴───────────────────┘
 ```
-
-### Area 6: Advanced Canvas & Layouts (`e2e/canvas-advanced.spec.ts`)
-- [ ] Keyboard shortcut undo/redo (`Meta+Z`, `Meta+Shift+Z`) with node position history.
-- [ ] Marquee box multi-selection (Shift + mouse drag box select).
-- [ ] Alignment toolbar actions (Align Left, Align Center, Distribute Horizontal/Vertical).
-- [ ] Auto-layout algorithms (Dagre Hierarchical, Grid, Radial, Force-directed) repositioning verification.
 
 ### Area 7: Collaboration, Comments & Presence (`e2e/collaboration.spec.ts`)
 - [ ] Threaded comments: pinning comment pin to a canvas node.
