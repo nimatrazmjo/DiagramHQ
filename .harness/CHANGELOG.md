@@ -2,6 +2,27 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-04 — F134 — Mobile (Phase 13 Progress — ALL 135 FEATURES COMPLETE!)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `mobile.ts`: Mobile Web Companion & Desktop-First Responsive Governance engine:
+    - Viewport detection and classification (`isMobileViewport`, `MOBILE_VIEWPORT_BREAKPOINT_PX = 768`).
+    - Desktop-First Canvas Invariant (`getCanvasDisplayMode`): Complex 2D node drag-and-drop canvas editing is desktop-first, while mobile viewports (< 768px) activate the dedicated mobile companion experience with explicit advisory ribbon.
+    - 6 core mobile workflows: Architecture Views inspection with level badges and component counts, instant fuzzy search (`searchMobileCatalog`), change and pull request review approvals (`approveArchitectureChange`, `rejectArchitectureChange`), threaded architecture review comments (`addMobileComment`, `resolveMobileComment`), notification stream, and lightweight Mobile AI Copilot architectural Q&A (`askMobileAiCopilot`).
+  - `mobile.test.ts`: 6 unit tests verifying viewport classification, desktop-first canvas invariant, search, approvals, comments, AI Copilot questions, and mobile viewport acceptance criteria.
+  - `index.ts`: Exported `mobile` module.
+- Web layer (`apps/web/`):
+  - `components/enterprise/mobile-companion.tsx`: Accessible mobile companion shell with top header, desktop-first advisory ribbon, responsive view cards, instant search, review approvals deck, comments feed, and bottom mobile navigation bar.
+  - `components/enterprise/index.ts`: Exported `MobileCompanion`.
+  - `mobile.spec.tsx`: 3 integration and component tests verifying UI rendering and acceptance criteria (viewing, approving a change, and commenting under mobile viewport).
+- Reviews:
+  - `.harness/reviews/F134-PR.md`, `.harness/reviews/F134-review.md`.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 110 test files / 742 tests ✓, web 124 test files / 625 tests ✓, `next build ✓`.
+- **PROJECT COMPLETE: 135 / 135 features completed overall (100.0%) across all 13 phases!**
+
 ## 2026-10-04 — F133 — Marketplace (Phase 13 Progress)
 
 Status: COMPLETE
