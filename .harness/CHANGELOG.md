@@ -2,6 +2,29 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-04 — F108 — Private deployment (Phase 13 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ids.ts`: Added `'dep'` prefix to `IdPrefix` union and created branded type `DeploymentId`.
+  - `private-deployment.ts`: Self-hosted customer VPC deployment and air-gapped architecture engine:
+    - Customer VPC deployment profiles (AWS VPC, GCP VPC, Azure VNet, On-Premises bare metal, Air-Gapped Enclave).
+    - Air-gapped zero-outbound-egress configuration (`AirGappedConfig`): internal container registry (`docker.customer.internal`), local private AI engines (vLLM / Ollama), local embedded static assets, and offline cryptographic license validation.
+    - Automated topology manifest generation for offline `docker-compose.yml` and Kubernetes Helm `values.yaml` with network egress filtering.
+    - Automated Clean Environment Smoke Test Suite (`runPrivateDeploymentSmokeTests`) executing 6 mission-critical readiness probes (Web gateway `/healthz`, NestJS API `/api/health`, PostgreSQL connection pool, S3/MinIO bucket read/write, local AI endpoint, and strict egress barrier firewall checks).
+  - `private-deployment.test.ts`: 7 unit tests covering 100% smoke test pass rate in clean environments, degraded environment fault detection, egress barrier verification, and offline manifest syntax.
+  - `index.ts`: Exported `private-deployment` module.
+- Documentation:
+  - `.harness/deployment/PRIVATE_DEPLOYMENT.md`: Architecture diagrams, prerequisites, air-gapped environment configuration, and verification procedures.
+- Web layer (`apps/web/`):
+  - `components/enterprise/private-deployment-modal.tsx`: Interactive Private VPC & Air-Gapped Deployment modal with deployment status ribbon, configuration forms, manifest viewer with copy action, and live clean environment smoke test runner.
+  - `components/enterprise/index.ts`: Exported `PrivateDeploymentModal`.
+  - `private-deployment.spec.tsx`: 4 integration and component tests verifying UI rendering, 100% clean environment smoke suite pass rate, and air-gapped Docker Compose/Helm manifest generation.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 105 test files / 718 tests ✓, web 120 test files / 613 tests ✓, `next build ✓`.
+- **Milestone: 126 / 135 features completed overall (93.3%)!**
+
 ## 2026-10-04 — F107 — Enterprise security (Phase 13 Progress)
 
 Status: COMPLETE

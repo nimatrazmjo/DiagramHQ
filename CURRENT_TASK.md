@@ -1,30 +1,31 @@
-# Current Task: F107 — Enterprise security
+# Current Task: F108 — Private deployment
 
 **Status**: COMPLETE
 
 ## Description
-Enterprise Security, Hardening & Compliance Checklist (Phase 13 — Enterprise):
-- Cryptographic Hardening & Resilience (`@diagramhq/domain`):
-  - Authenticated AES-256-GCM encryption at rest with Customer-Managed Encryption Keys (CMEK) via KMS, envelope encryption, and automated 90-day key rotation (`EncryptionAtRestConfig`).
-  - Transport security enforcing minimum TLS 1.3, 1-year HSTS preload, and Perfect Forward Secrecy (`EncryptionInTransitConfig`).
-  - Automated continuous Point-In-Time Recovery (PITR) with 30-day retention, multi-region replication, WORM ransomware protection, and automated restore drill simulator (`simulateBackupRestoreDrill`).
-  - NIST SP 800-88 Rev 1 compliant cryptographic shredding (`executeCryptoShredding`) with active legal hold preservation safeguards.
-  - Enterprise Security Review Checklist evaluation engine (`evaluateEnterpriseSecurityChecklist`) scoring 14 controls across 6 domains (Network/Transport, Cryptography, Identity & Access, Audit Logging, Resilience/DR, Vulnerability Management) against SOC2, ISO 27001, and NIST SP 800-53 benchmarks.
+Self-Hosted Customer VPC & Air-Gapped Deployment Architecture (Phase 13 — Enterprise):
+- VPC Architecture & Offline Infrastructure (`@diagramhq/domain`):
+  - Customer VPC deployment profiles (AWS VPC, GCP VPC, Azure VNet, On-Premises bare metal, Air-Gapped Enclave).
+  - Air-gapped zero-outbound-egress configuration (`AirGappedConfig`): internal container registry, local private AI engines (vLLM / Ollama), local embedded static assets, and offline cryptographic license validation.
+  - Manifest generators: Automated generation of offline `docker-compose.yml` and Kubernetes Helm `values.yaml` with network egress filtering.
+  - Clean Environment Automated Smoke Test Suite (`runPrivateDeploymentSmokeTests`): 6 automated readiness probes (Web gateway `/healthz`, NestJS API `/api/health`, PostgreSQL connection pool, S3/MinIO bucket read/write, local AI endpoint, and strict egress barrier firewall checks).
+  - Deployment Documentation: `.harness/deployment/PRIVATE_DEPLOYMENT.md`.
 - Web & Component Layer (`@diagramhq/web`):
-  - `apps/web/components/enterprise/enterprise-security-modal.tsx`: Interactive modal with executive KPI ribbon, multi-domain checklist filters, live DR drill simulator, and crypto-shredding tester.
-  - `apps/web/components/enterprise/index.ts`: Exported `EnterpriseSecurityModal`.
+  - `apps/web/components/enterprise/private-deployment-modal.tsx`: Interactive modal with deployment status ribbon, configuration forms, manifest viewer with copy action, and live clean environment smoke test runner.
+  - `apps/web/components/enterprise/index.ts`: Exported `PrivateDeploymentModal`.
 - Acceptance criteria:
-  - Encryption, backup, retention, export controls, security review checklist
-  - Test: the enterprise security checklist passes.
+  - Deployable to a customer VPC; air-gapped config; deployment docs
+  - Test: deploy to a clean environment; smoke passes.
 
-- Feature ID: F107
+- Feature ID: F108
 - Phase: 13 — Enterprise
 - Dependencies: None
 
 ## Evidence
-- Domain: `packages/domain/src/enterprise-security.ts`, `packages/domain/src/enterprise-security.test.ts` (10 tests passing)
-- Web: `apps/web/components/enterprise/enterprise-security-modal.tsx`, `apps/web/components/enterprise/index.ts`, `apps/web/enterprise-security.spec.tsx` (5 tests passing)
-- Reviews: `.harness/reviews/F107-PR.md`, `.harness/reviews/F107-review.md`
+- Domain: `packages/domain/src/private-deployment.ts`, `packages/domain/src/private-deployment.test.ts` (7 tests passing)
+- Web: `apps/web/components/enterprise/private-deployment-modal.tsx`, `apps/web/components/enterprise/index.ts`, `apps/web/private-deployment.spec.tsx` (4 tests passing)
+- Documentation: `.harness/deployment/PRIVATE_DEPLOYMENT.md`
+- Reviews: `.harness/reviews/F108-PR.md`, `.harness/reviews/F108-review.md`
 
 ## Next Feature
-- **Phase 13 — Enterprise**: **F108 — Private deployment** (Deployable to a customer VPC, air-gapped config, deployment docs & smoke tests)
+- **Phase 13 — Enterprise**: **F131 — Compliance packs** (SOC2, ISO 27001, GDPR, HIPAA, PCI DSS, NIST, CIS mappings; control -> objects -> evidence -> owner -> status; no false 'compliant' badge)

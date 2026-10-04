@@ -105,3 +105,4 @@ export * from './advanced-rbac';
 export * from './audit-log';
 export * from './organization-policies';
 export * from './enterprise-security';
+export * from './private-deployment';
