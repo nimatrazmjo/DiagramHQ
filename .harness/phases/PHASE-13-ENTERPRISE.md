@@ -86,7 +86,7 @@ Evidence:
 
 ### F105 — Audit logs
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Immutable audit.
 
@@ -95,6 +95,11 @@ Acceptance Criteria:
 - Immutable who/what/when, including AI-agent actions
 
 Test: actions recorded; the log is append-only.
+
+Evidence:
+- Domain: `packages/domain/src/audit-log.ts`, `packages/domain/src/audit-log.test.ts` (9 tests passing)
+- Web: `apps/web/components/enterprise/audit-logs-modal.tsx`, `apps/web/components/enterprise/index.ts`, `apps/web/audit-logs.spec.tsx` (3 tests passing)
+- Reviews: `.harness/reviews/F105-PR.md`, `.harness/reviews/F105-review.md`
 
 ### F106 — Organization policies
 
