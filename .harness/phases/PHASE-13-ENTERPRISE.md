@@ -29,7 +29,7 @@ Evidence:
 
 ### F102 — SAML
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: SAML support.
 
@@ -40,6 +40,11 @@ Acceptance Criteria:
 - SAML assertion flow
 
 Test: SAML login via a test IdP.
+
+Evidence:
+- Domain: `packages/domain/src/saml.ts`, `packages/domain/src/saml.test.ts` (17 tests passing)
+- Web: `apps/web/auth.config.ts`, `apps/web/auth.spec.ts` (9 tests passing), `apps/web/app/login/login-form.tsx`, `apps/web/components/enterprise/sso-settings-modal.tsx`, `apps/web/saml.spec.tsx` (5 tests passing)
+- Reviews: `.harness/reviews/F102-PR.md`, `.harness/reviews/F102-review.md`
 
 ### F103 — SCIM
 

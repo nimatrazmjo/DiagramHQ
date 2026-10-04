@@ -13,21 +13,23 @@ Phase Name: Enterprise
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F102
-Feature Name: SAML
+Feature ID: F103
+Feature Name: SCIM
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 119
+Completed: 120
 In Progress: 0
 Blocked: 0
-Not Started: 16
-Progress: 88.1%
+Not Started: 15
+Progress: 88.9%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F101 — SSO. Implemented Enterprise Single Sign-On (SSO) with OpenID Connect (OIDC), OAuth2, and corporate Identity Provider (IdP) integration for DiagramHQ (Phase 13 — Enterprise). Built pure TypeScript domain logic (`sso.ts`) for enterprise IdP provider configurations, corporate email domain auto-routing and discovery, strict SSO enforcement policies, cryptographically secure PKCE challenges and nonces, OIDC claim normalization, group-to-role attribute mapping, Just-In-Time (JIT) user provisioning, and a deterministic Test IdP simulation harness. Integrated SSO authentication seamlessly into NextAuth (`auth.config.ts`, `auth.spec.ts`) and the DiagramHQ Web login experience (`LoginForm`) with dedicated password/SSO modes, real-time enterprise domain detection, 1-click Test IdP authentication, and an enterprise IdP administration settings modal (`SsoSettingsModal`). 19 domain unit tests, 14 web integration tests (6 in `sso.spec.tsx`, 8 in `auth.spec.ts`). **Phase 13 — Enterprise launched! Milestone: 119 / 135 features completed overall (88.1%)!**
+F102 — SAML. Implemented Enterprise SAML 2.0 Web Browser Single Sign-On (SSO) assertion flow and metadata exchange for DiagramHQ (Phase 13 — Enterprise). Built pure TypeScript domain logic (`saml.ts`) for Service Provider (SP) metadata generation (`buildSpMetadataXml`), Identity Provider (IdP) metadata parsing (`parseIdpMetadataXml`), AuthnRequest generation with Base64 encoding and HTTP-Redirect query URL constructor, SAML 2.0 Response & Assertion condition verification (InResponseTo CSRF mitigation, Issuer matching, NotBefore/NotOnOrAfter time validity windows with clock skew tolerance, and AudienceRestriction checks), Subject NameID and AttributeStatement extraction, group-to-role attribute mapping to DiagramHQ `MemberRole`, Just-In-Time (JIT) provisioning, and a deterministic Test SAML IdP simulation engine. Integrated SAML 2.0 authentication into NextAuth (`auth.config.ts`, `auth.spec.ts`), the Web login interface (`LoginForm` 1-Click SAML sign-in), and the Enterprise SSO settings modal (`SsoSettingsModal` SAML 2.0 SP Config tab with copy button, IdP XML parser, and simulation runner). 17 domain unit tests, 14 web integration tests (5 in `saml.spec.tsx`, 9 in `auth.spec.ts`). **Milestone: 120 / 135 features completed overall (88.9%)!**
+
+Prior: F101 — SSO. Implemented Enterprise Single Sign-On (SSO) with OpenID Connect (OIDC), OAuth2, and corporate Identity Provider (IdP) integration for DiagramHQ (Phase 13 — Enterprise). Built pure TypeScript domain logic (`sso.ts`) for enterprise IdP provider configurations, corporate email domain auto-routing and discovery, strict SSO enforcement policies, cryptographically secure PKCE challenges and nonces, OIDC claim normalization, group-to-role attribute mapping, Just-In-Time (JIT) user provisioning, and a deterministic Test IdP simulation harness. Integrated SSO authentication seamlessly into NextAuth (`auth.config.ts`, `auth.spec.ts`) and the DiagramHQ Web login experience (`LoginForm`) with dedicated password/SSO modes, real-time enterprise domain detection, 1-click Test IdP authentication, and an enterprise IdP administration settings modal (`SsoSettingsModal`). 19 domain unit tests, 14 web integration tests (6 in `sso.spec.tsx`, 8 in `auth.spec.ts`). **Phase 13 — Enterprise launched! Milestone: 119 / 135 features completed overall (88.1%)!**
 
 Prior: F100 — SVG. Implemented high-fidelity SVG architecture diagram export matching the interactive canvas styling for DiagramHQ (Phase 12 — Documentation). Built pure TypeScript SVG vector compilation engine (`svg-export.ts`) producing standalone, W3C-compliant SVG documents with custom C4 shape silhouettes and inline kind icons (Actor, Store, Application, Component, System), technology and governance pills, parent system and boundary enclosures with dashed borders (`stroke-dasharray="6,4"`) and header pills, multi-style edge routing (curved cubic Bezier matching IcePanel Edge, stepped orthogonal, and straight lines) with centered protocol chips, background dot grid patterns, theme palettes (Dark Canvas `#090D16`, Light Paper `#F8FAFC`, Transparent Vector), interactive hover `<title>` tooltips, and C4 component kind legend guide. Added canvas UI `<SvgExportModal />` with 3 tabs (Interactive Preview with viewport zoom/pan controls and live graphic element; Fidelity & Styling Options with theme switcher, edge routing switcher, resolution scale selector 1x/2x/3x, and toggles for grid, badges, banner, legend, tooltips; SVG XML Markup inspector), and Copy SVG Code / Copy Data URI / Download SVG actions. 10 domain unit tests, 3 web integration tests. **Phase 12 — Documentation is 100% COMPLETE (9/9 features)!**
 

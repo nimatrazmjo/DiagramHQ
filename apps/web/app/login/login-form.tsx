@@ -77,7 +77,7 @@ export function LoginForm(): JSX.Element {
 
   const detectedIdp = getDetectedIdp(ssoEmail);
 
-  const handleSignIn = (targetEmail: string, targetPass: string, isSso = false) => {
+  const handleSignIn = (targetEmail: string, targetPass: string, isSso = false, isSaml = false) => {
     setError(null);
     startTransition(async () => {
       try {
@@ -90,6 +90,7 @@ export function LoginForm(): JSX.Element {
           email: cleanEmail,
           password: targetPass.trim(),
           isSso: isSso ? 'true' : 'false',
+          isSaml: isSaml ? 'true' : 'false',
           redirect: false,
         });
 
@@ -272,7 +273,20 @@ export function LoginForm(): JSX.Element {
             onClick={() => handleSignIn('alex@acme-enterprise.com', 'sso-login', true)}
             className="w-full py-2 px-3 bg-slate-800/80 hover:bg-slate-800 border border-slate-700 rounded-xl text-xs text-indigo-300 font-semibold flex items-center justify-center gap-2 transition-all"
           >
-            <span>⚡ 1-Click Sign In with Test IdP (Acme Enterprise)</span>
+            <span>⚡ 1-Click Sign In with Test IdP (OIDC)</span>
+          </button>
+
+          {/* 1-Click SAML 2.0 IdP Button */}
+          <button
+            type="button"
+            disabled={isPending}
+            onClick={() => {
+              setSsoEmail('architect@acme-enterprise.com');
+              handleSignIn('architect@acme-enterprise.com', 'saml-login', false, true);
+            }}
+            className="w-full py-2 px-3 bg-slate-800/80 hover:bg-slate-800 border border-purple-500/30 rounded-xl text-xs text-purple-300 font-semibold flex items-center justify-center gap-2 transition-all"
+          >
+            <span>⚡ 1-Click Sign In with SAML 2.0 (Acme IdP)</span>
           </button>
 
           {/* Quick SSO Accounts */}

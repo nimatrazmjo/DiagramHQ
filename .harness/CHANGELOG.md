@@ -2,6 +2,34 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-03 — F102 — SAML (Phase 13 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ids.ts`: Added `saml` prefix to `IdPrefix` union and created branded type `SamlRequestId`.
+  - `saml.ts`: Pure TypeScript SAML 2.0 Web Browser SSO integration engine:
+    - Service Provider (SP) metadata generation (`buildSpMetadataXml`, `SamlSpConfig`): EntityID, ACS URL (`HTTP-POST`), SingleLogoutService, and NameIDFormat.
+    - Identity Provider (IdP) metadata parser (`parseIdpMetadataXml`): extracts EntityID, SSO URL, SLO URL, and X.509 certificate.
+    - SAML AuthnRequest generator (`buildSamlAuthnRequest`): XML AuthnRequest builder, Base64 encoding, and HTTP-Redirect query URL constructor (`SAMLRequest`, `RelayState`).
+    - SAML 2.0 Response & Assertion validator (`parseAndValidateSamlResponse`): decodes Base64 SAMLResponse XML, verifies StatusCode, InResponseTo CSRF mitigation, Issuer matching, NotBefore/NotOnOrAfter time validity windows with clock skew tolerance, and AudienceRestriction match.
+    - Attribute extraction & group-to-role attribute mapping to DiagramHQ `MemberRole`.
+    - Just-in-Time (JIT) provisioning and account linking (`provisionSsoUser`).
+    - Issues authenticated 8-hour `SsoAuthSession`.
+    - Deterministic Test SAML IdP harness: `createTestSamlIdpConfig`, `buildTestSamlResponseXml`, `simulateTestSamlLogin`.
+  - `saml.test.ts`: 17 unit tests covering SP metadata generation, IdP metadata parsing, AuthnRequest generation, assertion validation, condition/clock skew verification, error statuses, CSRF InResponseTo checks, Issuer and Audience mismatch rejections, JIT provisioning, existing account linking, and full Test IdP simulation.
+  - `index.ts`: Exported `saml` module.
+- Web layer (`apps/web/`):
+  - `auth.config.ts`: Added SAML 2.0 authentication handling in `authorizeUser`, connecting SAML credentials to `simulateTestSamlLogin` and populating session provider metadata (`Acme Enterprise SAML 2.0 IdP`).
+  - `auth.spec.ts`: Added test case verifying enterprise SAML 2.0 assertion authentication flow (9 tests passing).
+  - `components/enterprise/sso-settings-modal.tsx`: Added `SAML 2.0 SP Config` tab displaying Service Provider Entity ID, ACS URL, and SLO URL with 1-click clipboard copy, interactive IdP Metadata XML importer with real-time parsing (`parseIdpMetadataXml`), and dual OIDC/SAML simulation runners.
+  - `app/login/login-form.tsx`: Added 1-Click "⚡ Sign In with SAML 2.0 (Acme IdP)" quick authentication button.
+  - `saml.spec.tsx`: 5 integration tests verifying SP metadata generation, IdP XML parsing, LoginForm SAML action button, SsoSettingsModal SAML tab, and end-to-end SAML assertion exchange.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 100 test files / 635 tests ✓, web 114 test files / 586 tests ✓, `pnpm build ✓`.
+- **Milestone: 120 / 135 features completed overall (88.9%)!**
+
+
 ## 2026-10-03 — F101 — SSO (Phase 13 Progress)
 
 Status: COMPLETE

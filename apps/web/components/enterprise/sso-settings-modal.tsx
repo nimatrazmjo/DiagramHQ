@@ -2,11 +2,15 @@
 
 import React, { useState } from 'react';
 import {
+  buildSpMetadataXml,
   createId,
   createTestIdpConfig,
+  parseIdpMetadataXml,
   simulateTestIdpLogin,
+  simulateTestSamlLogin,
   validateSsoProviderConfig,
   type MemberRole,
+  type SamlSpConfig,
   type SsoProviderConfig,
   type SsoProviderType,
 } from '@diagramhq/domain';
@@ -17,6 +21,13 @@ export interface SsoSettingsModalProps {
   orgName?: string;
   initialProviders?: SsoProviderConfig[];
 }
+
+const DEFAULT_SP_CONFIG: SamlSpConfig = {
+  entityId: 'https://app.diagramhq.com/api/auth/saml/metadata',
+  acsUrl: 'https://app.diagramhq.com/api/auth/saml/acs',
+  singleLogoutUrl: 'https://app.diagramhq.com/api/auth/saml/slo',
+  nameIdFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
+};
 
 const DEFAULT_PROVIDERS: SsoProviderConfig[] = [
   createTestIdpConfig(createId('org'), {
@@ -43,6 +54,18 @@ const DEFAULT_PROVIDERS: SsoProviderConfig[] = [
     allowJitProvisioning: true,
     defaultRole: 'admin',
   }),
+  createTestIdpConfig(createId('org'), {
+    id: createId('idp'),
+    name: 'Acme Enterprise SAML 2.0 IdP',
+    type: 'saml2',
+    issuerUrl: 'https://identity.acme-enterprise.test/app/saml2/sso',
+    clientId: 'http://www.okta.com/exk_acme_saml',
+    domains: ['acme-enterprise.com'],
+    status: 'active',
+    enforceSso: false,
+    allowJitProvisioning: true,
+    defaultRole: 'editor',
+  }),
 ];
 
 export function SsoSettingsModal({
@@ -55,7 +78,7 @@ export function SsoSettingsModal({
   const [selectedProviderId, setSelectedProviderId] = useState<string>(
     initialProviders[0]?.id || ''
   );
-  const [activeTab, setActiveTab] = useState<'providers' | 'add' | 'test'>('providers');
+  const [activeTab, setActiveTab] = useState<'providers' | 'add' | 'test' | 'saml'>('providers');
 
   // Form state for adding/editing provider
   const [newName, setNewName] = useState('');
@@ -68,6 +91,11 @@ export function SsoSettingsModal({
   const [newDefaultRole, setNewDefaultRole] = useState<MemberRole>('editor');
   const [formError, setFormError] = useState<string | null>(null);
 
+  // SAML IdP XML import state
+  const [samlXmlInput, setSamlXmlInput] = useState('');
+  const [samlImportNotice, setSamlImportNotice] = useState<string | null>(null);
+  const [copyFeedback, setCopyFeedback] = useState(false);
+
   // Test IdP simulation state
   const [testEmail, setTestEmail] = useState('architect@acme-enterprise.com');
   const [testResult, setTestResult] = useState<{
@@ -79,6 +107,37 @@ export function SsoSettingsModal({
   if (!isOpen) return null;
 
   const currentProvider = providers.find((p) => p.id === selectedProviderId) || providers[0];
+  const spMetadataXml = buildSpMetadataXml(DEFAULT_SP_CONFIG);
+
+  const handleCopySpMetadata = async () => {
+    try {
+      await navigator.clipboard.writeText(spMetadataXml);
+      setCopyFeedback(true);
+      setTimeout(() => setCopyFeedback(false), 2000);
+    } catch {
+      // Fallback
+    }
+  };
+
+  const handleImportSamlXml = () => {
+    setSamlImportNotice(null);
+    try {
+      if (!samlXmlInput.trim()) {
+        setSamlImportNotice('Please paste XML metadata first');
+        return;
+      }
+      const parsed = parseIdpMetadataXml(samlXmlInput);
+      setNewName('Imported SAML IdP');
+      setNewType('saml2');
+      setNewIssuer(parsed.singleSignOnServiceUrl);
+      setNewClientId(parsed.entityId);
+      setActiveTab('add');
+      setSamlImportNotice(`Successfully parsed entityID "${parsed.entityId}"! Pre-filled provider form.`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'XML parse failed';
+      setSamlImportNotice(`Import failed: ${msg}`);
+    }
+  };
 
   const handleToggleStatus = (id: string) => {
     setProviders((prev) =>
@@ -138,30 +197,54 @@ export function SsoSettingsModal({
     setNewDomains('');
   };
 
-  const handleRunTestSimulation = () => {
+  const handleRunTestSimulation = (isSaml = false) => {
     setTestResult(null);
     try {
-      const providerToTest = currentProvider || createTestIdpConfig(createId('org'));
-      const sim = simulateTestIdpLogin({
-        email: testEmail.trim(),
-        name: testEmail.split('@')[0]?.replace(/[-_.]/g, ' '),
-        provider: providerToTest,
-        groups: ['architects', 'engineers'],
-      });
+      if (isSaml) {
+        const sim = simulateTestSamlLogin({
+          email: testEmail.trim(),
+          name: testEmail.split('@')[0]?.replace(/[-_.]/g, ' '),
+          groups: ['DiagramHQ-Architects'],
+        });
 
-      setTestResult({
-        success: true,
-        message: `Successfully authenticated via ${providerToTest.name}!`,
-        details: {
-          sessionId: sim.session.sessionId,
-          userEmail: sim.session.user.email,
-          assignedRole: sim.session.user.role,
-          jitProvisioned: sim.session.user.isNewUser,
-          authUrl: sim.challenge.authorizationUrl,
-          issuedAt: sim.session.issuedAt.toISOString(),
-          expiresAt: sim.session.expiresAt.toISOString(),
-        },
-      });
+        setTestResult({
+          success: true,
+          message: 'Successfully authenticated via SAML 2.0 Test IdP!',
+          details: {
+            protocol: 'SAML 2.0 Web Browser SSO (HTTP-POST)',
+            sessionId: sim.session.sessionId,
+            userEmail: sim.session.user.email,
+            assignedRole: sim.session.user.role,
+            jitProvisioned: sim.session.user.isNewUser,
+            requestId: sim.request.id,
+            issuedAt: sim.session.issuedAt.toISOString(),
+            expiresAt: sim.session.expiresAt.toISOString(),
+          },
+        });
+      } else {
+        const providerToTest = currentProvider || createTestIdpConfig(createId('org'));
+        const sim = simulateTestIdpLogin({
+          email: testEmail.trim(),
+          name: testEmail.split('@')[0]?.replace(/[-_.]/g, ' '),
+          provider: providerToTest,
+          groups: ['architects', 'engineers'],
+        });
+
+        setTestResult({
+          success: true,
+          message: `Successfully authenticated via ${providerToTest.name}!`,
+          details: {
+            protocol: 'OpenID Connect (OIDC Authorization Code)',
+            sessionId: sim.session.sessionId,
+            userEmail: sim.session.user.email,
+            assignedRole: sim.session.user.role,
+            jitProvisioned: sim.session.user.isNewUser,
+            authUrl: sim.challenge.authorizationUrl,
+            issuedAt: sim.session.issuedAt.toISOString(),
+            expiresAt: sim.session.expiresAt.toISOString(),
+          },
+        });
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Simulation failed';
       setTestResult({
@@ -190,13 +273,13 @@ export function SsoSettingsModal({
             </div>
             <div>
               <h2 id="sso-modal-title" className="text-base font-semibold text-slate-100 flex items-center gap-2">
-                <span>Enterprise Single Sign-On (SSO)</span>
+                <span>Enterprise Single Sign-On (SSO / SAML)</span>
                 <span className="text-[11px] px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-mono">
-                  F101
+                  F101 / F102
                 </span>
               </h2>
               <p className="text-xs text-slate-400 mt-0.5">
-                Manage OIDC, SAML, and corporate identity provider integrations for {orgName}.
+                Manage OIDC, SAML 2.0, and corporate identity provider integrations for {orgName}.
               </p>
             </div>
           </div>
@@ -232,6 +315,21 @@ export function SsoSettingsModal({
 
           <button
             type="button"
+            onClick={() => setActiveTab('saml')}
+            className={`py-3 px-4 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 ${
+              activeTab === 'saml'
+                ? 'border-indigo-500 text-indigo-400'
+                : 'border-transparent text-slate-400 hover:text-slate-300'
+            }`}
+          >
+            <span>SAML 2.0 SP Config</span>
+            <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-[10px] font-mono text-purple-400 border border-purple-500/20">
+              F102
+            </span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab('test')}
             className={`py-3 px-4 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 ${
               activeTab === 'test'
@@ -239,7 +337,7 @@ export function SsoSettingsModal({
                 : 'border-transparent text-slate-400 hover:text-slate-300'
             }`}
           >
-            <span>⚡ Test IdP Simulation</span>
+            <span>⚡ Test Simulation</span>
           </button>
 
           <button
@@ -288,6 +386,9 @@ export function SsoSettingsModal({
                                 }`}
                               >
                                 {p.status}
+                              </span>
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-mono uppercase">
+                                {p.type}
                               </span>
                               {p.enforceSso && (
                                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 font-medium">
@@ -349,7 +450,7 @@ export function SsoSettingsModal({
                             <span className="text-slate-300">{p.allowJitProvisioning ? 'Enabled' : 'Disabled'}</span>
                           </div>
                           <div>
-                            <span className="text-slate-500 block">Issuer URL</span>
+                            <span className="text-slate-500 block">Endpoint / Issuer</span>
                             <span className="text-slate-300 font-mono truncate block" title={p.issuerUrl}>
                               {p.issuerUrl}
                             </span>
@@ -363,13 +464,77 @@ export function SsoSettingsModal({
             </div>
           )}
 
+          {activeTab === 'saml' && (
+            <div className="space-y-5">
+              <div className="p-4 rounded-xl bg-purple-950/20 border border-purple-500/20 text-xs text-purple-300 space-y-1">
+                <span className="font-semibold block">SAML 2.0 Service Provider (SP) Endpoints</span>
+                <p className="text-slate-400">
+                  Configure these endpoints in your corporate Identity Provider (Okta, Microsoft Entra ID, PingIdentity, OneLogin) to enable SAML 2.0 Web Browser SSO.
+                </p>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div className="p-3 bg-slate-900 border border-slate-800 rounded-xl space-y-1">
+                  <span className="text-slate-400 block font-semibold">Service Provider Entity ID (Audience):</span>
+                  <div className="font-mono text-slate-200 select-all">{DEFAULT_SP_CONFIG.entityId}</div>
+                </div>
+
+                <div className="p-3 bg-slate-900 border border-slate-800 rounded-xl space-y-1">
+                  <span className="text-slate-400 block font-semibold">Assertion Consumer Service (ACS) URL:</span>
+                  <div className="font-mono text-slate-200 select-all">{DEFAULT_SP_CONFIG.acsUrl}</div>
+                </div>
+
+                <div className="p-3 bg-slate-900 border border-slate-800 rounded-xl space-y-1">
+                  <span className="text-slate-400 block font-semibold">Single Logout (SLO) URL:</span>
+                  <div className="font-mono text-slate-200 select-all">{DEFAULT_SP_CONFIG.singleLogoutUrl}</div>
+                </div>
+
+                <div className="pt-2 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={handleCopySpMetadata}
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-semibold shadow-md transition-all flex items-center gap-2"
+                  >
+                    <span>{copyFeedback ? '✓ Copied SP Metadata' : 'Copy SP Metadata XML'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* IdP Metadata Import Box */}
+              <div className="pt-4 border-t border-slate-800 space-y-3">
+                <h4 className="text-xs font-semibold text-slate-200">Import Corporate IdP Metadata XML:</h4>
+                <textarea
+                  rows={4}
+                  value={samlXmlInput}
+                  onChange={(e) => setSamlXmlInput(e.target.value)}
+                  placeholder="Paste &lt;EntityDescriptor xmlns=&quot;urn:oasis:names:tc:SAML:2.0:metadata&quot; ...&gt; here"
+                  className="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl font-mono text-[11px] text-slate-200 focus:outline-none focus:border-purple-500"
+                />
+
+                {samlImportNotice && (
+                  <div className="p-2.5 rounded-lg bg-slate-900 border border-purple-500/40 text-xs text-purple-300">
+                    {samlImportNotice}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleImportSamlXml}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700 transition-colors"
+                >
+                  Parse & Pre-fill SAML IdP
+                </button>
+              </div>
+            </div>
+          )}
+
           {activeTab === 'test' && (
             <div className="space-y-5">
               <div className="p-4 rounded-xl bg-indigo-950/20 border border-indigo-500/20 text-xs text-indigo-300 space-y-1">
-                <span className="font-semibold block">⚡ Deterministic Test IdP Simulation Engine</span>
+                <span className="font-semibold block">⚡ Enterprise Identity Simulation Engine (OIDC / SAML 2.0)</span>
                 <p className="text-slate-400">
-                  Simulates a complete OpenID Connect authorization code grant flow without contacting external servers.
-                  Tests domain validation, claim mapping, role assignment, and user session generation.
+                  Simulates complete enterprise SSO exchanges without third-party network dependencies.
+                  Verifies claims, time conditions, role assignment, and user session issuance.
                 </p>
               </div>
 
@@ -388,10 +553,17 @@ export function SsoSettingsModal({
                   />
                   <button
                     type="button"
-                    onClick={handleRunTestSimulation}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-indigo-600/25 transition-all"
+                    onClick={() => handleRunTestSimulation(false)}
+                    className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-indigo-600/25 transition-all"
                   >
-                    Execute SSO Test
+                    Test OIDC SSO
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRunTestSimulation(true)}
+                    className="px-3.5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-purple-600/25 transition-all"
+                  >
+                    Test SAML 2.0
                   </button>
                 </div>
               </div>
@@ -411,10 +583,14 @@ export function SsoSettingsModal({
 
                   {testResult.details && (
                     <div className="bg-black/50 p-3 rounded-lg font-mono text-[11px] text-slate-300 space-y-1 overflow-x-auto">
+                      <div>Protocol: {String(testResult.details.protocol)}</div>
                       <div>Session ID: {String(testResult.details.sessionId)}</div>
                       <div>User: {String(testResult.details.userEmail)}</div>
                       <div>Assigned Role: {String(testResult.details.assignedRole)}</div>
                       <div>JIT Provisioned: {String(testResult.details.jitProvisioned)}</div>
+                      {Boolean(testResult.details.requestId) && (
+                        <div>SAML Request ID: {String(testResult.details.requestId)}</div>
+                      )}
                       <div>Issued At: {String(testResult.details.issuedAt)}</div>
                       <div>Expires At: {String(testResult.details.expiresAt)}</div>
                     </div>
@@ -438,7 +614,7 @@ export function SsoSettingsModal({
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Acme Okta or Corp Azure AD"
+                    placeholder="e.g. Acme Okta or Corp SAML IdP"
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
@@ -453,6 +629,7 @@ export function SsoSettingsModal({
                     className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-indigo-500"
                   >
                     <option value="oidc">OpenID Connect (OIDC)</option>
+                    <option value="saml2">SAML 2.0 Web Browser SSO</option>
                     <option value="oauth2">OAuth 2.0</option>
                     <option value="mock_idp">Deterministic Test IdP</option>
                   </select>
@@ -460,11 +637,11 @@ export function SsoSettingsModal({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-slate-300 font-medium">OIDC Issuer Discovery URL</label>
+                <label className="text-slate-300 font-medium">SSO Service URL / Issuer</label>
                 <input
                   type="url"
                   required
-                  placeholder="https://identity.company.com/oauth2/v1"
+                  placeholder="https://identity.company.com/sso"
                   value={newIssuer}
                   onChange={(e) => setNewIssuer(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 font-mono placeholder-slate-500 focus:outline-none focus:border-indigo-500"
@@ -473,11 +650,11 @@ export function SsoSettingsModal({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-slate-300 font-medium">Client ID</label>
+                  <label className="text-slate-300 font-medium">Client ID / Entity ID</label>
                   <input
                     type="text"
                     required
-                    placeholder="diagramhq-sso-client-id"
+                    placeholder="diagramhq-sso-client-id or http://okta.com/exk123"
                     value={newClientId}
                     onChange={(e) => setNewClientId(e.target.value)}
                     className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 font-mono placeholder-slate-500 focus:outline-none focus:border-indigo-500"
@@ -555,7 +732,7 @@ export function SsoSettingsModal({
         <div className="p-4 border-t border-slate-800 bg-slate-950/60 flex items-center justify-between text-xs text-slate-400">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
-            <span>SSO Discovery Gateway Active</span>
+            <span>SAML 2.0 &amp; OIDC Gateway Active</span>
           </div>
           <button
             type="button"
