@@ -1,27 +1,28 @@
 # Automated tests
 
-All suites use **Vitest**. Test count at the time of writing is roughly 160 domain, 300 web and 260 API tests.
+Automated testing in DiagramHQ combines **Vitest** for fast unit and integration tests, alongside **Playwright** for complete browser end-to-end (E2E) testing with automated WebM video recording.
 
-| Package | Files | Kind | Needs a database |
+| Package / Layer | Path / Files | Kind | Needs a database / server |
 |---|---|---|:-:|
-| `packages/domain` | `src/*.test.ts` (24) | Pure unit tests: model, invariants, layouts, projections, filters, templates, lifecycle | No |
-| `apps/api` | `src/**/*.spec.ts` (36) | Unit tests plus HTTP e2e (`*.e2e.spec.ts`) booting the real NestJS app with supertest | **Yes** |
-| `apps/web` | `*.spec.ts(x)` (36) | Feature integration specs: canvas, commands, undo/redo, views, badges, templates, auth | No |
+| `packages/domain` | `src/*.test.ts` | Pure unit tests: model, invariants, layouts, projections, filters, templates, lifecycle | No |
+| `apps/api` | `src/**/*.spec.ts` | Unit tests plus HTTP e2e (`*.e2e.spec.ts`) booting the real NestJS app with supertest | **Yes** (Postgres) |
+| `apps/web` (unit) | `apps/web/*.spec.ts(x)` | Feature integration specs: canvas, commands, undo/redo, views, badges, templates, auth | No |
+| `apps/web` (E2E) | `apps/web/e2e/*.spec.ts` | **Playwright E2E**: auth redirects, canvas drag-and-drop, React Flow C4 navigation, visual regression, WebM videos | **Yes** (Next.js server) |
+
+> 📊 **E2E Status & Backlog Matrix**: See [`docs/e2e-testing-matrix.md`](e2e-testing-matrix.md) for detailed test breakdowns, video logs, and upcoming test areas.
 
 ## Run
 
 ```bash
-pnpm test                                    # everything
-pnpm --filter @diagramhq/domain test         # domain only
-pnpm --filter @diagramhq/web test            # web only
-pnpm --filter @diagramhq/api test            # api only
+# Vitest test suites
+pnpm test                                    # all Vitest suites
+pnpm --filter @diagramhq/domain test         # domain unit tests
+pnpm --filter @diagramhq/web test            # web integration tests
+pnpm --filter @diagramhq/api test            # api HTTP tests
 
-# a single file / name filter
-pnpm --filter @diagramhq/api exec vitest run src/views/saved-views.e2e.spec.ts
-pnpm --filter @diagramhq/domain exec vitest run -t "instantiateTemplate"
-
-# watch mode
-pnpm --filter @diagramhq/domain exec vitest
+# Playwright E2E test suites (with WebM video recording)
+pnpm test:e2e                                # headless Playwright (auto boots Next.js)
+pnpm --filter @diagramhq/web test:e2e:headed # headed Playwright browser mode
 ```
 
 ### API e2e prerequisites
