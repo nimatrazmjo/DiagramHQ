@@ -2,6 +2,35 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-03 — F104 — Advanced RBAC (Phase 13 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ids.ts`: Added `'role'` prefix to `IdPrefix` union and created branded type `CustomRoleId`.
+  - `advanced-rbac.ts`: Enterprise Advanced Role-Based Access Control and Least Privilege Engine:
+    - Fine-grained permission catalog across 7 enterprise domains (`architecture`, `model`, `flow`, `docs`, `governance`, `admin`, `billing`).
+    - 5 built-in enterprise specialized roles:
+      - `Security Auditor`: Read-only views, audit logs, compliance reports, and security scans; explicitly denied from modifying models, editing diagrams, or deleting workspaces.
+      - `Documentation Specialist`: Markdown editing, publishing, and diagram views; explicitly denied from mutating core architectural objects.
+      - `Compliance Officer`: Audit log inspection, framework mapping, and ADR approval; explicitly denied from altering diagrams or deleting objects.
+      - `Junior Architect`: Authors draft diagrams and flows; explicitly denied from publishing, deleting models, or managing admin settings.
+      - `Billing Administrator`: Invoicing, subscriptions, and seat management; strictly isolated with zero access to proprietary architecture diagrams or models.
+    - Custom role creation with dynamic allow and explicit denial lists.
+    - Least privilege evaluation engine (`evaluateFineGrainedPermission`, `assertFineGrainedPermission`): explicit deny overrides allow; ungranted permissions denied by default.
+    - Out-of-scope action denial test harness: `testFineGrainedRoleDenial`.
+    - Least privilege audit engine (`auditRoleLeastPrivilege`): computes privilege risk score (LOW/MEDIUM/HIGH/CRITICAL), flags destructive capabilities, and provides actionable remediation recommendations.
+  - `advanced-rbac.test.ts`: 13 comprehensive unit tests covering permission catalog, specialized roles, custom role authoring, evaluation decisions, out-of-scope denial verification, and risk auditing.
+  - `index.ts`: Exported `advanced-rbac` module.
+- Web layer (`apps/web/`):
+  - `components/enterprise/advanced-rbac-modal.tsx`: Comprehensive Advanced RBAC management modal featuring Roles Catalog, Real-Time Least Privilege Evaluator with instant decision badges, Risk & Compliance Audit dashboard, and Custom Role Authoring form.
+  - `components/enterprise/index.ts`: Exported `AdvancedRbacModal`.
+  - `advanced-rbac.spec.tsx`: 5 integration and component tests verifying UI rendering and least privilege out-of-scope action denial.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 102 test files / 666 tests ✓, web 116 test files / 595 tests ✓, `pnpm build ✓`.
+- **Milestone: 122 / 135 features completed overall (90.4%)!**
+
+
 ## 2026-10-03 — F103 — SCIM (Phase 13 Progress)
 
 Status: COMPLETE
