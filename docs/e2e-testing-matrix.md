@@ -19,7 +19,7 @@ This document maintains an up-to-date tracker of all end-to-end (E2E) browser te
 
 ---
 
-## 2. Implemented & Verified Test Suites (65 Tests — 100% Passing)
+## 2. Implemented & Verified Test Suites (72 Tests — 100% Passing)
 
 ### Suite 1: Authentication & Session Security (`apps/web/e2e/auth.spec.ts`)
 | # | Test Case Description | Verified Behavior | Status |
@@ -126,6 +126,17 @@ This document maintains an up-to-date tracker of all end-to-end (E2E) browser te
 | 5 | AI Architecture Review agent | Runs pre-merge governance checks; verifies checklist rules (circular deps, ownership, DR, PII) and re-run trigger | ✅ Passed |
 | 6 | AI-drafted ADR review & commit | Opens drafted Architecture Decision Record, customizes title/context/decision, and commits accepted ADR | ✅ Passed |
 
+### Suite 11: Mobile Web Companion & Responsive Governance (`apps/web/e2e/mobile-companion.spec.ts`)
+| # | Test Case Description | Verified Behavior | Status |
+|---|---|---|:---:|
+| 1 | Mobile branding & advisory ribbon | Renders DiagramHQ Mobile header (F134) and Desktop-First Canvas invariant advisory on 375x667 viewport | ✅ Passed |
+| 2 | Architecture Views exploration | Inspects C4 level cards (Context, Container, Component) and toggles active inspection projection | ✅ Passed |
+| 3 | Mobile catalog instant search | Filters components (Vault), C4 views, and ADR decisions with instant tag badges and empty state handling | ✅ Passed |
+| 4 | Change review & 1-tap approval | Reviews pending pull request (#104), executes 1-tap mobile approval, and verifies approved state and toast | ✅ Passed |
+| 5 | Review commenting stream | Posts new review comment targeted to specific components; verifies real-time stream addition and author avatar | ✅ Passed |
+| 6 | Mobile AI Copilot Q&A | Submits architectural query, receives 94% confidence answer card with actionable suggestion badges | ✅ Passed |
+| 7 | Studio to Mobile Companion link | Navigates from desktop Studio header via dedicated mobile link to `/mobile` companion view | ✅ Passed |
+
 ---
 
 ## 3. What is Left — Playwright E2E Implementation Backlog
@@ -148,23 +159,18 @@ The following suites represent upcoming areas to achieve 100% end-to-end browser
 │ 8. Versioning & Visual Diff    │ 6 tests           │ ✅ COMPLETED      │
 │ 9. Exports & Diagram Sharing   │ 6 tests           │ ✅ COMPLETED      │
 │ 10. AI Architecture Copilot    │ 6 tests           │ ✅ COMPLETED      │
+│ 11. Mobile Web Companion       │ 7 tests           │ ✅ COMPLETED      │
 ├────────────────────────────────┼───────────────────┼───────────────────┤
-│ 11. Mobile Web Companion       │ ~5 tests          │ ⏳ IN QUEUE (P3)  │
-│ 12. CI & Cross-Browser Matrix  │ Matrix Config     │ ⏳ BACKLOG (P3)   │
+│ 12. CI & Cross-Browser Matrix  │ Matrix Config     │ ⏳ IN QUEUE (P3)  │
 └────────────────────────────────┴───────────────────┴───────────────────┘
 ```
 
-### Area 10: AI Architecture Copilot (`e2e/ai-copilot.spec.ts`)
-- [x] AI Copilot side-drawer toggle, grounded context metrics, and chat prompt input.
-- [x] Prompt-driven architecture generation (e.g., "Multi-tenant SaaS with API gateway...").
-- [x] Applying generated AI proposal to canvas with React Flow node additions.
-- [x] AI Architecture Governance Review agent with pre-merge compliance checklist.
-- [x] AI-drafted Architecture Decision Record (ADR) review, modification, and commit workflow.
-
 ### Area 11: Mobile Web Companion (`e2e/mobile-companion.spec.ts`)
-- [ ] Mobile viewport (375x667 / 390x844) dedicated companion navigation.
-- [ ] Mobile bottom navigation bar tabs: Views, Search, Approvals, Comments, Copilot.
-- [ ] Desktop-first advisory notice verification on mobile screen.
+- [x] Mobile viewport (375x667 / 390x844) dedicated companion navigation.
+- [x] Mobile bottom navigation bar tabs: Views, Search, Approvals, Comments, Copilot.
+- [x] Desktop-first advisory notice verification on mobile screen.
+- [x] 1-tap mobile change review and approval workflow with feedback toasts.
+- [x] Mobile architecture review commenting and AI Copilot inquiries.
 
 ### Area 12: CI & Cross-Browser Matrix Integration
 - [ ] GitHub Actions workflow `.github/workflows/e2e.yml` running Playwright on PRs.

@@ -207,6 +207,7 @@ export function MobileCompanion({
     <div
       role="region"
       aria-label="DiagramHQ Mobile Companion"
+      data-testid="mobile-companion-container"
       className="fixed inset-0 z-50 flex flex-col bg-slate-950 text-slate-100 overflow-hidden font-sans"
     >
       {/* Top Header */}
@@ -239,6 +240,7 @@ export function MobileCompanion({
           {onClose && (
             <button
               type="button"
+              data-testid="mobile-close-btn"
               onClick={onClose}
               className="text-slate-400 hover:text-white p-1 rounded-lg"
             >
@@ -251,7 +253,10 @@ export function MobileCompanion({
       </div>
 
       {/* Desktop-First Canvas Invariant Ribbon */}
-      <div className="px-4 py-2 bg-indigo-950/40 border-b border-indigo-500/30 flex items-center space-x-2 text-indigo-300 text-xs">
+      <div
+        data-testid="mobile-desktop-first-advisory"
+        className="px-4 py-2 bg-indigo-950/40 border-b border-indigo-500/30 flex items-center space-x-2 text-indigo-300 text-xs"
+      >
         <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
           <path
             fillRule="evenodd"
@@ -266,7 +271,10 @@ export function MobileCompanion({
 
       {/* Feedback Toast */}
       {feedbackToast && (
-        <div className="px-4 py-2 bg-emerald-950/80 border-b border-emerald-500/40 flex items-center justify-between text-emerald-200 text-xs">
+        <div
+          data-testid="mobile-feedback-toast"
+          className="px-4 py-2 bg-emerald-950/80 border-b border-emerald-500/40 flex items-center justify-between text-emerald-200 text-xs"
+        >
           <span>{feedbackToast}</span>
           <button
             type="button"
@@ -299,6 +307,7 @@ export function MobileCompanion({
                 return (
                   <div
                     key={v.id}
+                    data-testid="mobile-view-card"
                     onClick={() => setActiveViewId(isSelected ? null : v.id)}
                     className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
                       isSelected
@@ -338,6 +347,7 @@ export function MobileCompanion({
             <div className="relative">
               <input
                 type="text"
+                data-testid="mobile-search-input"
                 placeholder="Search components, views, ADRs..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -356,6 +366,7 @@ export function MobileCompanion({
                 searchResults.map((item) => (
                   <div
                     key={item.id}
+                    data-testid="mobile-search-result"
                     className="p-3 bg-slate-900/60 border border-slate-800 rounded-lg flex items-center justify-between"
                   >
                     <div>
@@ -391,6 +402,7 @@ export function MobileCompanion({
                 return (
                   <div
                     key={change.id}
+                    data-testid="mobile-approval-card"
                     className="p-4 rounded-xl border border-slate-800 bg-slate-900/70 space-y-2.5"
                   >
                     <div className="flex items-center justify-between">
@@ -428,6 +440,7 @@ export function MobileCompanion({
                       <div className="pt-2 flex space-x-2">
                         <button
                           type="button"
+                          data-testid="mobile-approve-btn"
                           onClick={() => handleApprove(change.id)}
                           className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition-colors"
                         >
@@ -458,6 +471,7 @@ export function MobileCompanion({
               <span className="text-[11px] font-medium text-slate-300 block">Add Comment</span>
               <input
                 type="text"
+                data-testid="mobile-comment-target-input"
                 placeholder="Target component (e.g. PAN Tokenization Vault)"
                 value={newCommentTarget}
                 onChange={(e) => setNewCommentTarget(e.target.value)}
@@ -465,6 +479,7 @@ export function MobileCompanion({
               />
               <textarea
                 placeholder="Write your review comment..."
+                data-testid="mobile-comment-text-input"
                 value={newCommentText}
                 onChange={(e) => setNewCommentText(e.target.value)}
                 rows={2}
@@ -472,6 +487,7 @@ export function MobileCompanion({
               />
               <button
                 type="button"
+                data-testid="mobile-comment-submit-btn"
                 onClick={handleAddComment}
                 className="w-full py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition-colors"
               >
@@ -484,6 +500,7 @@ export function MobileCompanion({
               {comments.map((cmt) => (
                 <div
                   key={cmt.id}
+                  data-testid="mobile-comment-card"
                   className="p-3 bg-slate-900/60 border border-slate-800 rounded-xl space-y-1.5"
                 >
                   <div className="flex items-center justify-between text-xs">
@@ -547,6 +564,7 @@ export function MobileCompanion({
               <div className="flex space-x-2">
                 <input
                   type="text"
+                  data-testid="mobile-ai-input"
                   placeholder="e.g. What is the single point of failure?"
                   value={aiQuestion}
                   onChange={(e) => setAiQuestion(e.target.value)}
@@ -554,6 +572,7 @@ export function MobileCompanion({
                 />
                 <button
                   type="button"
+                  data-testid="mobile-ai-submit-btn"
                   onClick={handleAskAi}
                   className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold"
                 >
@@ -563,7 +582,10 @@ export function MobileCompanion({
             </div>
 
             {aiAnswer && (
-              <div className="p-4 bg-purple-950/40 border border-purple-500/40 rounded-xl space-y-3 text-xs">
+              <div
+                data-testid="mobile-ai-answer-card"
+                className="p-4 bg-purple-950/40 border border-purple-500/40 rounded-xl space-y-3 text-xs"
+              >
                 <div className="flex items-center space-x-2 text-purple-300 font-bold">
                   <span>✦ AI Copilot Answer</span>
                   <span className="text-[10px] font-mono bg-purple-950 border border-purple-500/40 px-1.5 rounded">
@@ -596,9 +618,13 @@ export function MobileCompanion({
       </div>
 
       {/* Bottom Mobile Navigation Bar */}
-      <div className="fixed bottom-0 left-0 right-0 h-16 bg-slate-900 border-t border-slate-800 flex items-center justify-around px-2 z-50">
+      <div
+        data-testid="mobile-bottom-nav"
+        className="fixed bottom-0 left-0 right-0 h-16 bg-slate-900 border-t border-slate-800 flex items-center justify-around px-2 z-50"
+      >
         <button
           type="button"
+          data-testid="mobile-tab-views"
           onClick={() => setActiveTab('views')}
           className={`flex flex-col items-center justify-center space-y-1 w-12 py-1 ${
             activeTab === 'views' ? 'text-indigo-400' : 'text-slate-400 hover:text-white'
@@ -612,6 +638,7 @@ export function MobileCompanion({
 
         <button
           type="button"
+          data-testid="mobile-tab-search"
           onClick={() => setActiveTab('search')}
           className={`flex flex-col items-center justify-center space-y-1 w-12 py-1 ${
             activeTab === 'search' ? 'text-indigo-400' : 'text-slate-400 hover:text-white'
@@ -625,6 +652,7 @@ export function MobileCompanion({
 
         <button
           type="button"
+          data-testid="mobile-tab-approvals"
           onClick={() => setActiveTab('approvals')}
           className={`flex flex-col items-center justify-center space-y-1 w-12 py-1 ${
             activeTab === 'approvals' ? 'text-indigo-400' : 'text-slate-400 hover:text-white'
@@ -638,6 +666,7 @@ export function MobileCompanion({
 
         <button
           type="button"
+          data-testid="mobile-tab-comments"
           onClick={() => setActiveTab('comments')}
           className={`flex flex-col items-center justify-center space-y-1 w-12 py-1 ${
             activeTab === 'comments' ? 'text-indigo-400' : 'text-slate-400 hover:text-white'
@@ -651,6 +680,7 @@ export function MobileCompanion({
 
         <button
           type="button"
+          data-testid="mobile-tab-ai"
           onClick={() => setActiveTab('ai')}
           className={`flex flex-col items-center justify-center space-y-1 w-12 py-1 ${
             activeTab === 'ai' ? 'text-purple-400' : 'text-slate-400 hover:text-white'
@@ -659,7 +689,6 @@ export function MobileCompanion({
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
-          <span className="text-[10px] font-medium">AI</span>
         </button>
       </div>
     </div>
