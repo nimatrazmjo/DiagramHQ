@@ -2,6 +2,37 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-03 — F103 — SCIM (Phase 13 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ids.ts`: Added `scim` prefix to `IdPrefix` union and created branded type `ScimConfigId`.
+  - `scim.ts`: Pure TypeScript SCIM 2.0 User Provisioning and Deprovisioning engine (RFC 7643 & RFC 7644):
+    - SCIM schemas: `User`, `EnterpriseUser`, `Group`, `ServiceProviderConfig`, `PatchOp`, `ListResponse`, `Error`.
+    - User creation (`createScimUser`): uniqueness validation across userName and externalId, attribute parsing, audit logging.
+    - User querying and filtering (`getScimUser`, `listScimUsers`): 1-based pagination, RFC 7644 filter evaluator supporting `userName eq "..."`, `externalId eq "..."`, `active eq true/false`.
+    - User modification (`updateScimUser` PUT): full resource replacement, optimistic versioning (`W/"2"`).
+    - User deprovisioning and reactivation (`patchScimUser` PATCH): handles `path: "active"` and object-value `{ active: false }` deprovisioning, reactivating with `active: true`, and attribute patching (`name`, `displayName`, `title`).
+    - User deletion (`deleteScimUser` DELETE): removes user and logs audit entry.
+    - Group management: `createScimGroup`, `getScimGroup`, `listScimGroups`.
+    - Service Provider Config generator (`getScimServiceProviderConfig`): PATCH, filter, and bearer authentication capabilities.
+    - Zero-network deterministic simulation harness: `simulateScimProvisioningLifecycle`.
+    - High-entropy bearer token generation (`generateScimBearerToken`) and Bearer header validation (`validateScimBearerToken`).
+  - `scim.test.ts`: 18 comprehensive unit tests covering provisioning, uniqueness enforcement, filtering, PUT, PATCH deactivation/reactivation, group management, and lifecycle simulation.
+  - `index.ts`: Exported `scim` module.
+- Web layer (`apps/web/`):
+  - `lib/scim-server.ts`: SCIM state singleton and seeding for web layer with active and deactivated enterprise users.
+  - `app/api/scim/v2/ServiceProviderConfig/route.ts`: SCIM 2.0 RFC 7643 ServiceProviderConfig discovery endpoint.
+  - `app/api/scim/v2/Users/route.ts`: SCIM 2.0 user list and provisioning endpoint with Bearer authentication.
+  - `app/api/scim/v2/Users/[id]/route.ts`: SCIM 2.0 individual user GET, PUT, PATCH deprovisioning, and DELETE.
+  - `components/enterprise/sso-settings-modal.tsx`: Added `SCIM 2.0 Provisioning` tab with base URL copy, token generation, user directory, status badges, and 1-click end-to-end lifecycle verification test.
+  - `scim.spec.tsx`: 4 integration and component tests verifying UI rendering and REST API lifecycle execution.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 101 test files / 653 tests ✓, web 115 test files / 590 tests ✓, `pnpm build ✓`.
+- **Milestone: 121 / 135 features completed overall (89.6%)!**
+
+
 ## 2026-10-03 — F102 — SAML (Phase 13 Progress)
 
 Status: COMPLETE
