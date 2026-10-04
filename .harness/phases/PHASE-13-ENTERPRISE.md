@@ -103,7 +103,7 @@ Evidence:
 
 ### F106 — Organization policies
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Org-wide governance.
 
@@ -114,6 +114,11 @@ Acceptance Criteria:
 - Org policies, IP restrictions, session management, data retention, export controls
 
 Test: a policy is enforced in test.
+
+Evidence:
+- Domain: `packages/domain/src/organization-policies.ts`, `packages/domain/src/organization-policies.test.ts` (26 tests passing)
+- Web: `apps/web/components/enterprise/org-policies-modal.tsx`, `apps/web/components/enterprise/index.ts`, `apps/web/org-policies.spec.tsx` (6 tests passing)
+- Reviews: `.harness/reviews/F106-PR.md`, `.harness/reviews/F106-review.md`
 
 ### F107 — Enterprise security
 
