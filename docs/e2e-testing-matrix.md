@@ -19,7 +19,7 @@ This document maintains an up-to-date tracker of all end-to-end (E2E) browser te
 
 ---
 
-## 2. Implemented & Verified Test Suites (59 Tests — 100% Passing)
+## 2. Implemented & Verified Test Suites (65 Tests — 100% Passing)
 
 ### Suite 1: Authentication & Session Security (`apps/web/e2e/auth.spec.ts`)
 | # | Test Case Description | Verified Behavior | Status |
@@ -116,6 +116,16 @@ This document maintains an up-to-date tracker of all end-to-end (E2E) browser te
 | 5 | Public read-only share link | Generates tokenized view URL (`/share?token=...`), sets camera/selection flags, and custom expiration (`7d`) | ✅ Passed |
 | 6 | Canvas reset & restore baseline | Clears canvas via `🧹 Reset` confirmation dialog, displays empty state, and restores baseline | ✅ Passed |
 
+### Suite 10: AI Architecture Copilot, Generation, Review & ADRs (`apps/web/e2e/ai-copilot.spec.ts`)
+| # | Test Case Description | Verified Behavior | Status |
+|---|---|---|:---:|
+| 1 | AI Copilot drawer & grounded context | Toggles Copilot drawer, verifies welcome message, grounded context statistics, and pre-seeded suggestions | ✅ Passed |
+| 2 | Grounded Q&A with citations | Submits natural query ("What depends on Web Application?"), receives answer with verified entity citation badges | ✅ Passed |
+| 3 | AI architecture generation modal | Submits prompt ("Multi-tenant SaaS..."), inspects proposed proposal card, metrics chips, and breakdown tabs | ✅ Passed |
+| 4 | Applying AI proposal to canvas | Generates event-driven pipeline proposal and applies to canvas; verifies canvas node count increases in React Flow | ✅ Passed |
+| 5 | AI Architecture Review agent | Runs pre-merge governance checks; verifies checklist rules (circular deps, ownership, DR, PII) and re-run trigger | ✅ Passed |
+| 6 | AI-drafted ADR review & commit | Opens drafted Architecture Decision Record, customizes title/context/decision, and commits accepted ADR | ✅ Passed |
+
 ---
 
 ## 3. What is Left — Playwright E2E Implementation Backlog
@@ -137,28 +147,19 @@ The following suites represent upcoming areas to achieve 100% end-to-end browser
 │ 7. Collaboration & Reviews     │ 6 tests           │ ✅ COMPLETED      │
 │ 8. Versioning & Visual Diff    │ 6 tests           │ ✅ COMPLETED      │
 │ 9. Exports & Diagram Sharing   │ 6 tests           │ ✅ COMPLETED      │
+│ 10. AI Architecture Copilot    │ 6 tests           │ ✅ COMPLETED      │
 ├────────────────────────────────┼───────────────────┼───────────────────┤
-│ 10. AI Architecture Copilot    │ ~5 tests          │ ⏳ IN QUEUE (P3)  │
-│ 11. Mobile Web Companion       │ ~5 tests          │ ⏳ BACKLOG (P3)   │
+│ 11. Mobile Web Companion       │ ~5 tests          │ ⏳ IN QUEUE (P3)  │
 │ 12. CI & Cross-Browser Matrix  │ Matrix Config     │ ⏳ BACKLOG (P3)   │
 └────────────────────────────────┴───────────────────┴───────────────────┘
 ```
 
-### Area 8: Versioning, Branching & Visual Diff (`e2e/versioning-diff.spec.ts`)
-- [x] Architecture version snapshot creation & detailed inspection modal.
-- [x] Branch switcher & badge (switching between `main` and feature branches, creating branches).
-- [x] Visual diff view highlighting added nodes (green), removed nodes (red), and modified entities with category filters.
-
-### Area 9: Exports & Diagram Sharing (`e2e/export-import.spec.ts`)
-- [x] Export to PNG, SVG, PDF, and JSON download trigger and file delivery.
-- [x] Export to Mermaid and PlantUML modal content generation and copy-to-clipboard.
-- [x] Diagram JSON export and canvas reset / reload validation.
-- [x] Share links generation (public view-only URLs with camera and expiration controls).
-
 ### Area 10: AI Architecture Copilot (`e2e/ai-copilot.spec.ts`)
-- [ ] AI Copilot side-drawer toggle and chat prompt input.
-- [ ] Prompt-driven architecture generation (e.g., "Add a Redis cache before database").
-- [ ] Architectural rule checks / linting recommendations via Copilot.
+- [x] AI Copilot side-drawer toggle, grounded context metrics, and chat prompt input.
+- [x] Prompt-driven architecture generation (e.g., "Multi-tenant SaaS with API gateway...").
+- [x] Applying generated AI proposal to canvas with React Flow node additions.
+- [x] AI Architecture Governance Review agent with pre-merge compliance checklist.
+- [x] AI-drafted Architecture Decision Record (ADR) review, modification, and commit workflow.
 
 ### Area 11: Mobile Web Companion (`e2e/mobile-companion.spec.ts`)
 - [ ] Mobile viewport (375x667 / 390x844) dedicated companion navigation.

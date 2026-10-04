@@ -75,6 +75,7 @@ export function GenerationProposalCard({
           {onApply && (
             <button
               type="button"
+              data-testid="ai-generation-apply-btn"
               onClick={onApply}
               className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-colors flex items-center gap-1.5"
             >
@@ -123,7 +124,10 @@ export function AIGenerationModal({
       aria-modal="true"
       aria-label="AI Architecture Generation Dialog"
     >
-      <div className="w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-xl shadow-2xl flex flex-col max-h-[85vh] text-slate-100 overflow-hidden">
+      <div
+        data-testid="ai-generation-modal"
+        className="w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-xl shadow-2xl flex flex-col max-h-[85vh] text-slate-100 overflow-hidden"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950">
           <div className="flex items-center gap-3">
@@ -141,6 +145,7 @@ export function AIGenerationModal({
           </div>
           <button
             type="button"
+            data-testid="ai-generation-close-btn"
             onClick={onClose}
             className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
             aria-label="Close Generation Dialog"
@@ -157,6 +162,7 @@ export function AIGenerationModal({
           <div className="flex gap-2">
             <input
               type="text"
+              data-testid="ai-generation-input"
               value={promptInput}
               onChange={(e) => setPromptInput(e.target.value)}
               placeholder="e.g., E-commerce platform with storefront gateway, order processing, Stripe payments, and Postgres DB"
@@ -164,6 +170,7 @@ export function AIGenerationModal({
             />
             <button
               type="submit"
+              data-testid="ai-generation-submit-btn"
               disabled={!promptInput.trim()}
               className="px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 text-white font-semibold text-xs transition-colors flex items-center gap-1.5 shrink-0"
             >

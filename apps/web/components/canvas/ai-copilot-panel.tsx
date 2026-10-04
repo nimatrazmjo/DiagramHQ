@@ -111,6 +111,7 @@ export function AICopilotPanel({
 
   return (
     <div
+      data-testid="ai-copilot-panel"
       className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-slate-900 border-l border-slate-800 shadow-2xl flex flex-col text-slate-100"
       role="complementary"
       aria-label="Architecture AI Copilot Panel"
@@ -135,6 +136,7 @@ export function AICopilotPanel({
         </div>
         <button
           type="button"
+          data-testid="ai-copilot-close-btn"
           onClick={onClose}
           className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
           aria-label="Close Copilot Panel"
@@ -236,6 +238,7 @@ export function AICopilotPanel({
         <div className="relative">
           <input
             type="text"
+            data-testid="ai-copilot-input"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask anything about the architecture..."
@@ -243,6 +246,7 @@ export function AICopilotPanel({
           />
           <button
             type="submit"
+            data-testid="ai-copilot-submit-btn"
             disabled={!input.trim() || isThinking}
             className="absolute right-2 top-2 p-1 text-cyan-400 hover:text-cyan-300 disabled:opacity-40"
             aria-label="Send message to Copilot"
