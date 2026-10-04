@@ -67,7 +67,7 @@ Evidence:
 
 ### F104 — Advanced RBAC
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Fine-grained roles.
 
@@ -78,6 +78,11 @@ Acceptance Criteria:
 - Fine-grained roles beyond the base catalog; least privilege
 
 Test: a fine-grained role denies an out-of-scope action.
+
+Evidence:
+- Domain: `packages/domain/src/advanced-rbac.ts`, `packages/domain/src/advanced-rbac.test.ts` (13 tests passing)
+- Web: `apps/web/components/enterprise/advanced-rbac-modal.tsx`, `apps/web/components/enterprise/index.ts`, `apps/web/advanced-rbac.spec.tsx` (5 tests passing)
+- Reviews: `.harness/reviews/F104-PR.md`, `.harness/reviews/F104-review.md`
 
 ### F105 — Audit logs
 

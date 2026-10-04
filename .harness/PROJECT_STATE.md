@@ -13,21 +13,23 @@ Phase Name: Enterprise
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F104
-Feature Name: Advanced RBAC
+Feature ID: F105
+Feature Name: Audit logs
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 121
+Completed: 122
 In Progress: 0
 Blocked: 0
-Not Started: 14
-Progress: 89.6%
+Not Started: 13
+Progress: 90.4%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F103 — SCIM. Implemented RFC 7643 and RFC 7644 compliant SCIM 2.0 User Provisioning and Deprovisioning for DiagramHQ Enterprise (Phase 13 — Enterprise). Built pure TypeScript domain logic (`scim.ts`) for SCIM schemas (`User`, `EnterpriseUser`, `Group`, `ServiceProviderConfig`, `PatchOp`, `ListResponse`, `Error`), user creation with uniqueness checks, querying with filter syntax (`userName eq "..."`, `externalId eq "..."`, `active eq true/false`), 1-based pagination, PUT replacement, RFC 7644 PATCH attribute updates and deactivation (`active: false` deprovisioning / `active: true` reactivation), group management, metadata discovery, bearer token generation/verification, and a deterministic zero-network lifecycle simulation harness (`simulateScimProvisioningLifecycle`). Integrated SCIM 2.0 into Next.js App Router API routes (`/api/scim/v2/ServiceProviderConfig`, `/api/scim/v2/Users`, `/api/scim/v2/Users/[id]`) with strict Bearer token authentication, and extended the Enterprise Settings Modal (`SsoSettingsModal` SCIM 2.0 Provisioning tab) with connection settings, token regenerator, interactive lifecycle test runner, and user directory with instant deprovisioning toggles. 18 domain unit tests, 4 web integration tests (`scim.spec.tsx`). **Milestone: 121 / 135 features completed overall (89.6%)!**
+F104 — Advanced RBAC. Implemented Enterprise Advanced Role-Based Access Control (Advanced RBAC) with fine-grained roles beyond the base catalog and strict principle of least privilege enforcement for DiagramHQ (Phase 13 — Enterprise). Built pure TypeScript domain logic (`advanced-rbac.ts`) featuring a granular permission catalog across 7 enterprise domains (`architecture`, `model`, `flow`, `docs`, `governance`, `admin`, `billing`), 5 built-in specialized enterprise roles (`Security Auditor`, `Documentation Specialist`, `Compliance Officer`, `Junior Architect`, `Billing Administrator`) with tailored allow/deny boundaries, dynamic custom role authoring, least-privilege permission evaluation (`evaluateFineGrainedPermission`, `assertFineGrainedPermission`) with explicit denial precedence and deny-by-default guarantees, an automated least-privilege risk audit engine (`auditRoleLeastPrivilege`), and an out-of-scope action denial testing harness (`testFineGrainedRoleDenial`). Added Web layer enterprise administration modal (`AdvancedRbacModal`) with Roles Catalog, interactive real-time Least Privilege Evaluator, Risk & Compliance Audit dashboard, and custom role authoring form. 13 domain unit tests, 5 web integration tests (`advanced-rbac.spec.tsx`). **Milestone: 122 / 135 features completed overall (90.4%)!**
+
+Prior: F103 — SCIM. Implemented RFC 7643 and RFC 7644 compliant SCIM 2.0 User Provisioning and Deprovisioning for DiagramHQ Enterprise (Phase 13 — Enterprise). Built pure TypeScript domain logic (`scim.ts`) for SCIM schemas (`User`, `EnterpriseUser`, `Group`, `ServiceProviderConfig`, `PatchOp`, `ListResponse`, `Error`), user creation with uniqueness checks, querying with filter syntax (`userName eq "..."`, `externalId eq "..."`, `active eq true/false`), 1-based pagination, PUT replacement, RFC 7644 PATCH attribute updates and deactivation (`active: false` deprovisioning / `active: true` reactivation), group management, metadata discovery, bearer token generation/verification, and a deterministic zero-network lifecycle simulation harness (`simulateScimProvisioningLifecycle`). Integrated SCIM 2.0 into Next.js App Router API routes (`/api/scim/v2/ServiceProviderConfig`, `/api/scim/v2/Users`, `/api/scim/v2/Users/[id]`) with strict Bearer token authentication, and extended the Enterprise Settings Modal (`SsoSettingsModal` SCIM 2.0 Provisioning tab) with connection settings, token regenerator, interactive lifecycle test runner, and user directory with instant deprovisioning toggles. 18 domain unit tests, 4 web integration tests (`scim.spec.tsx`). **Milestone: 121 / 135 features completed overall (89.6%)!**
 
 Prior: F102 — SAML. Implemented Enterprise SAML 2.0 Web Browser Single Sign-On (SSO) assertion flow and metadata exchange for DiagramHQ (Phase 13 — Enterprise). Built pure TypeScript domain logic (`saml.ts`) for Service Provider (SP) metadata generation (`buildSpMetadataXml`), Identity Provider (IdP) metadata parsing (`parseIdpMetadataXml`), AuthnRequest generation with Base64 encoding and HTTP-Redirect query URL constructor, SAML 2.0 Response & Assertion condition verification (InResponseTo CSRF mitigation, Issuer matching, NotBefore/NotOnOrAfter time validity windows with clock skew tolerance, and AudienceRestriction checks), Subject NameID and AttributeStatement extraction, group-to-role attribute mapping to DiagramHQ `MemberRole`, Just-In-Time (JIT) provisioning, and a deterministic Test SAML IdP simulation engine. Integrated SAML 2.0 authentication into NextAuth (`auth.config.ts`, `auth.spec.ts`), the Web login interface (`LoginForm` 1-Click SAML sign-in), and the Enterprise SSO settings modal (`SsoSettingsModal` SAML 2.0 SP Config tab with copy button, IdP XML parser, and simulation runner). 17 domain unit tests, 14 web integration tests (5 in `saml.spec.tsx`, 9 in `auth.spec.ts`). **Milestone: 120 / 135 features completed overall (88.9%)!**
 
