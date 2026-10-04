@@ -45,17 +45,33 @@ export default defineConfig({
     navigationTimeout: 15 * 1000,
   },
 
-  /* Configure projects */
+  /* Configure projects across desktop and mobile devices */
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
+    {
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+    },
+    {
+      name: 'Mobile Chrome',
+      use: { ...devices['Pixel 5'] },
+    },
+    {
+      name: 'Mobile Safari',
+      use: { ...devices['iPhone 12'] },
+    },
   ],
 
-  /* Run local dev server before starting the tests */
+  /* Run local dev or production server before starting the tests */
   webServer: {
-    command: 'pnpm dev',
+    command: process.env.CI ? 'pnpm --filter @diagramhq/web start' : 'pnpm dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
