@@ -2,6 +2,29 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-04 — F131 — Compliance packs (Phase 13 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ids.ts`: Added `'cpl'` prefix to `IdPrefix` union and created branded type `ComplianceMappingId`.
+  - `compliance-packs.ts`: Enterprise regulatory framework mappings and audit readiness engine:
+    - Pre-packaged catalogs for SOC 2 Type II, ISO/IEC 27001:2022, EU GDPR, HIPAA Security Rule, PCI DSS v4.0, NIST SP 800-53 Rev. 5, and CIS Controls (`FRAMEWORK_CATALOG`, `BUILTIN_CONTROLS`).
+    - Control Mapping Engine (`createControlMapping`, `attachEvidenceToControlMapping`, `updateControlMappingStatus`) establishing bidirectional links between compliance controls, architecture objects (gateways, vaults, databases, services), evidence artifacts, and control owners.
+    - Multi-state attestation progression (`not_started`, `in_progress`, `evidence_collected`, `under_audit_review`, `attested`).
+    - Governance Invariant: Strictly prohibits automated or synthetic 'compliant' badges, maintaining `hasAutoClaimedCompliance: false` and providing audit readiness KPIs and third-party auditor attestation disclaimers.
+  - `compliance-packs.test.ts`: 4 unit tests verifying framework catalogs, control-to-object-to-evidence mappings, attestation status transitions, and strict prevention of auto-claimed compliance badges.
+  - `index.ts`: Exported `compliance-packs` module and types.
+- Web layer (`apps/web/`):
+  - `components/enterprise/compliance-packs-modal.tsx`: Interactive modal dialog with framework tabs, audit readiness KPI metrics, evidence attachment drawer, and architecture object mapping tools.
+  - `components/enterprise/index.ts`: Exported `CompliancePacksModal`.
+  - `compliance-packs.spec.tsx`: 3 integration and component tests verifying UI rendering, control mapping with evidence/status, and absence of false compliance badges.
+- Reviews:
+  - `.harness/reviews/F131-PR.md`, `.harness/reviews/F131-review.md`.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 107 test files / 722 tests ✓, web 121 test files / 616 tests ✓, `next build ✓`.
+- **Milestone: 127 / 135 features completed overall (94.1%)!**
+
 ## 2026-10-04 — F108 — Private deployment (Phase 13 Progress)
 
 Status: COMPLETE

@@ -157,7 +157,7 @@ Evidence:
 
 ### F131 — Compliance packs
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Framework mappings.
 
@@ -169,6 +169,11 @@ Acceptance Criteria:
 - Control -> objects -> evidence -> owner -> status; never auto-claims compliance
 
 Test: map a control; evidence + status shown; no false 'compliant' badge.
+
+Evidence:
+- Domain: `packages/domain/src/compliance-packs.ts`, `packages/domain/src/compliance-packs.test.ts` (4 tests passing)
+- Web: `apps/web/components/enterprise/compliance-packs-modal.tsx`, `apps/web/compliance-packs.spec.tsx` (3 tests passing)
+- Reviews: `.harness/reviews/F131-PR.md`, `.harness/reviews/F131-review.md`
 
 ### F132 — Billing & plans
 

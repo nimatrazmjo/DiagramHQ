@@ -46,7 +46,8 @@ export type IdPrefix =
   | 'aud'
   | 'pol'
   | 'sec'
-  | 'dep';
+  | 'dep'
+  | 'cpl';
 
 export type Id<P extends IdPrefix> = string & { readonly __brand: P };
 
@@ -87,6 +88,7 @@ export type AuditLogEntryId = Id<'aud'>;
 export type OrgPolicyId = Id<'pol'>;
 export type SecurityProfileId = Id<'sec'>;
 export type DeploymentId = Id<'dep'>;
+export type ComplianceMappingId = Id<'cpl'>;
 
 let sequence = 0;
 
