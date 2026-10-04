@@ -14,6 +14,7 @@ export function BranchBadge({ currentBranch, onClick }: BranchBadgeProps) {
   return (
     <button
       type="button"
+      data-testid="branch-badge"
       onClick={onClick}
       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border bg-slate-900 border-slate-700 text-slate-200 hover:border-slate-500 hover:bg-slate-800 transition-colors shadow-sm"
       aria-label="Current Branch"
@@ -21,7 +22,7 @@ export function BranchBadge({ currentBranch, onClick }: BranchBadgeProps) {
       <span className="material-symbols-outlined text-sm text-cyan-400">
         fork_right
       </span>
-      <span className="font-mono font-semibold text-slate-100">{`${currentBranch.name}`}</span>
+      <span data-testid="branch-badge-name" className="font-mono font-semibold text-slate-100">{`${currentBranch.name}`}</span>
       {isMain ? (
         <span className="px-1.5 py-0.2 rounded text-[10px] bg-cyan-950 text-cyan-300 border border-cyan-800/60 font-semibold">
           default
@@ -74,6 +75,7 @@ export function BranchSelector({
 
   return (
     <div
+      data-testid="branch-selector"
       className="w-80 rounded-xl bg-slate-900/95 border border-slate-700/80 shadow-2xl p-4 text-xs text-slate-200 backdrop-blur-md"
       role="dialog"
       aria-label="Branch Switcher"
@@ -88,6 +90,7 @@ export function BranchSelector({
         {onClose && (
           <button
             type="button"
+            data-testid="branch-selector-close"
             onClick={onClose}
             className="text-slate-400 hover:text-white"
             aria-label="Close"
@@ -105,6 +108,7 @@ export function BranchSelector({
             <button
               key={b.id}
               type="button"
+              data-testid={`branch-item-${b.name}`}
               onClick={() => onSelectBranch(b.id)}
               className={`w-full flex items-center justify-between p-2.5 rounded-lg border text-left transition-colors ${
                 isActive
@@ -150,6 +154,7 @@ export function BranchSelector({
           <form onSubmit={handleCreate} className="space-y-2">
             <input
               type="text"
+              data-testid="branch-name-input"
               placeholder="Branch name (e.g. feat/billing)"
               value={newBranchName}
               onChange={(e) => setNewBranchName(e.target.value)}
@@ -158,15 +163,17 @@ export function BranchSelector({
             />
             <input
               type="text"
+              data-testid="branch-desc-input"
               placeholder="Description (optional)"
               value={newBranchDesc}
               onChange={(e) => setNewBranchDesc(e.target.value)}
               className="w-full px-2.5 py-1.5 text-xs bg-slate-950 border border-slate-700 rounded-md text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
             />
-            {error && <div className="text-[11px] text-rose-400">{error}</div>}
+            {error && <div data-testid="branch-create-error" className="text-[11px] text-rose-400">{error}</div>}
             <div className="flex justify-end gap-2 pt-1">
               <button
                 type="button"
+                data-testid="branch-create-cancel-btn"
                 onClick={() => setIsCreating(false)}
                 className="px-2.5 py-1 rounded text-slate-400 hover:text-white"
               >
@@ -174,6 +181,7 @@ export function BranchSelector({
               </button>
               <button
                 type="submit"
+                data-testid="branch-create-submit-btn"
                 className="px-3 py-1 rounded bg-cyan-600 hover:bg-cyan-500 text-white font-medium"
               >
                 Create Branch
@@ -184,6 +192,7 @@ export function BranchSelector({
           onCreateBranch && (
             <button
               type="button"
+              data-testid="branch-create-toggle-btn"
               onClick={() => setIsCreating(true)}
               className="w-full py-1.5 flex items-center justify-center gap-1.5 rounded-lg border border-dashed border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white transition-colors"
             >

@@ -19,7 +19,7 @@ This document maintains an up-to-date tracker of all end-to-end (E2E) browser te
 
 ---
 
-## 2. Implemented & Verified Test Suites (47 Tests — 100% Passing)
+## 2. Implemented & Verified Test Suites (53 Tests — 100% Passing)
 
 ### Suite 1: Authentication & Session Security (`apps/web/e2e/auth.spec.ts`)
 | # | Test Case Description | Verified Behavior | Status |
@@ -96,6 +96,16 @@ This document maintains an up-to-date tracker of all end-to-end (E2E) browser te
 | 5 | Resolving & reopening comment threads | Resolves an open comment thread, hides it from Open filter, and re-opens from All filter | ✅ Passed |
 | 6 | Architecture Review PR modal | Opens PR #14 modal, reviews visual diff and risk assessment, and submits approval | ✅ Passed |
 
+### Suite 8: Architecture Versioning, Branching, Snapshots & Visual Diff (`apps/web/e2e/versioning-diff.spec.ts`)
+| # | Test Case Description | Verified Behavior | Status |
+|---|---|---|:---:|
+| 1 | Active branch badge & modal trigger | Renders active branch `main (default)`; clicking opens `BranchSelector` modal | ✅ Passed |
+| 2 | Active branch switching | Selecting `feat/auth-v2` updates active badge to `feat/auth-v2 (feature)` and closes modal | ✅ Passed |
+| 3 | Branch creation & duplicate validation | Validates duplicate branch name (`main`); creates new branch `feat/payment-gateway` | ✅ Passed |
+| 4 | Version timeline drawer | Toggles `version-history-drawer`, renders live editable version and immutable releases | ✅ Passed |
+| 5 | Full architecture snapshot modal | Opens `SnapshotDetailsModal` displaying 6-dimension metrics (objects, connections, views, flows, docs, metadata) | ✅ Passed |
+| 6 | Visual architecture diff viewer | Toggles `VisualDiffViewer`, tests change filters (`All`, `Added`, `Modified`), verifies added billing entity | ✅ Passed |
+
 ---
 
 ## 3. What is Left — Playwright E2E Implementation Backlog
@@ -115,9 +125,9 @@ The following suites represent upcoming areas to achieve 100% end-to-end browser
 │ 5. Flows & Sequence Playback   │ 7 tests           │ ✅ COMPLETED      │
 │ 6. Advanced Canvas & Layouts   │ 7 tests           │ ✅ COMPLETED      │
 │ 7. Collaboration & Reviews     │ 6 tests           │ ✅ COMPLETED      │
+│ 8. Versioning & Visual Diff    │ 6 tests           │ ✅ COMPLETED      │
 ├────────────────────────────────┼───────────────────┼───────────────────┤
-│ 8. Versioning & Visual Diff    │ ~5 tests          │ ⏳ BACKLOG (P2)   │
-│ 9. Exports & Diagram Sharing   │ ~6 tests          │ ⏳ BACKLOG (P2)   │
+│ 9. Exports & Diagram Sharing   │ ~6 tests          │ ⏳ IN QUEUE (P2)  │
 │ 10. AI Architecture Copilot    │ ~5 tests          │ ⏳ BACKLOG (P3)   │
 │ 11. Mobile Web Companion       │ ~5 tests          │ ⏳ BACKLOG (P3)   │
 │ 12. CI & Cross-Browser Matrix  │ Matrix Config     │ ⏳ BACKLOG (P3)   │
@@ -125,9 +135,9 @@ The following suites represent upcoming areas to achieve 100% end-to-end browser
 ```
 
 ### Area 8: Versioning, Branching & Visual Diff (`e2e/versioning-diff.spec.ts`)
-- [ ] Architecture version snapshot creation modal.
-- [ ] Branch switcher (switching between `main` and feature branches).
-- [ ] Visual diff view highlighting added nodes (green), removed nodes (red), and modified edges.
+- [x] Architecture version snapshot creation & detailed inspection modal.
+- [x] Branch switcher & badge (switching between `main` and feature branches, creating branches).
+- [x] Visual diff view highlighting added nodes (green), removed nodes (red), and modified entities with category filters.
 
 ### Area 9: Exports & Diagram Sharing (`e2e/export-import.spec.ts`)
 - [ ] Export to PNG and SVG download trigger and file delivery.

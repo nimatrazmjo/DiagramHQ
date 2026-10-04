@@ -36,12 +36,14 @@ export function DiffLegend({
 
   return (
     <div
+      data-testid="diff-legend"
       className="inline-flex items-center gap-1.5 p-1 rounded-lg bg-slate-900/90 border border-slate-700/80 backdrop-blur-sm text-xs shadow-md"
       role="region"
       aria-label="Diff Legend"
     >
       <button
         type="button"
+        data-testid="diff-filter-all"
         onClick={() => onFilterChange?.('all')}
         className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors ${
           selectedFilter === 'all'
@@ -56,6 +58,7 @@ export function DiffLegend({
         <button
           key={item.key}
           type="button"
+          data-testid={`diff-filter-${item.key}`}
           onClick={() => onFilterChange?.(item.key)}
           className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium transition-colors ${
             selectedFilter === item.key
@@ -104,6 +107,7 @@ export function VisualDiffViewer({
 
   return (
     <div
+      data-testid="visual-diff-viewer"
       className="w-96 rounded-xl bg-slate-900/95 border border-slate-700/80 shadow-2xl p-4 text-xs text-slate-200 backdrop-blur-md"
       role="dialog"
       aria-label="Visual Architecture Diff"
@@ -124,6 +128,7 @@ export function VisualDiffViewer({
         {onClose && (
           <button
             type="button"
+            data-testid="diff-viewer-close"
             onClick={onClose}
             className="text-slate-400 hover:text-white"
             aria-label="Close"
@@ -154,6 +159,7 @@ export function VisualDiffViewer({
               <button
                 key={obj.id}
                 type="button"
+                data-testid={`diff-item-${obj.id}`}
                 onClick={() => onSelectEntity?.(obj.id)}
                 className="w-full flex flex-col p-2.5 rounded-lg border border-slate-800 bg-slate-950/40 hover:border-slate-700 text-left transition-colors"
               >
@@ -194,6 +200,7 @@ export function VisualDiffViewer({
               <button
                 key={conn.id}
                 type="button"
+                data-testid={`diff-conn-item-${conn.id}`}
                 onClick={() => onSelectEntity?.(conn.id)}
                 className="w-full flex flex-col p-2.5 rounded-lg border border-slate-800 bg-slate-950/40 hover:border-slate-700 text-left transition-colors"
               >

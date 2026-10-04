@@ -28,9 +28,20 @@ import {
   addPullRequestComment,
   computeVisualArchitectureDiff,
   computeArchitectureChangeSet,
+  type ViewId,
+  type FlowId,
+  type ObjectKind,
   type ArchitecturePullRequest,
   type ReviewDecision,
   type TeamId,
+  createMainBranch,
+  forkBranch,
+  type ArchitectureBranch,
+  type LiveArchitectureVersion,
+  type NumberedSnapshot,
+  type FullArchitectureSnapshot,
+  type SnapshotId,
+  type WorkspaceId,
 } from '@diagramhq/domain';
 import {
   InfiniteCanvas,
@@ -41,6 +52,11 @@ import {
   PresenceIndicators,
   CommentsPanel,
   PullRequestModal,
+  BranchBadge,
+  BranchSelector,
+  VersionTimeline,
+  SnapshotDetailsModal,
+  VisualDiffViewer,
   type PresencePeerBadge,
 } from '../../components/canvas';
 import { InspectorPanel } from '../../components/shell/inspector-panel';
@@ -80,6 +96,98 @@ const CURRENT_AUTHOR: CommentAuthor = {
   name: 'Admin Superuser',
   email: 'admin@diagramhq.internal',
   color: '#3b82f6',
+};
+
+const INITIAL_BRANCHES: ArchitectureBranch[] = (() => {
+  const main = createMainBranch('ws-demo' as WorkspaceId, 'arch-studio-init' as ArchitectureId, {
+    objects: [
+      { id: 'app-gateway' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Edge API Gateway', kind: 'application', position: { x: 50, y: 50 }, createdAt: new Date(), updatedAt: new Date() },
+      { id: 'app-auth' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Auth Service', kind: 'application', position: { x: 200, y: 200 }, createdAt: new Date(), updatedAt: new Date() },
+    ],
+    connections: [],
+  });
+
+  const featAuth = forkBranch(main, 'feat/auth-v2', {
+    description: 'OAuth2 / OIDC migration and dedicated billing service',
+  });
+  featAuth.state.objects.push({
+    id: 'app-billing' as ObjectId,
+    architectureId: 'arch-studio-init' as ArchitectureId,
+    versionId: 'v2' as VersionId,
+    name: 'Billing Microservice',
+    kind: 'application',
+    position: { x: 400, y: 400 },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+
+  return [main, featAuth];
+})();
+
+const INITIAL_SNAPSHOTS: NumberedSnapshot[] = [
+  {
+    id: 'snap-v10' as SnapshotId,
+    architectureId: 'arch-studio-init' as ArchitectureId,
+    liveVersionId: 'v1' as VersionId,
+    versionNumber: 'v1.0.0',
+    label: 'Initial MVP Production Baseline',
+    createdBy: 'Alice Chen',
+    createdAt: Date.now() - 86400000 * 14,
+    isImmutable: true,
+    snapshotData: {
+      objects: [
+        { id: 'app-gateway' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Edge API Gateway', kind: 'application', position: { x: 50, y: 50 }, createdAt: new Date(), updatedAt: new Date() },
+      ],
+      connections: [],
+    },
+  },
+  {
+    id: 'snap-v11' as SnapshotId,
+    architectureId: 'arch-studio-init' as ArchitectureId,
+    liveVersionId: 'v1' as VersionId,
+    versionNumber: 'v1.1.0',
+    label: 'Added Edge API Gateway & C4 Container Views',
+    createdBy: 'Bob Smith',
+    createdAt: Date.now() - 86400000 * 3,
+    isImmutable: true,
+    snapshotData: {
+      objects: [
+        { id: 'app-gateway' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Edge API Gateway', kind: 'application', position: { x: 50, y: 50 }, createdAt: new Date(), updatedAt: new Date() },
+        { id: 'app-auth' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Auth Service', kind: 'application', position: { x: 200, y: 200 }, createdAt: new Date(), updatedAt: new Date() },
+      ],
+      connections: [],
+    },
+  },
+];
+
+const SAMPLE_FULL_SNAPSHOT: FullArchitectureSnapshot = {
+  id: 'snap-full-1' as SnapshotId,
+  architectureId: 'arch-studio-init' as ArchitectureId,
+  versionNumber: 'v1.0.0',
+  label: 'Initial MVP Production Baseline',
+  description: 'First production release with core auth and edge services.',
+  createdBy: 'Alice Chen',
+  createdAt: Date.now() - 86400000 * 14,
+  isImmutable: true,
+  state: {
+    objects: [
+      { id: 'app-gateway' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Edge API Gateway', kind: 'application', position: { x: 50, y: 50 }, createdAt: new Date(), updatedAt: new Date() },
+      { id: 'app-auth' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Auth Service', kind: 'application', position: { x: 200, y: 200 }, createdAt: new Date(), updatedAt: new Date() },
+    ],
+    connections: [
+      { id: 'con-1' as ConnectionId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v1' as VersionId, sourceObjectId: 'app-gateway' as ObjectId, targetObjectId: 'app-auth' as ObjectId, label: 'Auth Token', kind: 'sync', createdAt: new Date(), updatedAt: new Date() },
+    ],
+    views: [
+      { id: 'view-1' as ViewId, architectureId: 'arch-studio-init' as ArchitectureId, name: 'System Context', kind: 'context', createdAt: new Date(), updatedAt: new Date() },
+    ],
+    flows: [
+      { id: 'flw-1' as FlowId, architectureId: 'arch-studio-init' as ArchitectureId, name: 'Authentication Trace', type: 'api_flow', steps: [], createdAt: new Date(), updatedAt: new Date() },
+    ],
+    metadata: { env: 'production' },
+    documentation: {
+      pages: [],
+    },
+  },
 };
 
 export default function StudioPage(): JSX.Element {
@@ -365,6 +473,87 @@ export default function StudioPage(): JSX.Element {
       })
     );
   }, []);
+
+  // Area 8: Versioning, Branching, Snapshots & Visual Diff
+  const defaultMainBranch = INITIAL_BRANCHES[0]!;
+  const [branches, setBranches] = useState<ArchitectureBranch[]>(INITIAL_BRANCHES);
+  const [currentBranchId, setCurrentBranchId] = useState<string>(defaultMainBranch.id);
+  const [isBranchSelectorOpen, setIsBranchSelectorOpen] = useState(false);
+
+  const [snapshots, setSnapshots] = useState<NumberedSnapshot[]>(INITIAL_SNAPSHOTS);
+  const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
+  const [selectedSnapshotModal, setSelectedSnapshotModal] = useState<FullArchitectureSnapshot | null>(null);
+
+  const [isVisualDiffOpen, setIsVisualDiffOpen] = useState(false);
+
+  const currentBranch: ArchitectureBranch = useMemo(
+    () => branches.find((b) => b.id === currentBranchId) || defaultMainBranch,
+    [branches, currentBranchId, defaultMainBranch]
+  );
+
+  const liveVersion: LiveArchitectureVersion = useMemo(
+    () => ({
+      id: 'v1' as VersionId,
+      architectureId: 'arch-studio-init' as ArchitectureId,
+      name: `${currentBranch.name} (Live)`,
+      isLive: true,
+      objects: currentNodes.map((n) => ({
+        id: n.id as ObjectId,
+        architectureId: 'arch-studio-init' as ArchitectureId,
+        versionId: 'v1' as VersionId,
+        name: typeof n.data.label === 'string' ? n.data.label : n.id,
+        kind: ((typeof n.data.kind === 'string' ? n.data.kind : n.type) ?? 'application') as ObjectKind,
+        position: n.position,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })),
+      connections: currentEdges.map((e) => ({
+        id: e.id as ConnectionId,
+        architectureId: 'arch-studio-init' as ArchitectureId,
+        versionId: 'v1' as VersionId,
+        sourceObjectId: e.source as ObjectId,
+        targetObjectId: e.target as ObjectId,
+        label: typeof e.label === 'string' ? e.label : 'connects to',
+        kind: 'sync' as const,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })),
+      updatedAt: Date.now(),
+    }),
+    [currentBranch.name, currentNodes, currentEdges]
+  );
+
+  const visualDiffResult = useMemo(() => {
+    return computeVisualArchitectureDiff(
+      {
+        objects: [
+          { id: 'app-gateway' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Edge API Gateway', kind: 'application', position: { x: 50, y: 50 }, createdAt: new Date(), updatedAt: new Date() },
+          { id: 'app-auth' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Auth Service', kind: 'application', position: { x: 200, y: 200 }, createdAt: new Date(), updatedAt: new Date() },
+        ],
+        connections: [],
+      },
+      {
+        objects: [
+          { id: 'app-gateway' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v2' as VersionId, name: 'Edge API Gateway', kind: 'application', position: { x: 50, y: 50 }, createdAt: new Date(), updatedAt: new Date() },
+          { id: 'app-auth' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v2' as VersionId, name: 'OAuth2 / OIDC Auth Service', kind: 'application', position: { x: 200, y: 200 }, createdAt: new Date(), updatedAt: new Date() },
+          { id: 'app-billing' as ObjectId, architectureId: 'arch-studio-init' as ArchitectureId, versionId: 'v2' as VersionId, name: 'Billing Microservice', kind: 'application', position: { x: 400, y: 400 }, createdAt: new Date(), updatedAt: new Date() },
+        ],
+        connections: [],
+      }
+    );
+  }, []);
+
+  const handleSelectBranch = useCallback((branchId: string) => {
+    setCurrentBranchId(branchId);
+    setIsBranchSelectorOpen(false);
+  }, []);
+
+  const handleCreateBranch = useCallback((name: string, description?: string) => {
+    const newBranch = forkBranch(currentBranch, name, { description });
+    setBranches((prev) => [...prev, newBranch]);
+    setCurrentBranchId(newBranch.id);
+    setIsBranchSelectorOpen(false);
+  }, [currentBranch]);
 
   const handleNodeSelect = useCallback((nodeId: string | null) => {
     setSelectedNodeId(nodeId);
@@ -771,8 +960,49 @@ export default function StudioPage(): JSX.Element {
             <span className="font-semibold">Admin (Owner)</span>
           </Link>
 
+          {/* Active Architecture Branch Badge & Switcher */}
+          <BranchBadge
+            currentBranch={currentBranch}
+            onClick={() => setIsBranchSelectorOpen((v) => !v)}
+          />
+
           {/* Active Collaborators Presence Indicators */}
           <PresenceIndicators peers={peers} currentUserId={CURRENT_AUTHOR.id} />
+
+          {/* Version History & Snapshots Trigger */}
+          <button
+            type="button"
+            data-testid="toggle-version-history-btn"
+            onClick={() => setIsVersionHistoryOpen((v) => !v)}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+              isVersionHistoryOpen
+                ? 'bg-emerald-600/30 text-emerald-300 border-emerald-500/50 shadow-sm shadow-emerald-500/20'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+            }`}
+            title="Toggle Version History & Snapshots"
+          >
+            <span>🕒</span>
+            <span className="hidden sm:inline">Versions</span>
+          </button>
+
+          {/* Visual Architecture Diff Trigger */}
+          <button
+            type="button"
+            data-testid="toggle-visual-diff-btn"
+            onClick={() => setIsVisualDiffOpen((v) => !v)}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+              isVisualDiffOpen
+                ? 'bg-purple-600/30 text-purple-300 border-purple-500/50 shadow-sm shadow-purple-500/20'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+            }`}
+            title="Toggle Architecture Visual Diff"
+          >
+            <span>⚖️</span>
+            <span className="hidden sm:inline">Diff</span>
+            <span className="px-1.5 py-0.2 rounded-full bg-purple-500/30 text-purple-200 font-mono text-[10px]">
+              {`+${visualDiffResult.counts.added}`}
+            </span>
+          </button>
 
           {/* Architecture Pull Request Review trigger */}
           <button
@@ -1048,6 +1278,93 @@ export default function StudioPage(): JSX.Element {
             onClose={() => setIsPullRequestModalOpen(false)}
             onSubmitReview={handleSubmitPRReview}
             onAddComment={handleAddPRComment}
+          />
+        </div>
+      )}
+
+      {/* Architecture Branch Switcher Modal */}
+      {isBranchSelectorOpen && (
+        <div
+          data-testid="branch-selector-overlay"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsBranchSelectorOpen(false);
+          }}
+        >
+          <BranchSelector
+            branches={branches}
+            currentBranchId={currentBranchId}
+            onSelectBranch={handleSelectBranch}
+            onCreateBranch={handleCreateBranch}
+            onClose={() => setIsBranchSelectorOpen(false)}
+          />
+        </div>
+      )}
+
+      {/* Architecture Version History Drawer */}
+      {isVersionHistoryOpen && (
+        <div
+          data-testid="version-history-drawer"
+          className="fixed right-4 top-20 bottom-4 w-96 z-40 overflow-y-auto"
+        >
+          <VersionTimeline
+            liveVersion={liveVersion}
+            snapshots={snapshots}
+            onCreateSnapshot={() => {
+              const newVer = `v1.${snapshots.length}.0`;
+              const snap: NumberedSnapshot = {
+                id: `snap-${Date.now()}` as SnapshotId,
+                architectureId: 'arch-studio-init' as ArchitectureId,
+                liveVersionId: 'v1' as VersionId,
+                versionNumber: newVer,
+                label: `Release Snapshot ${newVer}`,
+                createdBy: 'Admin Superuser',
+                createdAt: Date.now(),
+                isImmutable: true,
+                snapshotData: {
+                  objects: liveVersion.objects,
+                  connections: liveVersion.connections,
+                },
+              };
+              setSnapshots((prev) => [snap, ...prev]);
+            }}
+            onSelectSnapshot={(snap) => {
+              setSelectedSnapshotModal({
+                ...SAMPLE_FULL_SNAPSHOT,
+                versionNumber: snap.versionNumber,
+                label: snap.label,
+                createdBy: snap.createdBy,
+                createdAt: snap.createdAt,
+              });
+            }}
+            className="w-full h-full"
+          />
+        </div>
+      )}
+
+      {/* Snapshot Details Full-State Inspection Modal */}
+      {selectedSnapshotModal && (
+        <SnapshotDetailsModal
+          snapshot={selectedSnapshotModal}
+          isOpen={Boolean(selectedSnapshotModal)}
+          onClose={() => setSelectedSnapshotModal(null)}
+        />
+      )}
+
+      {/* Architecture Visual Diff Modal */}
+      {isVisualDiffOpen && (
+        <div
+          data-testid="visual-diff-overlay"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsVisualDiffOpen(false);
+          }}
+        >
+          <VisualDiffViewer
+            diff={visualDiffResult}
+            sourceLabel="main"
+            targetLabel="feat/auth-v2"
+            onClose={() => setIsVisualDiffOpen(false)}
           />
         </div>
       )}
