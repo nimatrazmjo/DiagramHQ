@@ -261,7 +261,7 @@ Status: COMPLETE  ·  Depends on: Phase 03, Phase 04  ·  File: `phases/PHASE-12
 
 # Phase 13 — Enterprise
 
-Status: IN PROGRESS  ·  Depends on: Phase 01, Phase 06, Phase 11  ·  File: `phases/PHASE-13-ENTERPRISE.md`
+Status: COMPLETE  ·  Depends on: Phase 01, Phase 06, Phase 11  ·  File: `phases/PHASE-13-ENTERPRISE.md`
 
 ## Features
 
@@ -276,6 +276,6 @@ Status: IN PROGRESS  ·  Depends on: Phase 01, Phase 06, Phase 11  ·  File: `ph
 - [x] F131 — Compliance packs
 - [x] F132 — Billing & plans
 - [x] F133 — Marketplace
-- [ ] F134 — Mobile
+- [x] F134 — Mobile
 
 ---

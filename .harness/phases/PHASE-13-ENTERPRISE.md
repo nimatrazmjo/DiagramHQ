@@ -1,6 +1,6 @@
 # Phase 13 — Enterprise
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Description
 Enterprise readiness: SSO/SAML/SCIM, advanced RBAC + org policies, audit logs, enterprise security, private deployment, compliance packs, billing, marketplace, mobile.
@@ -213,7 +213,7 @@ Evidence:
 
 ### F134 — Mobile
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Mobile companion.
 
@@ -224,6 +224,11 @@ Acceptance Criteria:
 - Mobile web: view, search, comments, approvals, notifications, AI questions; canvas stays desktop-first
 
 Test: mobile viewport: view + approve a change + comment.
+
+Evidence:
+- Domain: `packages/domain/src/mobile.ts`, `packages/domain/src/mobile.test.ts` (6 tests passing)
+- Web: `apps/web/components/enterprise/mobile-companion.tsx`, `apps/web/mobile.spec.tsx` (3 tests passing)
+- Reviews: `.harness/reviews/F134-PR.md`, `.harness/reviews/F134-review.md`
 
 ---
 

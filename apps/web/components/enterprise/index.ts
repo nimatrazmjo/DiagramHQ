@@ -7,3 +7,4 @@ export * from './private-deployment-modal';
 export * from './compliance-packs-modal';
 export * from './billing-modal';
 export * from './marketplace-modal';
+export * from './mobile-companion';
