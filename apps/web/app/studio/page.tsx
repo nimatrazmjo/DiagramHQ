@@ -36,6 +36,9 @@ import {
   type TeamId,
   createMainBranch,
   forkBranch,
+  createArchitectureModel,
+  type ArchitectureModel,
+  type View,
   type ArchitectureBranch,
   type LiveArchitectureVersion,
   type NumberedSnapshot,
@@ -57,6 +60,10 @@ import {
   VersionTimeline,
   SnapshotDetailsModal,
   VisualDiffViewer,
+  ExportModal,
+  MermaidModal,
+  PlantUmlModal,
+  ShareLinkModal,
   type PresencePeerBadge,
 } from '../../components/canvas';
 import { InspectorPanel } from '../../components/shell/inspector-panel';
@@ -554,6 +561,46 @@ export default function StudioPage(): JSX.Element {
     setCurrentBranchId(newBranch.id);
     setIsBranchSelectorOpen(false);
   }, [currentBranch]);
+
+  // Area 9: Multi-Format Exports, Diagram-as-Code & Public Sharing
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isMermaidModalOpen, setIsMermaidModalOpen] = useState(false);
+  const [isPlantUmlModalOpen, setIsPlantUmlModalOpen] = useState(false);
+  const [isShareLinkModalOpen, setIsShareLinkModalOpen] = useState(false);
+
+  const currentStudioView: View = useMemo(
+    () => ({
+      id: 'view-studio-main' as ViewId,
+      architectureId: 'arch-studio-init' as ArchitectureId,
+      name: 'SaaS Platform Architecture',
+      kind: 'context' as const,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }),
+    []
+  );
+
+  const currentStudioModel: ArchitectureModel = useMemo(() => {
+    return createArchitectureModel(
+      {
+        id: 'arch-studio-init' as ArchitectureId,
+        workspaceId: 'default' as WorkspaceId,
+        name: 'SaaS Platform Architecture',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'v1' as VersionId,
+        architectureId: 'arch-studio-init' as ArchitectureId,
+        name: currentBranch.name,
+        kind: 'main',
+        status: 'open',
+        createdAt: new Date(),
+      },
+      liveVersion.objects,
+      liveVersion.connections
+    );
+  }, [currentBranch.name, liveVersion.objects, liveVersion.connections]);
 
   const handleNodeSelect = useCallback((nodeId: string | null) => {
     setSelectedNodeId(nodeId);
@@ -1056,6 +1103,54 @@ export default function StudioPage(): JSX.Element {
             <span className="hidden sm:inline">Icons</span>
           </button>
 
+          {/* Multi-Format Export Modal Trigger */}
+          <button
+            type="button"
+            data-testid="toggle-export-btn"
+            onClick={() => setIsExportModalOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors shadow-sm"
+            title="Export Diagram (PNG, SVG, PDF, JSON)"
+          >
+            <span>🖼️</span>
+            <span className="hidden sm:inline">Export</span>
+          </button>
+
+          {/* Mermaid.js Diagram-as-Code Trigger */}
+          <button
+            type="button"
+            data-testid="toggle-mermaid-btn"
+            onClick={() => setIsMermaidModalOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors shadow-sm"
+            title="Mermaid.js Diagram-as-Code"
+          >
+            <span>🧜‍♀️</span>
+            <span className="hidden sm:inline">Mermaid</span>
+          </button>
+
+          {/* PlantUML Diagram-as-Code Trigger */}
+          <button
+            type="button"
+            data-testid="toggle-plantuml-btn"
+            onClick={() => setIsPlantUmlModalOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors shadow-sm"
+            title="PlantUML Diagram-as-Code"
+          >
+            <span>🌱</span>
+            <span className="hidden sm:inline">PlantUML</span>
+          </button>
+
+          {/* Public Read-Only Share Link Trigger */}
+          <button
+            type="button"
+            data-testid="toggle-share-link-btn"
+            onClick={() => setIsShareLinkModalOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors shadow-sm"
+            title="Share Diagram View"
+          >
+            <span>🔗</span>
+            <span className="hidden sm:inline">Share</span>
+          </button>
+
           <label className="cursor-pointer px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors">
             📥 Import JSON
             <input type="file" accept=".json" onChange={handleImportJson} className="hidden" />
@@ -1367,6 +1462,58 @@ export default function StudioPage(): JSX.Element {
             onClose={() => setIsVisualDiffOpen(false)}
           />
         </div>
+      )}
+
+      {/* Multi-Format Export Modal */}
+      {isExportModalOpen && (
+        <ExportModal
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          model={currentStudioModel}
+          currentView={currentStudioView}
+          views={[currentStudioView]}
+        />
+      )}
+
+      {/* Mermaid Diagram-as-Code Modal */}
+      {isMermaidModalOpen && (
+        <MermaidModal
+          isOpen={isMermaidModalOpen}
+          onClose={() => setIsMermaidModalOpen(false)}
+          model={currentStudioModel}
+          currentView={currentStudioView}
+          flows={SAMPLE_FULL_SNAPSHOT.state.flows}
+        />
+      )}
+
+      {/* PlantUML Diagram-as-Code Modal */}
+      {isPlantUmlModalOpen && (
+        <PlantUmlModal
+          isOpen={isPlantUmlModalOpen}
+          onClose={() => setIsPlantUmlModalOpen(false)}
+          model={currentStudioModel}
+          currentView={currentStudioView}
+          flows={SAMPLE_FULL_SNAPSHOT.state.flows}
+        />
+      )}
+
+      {/* Public Read-Only Share Link Modal */}
+      {isShareLinkModalOpen && (
+        <ShareLinkModal
+          isOpen={isShareLinkModalOpen}
+          onClose={() => setIsShareLinkModalOpen(false)}
+          workspaceId="default"
+          viewId={currentStudioView.id}
+          selectedObjectId={selectedNodeId}
+          onGenerateLink={({ preserveCamera, preserveSelection, expiresInMs }) => {
+            const params = new URLSearchParams();
+            params.set('token', `share_${Date.now()}`);
+            if (preserveCamera) params.set('cam', '1');
+            if (preserveSelection && selectedNodeId) params.set('sel', selectedNodeId);
+            if (expiresInMs) params.set('exp', String(Date.now() + expiresInMs));
+            return `https://diagramhq.com/share?${params.toString()}`;
+          }}
+        />
       )}
     </div>
   );

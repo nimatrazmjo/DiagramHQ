@@ -149,16 +149,12 @@ export function PlantUmlModal({
 
   if (!isOpen) return null;
 
-  const handleCopy = async () => {
+  const handleCopy = () => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      try {
-        await navigator.clipboard.writeText(exportResult.script);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      } catch {
-        // Fallback
-      }
+      navigator.clipboard.writeText(exportResult.script).catch(() => {});
     }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleDownload = () => {
@@ -202,7 +198,10 @@ export function PlantUmlModal({
       aria-label="PlantUML Integration"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto"
     >
-      <div className="relative w-full max-w-4xl bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl flex flex-col overflow-hidden max-h-[92vh]">
+      <div
+        data-testid="plantuml-modal"
+        className="relative w-full max-w-4xl bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl flex flex-col overflow-hidden max-h-[92vh]"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800 bg-neutral-900/80">
           <div className="flex items-center gap-3">
@@ -225,6 +224,7 @@ export function PlantUmlModal({
           </div>
           <button
             type="button"
+            data-testid="plantuml-close-btn"
             onClick={onClose}
             aria-label="Close dialog"
             className="p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 rounded-lg transition-colors"
