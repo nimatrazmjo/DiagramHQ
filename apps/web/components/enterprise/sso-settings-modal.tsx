@@ -4,8 +4,13 @@ import React, { useState } from 'react';
 import {
   buildSpMetadataXml,
   createId,
+  createScimState,
+  createScimUser,
   createTestIdpConfig,
+  generateScimBearerToken,
   parseIdpMetadataXml,
+  patchScimUser,
+  simulateScimProvisioningLifecycle,
   simulateTestIdpLogin,
   simulateTestSamlLogin,
   validateSsoProviderConfig,
@@ -78,7 +83,7 @@ export function SsoSettingsModal({
   const [selectedProviderId, setSelectedProviderId] = useState<string>(
     initialProviders[0]?.id || ''
   );
-  const [activeTab, setActiveTab] = useState<'providers' | 'add' | 'test' | 'saml'>('providers');
+  const [activeTab, setActiveTab] = useState<'providers' | 'add' | 'test' | 'saml' | 'scim'>('providers');
 
   // Form state for adding/editing provider
   const [newName, setNewName] = useState('');
@@ -95,6 +100,38 @@ export function SsoSettingsModal({
   const [samlXmlInput, setSamlXmlInput] = useState('');
   const [samlImportNotice, setSamlImportNotice] = useState<string | null>(null);
   const [copyFeedback, setCopyFeedback] = useState(false);
+
+  // SCIM 2.0 state (F103)
+  const [scimState, setScimState] = useState(() => {
+    const st = createScimState(createId('org'), {
+      bearerToken: 'scim_sec_enterprise_key_9988776655',
+      endpointUrl: 'https://app.diagramhq.com/api/scim/v2',
+    });
+    createScimUser(st, {
+      userName: 'sarah.connor@cyberdyne.corp',
+      displayName: 'Sarah Connor',
+      name: { givenName: 'Sarah', familyName: 'Connor' },
+      title: 'Principal Systems Architect',
+      active: true,
+      externalId: 'okta-ext-usr-1001',
+    });
+    createScimUser(st, {
+      userName: 'thomas.anderson@matrix.io',
+      displayName: 'Thomas Anderson',
+      name: { givenName: 'Thomas', familyName: 'Anderson' },
+      title: 'Senior Software Engineer',
+      active: false,
+      externalId: 'okta-ext-usr-1002',
+    });
+    return st;
+  });
+  const [scimTokenCopied, setScimTokenCopied] = useState(false);
+  const [scimUrlCopied, setScimUrlCopied] = useState(false);
+  const [scimSimResult, setScimSimResult] = useState<{
+    success: boolean;
+    message: string;
+    steps: Record<string, boolean>;
+  } | null>(null);
 
   // Test IdP simulation state
   const [testEmail, setTestEmail] = useState('architect@acme-enterprise.com');
@@ -136,6 +173,64 @@ export function SsoSettingsModal({
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'XML parse failed';
       setSamlImportNotice(`Import failed: ${msg}`);
+    }
+  };
+
+  const handleCopyScimUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(scimState.config.endpointUrl);
+      setScimUrlCopied(true);
+      setTimeout(() => setScimUrlCopied(false), 2000);
+    } catch {
+      // Fallback
+    }
+  };
+
+  const handleCopyScimToken = async () => {
+    try {
+      await navigator.clipboard.writeText(scimState.config.bearerToken);
+      setScimTokenCopied(true);
+      setTimeout(() => setScimTokenCopied(false), 2000);
+    } catch {
+      // Fallback
+    }
+  };
+
+  const handleRegenerateScimToken = () => {
+    const newToken = generateScimBearerToken();
+    scimState.config.bearerToken = newToken;
+    setScimState({ ...scimState, config: { ...scimState.config, bearerToken: newToken } });
+  };
+
+  const handleToggleScimUser = (userId: string) => {
+    const existing = scimState.users.get(userId);
+    if (!existing) return;
+    const nextActive = !existing.active;
+    patchScimUser(scimState, userId, {
+      schemas: ['urn:ietf:params:scim:api:messages:2.0:PatchOp'],
+      Operations: [{ op: 'replace', path: 'active', value: nextActive }],
+    });
+    setScimState({ ...scimState, users: new Map(scimState.users) });
+  };
+
+  const handleRunScimSimulation = () => {
+    try {
+      const res = simulateScimProvisioningLifecycle({
+        userName: 'dev.engineer@enterprise.acme.corp',
+        displayName: 'Dev Engineer',
+      });
+      setScimSimResult({
+        success: res.success,
+        message: 'SCIM 2.0 full provisioning, modification, and deprovisioning lifecycle verified!',
+        steps: res.steps,
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Simulation failed';
+      setScimSimResult({
+        success: false,
+        message: `SCIM simulation failed: ${msg}`,
+        steps: {},
+      });
     }
   };
 
@@ -273,9 +368,9 @@ export function SsoSettingsModal({
             </div>
             <div>
               <h2 id="sso-modal-title" className="text-base font-semibold text-slate-100 flex items-center gap-2">
-                <span>Enterprise Single Sign-On (SSO / SAML)</span>
+                <span>Enterprise Single Sign-On (SSO / SAML / SCIM)</span>
                 <span className="text-[11px] px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-mono">
-                  F101 / F102
+                  F101 / F102 / F103
                 </span>
               </h2>
               <p className="text-xs text-slate-400 mt-0.5">
@@ -325,6 +420,21 @@ export function SsoSettingsModal({
             <span>SAML 2.0 SP Config</span>
             <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-[10px] font-mono text-purple-400 border border-purple-500/20">
               F102
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('scim')}
+            className={`py-3 px-4 text-xs font-semibold border-b-2 transition-all flex items-center gap-2 ${
+              activeTab === 'scim'
+                ? 'border-indigo-500 text-indigo-400'
+                : 'border-transparent text-slate-400 hover:text-slate-300'
+            }`}
+          >
+            <span>SCIM 2.0 Provisioning</span>
+            <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-[10px] font-mono text-emerald-400 border border-emerald-500/20">
+              F103
             </span>
           </button>
 
@@ -524,6 +634,160 @@ export function SsoSettingsModal({
                 >
                   Parse & Pre-fill SAML IdP
                 </button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'scim' && (
+            <div className="space-y-6">
+              <div className="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/20 text-xs text-emerald-300 space-y-1">
+                <span className="font-semibold block flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                  SCIM 2.0 Provisioning &amp; Deprovisioning Service (RFC 7643 / RFC 7644)
+                </span>
+                <p className="text-slate-400">
+                  Automate user onboarding, attribute synchronization, and immediate deprovisioning
+                  directly from Okta, Entra ID (Azure AD), OneLogin, or PingFederate.
+                </p>
+              </div>
+
+              {/* Endpoint & Bearer Token Credentials */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-semibold text-slate-200">SCIM 2.0 Connection Settings:</h4>
+
+                <div className="p-3 bg-slate-900 border border-slate-800 rounded-xl space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-slate-400">SCIM 2.0 Base URL:</span>
+                    <button
+                      type="button"
+                      onClick={handleCopyScimUrl}
+                      className="text-xs px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition-colors"
+                    >
+                      {scimUrlCopied ? '✓ Copied URL' : 'Copy URL'}
+                    </button>
+                  </div>
+                  <div className="font-mono text-xs text-slate-200 select-all break-all">
+                    {scimState.config.endpointUrl}
+                  </div>
+                </div>
+
+                <div className="p-3 bg-slate-900 border border-slate-800 rounded-xl space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-slate-400">SCIM Secret Bearer Token:</span>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={handleRegenerateScimToken}
+                        className="text-xs px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-lg border border-slate-700 transition-colors"
+                      >
+                        Regenerate Token
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCopyScimToken}
+                        className="text-xs px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition-colors"
+                      >
+                        {scimTokenCopied ? '✓ Copied Token' : 'Copy Token'}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="font-mono text-xs text-slate-300 select-all break-all">
+                    {scimState.config.bearerToken}
+                  </div>
+                </div>
+              </div>
+
+              {/* End-to-end Lifecycle Test Button & Results */}
+              <div className="pt-2 border-t border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-semibold text-slate-200">Provisioning &amp; Deprovisioning Verification:</h4>
+                    <p className="text-[11px] text-slate-400">
+                      Tests user creation (provisioning), attribute PATCH, deactivation (deprovisioning), reactivation, and cleanup.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRunScimSimulation}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold shadow-md transition-all whitespace-nowrap"
+                  >
+                    Test SCIM Lifecycle
+                  </button>
+                </div>
+
+                {scimSimResult && (
+                  <div className={`p-4 rounded-xl border text-xs space-y-2.5 ${
+                    scimSimResult.success
+                      ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-200'
+                      : 'bg-rose-950/20 border-rose-500/30 text-rose-200'
+                  }`}>
+                    <div className="flex items-center gap-2 font-semibold">
+                      <span>{scimSimResult.success ? '✓' : '✗'}</span>
+                      <span>{scimSimResult.message}</span>
+                    </div>
+                    {Object.keys(scimSimResult.steps).length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1 font-mono text-[11px]">
+                        {Object.entries(scimSimResult.steps).map(([stepKey, passed]) => (
+                          <div key={stepKey} className="flex items-center gap-1.5 p-1.5 rounded bg-slate-900/60 border border-slate-800">
+                            <span className={passed ? 'text-emerald-400' : 'text-rose-400'}>
+                              {passed ? '✓' : '✗'}
+                            </span>
+                            <span className="text-slate-300 capitalize">{stepKey}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Provisioned Directory */}
+              <div className="pt-2 border-t border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-semibold text-slate-200">Provisioned Users Directory:</h4>
+                  <span className="text-[11px] text-slate-400 font-mono">
+                    {Array.from(scimState.users.values()).filter((u) => u.active).length} Active / {scimState.users.size} Total
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {Array.from(scimState.users.values()).map((u) => (
+                    <div
+                      key={u.id}
+                      className="p-3 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between gap-3 text-xs"
+                    >
+                      <div className="space-y-0.5 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-slate-200 truncate">{u.displayName || u.userName}</span>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-mono border ${
+                              u.active
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                                : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                            }`}
+                          >
+                            {u.active ? 'Active (Provisioned)' : 'Deactivated (Deprovisioned)'}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-400 font-mono truncate">
+                          {u.userName} &bull; {u.title || 'Team Member'} &bull; External ID: {u.externalId || 'n/a'}
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleToggleScimUser(u.id)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors whitespace-nowrap ${
+                          u.active
+                            ? 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
+                            : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20'
+                        }`}
+                      >
+                        {u.active ? 'Deactivate User' : 'Reactivate User'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}

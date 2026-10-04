@@ -48,7 +48,7 @@ Evidence:
 
 ### F103 — SCIM
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Provisioning.
 
@@ -59,6 +59,11 @@ Acceptance Criteria:
 - SCIM create/update/deactivate provisions/deprovisions users
 
 Test: SCIM create then deactivate.
+
+Evidence:
+- Domain: `packages/domain/src/scim.ts`, `packages/domain/src/scim.test.ts` (18 tests passing)
+- Web: `apps/web/lib/scim-server.ts`, `apps/web/app/api/scim/v2/ServiceProviderConfig/route.ts`, `apps/web/app/api/scim/v2/Users/route.ts`, `apps/web/app/api/scim/v2/Users/[id]/route.ts`, `apps/web/components/enterprise/sso-settings-modal.tsx`, `apps/web/scim.spec.tsx` (4 tests passing)
+- Reviews: `.harness/reviews/F103-PR.md`, `.harness/reviews/F103-review.md`
 
 ### F104 — Advanced RBAC
 

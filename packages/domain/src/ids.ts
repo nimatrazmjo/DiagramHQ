@@ -40,7 +40,8 @@ export type IdPrefix =
   | 'ptl'
   | 'idp'
   | 'sso'
-  | 'saml';
+  | 'saml'
+  | 'scim';
 
 export type Id<P extends IdPrefix> = string & { readonly __brand: P };
 
@@ -75,6 +76,7 @@ export type PortalId = Id<'ptl'>;
 export type SsoProviderId = Id<'idp'>;
 export type SsoSessionId = Id<'sso'>;
 export type SamlRequestId = Id<'saml'>;
+export type ScimConfigId = Id<'scim'>;
 
 let sequence = 0;
 
