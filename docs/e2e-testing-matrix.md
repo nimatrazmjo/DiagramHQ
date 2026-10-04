@@ -19,7 +19,7 @@ This document maintains an up-to-date tracker of all end-to-end (E2E) browser te
 
 ---
 
-## 2. Implemented & Verified Test Suites (53 Tests — 100% Passing)
+## 2. Implemented & Verified Test Suites (59 Tests — 100% Passing)
 
 ### Suite 1: Authentication & Session Security (`apps/web/e2e/auth.spec.ts`)
 | # | Test Case Description | Verified Behavior | Status |
@@ -106,6 +106,16 @@ This document maintains an up-to-date tracker of all end-to-end (E2E) browser te
 | 5 | Full architecture snapshot modal | Opens `SnapshotDetailsModal` displaying 6-dimension metrics (objects, connections, views, flows, docs, metadata) | ✅ Passed |
 | 6 | Visual architecture diff viewer | Toggles `VisualDiffViewer`, tests change filters (`All`, `Added`, `Modified`), verifies added billing entity | ✅ Passed |
 
+### Suite 9: Diagram Exports, Code Generation & Public Sharing (`apps/web/e2e/export-import.spec.ts`)
+| # | Test Case Description | Verified Behavior | Status |
+|---|---|---|:---:|
+| 1 | Multi-format export modal | Seamlessly switches formats (`PNG`, `SVG`, `PDF`, `JSON`), updating preview panes and extensions | ✅ Passed |
+| 2 | Export customization settings | Configures resolution scale (`4x`), canvas theme (`transparent`), custom title override, and metadata toggles | ✅ Passed |
+| 3 | Mermaid diagram-as-code | Generates live flowchart & sequence syntax, tests script copying, and navigates import tab | ✅ Passed |
+| 4 | PlantUML diagram-as-code | Generates C4 syntax (`@startuml ... @enduml`), verifies syntax, and copies to clipboard | ✅ Passed |
+| 5 | Public read-only share link | Generates tokenized view URL (`/share?token=...`), sets camera/selection flags, and custom expiration (`7d`) | ✅ Passed |
+| 6 | Canvas reset & restore baseline | Clears canvas via `🧹 Reset` confirmation dialog, displays empty state, and restores baseline | ✅ Passed |
+
 ---
 
 ## 3. What is Left — Playwright E2E Implementation Backlog
@@ -126,9 +136,9 @@ The following suites represent upcoming areas to achieve 100% end-to-end browser
 │ 6. Advanced Canvas & Layouts   │ 7 tests           │ ✅ COMPLETED      │
 │ 7. Collaboration & Reviews     │ 6 tests           │ ✅ COMPLETED      │
 │ 8. Versioning & Visual Diff    │ 6 tests           │ ✅ COMPLETED      │
+│ 9. Exports & Diagram Sharing   │ 6 tests           │ ✅ COMPLETED      │
 ├────────────────────────────────┼───────────────────┼───────────────────┤
-│ 9. Exports & Diagram Sharing   │ ~6 tests          │ ⏳ IN QUEUE (P2)  │
-│ 10. AI Architecture Copilot    │ ~5 tests          │ ⏳ BACKLOG (P3)   │
+│ 10. AI Architecture Copilot    │ ~5 tests          │ ⏳ IN QUEUE (P3)  │
 │ 11. Mobile Web Companion       │ ~5 tests          │ ⏳ BACKLOG (P3)   │
 │ 12. CI & Cross-Browser Matrix  │ Matrix Config     │ ⏳ BACKLOG (P3)   │
 └────────────────────────────────┴───────────────────┴───────────────────┘
@@ -140,10 +150,10 @@ The following suites represent upcoming areas to achieve 100% end-to-end browser
 - [x] Visual diff view highlighting added nodes (green), removed nodes (red), and modified entities with category filters.
 
 ### Area 9: Exports & Diagram Sharing (`e2e/export-import.spec.ts`)
-- [ ] Export to PNG and SVG download trigger and file delivery.
-- [ ] Export to Mermaid and PlantUML modal content generation and copy-to-clipboard.
-- [ ] Model-as-code JSON export and import validation.
-- [ ] Share links generation (public view-only URLs).
+- [x] Export to PNG, SVG, PDF, and JSON download trigger and file delivery.
+- [x] Export to Mermaid and PlantUML modal content generation and copy-to-clipboard.
+- [x] Diagram JSON export and canvas reset / reload validation.
+- [x] Share links generation (public view-only URLs with camera and expiration controls).
 
 ### Area 10: AI Architecture Copilot (`e2e/ai-copilot.spec.ts`)
 - [ ] AI Copilot side-drawer toggle and chat prompt input.
