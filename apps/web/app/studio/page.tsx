@@ -1281,6 +1281,17 @@ export default function StudioPage(): JSX.Element {
             <span className="hidden sm:inline">Draft ADR</span>
           </button>
 
+          {/* Mobile Companion View Link */}
+          <Link
+            href="/mobile"
+            data-testid="link-mobile-companion"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors shadow-sm"
+            title="Open Mobile Companion"
+          >
+            <span>📱</span>
+            <span className="hidden sm:inline">Mobile</span>
+          </Link>
+
           <label className="cursor-pointer px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors">
             📥 Import JSON
             <input type="file" accept=".json" onChange={handleImportJson} className="hidden" />
