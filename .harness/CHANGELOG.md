@@ -2,6 +2,32 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-03 — F105 — Audit logs (Phase 13 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ids.ts`: Added `'aud'` prefix to `IdPrefix` union and created branded type `AuditLogEntryId`.
+  - `audit-log.ts`: Enterprise Immutable Audit Log engine with cryptographic hash chaining and AI-agent auditing:
+    - Full who/what/when data capture (`AuditEntry`): actor types (`human_user`, `ai_agent`, `scim_sync`, `api_key`, `system`), category, action, status (`SUCCESS`, `FAILURE`, `DENIED`), target resource, payload details, timestamps, sequence indexing.
+    - AI-Agent auditing: tracks AI model provenance (e.g. `gemini-1.5-pro`), prompt summary, confidence score, tool calls executed, and autonomous execution flags.
+    - Multi-pass cryptographic hash chaining (`computeAuditEntryHash`): seals previous entry hash and record payload into a tamper-evident Merkle chain.
+    - Append-only semantic enforcement: monotonic sequence numbers and chronological ordering.
+    - Cryptographic integrity verifier (`verifyAuditLogIntegrity`): detects in-place record mutations, severed hash links, or dropped entries.
+    - Query engine (`queryAuditLogs`): supports filtering by actor, actorType (e.g. `ai_agent`), category, status, resourceId, and time window with pagination.
+    - Structured export (`exportAuditLogToJson`, `exportAuditLogToCsv`) for SIEM ingestion (Splunk, Datadog).
+    - Deterministic lifecycle testing harness (`simulateAuditLogLifecycle`).
+  - `audit-log.test.ts`: 9 unit tests covering genesis initialization, append-only monotonicity, AI-agent auditing, tamper detection, hash chain integrity, filtering, and SIEM export.
+  - `index.ts`: Exported `audit-log` module.
+- Web layer (`apps/web/`):
+  - `components/enterprise/audit-logs-modal.tsx`: Interactive Enterprise Immutable Audit Logs modal with KPI summary counters, search & category filters, dedicated AI-Agent Actions tab, Cryptographic Chain Integrity verifier, and SIEM JSON/CSV export actions.
+  - `components/enterprise/index.ts`: Exported `AuditLogsModal`.
+  - `audit-logs.spec.tsx`: 3 integration and component tests verifying UI rendering, AI-agent action recording, append-only immutability, and SIEM export formats.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 103 test files / 675 tests ✓, web 117 test files / 598 tests ✓, `pnpm build ✓`.
+- **Milestone: 123 / 135 features completed overall (91.1%)!**
+
+
 ## 2026-10-03 — F104 — Advanced RBAC (Phase 13 Progress)
 
 Status: COMPLETE

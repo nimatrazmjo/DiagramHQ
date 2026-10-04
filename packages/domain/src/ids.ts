@@ -42,7 +42,8 @@ export type IdPrefix =
   | 'sso'
   | 'saml'
   | 'scim'
-  | 'role';
+  | 'role'
+  | 'aud';
 
 export type Id<P extends IdPrefix> = string & { readonly __brand: P };
 
@@ -79,6 +80,7 @@ export type SsoSessionId = Id<'sso'>;
 export type SamlRequestId = Id<'saml'>;
 export type ScimConfigId = Id<'scim'>;
 export type CustomRoleId = Id<'role'>;
+export type AuditLogEntryId = Id<'aud'>;
 
 let sequence = 0;
 

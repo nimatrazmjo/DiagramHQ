@@ -13,21 +13,23 @@ Phase Name: Enterprise
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F105
-Feature Name: Audit logs
+Feature ID: F106
+Feature Name: Organization policies
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 135
-Completed: 122
+Completed: 123
 In Progress: 0
 Blocked: 0
-Not Started: 13
-Progress: 90.4%
+Not Started: 12
+Progress: 91.1%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F104 — Advanced RBAC. Implemented Enterprise Advanced Role-Based Access Control (Advanced RBAC) with fine-grained roles beyond the base catalog and strict principle of least privilege enforcement for DiagramHQ (Phase 13 — Enterprise). Built pure TypeScript domain logic (`advanced-rbac.ts`) featuring a granular permission catalog across 7 enterprise domains (`architecture`, `model`, `flow`, `docs`, `governance`, `admin`, `billing`), 5 built-in specialized enterprise roles (`Security Auditor`, `Documentation Specialist`, `Compliance Officer`, `Junior Architect`, `Billing Administrator`) with tailored allow/deny boundaries, dynamic custom role authoring, least-privilege permission evaluation (`evaluateFineGrainedPermission`, `assertFineGrainedPermission`) with explicit denial precedence and deny-by-default guarantees, an automated least-privilege risk audit engine (`auditRoleLeastPrivilege`), and an out-of-scope action denial testing harness (`testFineGrainedRoleDenial`). Added Web layer enterprise administration modal (`AdvancedRbacModal`) with Roles Catalog, interactive real-time Least Privilege Evaluator, Risk & Compliance Audit dashboard, and custom role authoring form. 13 domain unit tests, 5 web integration tests (`advanced-rbac.spec.tsx`). **Milestone: 122 / 135 features completed overall (90.4%)!**
+F105 — Audit logs. Implemented Enterprise Immutable Audit Logs with cryptographically chained append-only records and first-class AI-agent activity tracking for DiagramHQ (Phase 13 — Enterprise). Built pure TypeScript domain logic (`audit-log.ts`) capturing complete who/what/when metadata across all operations: actor types (`human_user`, `ai_agent`, `scim_sync`, `api_key`, `system`), action categories, status (`SUCCESS`, `FAILURE`, `DENIED`), target resources, and payloads. Built dedicated AI-agent auditing tracking agent models (e.g. `gemini-1.5-pro`), prompt summaries, confidence scores, tool calls executed, and autonomous execution flags. Built multi-pass cryptographic hash chaining (`computeAuditEntryHash`) forming a tamper-evident Merkle chain, append-only semantic enforcement, cryptographic chain integrity verification (`verifyAuditLogIntegrity`), query filtering, and structured SIEM export (`exportAuditLogToJson`, `exportAuditLogToCsv`). Added Web layer enterprise administration modal (`AuditLogsModal`) with KPI summary counters, search & category filters, dedicated AI-Agent Actions tab, Cryptographic Chain Integrity verifier, and SIEM JSON/CSV export actions. 9 domain unit tests, 3 web integration tests (`audit-logs.spec.tsx`). **Milestone: 123 / 135 features completed overall (91.1%)!**
+
+Prior: F104 — Advanced RBAC. Implemented Enterprise Advanced Role-Based Access Control (Advanced RBAC) with fine-grained roles beyond the base catalog and strict principle of least privilege enforcement for DiagramHQ (Phase 13 — Enterprise). Built pure TypeScript domain logic (`advanced-rbac.ts`) featuring a granular permission catalog across 7 enterprise domains (`architecture`, `model`, `flow`, `docs`, `governance`, `admin`, `billing`), 5 built-in specialized enterprise roles (`Security Auditor`, `Documentation Specialist`, `Compliance Officer`, `Junior Architect`, `Billing Administrator`) with tailored allow/deny boundaries, dynamic custom role authoring, least-privilege permission evaluation (`evaluateFineGrainedPermission`, `assertFineGrainedPermission`) with explicit denial precedence and deny-by-default guarantees, an automated least-privilege risk audit engine (`auditRoleLeastPrivilege`), and an out-of-scope action denial testing harness (`testFineGrainedRoleDenial`). Added Web layer enterprise administration modal (`AdvancedRbacModal`) with Roles Catalog, interactive real-time Least Privilege Evaluator, Risk & Compliance Audit dashboard, and custom role authoring form. 13 domain unit tests, 5 web integration tests (`advanced-rbac.spec.tsx`). **Milestone: 122 / 135 features completed overall (90.4%)!**
 
 Prior: F103 — SCIM. Implemented RFC 7643 and RFC 7644 compliant SCIM 2.0 User Provisioning and Deprovisioning for DiagramHQ Enterprise (Phase 13 — Enterprise). Built pure TypeScript domain logic (`scim.ts`) for SCIM schemas (`User`, `EnterpriseUser`, `Group`, `ServiceProviderConfig`, `PatchOp`, `ListResponse`, `Error`), user creation with uniqueness checks, querying with filter syntax (`userName eq "..."`, `externalId eq "..."`, `active eq true/false`), 1-based pagination, PUT replacement, RFC 7644 PATCH attribute updates and deactivation (`active: false` deprovisioning / `active: true` reactivation), group management, metadata discovery, bearer token generation/verification, and a deterministic zero-network lifecycle simulation harness (`simulateScimProvisioningLifecycle`). Integrated SCIM 2.0 into Next.js App Router API routes (`/api/scim/v2/ServiceProviderConfig`, `/api/scim/v2/Users`, `/api/scim/v2/Users/[id]`) with strict Bearer token authentication, and extended the Enterprise Settings Modal (`SsoSettingsModal` SCIM 2.0 Provisioning tab) with connection settings, token regenerator, interactive lifecycle test runner, and user directory with instant deprovisioning toggles. 18 domain unit tests, 4 web integration tests (`scim.spec.tsx`). **Milestone: 121 / 135 features completed overall (89.6%)!**
 

@@ -269,7 +269,7 @@ Status: IN PROGRESS  ·  Depends on: Phase 01, Phase 06, Phase 11  ·  File: `ph
 - [x] F102 — SAML
 - [x] F103 — SCIM
 - [x] F104 — Advanced RBAC
-- [ ] F105 — Audit logs
+- [x] F105 — Audit logs
 - [ ] F106 — Organization policies
 - [ ] F107 — Enterprise security
 - [ ] F108 — Private deployment

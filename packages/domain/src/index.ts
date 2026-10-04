@@ -102,3 +102,4 @@ export * from './sso';
 export * from './saml';
 export * from './scim';
 export * from './advanced-rbac';
+export * from './audit-log';
