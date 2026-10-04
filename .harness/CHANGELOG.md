@@ -2,6 +2,28 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-04 — F107 — Enterprise security (Phase 13 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ids.ts`: Added `'sec'` prefix to `IdPrefix` union and created branded type `SecurityProfileId`.
+  - `enterprise-security.ts`: Enterprise cryptographic defense-in-depth, disaster recovery, and compliance evaluation engine:
+    - Encryption at rest: Authenticated AES-256-GCM, Customer-Managed Keys (CMEK), envelope encryption, and 90-day KMS key rotation (`EncryptionAtRestConfig`).
+    - Encryption in transit: Strict TLS 1.3 mandate, 1-year HSTS preload (`max-age: 31536000`), and Perfect Forward Secrecy (`EncryptionInTransitConfig`).
+    - Automated Backup & Disaster Recovery: Continuous Point-In-Time Recovery (PITR) with 30-day retention, multi-region replication, WORM ransomware protection, RTO (< 30m) / RPO (< 15m) targets, and simulated automated restore drills (`simulateBackupRestoreDrill`).
+    - Data Sanitization & Legal Hold: NIST SP 800-88 Rev 1 compliant crypto-shredding (`executeCryptoShredding`) with active legal hold evidentiary freezes.
+    - Enterprise Security Review Checklist: Automated evaluation engine (`evaluateEnterpriseSecurityChecklist`) scoring 14 controls across 6 critical domains (Network/Transport, Cryptography, Identity & Access, Audit Logging, Resilience/DR, Vulnerability Management) against SOC2, ISO 27001, and NIST SP 800-53 standards.
+  - `enterprise-security.test.ts`: 10 unit tests covering baseline 100% compliance verification, TLS 1.3 transport failure detection, key rotation CIS warnings, SSO/audit log critical failures, DR drill simulation, and crypto-shredding with legal hold protection.
+  - `index.ts`: Exported `enterprise-security` module.
+- Web layer (`apps/web/`):
+  - `components/enterprise/enterprise-security-modal.tsx`: Interactive Enterprise Security & Hardening modal with executive KPI ribbon, multi-domain checklist filters, live DR drill simulator, and crypto-shredding tester.
+  - `components/enterprise/index.ts`: Exported `EnterpriseSecurityModal`.
+  - `enterprise-security.spec.tsx`: 5 integration and component tests verifying UI rendering, 100% checklist compliance passage, automated DR drill RTO/RPO SLA adherence, and NIST SP 800-88 crypto-shredding with legal hold safeguards.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 105 test files / 711 tests ✓, web 119 test files / 609 tests ✓, `next build ✓`.
+- **Milestone: 125 / 135 features completed overall (92.6%)!**
+
 ## 2026-10-04 — F106 — Organization policies (Phase 13 Progress)
 
 Status: COMPLETE
