@@ -140,4 +140,88 @@ test.describe('Canvas Drag-and-Drop, Node Creation & Connections', () => {
     const reloadedCount = await page.locator('.react-flow__node').count();
     expect(reloadedCount).toBeGreaterThanOrEqual(2);
   });
+
+  test('maintains moved node position after deselection and inspector re-renders', async ({ page }) => {
+
+    // Select the first node by data-id so DOM re-ordering doesn't switch the target node
+    const firstNode = page.locator('.react-flow__node').first();
+    await expect(firstNode).toBeVisible();
+    const nodeId = await firstNode.getAttribute('data-id');
+    const node = page.locator(`.react-flow__node[data-id="${nodeId}"]`);
+
+    const initialBox = await node.boundingBox();
+    expect(initialBox).not.toBeNull();
+    if (!initialBox) return;
+
+    const startX = initialBox.x + initialBox.width / 2;
+    const startY = initialBox.y + initialBox.height / 2;
+
+    // Drag node 150px right and 80px down
+    await page.mouse.move(startX, startY);
+    await page.mouse.down();
+    await page.mouse.move(startX + 150, startY + 80, { steps: 10 });
+    await page.mouse.up();
+    await page.waitForTimeout(400);
+
+    const draggedBox = await node.boundingBox();
+    expect(draggedBox).not.toBeNull();
+    if (!draggedBox) return;
+
+    expect(Math.abs(draggedBox.x - initialBox.x)).toBeGreaterThan(50);
+    expect(Math.abs(draggedBox.y - initialBox.y)).toBeGreaterThan(30);
+
+    // Press Escape to deselect and trigger state update
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(400);
+
+    // Verify node coordinates did NOT snap back to original
+    const boxAfterDeselect = await node.boundingBox();
+    expect(boxAfterDeselect).not.toBeNull();
+    if (!boxAfterDeselect) return;
+
+    expect(Math.abs(boxAfterDeselect.x - draggedBox.x)).toBeLessThan(5);
+    expect(Math.abs(boxAfterDeselect.y - draggedBox.y)).toBeLessThan(5);
+  });
+
+  test('drags node in Online Boutique template on /share and keeps position', async ({ page }) => {
+    await page.goto('/share?diagram=online-boutique');
+    await expect(page.locator('.react-flow')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('.react-flow__node').first()).toBeVisible({ timeout: 10000 });
+
+    const node = page.locator('.react-flow__node').filter({ hasText: 'Frontend' }).first();
+    await expect(node).toBeVisible();
+
+    const initialBox = await node.boundingBox();
+    expect(initialBox).not.toBeNull();
+    if (!initialBox) return;
+
+    const startX = initialBox.x + initialBox.width / 2;
+    const startY = initialBox.y + initialBox.height / 2;
+
+    // Drag Frontend node
+    await page.mouse.move(startX, startY);
+    await page.mouse.down();
+    await page.mouse.move(startX + 120, startY + 70, { steps: 10 });
+    await page.mouse.up();
+    await page.waitForTimeout(400);
+
+    const draggedBox = await node.boundingBox();
+    expect(draggedBox).not.toBeNull();
+    if (!draggedBox) return;
+
+    expect(Math.abs(draggedBox.x - initialBox.x)).toBeGreaterThan(40);
+    expect(Math.abs(draggedBox.y - initialBox.y)).toBeGreaterThan(25);
+
+    // Deselect by pressing Escape
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(400);
+
+    const boxAfterDeselect = await node.boundingBox();
+    expect(boxAfterDeselect).not.toBeNull();
+    if (!boxAfterDeselect) return;
+
+    // Verify it stays at the new position
+    expect(Math.abs(boxAfterDeselect.x - draggedBox.x)).toBeLessThan(5);
+    expect(Math.abs(boxAfterDeselect.y - draggedBox.y)).toBeLessThan(5);
+  });
 });

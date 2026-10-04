@@ -1001,6 +1001,15 @@ export default function StudioPage(): JSX.Element {
     [selectedNodeId],
   );
 
+  const handleNodeDragStop = useCallback(
+    (nodeId: string, position: { x: number; y: number }) => {
+      setCurrentNodes((prev) =>
+        prev.map((n) => (n.id === nodeId ? { ...n, position } : n)),
+      );
+    },
+    [],
+  );
+
   // Connect two nodes from the Inspector
   const handleConnectNodesFromInspector = useCallback(
     (targetId: string, protocol?: string, description?: string) => {
@@ -1700,6 +1709,7 @@ export default function StudioPage(): JSX.Element {
             initialEdges={currentEdges}
             onNodeSelect={handleNodeSelect}
             onEdgeSelect={handleEdgeSelect}
+            onNodeDragStop={handleNodeDragStop}
             showPalette
             showTemplatePicker
             onNodeCreate={(newNode) => {

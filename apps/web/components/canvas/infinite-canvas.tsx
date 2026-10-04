@@ -308,6 +308,10 @@ function InfiniteCanvasContent({
   const currentZoom = useCanvasStore((s) => s.viewport.zoom);
   const reactFlow = useReactFlow();
 
+  const prevInitialPositionsRef = React.useRef<Map<string, { x: number; y: number }>>(
+    new Map(initialNodes.map((n) => [n.id, { x: n.position.x, y: n.position.y }])),
+  );
+
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   const handleToggleFullscreen = useCallback(() => {
@@ -381,8 +385,8 @@ function InfiniteCanvasContent({
     });
   }, [nodes]);
 
-  const handleNodeDragStop = useCallback(
-    createNodeDragStopHandler({
+  const handleNodeDragStop = useCallback((event: unknown, node: Node) => {
+    const handler = createNodeDragStopHandler({
       getNodes: () => nodes,
       viewId,
       persistFn,
@@ -395,9 +399,9 @@ function InfiniteCanvasContent({
       },
       dragStartPositions: dragStartPositions.current,
       snapToGridEnabled: isSnapToGridEnabled,
-    }),
-    [nodes, viewId, persistFn, onCommandDispatched, onNodeDragStop, isSnapToGridEnabled]
-  );
+    });
+    return handler(event, node);
+  }, [nodes, viewId, persistFn, onCommandDispatched, onNodeDragStop, isSnapToGridEnabled]);
 
   /** Group drag stop: fired when a multi-selection is dragged and released. */
   const handleSelectionDragStop: SelectionDragHandler = useCallback(
@@ -441,6 +445,12 @@ function InfiniteCanvasContent({
         }),
       );
 
+      if (onNodeDragStop) {
+        for (const move of moves) {
+          onNodeDragStop(move.objectId, move.newPosition);
+        }
+      }
+
       // Revert the optimistic update if persistence fails, so the canvas
       // never shows positions the server didn't accept.
       void defaultCommandDispatcher.dispatch(command).catch((error) => {
@@ -453,7 +463,7 @@ function InfiniteCanvasContent({
         );
       });
     },
-    [nodes, viewId, batchPersistFn, onCommandDispatched, isSnapToGridEnabled],
+    [nodes, viewId, batchPersistFn, onCommandDispatched, onNodeDragStop, isSnapToGridEnabled],
   );
 
   // Shared guard across every whole-graph position mutation (align,
@@ -942,7 +952,10 @@ function InfiniteCanvasContent({
   useEffect(() => {
     setNodes((currentNodes) => {
       const currentMap = new Map(currentNodes.map((n) => [n.id, n]));
-      return initialNodes.map((node) => {
+      const newInitialMap = new Map<string, { x: number; y: number }>();
+
+      const updatedNodes = initialNodes.map((node) => {
+        newInitialMap.set(node.id, { x: node.position.x, y: node.position.y });
         const existing = currentMap.get(node.id);
         const flowNode = toFlowNode(node);
         if (existing) {
@@ -950,16 +963,29 @@ function InfiniteCanvasContent({
             node.selected ??
             (propSelectedNodeIds ? propSelectedNodeIds.includes(node.id) : existing.selected);
 
+          const prevInitialPos = prevInitialPositionsRef.current.get(node.id);
+          const positionChangedByParent =
+            !prevInitialPos ||
+            prevInitialPos.x !== node.position.x ||
+            prevInitialPos.y !== node.position.y;
+
+          const position = positionChangedByParent
+            ? node.position
+            : (existing.position ?? node.position);
+
           return {
             ...existing,
             ...flowNode,
             selected: isSelected,
-            position: node.position ?? existing.position,
+            position,
             data: { ...existing.data, ...flowNode.data },
           };
         }
         return flowNode;
       });
+
+      prevInitialPositionsRef.current = newInitialMap;
+      return updatedNodes;
     });
   }, [initialNodes, propSelectedNodeIds]);
 

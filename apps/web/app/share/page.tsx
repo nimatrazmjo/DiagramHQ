@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -27,7 +27,7 @@ import {
   ExportModal,
 } from '../../components/canvas';
 
-export default function SharePage(): JSX.Element {
+function SharePageContent(): JSX.Element {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
   const diagramParam = searchParams.get('diagram');
@@ -191,6 +191,12 @@ export default function SharePage(): JSX.Element {
     setCanvasKey((k) => k + 1);
   }, []);
 
+  const handleNodeDragStop = useCallback((nodeId: string, position: { x: number; y: number }) => {
+    setNodes((prev) =>
+      prev.map((n) => (n.id === nodeId ? { ...n, position } : n)),
+    );
+  }, []);
+
   const selectedNode = useMemo(
     () => nodes.find((n) => n.id === selectedNodeId),
     [nodes, selectedNodeId],
@@ -331,6 +337,7 @@ export default function SharePage(): JSX.Element {
           showTemplatePicker={false}
           onNodeSelect={(nodeId) => setSelectedNodeId(nodeId)}
           onEdgeSelect={(edgeId) => setSelectedEdgeId(edgeId)}
+          onNodeDragStop={handleNodeDragStop}
         />
       </div>
 
@@ -365,3 +372,21 @@ export default function SharePage(): JSX.Element {
     </div>
   );
 }
+
+export default function SharePage(): JSX.Element {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen w-screen items-center justify-center bg-slate-950 text-slate-400">
+          <div className="flex flex-col items-center gap-3">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
+            <span className="text-sm font-medium text-slate-300">Loading shared diagram...</span>
+          </div>
+        </div>
+      }
+    >
+      <SharePageContent />
+    </Suspense>
+  );
+}
+
