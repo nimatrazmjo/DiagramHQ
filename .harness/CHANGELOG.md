@@ -2,6 +2,30 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-04 — F132 — Billing & plans (Phase 13 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ids.ts`: Added `'sub'` prefix to `IdPrefix` union and created branded type `SubscriptionId`.
+  - `billing-plans.ts`: Enterprise monetization, tier gating, and usage quota engine:
+    - 4 progressive subscription tiers: Free, Pro, Business, Enterprise with monthly and annual discount cycles (`TIER_DEFINITIONS`).
+    - Gated feature catalog mapping (`FEATURE_MINIMUM_TIERS`) covering AI Copilot, collaboration, Git sync, clean export, SSO/SAML, SCIM, org policies, advanced RBAC, compliance packs, private VPC, custom audit retention, and SLA support.
+    - Usage quotas for seats, architecture objects, diagram views, AI query credits, and audit retention days.
+    - Strict enforcement mechanisms: `enforceTierGating` throwing `TierGatingError` and `enforceUsageLimit` throwing `UsageLimitExceededError`.
+    - Lifecycle helpers: `createDefaultSubscription`, `upgradeSubscription`, and transparent invoice calculation `calculateInvoice`.
+  - `billing-plans.test.ts`: 9 unit tests verifying tier definitions, feature access matrix, tier gating enforcement, quota exceeded enforcement, subscription upgrades, and annual discount calculations.
+  - `index.ts`: Exported `billing-plans` module.
+- Web layer (`apps/web/`):
+  - `components/enterprise/billing-modal.tsx`: Interactive modal with tier comparison cards, live usage consumption progress meters with warning thresholds, feature entitlement matrix, upgrade checkout, and interactive enforcement simulator.
+  - `components/enterprise/index.ts`: Exported `BillingModal`.
+  - `billing.spec.tsx`: 3 integration and component tests verifying UI rendering and tier gating / quota enforcement acceptance criteria.
+- Reviews:
+  - `.harness/reviews/F132-PR.md`, `.harness/reviews/F132-review.md`.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 108 test files / 731 tests ✓, web 122 test files / 619 tests ✓, `next build ✓`.
+- **Milestone: 128 / 135 features completed overall (94.8%)!**
+
 ## 2026-10-04 — F131 — Compliance packs (Phase 13 Progress)
 
 Status: COMPLETE

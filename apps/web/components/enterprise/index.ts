@@ -5,3 +5,4 @@ export * from './org-policies-modal';
 export * from './enterprise-security-modal';
 export * from './private-deployment-modal';
 export * from './compliance-packs-modal';
+export * from './billing-modal';
