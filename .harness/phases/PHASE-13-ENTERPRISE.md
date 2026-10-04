@@ -139,7 +139,7 @@ Evidence:
 
 ### F108 — Private deployment
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Self-hosted.
 
@@ -148,6 +148,12 @@ Acceptance Criteria:
 - Deployable to a customer VPC; air-gapped config; deployment docs
 
 Test: deploy to a clean environment; smoke passes.
+
+Evidence:
+- Domain: `packages/domain/src/private-deployment.ts`, `packages/domain/src/private-deployment.test.ts` (7 tests passing)
+- Web: `apps/web/components/enterprise/private-deployment-modal.tsx`, `apps/web/components/enterprise/index.ts`, `apps/web/private-deployment.spec.tsx` (4 tests passing)
+- Documentation: `.harness/deployment/PRIVATE_DEPLOYMENT.md`
+- Reviews: `.harness/reviews/F108-PR.md`, `.harness/reviews/F108-review.md`
 
 ### F131 — Compliance packs
 
