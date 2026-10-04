@@ -2,6 +2,29 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-04 — F133 — Marketplace (Phase 13 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ids.ts`: Added `'mkt'` and `'ins'` prefixes to `IdPrefix` union and created branded types `MarketplaceItemId` and `InstallationId`.
+  - `marketplace.ts`: Extension marketplace catalog, publisher verification, and installation lifecycle engine:
+    - 6 extension categories: Architecture Templates, Integration Plugins, Technology Catalogs, AI Agents, Guardrail Rules, and Compliance Packs (`BUILTIN_MARKETPLACE_CATALOG`).
+    - Curated extensions: PCI DSS v4.0 Payment Gateway Blueprint, Multi-Region Event-Driven Mesh Architecture, Datadog Live Telemetry & Health Overlay, CNCF Cloud Native 2026 Technology Catalog, Autonomous FinOps Cost Guard Agent, Zero-Trust Architecture Guardrails, FedRAMP Moderate Ready Compliance Pack.
+    - Querying, categorization, tag filtering, and search engine (`queryMarketplaceCatalog`, `getMarketplaceItemBySlug`).
+    - Installation, upgrade, and uninstallation operations (`installMarketplaceItem`, `upgradeMarketplaceItem`, `uninstallMarketplaceItem`) injecting architectural model objects, views, and rules into workspaces.
+  - `marketplace.test.ts`: 5 unit tests verifying all 6 extension types, search/filtering, installation state recording, upgrade/uninstallation, and acceptance criteria (installing template pack causes assets to appear).
+  - `index.ts`: Exported `marketplace` module.
+- Web layer (`apps/web/`):
+  - `components/enterprise/marketplace-modal.tsx`: Interactive modal with category tabs, search input, extension cards with rating and download metrics, asset inspection drawer, and active workspace installation inventory manager.
+  - `components/enterprise/index.ts`: Exported `MarketplaceModal`.
+  - `marketplace.spec.tsx`: 3 integration and component tests verifying UI rendering and template pack installation acceptance criteria.
+- Reviews:
+  - `.harness/reviews/F133-PR.md`, `.harness/reviews/F133-review.md`.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 109 test files / 736 tests ✓, web 123 test files / 622 tests ✓, `next build ✓`.
+- **Milestone: 129 / 135 features completed overall (95.6%)!**
+
 ## 2026-10-04 — F132 — Billing & plans (Phase 13 Progress)
 
 Status: COMPLETE
