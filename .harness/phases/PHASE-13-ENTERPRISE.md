@@ -177,7 +177,7 @@ Evidence:
 
 ### F132 — Billing & plans
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Monetization.
 
@@ -186,6 +186,11 @@ Acceptance Criteria:
 - Free/Pro/Business/Enterprise tiers gate features; usage limits
 
 Test: tier gating enforced; over-limit blocked.
+
+Evidence:
+- Domain: `packages/domain/src/billing-plans.ts`, `packages/domain/src/billing-plans.test.ts` (9 tests passing)
+- Web: `apps/web/components/enterprise/billing-modal.tsx`, `apps/web/billing.spec.tsx` (3 tests passing)
+- Reviews: `.harness/reviews/F132-PR.md`, `.harness/reviews/F132-review.md`
 
 ### F133 — Marketplace
 
