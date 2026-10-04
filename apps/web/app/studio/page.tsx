@@ -45,6 +45,13 @@ import {
   type FullArchitectureSnapshot,
   type SnapshotId,
   type WorkspaceId,
+  type ArchitectureGroundedContext,
+  type GeneratedArchitectureProposal,
+  type ArchitectureReviewReport,
+  type DraftedADR,
+  generateArchitectureFromPrompt,
+  runArchitectureReview,
+  draftADRFromChange,
 } from '@diagramhq/domain';
 import {
   InfiniteCanvas,
@@ -64,6 +71,10 @@ import {
   MermaidModal,
   PlantUmlModal,
   ShareLinkModal,
+  AICopilotPanel,
+  AIGenerationModal,
+  ArchitectureReviewModal,
+  ADRGenerationModal,
   type PresencePeerBadge,
 } from '../../components/canvas';
 import { InspectorPanel } from '../../components/shell/inspector-panel';
@@ -601,6 +612,73 @@ export default function StudioPage(): JSX.Element {
       liveVersion.connections
     );
   }, [currentBranch.name, liveVersion.objects, liveVersion.connections]);
+
+  // Area 10: AI Architecture Copilot, Generation, Review & ADRs
+  const [isAiCopilotOpen, setIsAiCopilotOpen] = useState(false);
+  const [isAiGenerationOpen, setIsAiGenerationOpen] = useState(false);
+  const [aiProposal, setAiProposal] = useState<GeneratedArchitectureProposal | null>(null);
+  const [isAiReviewOpen, setIsAiReviewOpen] = useState(false);
+  const [aiReviewReport, setAiReviewReport] = useState<ArchitectureReviewReport | null>(null);
+  const [isAiAdrOpen, setIsAiAdrOpen] = useState(false);
+  const [aiDraftedAdr, setAiDraftedAdr] = useState<DraftedADR | null>(null);
+
+  const aiGroundedContext: ArchitectureGroundedContext = useMemo(
+    () => ({
+      objects: liveVersion.objects,
+      connections: liveVersion.connections,
+      flows: SAMPLE_FULL_SNAPSHOT.state.flows,
+    }),
+    [liveVersion.objects, liveVersion.connections]
+  );
+
+  const handleGenerateArchitecture = useCallback((prompt: string) => {
+    const proposal = generateArchitectureFromPrompt({
+      prompt,
+      workspaceId: 'default' as WorkspaceId,
+      architectureId: 'arch-studio-init' as ArchitectureId,
+      versionId: 'v1' as VersionId,
+      baseObjects: liveVersion.objects,
+      baseConnections: liveVersion.connections,
+    });
+    setAiProposal(proposal);
+  }, [liveVersion.objects, liveVersion.connections]);
+
+  const handleApplyAiProposal = useCallback((proposal: GeneratedArchitectureProposal) => {
+    const newCanvasNodes: CanvasNode[] = proposal.generatedObjects.map((o) => ({
+      id: o.id,
+      type: o.kind === 'application' ? 'app' : o.kind === 'store' ? 'database' : 'system',
+      position: o.position || { x: 300, y: 300 },
+      data: {
+        label: o.name,
+        kind: o.kind,
+        description: o.description || undefined,
+      },
+    }));
+    setCurrentNodes((prev) => [...prev, ...newCanvasNodes]);
+    setAiProposal((prev) => (prev ? { ...prev, status: 'applied' } : null));
+    setIsAiGenerationOpen(false);
+  }, []);
+
+  const handleRunArchitectureReview = useCallback(() => {
+    const report = runArchitectureReview(currentStudioModel);
+    setAiReviewReport(report);
+    setIsAiReviewOpen(true);
+  }, [currentStudioModel]);
+
+  const handleOpenAiAdr = useCallback(() => {
+    const drafted = draftADRFromChange({
+      changeSet: architecturePR.changeSet,
+      customTitle: 'Adopt Distributed Event Bus and Caching Layer',
+      problemStatement: 'Decouple high-throughput write path from read queries using Redis and Kafka cluster',
+      author: {
+        id: CURRENT_AUTHOR.id,
+        name: CURRENT_AUTHOR.name,
+        email: CURRENT_AUTHOR.email,
+      },
+    });
+    setAiDraftedAdr(drafted);
+    setIsAiAdrOpen(true);
+  }, [architecturePR.changeSet]);
 
   const handleNodeSelect = useCallback((nodeId: string | null) => {
     setSelectedNodeId(nodeId);
@@ -1151,6 +1229,58 @@ export default function StudioPage(): JSX.Element {
             <span className="hidden sm:inline">Share</span>
           </button>
 
+          {/* AI Architecture Copilot Drawer Trigger */}
+          <button
+            type="button"
+            data-testid="toggle-ai-copilot-btn"
+            onClick={() => setIsAiCopilotOpen((v) => !v)}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+              isAiCopilotOpen
+                ? 'bg-cyan-600/30 text-cyan-300 border-cyan-500/50 shadow-sm shadow-cyan-500/20'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+            }`}
+            title="Toggle AI Architecture Copilot"
+          >
+            <span>🤖</span>
+            <span className="hidden sm:inline">Copilot</span>
+          </button>
+
+          {/* AI Architecture Generation Modal Trigger */}
+          <button
+            type="button"
+            data-testid="toggle-ai-generation-btn"
+            onClick={() => setIsAiGenerationOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors shadow-sm"
+            title="Generate Architecture with AI"
+          >
+            <span>✨</span>
+            <span className="hidden sm:inline">AI Gen</span>
+          </button>
+
+          {/* AI Architecture Review Modal Trigger */}
+          <button
+            type="button"
+            data-testid="toggle-ai-review-btn"
+            onClick={handleRunArchitectureReview}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors shadow-sm"
+            title="Run AI Architecture Governance Review"
+          >
+            <span>🛡️</span>
+            <span className="hidden sm:inline">AI Review</span>
+          </button>
+
+          {/* AI Architecture Decision Record (ADR) Modal Trigger */}
+          <button
+            type="button"
+            data-testid="toggle-ai-adr-btn"
+            onClick={handleOpenAiAdr}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors shadow-sm"
+            title="Draft Architecture Decision Record (ADR)"
+          >
+            <span>📜</span>
+            <span className="hidden sm:inline">Draft ADR</span>
+          </button>
+
           <label className="cursor-pointer px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors">
             📥 Import JSON
             <input type="file" accept=".json" onChange={handleImportJson} className="hidden" />
@@ -1515,6 +1645,64 @@ export default function StudioPage(): JSX.Element {
           }}
         />
       )}
+
+      {/* Area 10: AI Architecture Copilot Drawer */}
+      <AICopilotPanel
+        isOpen={isAiCopilotOpen}
+        onClose={() => setIsAiCopilotOpen(false)}
+        context={aiGroundedContext}
+        onSelectEntity={(entityId) => {
+          handleNodeSelect(entityId);
+        }}
+      />
+
+      {/* Area 10: AI Architecture Generation Modal */}
+      <AIGenerationModal
+        isOpen={isAiGenerationOpen}
+        onClose={() => setIsAiGenerationOpen(false)}
+        proposal={aiProposal}
+        onGenerate={handleGenerateArchitecture}
+        onApplyProposal={handleApplyAiProposal}
+        onRejectProposal={() => {
+          setAiProposal((p) => (p ? { ...p, status: 'rejected' } : null));
+          setIsAiGenerationOpen(false);
+        }}
+      />
+
+      {/* Area 10: AI Architecture Review Modal */}
+      <ArchitectureReviewModal
+        isOpen={isAiReviewOpen}
+        onClose={() => setIsAiReviewOpen(false)}
+        report={aiReviewReport}
+        onRerunReview={handleRunArchitectureReview}
+        onSelectEntity={(entityId) => {
+          handleNodeSelect(entityId);
+          setIsAiReviewOpen(false);
+        }}
+      />
+
+      {/* Area 10: AI-Drafted ADR Modal */}
+      <ADRGenerationModal
+        isOpen={isAiAdrOpen}
+        onClose={() => setIsAiAdrOpen(false)}
+        draft={aiDraftedAdr}
+        onAccept={(modifications) => {
+          if (aiDraftedAdr) {
+            setAiDraftedAdr({
+              ...aiDraftedAdr,
+              status: 'accepted',
+              title: modifications?.title ?? aiDraftedAdr.title,
+              context: modifications?.context ?? aiDraftedAdr.context,
+              decision: modifications?.decision ?? aiDraftedAdr.decision,
+              consequences: modifications?.consequences ?? aiDraftedAdr.consequences,
+            });
+          }
+          setIsAiAdrOpen(false);
+        }}
+        onDiscard={() => {
+          setIsAiAdrOpen(false);
+        }}
+      />
     </div>
   );
 }

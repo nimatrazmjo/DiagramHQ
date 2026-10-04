@@ -77,7 +77,10 @@ export function ArchitectureReviewModal({
       aria-modal="true"
       aria-label="Architecture Review Dialog"
     >
-      <div className="w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-xl shadow-2xl flex flex-col max-h-[90vh] text-slate-100 overflow-hidden">
+      <div
+        data-testid="ai-architecture-review-modal"
+        className="w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-xl shadow-2xl flex flex-col max-h-[90vh] text-slate-100 overflow-hidden"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950">
           <div className="flex items-center gap-3">
@@ -100,6 +103,7 @@ export function ArchitectureReviewModal({
             {onRerunReview && (
               <button
                 type="button"
+                data-testid="ai-review-rerun-btn"
                 onClick={onRerunReview}
                 className="px-3 py-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 text-slate-300 text-xs flex items-center gap-1.5 transition-colors"
               >
@@ -109,6 +113,7 @@ export function ArchitectureReviewModal({
             )}
             <button
               type="button"
+              data-testid="ai-review-close-btn"
               onClick={onClose}
               className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
               aria-label="Close Review Dialog"
