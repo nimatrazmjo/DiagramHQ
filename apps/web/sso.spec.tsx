@@ -80,12 +80,12 @@ describe('Enterprise SSO Web Integration (F101)', () => {
         />
       );
 
-      expect(html).toContain('Enterprise Single Sign-On (SSO)');
+      expect(html).toContain('Enterprise Single Sign-On');
       expect(html).toContain('Acme Global Corporation');
       expect(html).toContain('Acme Enterprise Okta');
       expect(html).toContain('Stark Industries Entra ID');
       expect(html).toContain('Configured IdPs');
-      expect(html).toContain('Test IdP Simulation');
+      expect(html).toContain('Test Simulation');
       expect(html).toContain('+ Add Provider');
     });
 

@@ -54,6 +54,20 @@ describe('authorizeUser', () => {
 
     expect(user).toBeNull();
   });
+
+  it('authenticates enterprise user via SAML 2.0 assertion flow', async () => {
+    const samlUser = await authorizeUser({
+      email: 'architect@acme-enterprise.com',
+      password: 'saml-login',
+      isSaml: 'true',
+    });
+
+    expect(samlUser).not.toBeNull();
+    expect(samlUser?.email).toBe('architect@acme-enterprise.com');
+    expect(samlUser?.id.startsWith('usr_')).toBe(true);
+    expect(samlUser?.ssoProvider).toContain('SAML 2.0');
+    expect(samlUser?.role).toBe('editor');
+  });
 });
 
 describe('signApiToken', () => {

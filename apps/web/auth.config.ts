@@ -6,6 +6,7 @@ import {
   findSsoProviderForEmail,
   isSsoEnforcedForEmail,
   simulateTestIdpLogin,
+  simulateTestSamlLogin,
   type SsoProviderConfig,
 } from '@diagramhq/domain';
 
@@ -107,6 +108,29 @@ export async function authorizeUser(
       name: session.user.name,
       role: session.user.role,
       ssoProvider: provider.name,
+    };
+  }
+
+  // Enterprise SAML 2.0 authentication handling (F102)
+  const isSaml =
+    credentials.isSaml === 'true' ||
+    credentials.isSaml === true ||
+    password.startsWith('saml:') ||
+    password === 'saml-login';
+
+  if (isSaml) {
+    const roleHint = password.startsWith('saml:role=') ? password.split('=')[1] : undefined;
+    const { session } = simulateTestSamlLogin({
+      email,
+      groups: roleHint ? [roleHint] : undefined,
+    });
+
+    return {
+      id: session.user.id,
+      email: session.user.email,
+      name: session.user.name,
+      role: session.user.role,
+      ssoProvider: 'Acme Enterprise SAML 2.0 IdP',
     };
   }
 

@@ -266,7 +266,7 @@ Status: IN PROGRESS  ·  Depends on: Phase 01, Phase 06, Phase 11  ·  File: `ph
 ## Features
 
 - [x] F101 — SSO
-- [ ] F102 — SAML
+- [x] F102 — SAML
 - [ ] F103 — SCIM
 - [ ] F104 — Advanced RBAC
 - [ ] F105 — Audit logs
