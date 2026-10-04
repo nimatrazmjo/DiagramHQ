@@ -11,6 +11,7 @@ import {
   useReactFlow,
   applyNodeChanges,
   applyEdgeChanges,
+  reconnectEdge,
   type Node,
   type Edge,
   type Connection,
@@ -99,6 +100,7 @@ export interface InfiniteCanvasProps {
   showPalette?: boolean;
   showTemplatePicker?: boolean;
   onEdgeConnect?: (edge: CanvasEdge) => void;
+  onEdgeReconnect?: (oldEdge: CanvasEdge, newConnection: Connection, updatedEdge: CanvasEdge) => void;
   onNodeCreate?: (node: CanvasNode) => void;
   onNodeDelete?: (nodeId: string) => void;
 }
@@ -285,6 +287,7 @@ function InfiniteCanvasContent({
   showPalette = true,
   showTemplatePicker = true,
   onEdgeConnect,
+  onEdgeReconnect,
   onNodeCreate,
   onNodeDelete,
 }: InfiniteCanvasProps): JSX.Element {
@@ -783,15 +786,19 @@ function InfiniteCanvasContent({
     (connection: Connection) => {
       if (!connection.source || !connection.target) return;
       const edgeId = `conn-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+      const hasSpecificHandle = Boolean(connection.sourceHandle || connection.targetHandle);
       const canvasEdge: CanvasEdge = {
         id: edgeId,
         source: connection.source,
         target: connection.target,
-        type: 'smoothstep',
+        sourceHandle: connection.sourceHandle ?? undefined,
+        targetHandle: connection.targetHandle ?? undefined,
+        type: 'icepanel',
         label: '',
         data: {
           sourceHandle: connection.sourceHandle ?? undefined,
           targetHandle: connection.targetHandle ?? undefined,
+          routing: hasSpecificHandle ? 'manual' : 'auto',
         },
       };
 
@@ -813,7 +820,7 @@ function InfiniteCanvasContent({
           target: connection.target,
           sourceHandle: connection.sourceHandle,
           targetHandle: connection.targetHandle,
-          type: 'smoothstep',
+          type: 'icepanel',
           label: '',
           data: canvasEdge.data,
         },
@@ -824,6 +831,38 @@ function InfiniteCanvasContent({
       }
     },
     [viewId, onCommandDispatched, onEdgeConnect],
+  );
+
+  const onReconnect = useCallback(
+    (oldEdge: Edge, newConnection: Connection) => {
+      if (!newConnection.source || !newConnection.target) return;
+
+      const edgeData = (oldEdge.data || {}) as Record<string, unknown>;
+      const hasSpecificHandle = Boolean(newConnection.sourceHandle || newConnection.targetHandle);
+
+      const updatedCanvasEdge: CanvasEdge = {
+        id: oldEdge.id,
+        source: newConnection.source,
+        target: newConnection.target,
+        sourceHandle: newConnection.sourceHandle ?? undefined,
+        targetHandle: newConnection.targetHandle ?? undefined,
+        type: oldEdge.type ?? 'icepanel',
+        label: typeof oldEdge.label === 'string' ? oldEdge.label : (edgeData.label as string) ?? '',
+        data: {
+          ...edgeData,
+          sourceHandle: newConnection.sourceHandle ?? undefined,
+          targetHandle: newConnection.targetHandle ?? undefined,
+          routing: hasSpecificHandle ? 'manual' : (edgeData.routing ?? 'auto'),
+        },
+      };
+
+      setEdges((eds) => reconnectEdge(oldEdge, newConnection, eds));
+
+      if (onEdgeReconnect) {
+        onEdgeReconnect(oldEdge as unknown as CanvasEdge, newConnection, updatedCanvasEdge);
+      }
+    },
+    [onEdgeReconnect],
   );
 
   const handleDeleteSelected = useCallback(async () => {
@@ -1196,6 +1235,8 @@ function InfiniteCanvasContent({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onReconnect={onReconnect}
+        edgesReconnectable={true}
         onEdgeClick={handleEdgeClick}
         onSelectionChange={onSelectionChange}
         onPaneClick={onPaneClick}

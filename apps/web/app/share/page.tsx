@@ -338,6 +338,9 @@ function SharePageContent(): JSX.Element {
           onNodeSelect={(nodeId) => setSelectedNodeId(nodeId)}
           onEdgeSelect={(edgeId) => setSelectedEdgeId(edgeId)}
           onNodeDragStop={handleNodeDragStop}
+          onEdgeReconnect={(oldEdge, _connection, updatedEdge) => {
+            setEdges((eds) => eds.map((e) => (e.id === oldEdge.id ? updatedEdge : e)));
+          }}
         />
       </div>
 

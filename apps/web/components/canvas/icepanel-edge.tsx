@@ -177,25 +177,25 @@ export function IcePanelEdge({
     const targetBox: NodeBox = { x: tPos.x, y: tPos.y, width: tW, height: tH };
 
     // Determine optimal connection sides
-    let computedSourcePos: Position;
-    let computedTargetPos: Position;
+    // Determine connection sides based on chosen handles or optimal facing direction
+    const parseSide = (hId?: string | null): Position | null => {
+      if (!hId) return null;
+      if (hId.startsWith('top')) return Position.Top;
+      if (hId.startsWith('bottom')) return Position.Bottom;
+      if (hId.startsWith('left')) return Position.Left;
+      if (hId.startsWith('right')) return Position.Right;
+      return null;
+    };
 
-    const isManual = edgeData.routing === 'manual';
-    if (isManual && sourceHandleId && targetHandleId) {
-      const parseSide = (hId: string, fallback: Position): Position => {
-        if (hId.startsWith('top')) return Position.Top;
-        if (hId.startsWith('bottom')) return Position.Bottom;
-        if (hId.startsWith('left')) return Position.Left;
-        if (hId.startsWith('right')) return Position.Right;
-        return fallback;
-      };
-      computedSourcePos = parseSide(sourceHandleId, defaultSourcePosition);
-      computedTargetPos = parseSide(targetHandleId, defaultTargetPosition);
-    } else {
-      const optimal = getOptimalConnectionSides(sourceBox, targetBox);
-      computedSourcePos = optimal.sourcePosition;
-      computedTargetPos = optimal.targetPosition;
-    }
+    const effectiveSourceHandle = sourceHandleId || (edgeData.sourceHandle as string | undefined);
+    const effectiveTargetHandle = targetHandleId || (edgeData.targetHandle as string | undefined);
+
+    const explicitSourcePos = parseSide(effectiveSourceHandle);
+    const explicitTargetPos = parseSide(effectiveTargetHandle);
+
+    const optimal = getOptimalConnectionSides(sourceBox, targetBox);
+    const computedSourcePos: Position = explicitSourcePos ?? optimal.sourcePosition;
+    const computedTargetPos: Position = explicitTargetPos ?? optimal.targetPosition;
 
     // Base anchor coordinates at the center of the chosen side
     let sx = sourceBox.x + sourceBox.width / 2;

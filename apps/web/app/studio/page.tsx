@@ -81,6 +81,7 @@ import {
   type PresencePeerBadge,
 } from '../../components/canvas';
 import { InspectorPanel } from '../../components/shell/inspector-panel';
+import { useDiagramAutosave, type SavedDiagramData } from '../../hooks/use-diagram-autosave';
 
 const INITIAL_PEERS: PresencePeerBadge[] = [
   {
@@ -354,6 +355,43 @@ export default function StudioPage(): JSX.Element {
   const [currentEdges, setCurrentEdges] = useState<CanvasEdge[]>(initialGraph.edges);
   const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
   const [c4Level, setC4Level] = useState<1 | 2 | 3>(1);
+
+  const handleRestoreSavedDiagram = useCallback((saved: SavedDiagramData) => {
+    if (Array.isArray(saved.nodes) && saved.nodes.length > 0) {
+      setCurrentNodes(saved.nodes);
+      if (Array.isArray(saved.edges)) {
+        setCurrentEdges(saved.edges);
+      }
+      if (saved.c4Level && (saved.c4Level === 1 || saved.c4Level === 2 || saved.c4Level === 3)) {
+        setC4Level(saved.c4Level);
+      }
+      if (saved.activeView) {
+        setActiveView(saved.activeView as 'all' | 'context' | 'container' | 'security' | 'data' | 'ownership');
+      }
+      if (saved.activePersona) {
+        setActivePersona(saved.activePersona as PersonaMode | 'all');
+      }
+      setSelectedNodeId(null);
+      setSelectedEdgeId(null);
+      setCanvasKey((k) => k + 1);
+    }
+  }, []);
+
+  const {
+    saveStatus,
+    lastSavedAt,
+    isLoggedIn,
+    sessionUser,
+    saveNow,
+    resetSavedDiagram,
+  } = useDiagramAutosave({
+    currentNodes,
+    currentEdges,
+    c4Level,
+    activeView,
+    activePersona,
+    onRestore: handleRestoreSavedDiagram,
+  });
   const [isFlowPlaybackActive, setIsFlowPlaybackActive] = useState(false);
   const [playbackState, setPlaybackState] = useState<FlowPlaybackState>({
     flowId: 'studio-trace-flow',
@@ -1083,8 +1121,9 @@ export default function StudioPage(): JSX.Element {
       setSelectedNodeId(null);
       setSelectedEdgeId(null);
       setCanvasKey((k) => k + 1);
+      void resetSavedDiagram();
     }
-  }, []);
+  }, [resetSavedDiagram]);
 
   const handleExportJson = useCallback(() => {
     const data = {
@@ -1266,9 +1305,80 @@ export default function StudioPage(): JSX.Element {
             <span>DiagramHQ</span>
           </Link>
 
-          <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
-            Phase 0 Studio (Guest Mode)
-          </span>
+          {/* Dynamic Studio Mode Badge */}
+          {isLoggedIn ? (
+            <div
+              data-testid="studio-mode-badge"
+              className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#10b981]" />
+              <span>Cloud Studio</span>
+              <span className="text-slate-400 font-sans hidden md:inline">
+                ({sessionUser?.name || sessionUser?.email})
+              </span>
+            </div>
+          ) : (
+            <span
+              data-testid="studio-mode-badge"
+              className="px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono"
+            >
+              Phase 0 Studio (Guest Mode)
+            </span>
+          )}
+
+          {/* Auto-Save Status Indicator */}
+          <div data-testid="autosave-status" className="flex items-center">
+            {saveStatus === 'saving' && (
+              <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30 text-[11px] font-medium animate-pulse">
+                <svg className="animate-spin h-3 w-3 text-amber-400" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                <span>Saving...</span>
+              </div>
+            )}
+            {(saveStatus === 'saved' || (saveStatus === 'idle' && isLoggedIn)) && (
+              <button
+                type="button"
+                onClick={() => void saveNow()}
+                title={lastSavedAt ? `All changes auto-saved at ${lastSavedAt.toLocaleTimeString()}. Click to force save.` : 'All changes auto-saved to cloud'}
+                className="flex items-center gap-1 px-2 py-1 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-medium transition-colors"
+              >
+                <svg className="h-3 w-3 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
+                <span>Auto-saved</span>
+                {lastSavedAt && (
+                  <span className="text-[10px] text-emerald-400/80 font-mono hidden xl:inline">
+                    {lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                  </span>
+                )}
+              </button>
+            )}
+            {saveStatus === 'unsaved' && (
+              <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30 text-[11px] font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                <span>Saving...</span>
+              </div>
+            )}
+            {(saveStatus === 'saved-local' || (saveStatus === 'idle' && !isLoggedIn)) && (
+              <button
+                type="button"
+                onClick={() => void saveNow()}
+                title="Saved locally in browser storage. Click to save now."
+                className="flex items-center gap-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[11px] font-medium transition-colors"
+              >
+                <svg className="h-3 w-3 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
+                <span>Auto-saved (Local)</span>
+              </button>
+            )}
+          </div>
 
           {/* Breadcrumb Hierarchy (IcePanel style) */}
           <div
@@ -1396,15 +1506,28 @@ export default function StudioPage(): JSX.Element {
 
         {/* Quick Actions & Admin Superuser Pill */}
         <div className="flex items-center gap-2">
-          {/* Admin Status Pill */}
-          <Link
-            href="/dashboard"
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-medium transition-colors"
-            title="Admin full access enabled (Switch to Dashboard)"
-          >
-            <span>👑</span>
-            <span className="font-semibold">Admin (Owner)</span>
-          </Link>
+          {/* Admin / User Status Pill */}
+          {isLoggedIn ? (
+            <Link
+              href="/dashboard"
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-medium transition-colors"
+              title="Switch to Dashboard"
+            >
+              <span>{sessionUser?.role === 'owner' ? '👑' : '👤'}</span>
+              <span className="font-semibold">
+                {sessionUser?.role === 'owner' ? 'Admin (Owner)' : (sessionUser?.name || 'Dashboard')}
+              </span>
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium transition-colors shadow-sm"
+              title="Sign in to save and sync diagrams to cloud"
+            >
+              <span>🔑</span>
+              <span className="font-semibold">Sign in</span>
+            </Link>
+          )}
 
           {/* Active Architecture Branch Badge & Switcher */}
           <BranchBadge
@@ -1717,6 +1840,11 @@ export default function StudioPage(): JSX.Element {
             }}
             onEdgeConnect={(newEdge) => {
               setCurrentEdges((eds) => [...eds, newEdge]);
+            }}
+            onEdgeReconnect={(oldEdge, _connection, updatedEdge) => {
+              setCurrentEdges((eds) =>
+                eds.map((e) => (e.id === oldEdge.id ? updatedEdge : e)),
+              );
             }}
             onNodeDelete={handleDeleteNode}
           />

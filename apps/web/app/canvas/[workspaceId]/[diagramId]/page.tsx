@@ -115,6 +115,43 @@ export default function CanvasPage() {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
+
+  // Load from localStorage on mount / level change
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(`diagramhq_canvas_l${c4Level}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.nodes && parsed.positions && parsed.edges) {
+          setNodes(parsed.nodes);
+          setNodePositions(parsed.positions);
+          setEdges(parsed.edges);
+        }
+      }
+    } catch {
+      // Ignore
+    }
+  }, [c4Level]);
+
+  // Debounced auto-save to localStorage
+  useEffect(() => {
+    setSaveStatus('unsaved');
+    const timer = setTimeout(() => {
+      try {
+        setSaveStatus('saving');
+        localStorage.setItem(
+          `diagramhq_canvas_l${c4Level}`,
+          JSON.stringify({ nodes, positions: nodePositions, edges }),
+        );
+        setSaveStatus('saved');
+      } catch {
+        // Ignore
+      }
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [nodes, nodePositions, edges, c4Level]);
+
   // Init history
   useEffect(() => {
     if (history.length === 0) {
@@ -503,6 +540,10 @@ export default function CanvasPage() {
         </div>
 
         <div className="flex items-center gap-4">
+          <div data-testid="canvas-autosave-status" className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-xs text-slate-700">
+            <span className={`w-2 h-2 rounded-full ${saveStatus === 'saved' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
+            <span>{saveStatus === 'saved' ? 'Auto-saved' : 'Saving...'}</span>
+          </div>
           <label className="flex items-center gap-2 text-sm text-slate-600">
             <input type="checkbox" checked={simulationActive} onChange={e => setSimulationActive(e.target.checked)} />
             Simulate Traffic
