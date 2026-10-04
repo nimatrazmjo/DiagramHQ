@@ -16,9 +16,71 @@ import {
   type ObjectId,
   type ConnectionId,
   type FlowPlaybackState,
+  type Comment,
+  type CommentAuthor,
+  createComment,
+  replyToComment,
+  resolveComment,
+  reopenComment,
+  buildCommentThreads,
+  createArchitecturePullRequest,
+  submitPullRequestReview,
+  addPullRequestComment,
+  computeVisualArchitectureDiff,
+  computeArchitectureChangeSet,
+  type ArchitecturePullRequest,
+  type ReviewDecision,
+  type TeamId,
 } from '@diagramhq/domain';
-import { InfiniteCanvas, toAlignableNode, IcePanelSidebar, IconPickerModal, FlowPlaybackToolbar } from '../../components/canvas';
+import {
+  InfiniteCanvas,
+  toAlignableNode,
+  IcePanelSidebar,
+  IconPickerModal,
+  FlowPlaybackToolbar,
+  PresenceIndicators,
+  CommentsPanel,
+  PullRequestModal,
+  type PresencePeerBadge,
+} from '../../components/canvas';
 import { InspectorPanel } from '../../components/shell/inspector-panel';
+
+const INITIAL_PEERS: PresencePeerBadge[] = [
+  {
+    userId: 'user-alice',
+    userName: 'Alice Chen',
+    userColor: '#10b981',
+    status: 'active',
+    role: 'Lead Architect',
+    currentObjectName: 'Edge API Gateway',
+    currentViewName: 'Containers & Apps',
+  },
+  {
+    userId: 'user-bob',
+    userName: 'Bob Smith',
+    userColor: '#3b82f6',
+    status: 'active',
+    role: 'Security Engineer',
+    currentObjectName: 'Postgres Database',
+    currentViewName: 'Security',
+  },
+  {
+    userId: 'user-carol',
+    userName: 'Carol Davis',
+    userColor: '#8b5cf6',
+    status: 'idle',
+    role: 'DevOps Lead',
+    currentObjectName: 'Web Application',
+    currentViewName: 'Context',
+  },
+];
+
+const CURRENT_AUTHOR: CommentAuthor = {
+  id: 'user-admin',
+  name: 'Admin Superuser',
+  email: 'admin@diagramhq.internal',
+  color: '#3b82f6',
+};
 
 export default function StudioPage(): JSX.Element {
   // Pre-seed with the SaaS 3-tier starter architecture
@@ -146,6 +208,163 @@ export default function StudioPage(): JSX.Element {
       description,
     };
   }, [selectedEdgeId, currentEdges, currentNodes]);
+
+  // Collaboration: Live Presence & Peer collaborators
+  const [peers] = useState<PresencePeerBadge[]>(INITIAL_PEERS);
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [isPullRequestModalOpen, setIsPullRequestModalOpen] = useState(false);
+
+  // Pre-seeded threaded comments
+  const [comments, setComments] = useState<Comment[]>(() => {
+    const root1 = createComment({
+      id: 'cmt-root-1',
+      workspaceId: 'ws-demo',
+      targetType: 'object',
+      targetId: 'obj-1',
+      author: { id: 'user-alice', name: 'Alice Chen', color: '#10b981' },
+      content: 'Should we terminate TLS at the API Gateway or at the ingress load balancer?',
+    });
+    const reply1 = replyToComment(root1, {
+      id: 'cmt-rep-1',
+      author: { id: 'user-bob', name: 'Bob Smith', color: '#3b82f6' },
+      content: "Gateway handles TLS termination with automatic Let's Encrypt certificates.",
+    });
+    const root2 = createComment({
+      id: 'cmt-root-2',
+      workspaceId: 'ws-demo',
+      targetType: 'diagram',
+      targetId: 'studio-diagram',
+      author: { id: 'user-carol', name: 'Carol Davis', color: '#8b5cf6' },
+      content: 'Architecture baseline approved for SOC2 and ISO27001 audit.',
+    });
+    const resolvedRoot2 = resolveComment(root2, { id: 'user-carol', name: 'Carol Davis' });
+    return [root1, reply1, resolvedRoot2];
+  });
+
+  // Pull request review state
+  const [architecturePR, setArchitecturePR] = useState<ArchitecturePullRequest>(() => {
+    return createArchitecturePullRequest({
+      number: 14,
+      title: 'feat(auth): Upgrade Auth Service to OAuth2 / OIDC & Deploy Billing',
+      description: 'Replaces legacy authentication with OIDC standard and provisions billing microservice.',
+      sourceBranch: 'feat/auth-v2',
+      targetBranch: 'main',
+      author: {
+        id: 'user-alice',
+        name: 'Alice Chen',
+        email: 'alice@diagramhq.internal',
+      },
+      diff: computeVisualArchitectureDiff(
+        {
+          objects: [
+            { id: 'app-gateway' as ObjectId, architectureId: 'arch-demo' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Edge API Gateway', kind: 'application', position: { x: 50, y: 50 }, createdAt: new Date(), updatedAt: new Date() },
+            { id: 'app-auth' as ObjectId, architectureId: 'arch-demo' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Auth Service', kind: 'application', position: { x: 200, y: 200 }, createdAt: new Date(), updatedAt: new Date() },
+          ],
+          connections: [],
+        },
+        {
+          objects: [
+            { id: 'app-gateway' as ObjectId, architectureId: 'arch-demo' as ArchitectureId, versionId: 'v2' as VersionId, name: 'Edge API Gateway', kind: 'application', position: { x: 50, y: 50 }, createdAt: new Date(), updatedAt: new Date() },
+            { id: 'app-auth' as ObjectId, architectureId: 'arch-demo' as ArchitectureId, versionId: 'v2' as VersionId, name: 'OAuth2 / OIDC Auth Service', kind: 'application', position: { x: 200, y: 200 }, createdAt: new Date(), updatedAt: new Date() },
+            { id: 'app-billing' as ObjectId, architectureId: 'arch-demo' as ArchitectureId, versionId: 'v2' as VersionId, name: 'Billing Microservice', kind: 'application', position: { x: 400, y: 400 }, createdAt: new Date(), updatedAt: new Date(), metadata: { ownerTeamId: 'team-billing' as TeamId } },
+          ],
+          connections: [],
+        }
+      ),
+      changeSet: computeArchitectureChangeSet({
+        baseObjects: [
+          { id: 'app-gateway' as ObjectId, architectureId: 'arch-demo' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Edge API Gateway', kind: 'application', position: { x: 50, y: 50 }, createdAt: new Date(), updatedAt: new Date() },
+          { id: 'app-auth' as ObjectId, architectureId: 'arch-demo' as ArchitectureId, versionId: 'v1' as VersionId, name: 'Auth Service', kind: 'application', position: { x: 200, y: 200 }, createdAt: new Date(), updatedAt: new Date() },
+        ],
+        targetObjects: [
+          { id: 'app-gateway' as ObjectId, architectureId: 'arch-demo' as ArchitectureId, versionId: 'v2' as VersionId, name: 'Edge API Gateway', kind: 'application', position: { x: 50, y: 50 }, createdAt: new Date(), updatedAt: new Date() },
+          { id: 'app-auth' as ObjectId, architectureId: 'arch-demo' as ArchitectureId, versionId: 'v2' as VersionId, name: 'OAuth2 / OIDC Auth Service', kind: 'application', position: { x: 200, y: 200 }, createdAt: new Date(), updatedAt: new Date() },
+          { id: 'app-billing' as ObjectId, architectureId: 'arch-demo' as ArchitectureId, versionId: 'v2' as VersionId, name: 'Billing Microservice', kind: 'application', position: { x: 400, y: 400 }, createdAt: new Date(), updatedAt: new Date(), metadata: { ownerTeamId: 'team-billing' as TeamId } },
+        ],
+        baseConnections: [],
+        targetConnections: [],
+      }),
+    });
+  });
+
+  const allCommentThreads = useMemo(() => buildCommentThreads(comments), [comments]);
+  const unresolvedCommentCount = useMemo(
+    () => comments.filter((c) => !c.parentCommentId && !c.resolved).length,
+    [comments]
+  );
+
+  const commentTargetType = selectedNodeId ? 'object' : 'diagram';
+  const commentTargetId = selectedNodeId || 'studio-diagram';
+  const commentTargetName = selectedNode
+    ? (typeof selectedNode.data.label === 'string' ? selectedNode.data.label : selectedNode.id)
+    : 'Entire Architecture';
+
+  const visibleThreads = useMemo(() => {
+    if (selectedNodeId) {
+      return allCommentThreads.filter((t) => t.targetId === selectedNodeId);
+    }
+    return allCommentThreads;
+  }, [allCommentThreads, selectedNodeId]);
+
+  const handleCreateComment = useCallback((content: string) => {
+    const targetId = selectedNodeId || 'studio-diagram';
+    const targetType = selectedNodeId ? 'object' : 'diagram';
+    const newComment = createComment({
+      workspaceId: 'ws-demo',
+      targetType,
+      targetId,
+      author: CURRENT_AUTHOR,
+      content,
+    });
+    setComments((prev) => [...prev, newComment]);
+  }, [selectedNodeId]);
+
+  const handleReplyComment = useCallback((parentComment: Comment, content: string) => {
+    const reply = replyToComment(parentComment, {
+      author: CURRENT_AUTHOR,
+      content,
+    });
+    setComments((prev) => [...prev, reply]);
+  }, []);
+
+  const handleResolveComment = useCallback((comment: Comment) => {
+    setComments((prev) =>
+      prev.map((c) => (c.id === comment.id ? resolveComment(c, CURRENT_AUTHOR) : c))
+    );
+  }, []);
+
+  const handleReopenComment = useCallback((comment: Comment) => {
+    setComments((prev) =>
+      prev.map((c) => (c.id === comment.id ? reopenComment(c) : c))
+    );
+  }, []);
+
+  const handleSubmitPRReview = useCallback((decision: ReviewDecision, body?: string) => {
+    setArchitecturePR((pr) =>
+      submitPullRequestReview(pr, {
+        reviewer: {
+          id: CURRENT_AUTHOR.id,
+          name: CURRENT_AUTHOR.name,
+          email: CURRENT_AUTHOR.email,
+        },
+        decision,
+        body,
+      })
+    );
+  }, []);
+
+  const handleAddPRComment = useCallback((content: string) => {
+    setArchitecturePR((pr) =>
+      addPullRequestComment(pr, {
+        author: {
+          id: CURRENT_AUTHOR.id,
+          name: CURRENT_AUTHOR.name,
+          email: CURRENT_AUTHOR.email,
+        },
+        content,
+      })
+    );
+  }, []);
 
   const handleNodeSelect = useCallback((nodeId: string | null) => {
     setSelectedNodeId(nodeId);
@@ -440,11 +659,11 @@ export default function StudioPage(): JSX.Element {
           </span>
 
           {/* Breadcrumb Hierarchy (IcePanel style) */}
-          <div className="hidden lg:flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+          <div data-testid="studio-breadcrumb" className="hidden lg:flex items-center gap-1.5 text-xs text-slate-400 font-medium">
             <span className="text-slate-600">/</span>
             <span>Model</span>
             <span className="text-slate-600">/</span>
-            <span className="text-white font-semibold">
+            <span data-testid="studio-breadcrumb-level" className="text-white font-semibold">
               {c4Level === 1 ? 'System Context' : c4Level === 2 ? 'Containers & Apps' : 'Components'}
             </span>
           </div>
@@ -551,6 +770,50 @@ export default function StudioPage(): JSX.Element {
             <span>👑</span>
             <span className="font-semibold">Admin (Owner)</span>
           </Link>
+
+          {/* Active Collaborators Presence Indicators */}
+          <PresenceIndicators peers={peers} currentUserId={CURRENT_AUTHOR.id} />
+
+          {/* Architecture Pull Request Review trigger */}
+          <button
+            type="button"
+            data-testid="toggle-review-pr-btn"
+            onClick={() => setIsPullRequestModalOpen(true)}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+              architecturePR.status === 'open'
+                ? 'bg-cyan-950/70 hover:bg-cyan-900/80 text-cyan-300 border-cyan-700/70'
+                : 'bg-emerald-950/70 hover:bg-emerald-900/80 text-emerald-300 border-emerald-700/70'
+            }`}
+            title={`Architecture PR #${architecturePR.number} (${architecturePR.status})`}
+          >
+            <span>🔀</span>
+            <span className="hidden md:inline font-mono font-bold">{`#${architecturePR.number}`}</span>
+            <span className="capitalize">{architecturePR.status}</span>
+          </button>
+
+          {/* Comments Panel Trigger */}
+          <button
+            type="button"
+            data-testid="toggle-comments-btn"
+            onClick={() => setIsCommentsOpen((prev) => !prev)}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+              isCommentsOpen
+                ? 'bg-amber-600/30 text-amber-300 border-amber-500/50 shadow-sm shadow-amber-500/20'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+            }`}
+            title="Toggle Architecture Comments"
+          >
+            <span>💬</span>
+            <span className="hidden sm:inline">Comments</span>
+            {unresolvedCommentCount > 0 && (
+              <span
+                data-testid="comments-badge-count"
+                className="px-1.5 py-0.2 rounded-full bg-amber-500 text-white font-bold text-[10px]"
+              >
+                {unresolvedCommentCount}
+              </span>
+            )}
+          </button>
 
           {/* Brand Icon catalog trigger */}
           <button
@@ -755,6 +1018,39 @@ export default function StudioPage(): JSX.Element {
         }}
         onClose={() => setIsIconPickerOpen(false)}
       />
+
+      {/* Collaboration: Threaded Comments Panel */}
+      <CommentsPanel
+        isOpen={isCommentsOpen}
+        onClose={() => setIsCommentsOpen(false)}
+        threads={visibleThreads}
+        targetType={commentTargetType}
+        targetId={commentTargetId}
+        targetName={commentTargetName}
+        currentAuthor={CURRENT_AUTHOR}
+        onCreateComment={handleCreateComment}
+        onReplyComment={handleReplyComment}
+        onResolveComment={handleResolveComment}
+        onReopenComment={handleReopenComment}
+      />
+
+      {/* Architecture Pull Request Review Modal */}
+      {isPullRequestModalOpen && (
+        <div
+          data-testid="pull-request-modal-overlay"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsPullRequestModalOpen(false);
+          }}
+        >
+          <PullRequestModal
+            pr={architecturePR}
+            onClose={() => setIsPullRequestModalOpen(false)}
+            onSubmitReview={handleSubmitPRReview}
+            onAddComment={handleAddPRComment}
+          />
+        </div>
+      )}
     </div>
   );
 }

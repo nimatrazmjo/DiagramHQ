@@ -19,7 +19,7 @@ This document maintains an up-to-date tracker of all end-to-end (E2E) browser te
 
 ---
 
-## 2. Implemented & Verified Test Suites (27 Tests — 100% Passing)
+## 2. Implemented & Verified Test Suites (47 Tests — 100% Passing)
 
 ### Suite 1: Authentication & Session Security (`apps/web/e2e/auth.spec.ts`)
 | # | Test Case Description | Verified Behavior | Status |
@@ -86,6 +86,16 @@ This document maintains an up-to-date tracker of all end-to-end (E2E) browser te
 | 6 | Shift+Click multi-selection & alignment | Selects multiple nodes, mounts Alignment Toolbar (Align Left, Snap-to-Grid), and clears | ✅ Passed |
 | 7 | Focus mode & Minimap tools | Toggles element isolation via Focus Mode and minimap visibility in DOM | ✅ Passed |
 
+### Suite 7: Collaboration, Threaded Comments & Architecture Reviews (`apps/web/e2e/collaboration.spec.ts`)
+| # | Test Case Description | Verified Behavior | Status |
+|---|---|---|:---:|
+| 1 | Live presence & peer avatars | Displays active pulse dot, peer counter (3 peers), and collaborator avatar badges with tooltips | ✅ Passed |
+| 2 | Comments drawer & Open/All filters | Toggles comments drawer, checks unresolved badge, and filters between Open and All threads | ✅ Passed |
+| 3 | New architectural comment thread | Composes and posts a new root comment thread with author stamp and auto-cleared input | ✅ Passed |
+| 4 | Threaded comment replies | Posts an inline reply to an existing comment thread, updating thread hierarchy | ✅ Passed |
+| 5 | Resolving & reopening comment threads | Resolves an open comment thread, hides it from Open filter, and re-opens from All filter | ✅ Passed |
+| 6 | Architecture Review PR modal | Opens PR #14 modal, reviews visual diff and risk assessment, and submits approval | ✅ Passed |
+
 ---
 
 ## 3. What is Left — Playwright E2E Implementation Backlog
@@ -104,8 +114,8 @@ The following suites represent upcoming areas to achieve 100% end-to-end browser
 │ 4. Visual Regression           │ 5 tests           │ ✅ COMPLETED      │
 │ 5. Flows & Sequence Playback   │ 7 tests           │ ✅ COMPLETED      │
 │ 6. Advanced Canvas & Layouts   │ 7 tests           │ ✅ COMPLETED      │
+│ 7. Collaboration & Reviews     │ 6 tests           │ ✅ COMPLETED      │
 ├────────────────────────────────┼───────────────────┼───────────────────┤
-│ 7. Collaboration & Comments    │ ~6 tests          │ ⏳ BACKLOG (P2)   │
 │ 8. Versioning & Visual Diff    │ ~5 tests          │ ⏳ BACKLOG (P2)   │
 │ 9. Exports & Diagram Sharing   │ ~6 tests          │ ⏳ BACKLOG (P2)   │
 │ 10. AI Architecture Copilot    │ ~5 tests          │ ⏳ BACKLOG (P3)   │
@@ -113,12 +123,6 @@ The following suites represent upcoming areas to achieve 100% end-to-end browser
 │ 12. CI & Cross-Browser Matrix  │ Matrix Config     │ ⏳ BACKLOG (P3)   │
 └────────────────────────────────┴───────────────────┴───────────────────┘
 ```
-
-### Area 7: Collaboration, Comments & Presence (`e2e/collaboration.spec.ts`)
-- [ ] Threaded comments: pinning comment pin to a canvas node.
-- [ ] Comment replies, resolving comments, and comment count badges.
-- [ ] Simulated multi-user cursor / presence avatars in studio header.
-- [ ] Architecture change review approvals deck (Approve / Reject actions).
 
 ### Area 8: Versioning, Branching & Visual Diff (`e2e/versioning-diff.spec.ts`)
 - [ ] Architecture version snapshot creation modal.

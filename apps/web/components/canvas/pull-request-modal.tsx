@@ -84,6 +84,7 @@ export function PullRequestModal({
 
   return (
     <div
+      data-testid="pull-request-modal"
       className="w-[480px] rounded-xl bg-slate-900/95 border border-slate-700/80 shadow-2xl p-5 text-xs text-slate-200 backdrop-blur-md"
       role="dialog"
       aria-label="Architecture Pull Request Modal"
@@ -93,9 +94,9 @@ export function PullRequestModal({
         <div>
           <div className="flex items-center gap-2">
             <span className="font-mono font-bold text-cyan-400 text-sm">{`#${pr.number}`}</span>
-            <h3 className="font-bold text-white text-sm">{pr.title}</h3>
+            <h3 data-testid="pr-title" className="font-bold text-white text-sm">{pr.title}</h3>
           </div>
-          <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-400 font-mono">
+          <div data-testid="pr-branches" className="flex items-center gap-2 mt-1 text-[11px] text-slate-400 font-mono">
             <span>{`${String(pr.sourceBranch)} → ${String(pr.targetBranch)}`}</span>
             <span>•</span>
             <span>{`by ${pr.author.name}`}</span>
@@ -104,6 +105,7 @@ export function PullRequestModal({
         {onClose && (
           <button
             type="button"
+            data-testid="pr-close-btn"
             onClick={onClose}
             className="text-slate-400 hover:text-white"
             aria-label="Close"
@@ -114,7 +116,7 @@ export function PullRequestModal({
       </div>
 
       {/* Risk Banner */}
-      <div className="mt-3 p-3 rounded-lg bg-slate-950/60 border border-slate-800 flex items-start gap-2.5">
+      <div data-testid="pr-risk-banner" className="mt-3 p-3 rounded-lg bg-slate-950/60 border border-slate-800 flex items-start gap-2.5">
         <span className="material-symbols-outlined text-base text-amber-400 shrink-0">
           shield
         </span>
@@ -136,6 +138,7 @@ export function PullRequestModal({
       <div className="flex items-center gap-2 mt-3 p-1 rounded-lg bg-slate-950/40 border border-slate-800">
         <button
           type="button"
+          data-testid="pr-tab-diff"
           onClick={() => setActiveTab('diff')}
           className={`flex-1 py-1 rounded text-[11px] font-medium transition-colors ${
             activeTab === 'diff'
@@ -147,6 +150,7 @@ export function PullRequestModal({
         </button>
         <button
           type="button"
+          data-testid="pr-tab-reviews"
           onClick={() => setActiveTab('reviews')}
           className={`flex-1 py-1 rounded text-[11px] font-medium transition-colors ${
             activeTab === 'reviews'
@@ -158,6 +162,7 @@ export function PullRequestModal({
         </button>
         <button
           type="button"
+          data-testid="pr-tab-comments"
           onClick={() => setActiveTab('comments')}
           className={`flex-1 py-1 rounded text-[11px] font-medium transition-colors ${
             activeTab === 'comments'
@@ -270,6 +275,7 @@ export function PullRequestModal({
         <div className="mt-4 pt-3 border-t border-slate-800 space-y-2">
           <input
             type="text"
+            data-testid="pr-review-input"
             placeholder="Review feedback (optional)..."
             value={reviewNote}
             onChange={(e) => setReviewNote(e.target.value)}
@@ -278,6 +284,7 @@ export function PullRequestModal({
           <div className="flex items-center justify-end gap-2">
             <button
               type="button"
+              data-testid="pr-reject-btn"
               onClick={() => {
                 onSubmitReview('reject', reviewNote || undefined);
                 setReviewNote('');
@@ -288,6 +295,7 @@ export function PullRequestModal({
             </button>
             <button
               type="button"
+              data-testid="pr-approve-btn"
               onClick={() => {
                 onSubmitReview('approve', reviewNote || undefined);
                 setReviewNote('');
@@ -305,6 +313,7 @@ export function PullRequestModal({
         <form onSubmit={handleCommentSubmit} className="mt-3 flex gap-2">
           <input
             type="text"
+            data-testid="pr-comment-input"
             placeholder="Leave a comment..."
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
@@ -312,6 +321,7 @@ export function PullRequestModal({
           />
           <button
             type="submit"
+            data-testid="pr-comment-submit"
             className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-medium transition-colors"
           >
             Comment
