@@ -115,9 +115,18 @@ export default function FlowsPage({ params }: FlowsPageProps) {
           <h1 className="text-2xl font-bold tracking-tight text-white">Trace Flows</h1>
           <p className="text-sm text-slate-400 mt-1">End-to-end interaction sequences and message traces across your architecture.</p>
         </div>
-        <button type="button" className="px-3.5 py-2 text-xs font-semibold rounded-md bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700 transition-colors self-start sm:self-auto">
-          + Create Flow
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <Link
+            href="/studio"
+            className="px-3.5 py-2 text-xs font-semibold rounded-md bg-sky-600 text-white hover:bg-sky-500 transition-colors flex items-center gap-1.5 shadow-sm shadow-sky-600/30"
+          >
+            <span>⚡</span>
+            <span>Interactive Studio</span>
+          </Link>
+          <button type="button" className="px-3.5 py-2 text-xs font-semibold rounded-md bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700 transition-colors">
+            + Create Flow
+          </button>
+        </div>
       </header>
 
       {/* Search + stats */}

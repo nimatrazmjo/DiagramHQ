@@ -15,8 +15,9 @@ import {
   type VersionId,
   type ObjectId,
   type ConnectionId,
+  type FlowPlaybackState,
 } from '@diagramhq/domain';
-import { InfiniteCanvas, toAlignableNode, IcePanelSidebar, IconPickerModal } from '../../components/canvas';
+import { InfiniteCanvas, toAlignableNode, IcePanelSidebar, IconPickerModal, FlowPlaybackToolbar } from '../../components/canvas';
 import { InspectorPanel } from '../../components/shell/inspector-panel';
 
 export default function StudioPage(): JSX.Element {
@@ -72,6 +73,43 @@ export default function StudioPage(): JSX.Element {
   const [currentEdges, setCurrentEdges] = useState<CanvasEdge[]>(initialGraph.edges);
   const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
   const [c4Level, setC4Level] = useState<1 | 2 | 3>(1);
+  const [isFlowPlaybackActive, setIsFlowPlaybackActive] = useState(false);
+  const [playbackState, setPlaybackState] = useState<FlowPlaybackState>({
+    flowId: 'studio-trace-flow',
+    totalSteps: 4,
+    currentStepIndex: 0,
+    isPlaying: false,
+    speedMultiplier: 1,
+    isLooping: false,
+  });
+
+  const STARTER_FLOW_STEPS = useMemo(
+    () => [
+      { note: 'End User dispatches HTTPS authentication request to Web App' },
+      { note: 'Web App proxies request with CSRF token to Edge API Gateway' },
+      { note: 'API Gateway verifies TLS and invokes gRPC AuthenticateUser() on Auth Service' },
+      { note: 'Auth Service executes query on Postgres Database and issues signed JWT' },
+    ],
+    [],
+  );
+
+  // Auto-advance timer when playing
+  React.useEffect(() => {
+    if (!isFlowPlaybackActive || !playbackState.isPlaying) return;
+    const intervalTime = 1800 / playbackState.speedMultiplier;
+    const timer = setInterval(() => {
+      setPlaybackState((prev) => {
+        if (prev.currentStepIndex >= prev.totalSteps - 1) {
+          if (prev.isLooping) {
+            return { ...prev, currentStepIndex: 0 };
+          }
+          return { ...prev, isPlaying: false };
+        }
+        return { ...prev, currentStepIndex: prev.currentStepIndex + 1 };
+      });
+    }, intervalTime);
+    return () => clearInterval(timer);
+  }, [isFlowPlaybackActive, playbackState.isPlaying, playbackState.speedMultiplier]);
 
   // Selected node item for Inspector
   const selectedNode = useMemo(() => {
@@ -550,6 +588,24 @@ export default function StudioPage(): JSX.Element {
 
           <button
             type="button"
+            data-testid="toggle-flow-playback-btn"
+            onClick={() => {
+              setIsFlowPlaybackActive((prev) => !prev);
+              setPlaybackState((prev) => ({ ...prev, currentStepIndex: 0, isPlaying: false }));
+            }}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+              isFlowPlaybackActive
+                ? 'bg-sky-600/30 text-sky-300 border-sky-500/50 shadow-sm shadow-sky-500/20'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+            }`}
+            title="Toggle Flow Trace Playback"
+          >
+            <span>⚡</span>
+            <span className="hidden sm:inline">Trace Flow</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setIsInspectorOpen((prev) => !prev)}
             className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
               isInspectorOpen
@@ -624,6 +680,49 @@ export default function StudioPage(): JSX.Element {
                 </button>
               </div>
             </div>
+          )}
+
+          {/* Flow Playback Interactive Toolbar */}
+          {isFlowPlaybackActive && (
+            <FlowPlaybackToolbar
+              state={playbackState}
+              currentStepNote={STARTER_FLOW_STEPS[playbackState.currentStepIndex]?.note}
+              persona="Security Architect"
+              actorAction="Validates Auth Token"
+              userIntent="End-to-end token verification trace"
+              onPlay={() => setPlaybackState((s) => ({ ...s, isPlaying: true }))}
+              onPause={() => setPlaybackState((s) => ({ ...s, isPlaying: false }))}
+              onNext={() =>
+                setPlaybackState((s) => ({
+                  ...s,
+                  currentStepIndex:
+                    s.currentStepIndex < s.totalSteps - 1
+                      ? s.currentStepIndex + 1
+                      : s.isLooping
+                      ? 0
+                      : s.currentStepIndex,
+                }))
+              }
+              onPrev={() =>
+                setPlaybackState((s) => ({
+                  ...s,
+                  currentStepIndex: Math.max(s.currentStepIndex - 1, 0),
+                }))
+              }
+              onRestart={() =>
+                setPlaybackState((s) => ({
+                  ...s,
+                  currentStepIndex: 0,
+                  isPlaying: false,
+                }))
+              }
+              onSpeedChange={(speed) =>
+                setPlaybackState((s) => ({ ...s, speedMultiplier: speed }))
+              }
+              onToggleLoop={() =>
+                setPlaybackState((s) => ({ ...s, isLooping: !s.isLooping }))
+              }
+            />
           )}
         </div>
 

@@ -64,6 +64,17 @@ This document maintains an up-to-date tracker of all end-to-end (E2E) browser te
 | 4 | Brand Icon catalog layout | Verifies modal header, search input, and responsive multi-column icon grid | ✅ Passed |
 | 5 | Mobile responsive viewport | Verifies viewport resizing to 375x667 preserves header and renders mobile layout | ✅ Passed |
 
+### Suite 5: Interactive Flows, Sequence Tracing & Playback Controls (`apps/web/e2e/flows-playback.spec.ts`)
+| # | Test Case Description | Verified Behavior | Status |
+|---|---|---|:---:|
+| 1 | Workspace trace flows explorer | Lists trace flows with passing/draft status badges, tags, duration, and metrics counters | ✅ Passed |
+| 2 | Instant search filtering | Filters flows by query ("Payment", "PCI-DSS", "Draft") and renders empty state fallback | ✅ Passed |
+| 3 | Sequence diagram accordion | Expands step timeline, protocol badges (HTTPS, gRPC, TCP), and collapses on click | ✅ Passed |
+| 4 | Studio FlowPlaybackToolbar mount | Clicking "Trace Flow" mounts toolbar with persona context and step description note | ✅ Passed |
+| 5 | Step forward & step backward | Advances and decrements step indicator (1/4 -> 2/4 -> 3/4) and updates step note | ✅ Passed |
+| 6 | Play/pause, speed & loop controls | Auto-advances steps, toggles speed multiplier (2.0x), restarts to step 1, and enables loop | ✅ Passed |
+| 7 | Workspace to studio cross-link | Clicking "Interactive Studio" on flows explorer navigates to `/studio` canvas | ✅ Passed |
+
 ---
 
 ## 3. What is Left — Playwright E2E Implementation Backlog
@@ -80,8 +91,8 @@ The following suites represent upcoming areas to achieve 100% end-to-end browser
 │ 2. Canvas & C4 Navigation      │ 8 tests           │ ✅ COMPLETED      │
 │ 3. Drag-Drop & Quick Connect   │ 6 tests           │ ✅ COMPLETED      │
 │ 4. Visual Regression           │ 5 tests           │ ✅ COMPLETED      │
+│ 5. Flows & Sequence Playback   │ 7 tests           │ ✅ COMPLETED      │
 ├────────────────────────────────┼───────────────────┼───────────────────┤
-│ 5. Flows & Sequence Playback   │ ~6 tests          │ ⏳ BACKLOG (P1)   │
 │ 6. Advanced Canvas & Layouts   │ ~6 tests          │ ⏳ BACKLOG (P1)   │
 │ 7. Collaboration & Comments    │ ~6 tests          │ ⏳ BACKLOG (P2)   │
 │ 8. Versioning & Visual Diff    │ ~5 tests          │ ⏳ BACKLOG (P2)   │
@@ -91,12 +102,6 @@ The following suites represent upcoming areas to achieve 100% end-to-end browser
 │ 12. CI & Cross-Browser Matrix  │ Matrix Config     │ ⏳ BACKLOG (P3)   │
 └────────────────────────────────┴───────────────────┴───────────────────┘
 ```
-
-### Area 5: Flows & Sequence Playback (`e2e/flows-playback.spec.ts`)
-- [ ] Sequencer playback controls (Play, Pause, Step Forward, Step Back).
-- [ ] Animation indicators highlighting active step connections.
-- [ ] Sequence step reordering and description display.
-- [ ] Adding a new flow scenario with ordered message steps.
 
 ### Area 6: Advanced Canvas & Layouts (`e2e/canvas-advanced.spec.ts`)
 - [ ] Keyboard shortcut undo/redo (`Meta+Z`, `Meta+Shift+Z`) with node position history.
