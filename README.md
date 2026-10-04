@@ -290,6 +290,7 @@ Root `package.json`:
 | `pnpm lint` / `pnpm lint:fix` | ESLint |
 | `pnpm format` / `pnpm format:check` | Prettier |
 | `pnpm test` | Vitest in every package |
+| `pnpm test:e2e` | Playwright E2E tests (auth, canvas, drag-and-drop, visual regression) with video recording |
 | `pnpm check-architecture` | Enforce layer boundaries |
 | `pnpm verify` | prisma generate → build domain → typecheck → lint → test → check-architecture |
 
@@ -304,9 +305,12 @@ Per package: `pnpm --filter @diagramhq/<api|web|domain> <script>`.
 - **Domain** (`packages/domain`) — pure unit tests for the model, invariants, layouts, projections, filters, templates.
 - **API** (`apps/api`) — unit tests plus HTTP-level e2e suites (`*.e2e.spec.ts`) booting the real Nest app against PostgreSQL.
 - **Web** (`apps/web`) — feature integration specs (`*.spec.ts(x)`) for canvas, commands, views and components.
+- **Playwright E2E** (`apps/web/e2e`) — End-to-end browser test suites covering authentication flows, React Flow canvas navigation & C4 hierarchy, node drag-and-drop & Quick Connect, and visual regression with automatic WebM video recordings.
 
 ```bash
-pnpm test                                   # everything
+pnpm test                                   # everything (vitest)
+pnpm test:e2e                               # Playwright E2E test suite (spins up web server)
+pnpm --filter @diagramhq/web test:e2e:headed # Playwright E2E in headed browser mode
 pnpm --filter @diagramhq/api test           # api only (needs Postgres + migrations)
 pnpm --filter @diagramhq/domain test        # domain only
 pnpm verify                                 # the full gate — run before opening a PR
