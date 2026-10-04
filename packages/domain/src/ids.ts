@@ -43,7 +43,8 @@ export type IdPrefix =
   | 'saml'
   | 'scim'
   | 'role'
-  | 'aud';
+  | 'aud'
+  | 'pol';
 
 export type Id<P extends IdPrefix> = string & { readonly __brand: P };
 
@@ -81,6 +82,7 @@ export type SamlRequestId = Id<'saml'>;
 export type ScimConfigId = Id<'scim'>;
 export type CustomRoleId = Id<'role'>;
 export type AuditLogEntryId = Id<'aud'>;
+export type OrgPolicyId = Id<'pol'>;
 
 let sequence = 0;
 

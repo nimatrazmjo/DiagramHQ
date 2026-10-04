@@ -2,6 +2,28 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-04 — F106 — Organization policies (Phase 13 Progress)
+
+Status: COMPLETE
+
+Implemented:
+- Domain layer (`packages/domain/src/`):
+  - `ids.ts`: Added `'pol'` prefix to `IdPrefix` union and created branded type `OrgPolicyId`.
+  - `organization-policies.ts`: Organization-wide governance, security, and administrative policy engine:
+    - IP Restrictions: Allowlist and denylist evaluation with CIDR subnet prefix parsing and unsigned 32-bit integer matching (`isIpInCidr`, `ipToNumber`), plus role-based bypass exemptions (`owner`).
+    - Session Management: Maximum session duration limits, inactivity idle timeouts, concurrent active session caps, mandatory MFA verification, and corporate device trust enforcement (`evaluateSessionPolicy`).
+    - Data Retention Lifecycle: Automated retention cutoffs (`calculateRetentionCutoffDate`) and permanent purge eligibility calculation (`isItemEligibleForRetentionPurge`) across soft-deleted items, version history, audit logs, and inactive workspaces (`evaluateDataRetentionPolicy`).
+    - Export Controls: Format whitelisting (PNG, SVG, PDF, JSON, CSV, Markdown), mandatory security classification watermarks on visual exports, external recipient email domain constraints, and sensitive data classification tag blocking (`pci`, `phi`, `secret`) (`evaluateExportControl`).
+    - Governance Engine: Centralized policy evaluation with global enforcement mode switcher (`enforce`, `audit_only`, `disabled`), factory defaults (`createDefaultOrganizationPolicies`), and comprehensive validation (`validateOrganizationPolicies`).
+  - `organization-policies.test.ts`: 26 unit tests covering IP/CIDR math, subnet containment, allowlist/denylist enforcement, role exemptions, session timeout and concurrent limit terminations, export format/tag filtering, retention purge eligibility, and policy validation.
+  - `index.ts`: Exported `organization-policies` module.
+- Web layer (`apps/web/`):
+  - `components/enterprise/org-policies-modal.tsx`: Interactive Organization Policies administration modal with tabbed configuration for IP restrictions, session lifetimes, retention lifecycles, export controls, and an interactive Live Policy Enforcement Simulator.
+  - `components/enterprise/index.ts`: Exported `OrgPoliciesModal`.
+  - `org-policies.spec.tsx`: 6 integration and component tests verifying UI rendering, IP allowlist enforcement, session idle/duration termination, data retention lifecycle, and export control boundaries.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, domain 104 test files / 701 tests ✓, web 118 test files / 604 tests ✓, `next build ✓`.
+- **Milestone: 124 / 135 features completed overall (91.9%)!**
+
 ## 2026-10-03 — F105 — Audit logs (Phase 13 Progress)
 
 Status: COMPLETE

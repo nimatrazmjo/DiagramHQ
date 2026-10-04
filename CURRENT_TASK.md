@@ -1,33 +1,30 @@
-# Current Task: F105 — Audit logs
+# Current Task: F106 — Organization policies
 
 **Status**: COMPLETE
 
 ## Description
-Enterprise Immutable Audit Logs (Phase 13 — Enterprise):
-- Cryptographically chained append-only audit ledger (`@diagramhq/domain`):
-  - Complete who/what/when tracking: actor types (`human_user`, `ai_agent`, `scim_sync`, `api_key`, `system`), category, action, status (`SUCCESS`, `FAILURE`, `DENIED`), target resource, payload details, ISO timestamps, and monotonic sequence indices.
-  - First-class AI-agent auditing: model provenance (e.g. `gemini-1.5-pro`), prompt summary, confidence score, tool calls executed, and autonomous execution flags.
-  - Multi-pass cryptographic hash chaining (`computeAuditEntryHash`): seals previous entry hash and record payload into a tamper-evident Merkle chain.
-  - Append-only enforcement: monotonic sequence numbers and chronological ordering.
-  - Cryptographic integrity verifier (`verifyAuditLogIntegrity`): detects in-place record mutations, severed hash links, or dropped entries.
-  - Query engine (`queryAuditLogs`): supports filtering by actor, actorType (e.g. `ai_agent`), category, status, resourceId, and time window with pagination.
-  - Structured export (`exportAuditLogToJson`, `exportAuditLogToCsv`) for SIEM ingestion (Splunk, Datadog).
-  - Deterministic lifecycle testing harness (`simulateAuditLogLifecycle`).
+Organization Governance & Security Policies (Phase 13 — Enterprise):
+- Centralized Organization Governance Policies (`@diagramhq/domain`):
+  - IP Restrictions: Allowlist / denylist evaluation with CIDR subnet prefix parsing and unsigned 32-bit integer matching (`isIpInCidr`, `ipToNumber`), plus role-based bypass exemptions (`owner`).
+  - Session Management: Maximum session duration limits, inactivity idle timeouts, concurrent active session caps, mandatory MFA verification, and corporate device trust enforcement.
+  - Data Retention Lifecycle: Automated retention cutoffs (`calculateRetentionCutoffDate`) and permanent purge eligibility (`isItemEligibleForRetentionPurge`) across soft-deleted items, version history, audit logs, and inactive workspaces.
+  - Export Controls: Format whitelisting (PNG, SVG, PDF, JSON, CSV, Markdown), mandatory security watermarks on visual exports, external recipient email domain constraints, and sensitive data classification tag blocking (`pci`, `phi`, `secret`).
+  - Governance Engine: Centralized policy evaluation (`evaluateIpRestriction`, `evaluateSessionPolicy`, `evaluateDataRetentionPolicy`, `evaluateExportControl`) with global enforcement mode switcher (`enforce`, `audit_only`, `disabled`) and factory defaults (`createDefaultOrganizationPolicies`).
 - Web & Component Layer (`@diagramhq/web`):
-  - `apps/web/components/enterprise/audit-logs-modal.tsx`: Audit logs modal with KPI summary counters, action & actor type filters, dedicated AI-Agent Actions tab, Cryptographic Chain Integrity verifier, and SIEM JSON/CSV export actions.
-  - `apps/web/components/enterprise/index.ts`: Exported `AuditLogsModal`.
+  - `apps/web/components/enterprise/org-policies-modal.tsx`: Organization governance modal with tabbed configuration for IP restrictions, session lifetimes, retention lifecycles, export controls, and an interactive Live Policy Enforcement Simulator.
+  - `apps/web/components/enterprise/index.ts`: Exported `OrgPoliciesModal`.
 - Acceptance criteria:
-  - Immutable who/what/when, including AI-agent actions
-  - Test: actions recorded; the log is append-only.
+  - Org policies, IP restrictions, session management, data retention, export controls
+  - Test: a policy is enforced in test.
 
-- Feature ID: F105
+- Feature ID: F106
 - Phase: 13 — Enterprise
-- Dependencies: None
+- Dependencies: F086 (Architecture rules)
 
 ## Evidence
-- Domain: `packages/domain/src/audit-log.ts`, `packages/domain/src/audit-log.test.ts` (9 tests passing)
-- Web: `apps/web/components/enterprise/audit-logs-modal.tsx`, `apps/web/components/enterprise/index.ts`, `apps/web/audit-logs.spec.tsx` (3 tests passing)
-- Reviews: `.harness/reviews/F105-PR.md`, `.harness/reviews/F105-review.md`
+- Domain: `packages/domain/src/organization-policies.ts`, `packages/domain/src/organization-policies.test.ts` (26 tests passing)
+- Web: `apps/web/components/enterprise/org-policies-modal.tsx`, `apps/web/components/enterprise/index.ts`, `apps/web/org-policies.spec.tsx` (6 tests passing)
+- Reviews: `.harness/reviews/F106-PR.md`, `.harness/reviews/F106-review.md`
 
 ## Next Feature
-- **Phase 13 — Enterprise**: **F106 — Organization policies** (Org policies, IP restrictions, session management, data retention, export controls)
+- **Phase 13 — Enterprise**: **F107 — Enterprise security** (Encryption, backup, retention, export controls, security review checklist)
