@@ -288,11 +288,11 @@ Status: IN PROGRESS  ·  Depends on: Phase 01, Phase 02, Phase 03, Phase 04  · 
 
 - [x] F136 — Honest surface: gate simulated features
 - [x] F137 — Inline rename & edge labels
-- [ ] F138 — Canvas quick-add & reconnect
-- [ ] F139 — Multi-select & bulk actions
-- [ ] F140 — Keyboard & convention pass
-- [ ] F141 — Unify canvas and studio
+- [ ] F138 — Canvas context menus
+- [ ] F139 — Clipboard, duplicate & default marquee-select
+- [ ] F140 — Information architecture & toolbar hierarchy
+- [ ] F141 — Single canvas architecture (kill dual renderers)
 - [ ] F142 — Real C4 drill-down
-- [ ] F143 — Real views (projections, not documents)
-- [ ] F144 — Wire studio to the model
-- [ ] F145 — Guided first-time flow
+- [ ] F143 — ⌘K palette & universal command stack
+- [ ] F144 — Wire studio to the model API
+- [ ] F145 — Real views: reuse across views
