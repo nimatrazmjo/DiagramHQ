@@ -132,7 +132,7 @@ instrumented sessions.
 
 ### F139 — Clipboard, duplicate & default marquee-select
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Priority: P1 · Effort: Low
 

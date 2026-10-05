@@ -31,6 +31,15 @@ export {
   ReverseEdgeCommand,
   type ReverseEdgeCommandParams,
 } from './reverse-edge-command';
+export {
+  DuplicateSelectionCommand,
+  type DuplicateSelectionCommandParams,
+} from './duplicate-selection-command';
+export {
+  PasteSelectionCommand,
+  type PasteSelectionCommandParams,
+} from './paste-selection-command';
 export { CommandDispatcher, defaultCommandDispatcher } from './dispatcher';
+
 
 

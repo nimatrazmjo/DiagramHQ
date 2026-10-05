@@ -1,45 +1,48 @@
-# Current Task: F139 — Clipboard, duplicate & default marquee-select
+# Current Task: F140 — IA cleanup: hide plumbing, one brand, honest copy
 
 **Status**: NOT STARTED
 
 ## Description
 
-Fourth task of Phase 14 — UX Remediation (see
+Fifth task of Phase 14 — UX Remediation (see
 `.harness/phases/PHASE-14-UX-REMEDIATION.md`, derived from `docs/ux-review.html`).
 
-Canvas-convention parity. Add ⌘C/⌘V/⌘D and alt-drag duplicate, and
-make dragging empty canvas marquee-select by default (today box-select is a
-mode toggle; `selectionOnDrag` is off).
+Stop leaking the internal model to the surface and stop confusing
+the user about which product they are in.
+Observed: dashboard shows org `slug`, org `id`, `User ID` as primary content;
+workspace header shows raw `workspaceId`; dashboard brands as "Architecture OS"
+while studio brands as "DiagramHQ"; landing copy still says "the infinite canvas
+arrives in Phase 02".
 
-- Feature ID: F139
+- Feature ID: F140
 - Phase: 14 — UX Remediation
-- Priority: P1 · Effort: Low
-- Dependencies: F136 (COMPLETE), F137 (COMPLETE), F138 (COMPLETE)
+- Priority: P2 · Effort: Low
+- Dependencies: F136 (COMPLETE), F137 (COMPLETE), F138 (COMPLETE), F139 (COMPLETE)
 
 ## Acceptance Criteria
 
-- Duplicate an object in 1 interaction (⌘D or Alt-drag).
-- Copy/paste (⌘C/⌘V) preserves kind, metadata and relative layout; ids are regenerated.
-- Dragging empty canvas draws a marquee and selects enclosed nodes by default.
-- All of the above operations are undoable via ⌘Z.
+- 0 raw ids/slugs in default dashboard/workspace views (keep in dev/debug affordance only).
+- Single brand name ("DiagramHQ") across landing, dashboard, studio, navigator footer.
+- Landing copy contains no stale phase references ("Phase 02").
+- Primary CTA into the real editor.
 
 ## Files
 
-- `apps/web/components/canvas/infinite-canvas.tsx` (keydown, `selectionOnDrag`)
-- `apps/web/lib/commands/` (paste/duplicate commands)
-- `apps/web/lib/canvas-store.ts` (`isBoxSelectMode` default/removal)
+- `apps/web/app/dashboard/page.tsx`
+- `apps/web/app/page.tsx`
+- `apps/web/app/workspace/[workspaceId]/page.tsx`
+- `apps/web/components/shell/left-navigator.tsx` (footer brand name)
 
 ## Test
 
-- ⌘D duplicates.
-- ⌘C/⌘V round-trips a 2-node + 1-edge selection.
-- Empty-drag marquee-selects.
-- ⌘Z reverts.
+- Dashboard + workspace render with no visible raw ids/slugs.
+- Landing copy asserted free of "Phase 02".
+- Consistent brand naming ("DiagramHQ").
 
 ## Next Steps (Phase 14 order)
 
 F136 gate previews (COMPLETE) → F137 inline rename/edge labels (COMPLETE) →
-F138 context menus (COMPLETE) → F139 clipboard/duplicate/marquee →
+F138 context menus (COMPLETE) → F139 clipboard/duplicate/marquee (COMPLETE) →
 F140 IA cleanup → F141 one canvas → F142 real C4 drill-down →
 F143 ⌘K + total undo → F144 wire editor to model API → F145 real views.
 
