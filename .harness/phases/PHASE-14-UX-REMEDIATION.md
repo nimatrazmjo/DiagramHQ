@@ -1,6 +1,6 @@
 # Phase 14 — UX Remediation
 
-Status: NOT STARTED
+Status: IN PROGRESS
 
 ## Description
 
@@ -30,7 +30,7 @@ studio editor today.
 
 ### F136 — Honest surface: gate simulated features
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Priority: P0 · Effort: Low
 

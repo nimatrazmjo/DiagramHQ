@@ -1,46 +1,44 @@
-# Current Task: F136 — Honest surface: gate simulated features
+# Current Task: F137 — Inline rename & edge labels
 
 **Status**: NOT STARTED
 
 ## Description
 
-First task of Phase 14 — UX Remediation (see
+Second task of Phase 14 — UX Remediation (see
 `.harness/phases/PHASE-14-UX-REMEDIATION.md`, derived from `docs/ux-review.html`).
 
-Every studio control not wired to real data is labelled "Preview" or removed
-from the default view. Cheapest, highest-leverage trust repair — do it first.
+Double-click a node to rename in place; double-click an edge to label it.
+Removes the most frequent friction (naming currently costs 3+ interactions via
+the inspector; labelling an edge costs 4).
 
-Simulated today (studio top bar + panels): presence peers (`INITIAL_PEERS`),
-threaded comments, PR review, branches/snapshots/visual diff, and the four "AI"
-actions (deterministic domain functions, not model calls).
-
-- Feature ID: F136
+- Feature ID: F137
 - Phase: 14 — UX Remediation
-- Priority: P0 · Effort: Low
-- Dependencies: none
+- Priority: P1 · Effort: Low
+- Dependencies: F136 (COMPLETE)
 
 ## Acceptance Criteria
 
-- No unlabelled simulated control appears in the default studio view.
-- Preview controls carry a consistent "Preview — not saved" badge + tooltip
-  (or live under an overflow "Labs" menu).
-- Real controls (add, connect, inspector, autosave, export, layout, undo,
-  share-link) are unaffected.
+- Name a new object in ≤ 2 interactions.
+- Label a connection in ≤ 2 interactions.
+- Inspector editing still works and stays in sync.
+- Edit mode ignores canvas delete/select keybindings while focused
+  (`isTextInput` guard already exists in `infinite-canvas.tsx`).
 
 ## Files
 
-- `apps/web/app/studio/page.tsx` (top-bar triggers ~1507–1804; seed fixtures)
-- new `apps/web/lib/preview-flags.ts`
+- `apps/web/components/canvas/custom-nodes.tsx` (node label editing)
+- `apps/web/components/canvas/icepanel-edge.tsx` (edge label editing)
+- `apps/web/components/canvas/infinite-canvas.tsx` (double-click handlers)
 
 ## Test
 
-- Studio renders with 0 unlabelled preview controls.
-- A preview control shows the badge.
-- A real control (add object) still works.
+- Double-click node → type → Enter renames.
+- Double-click edge → type labels.
+- ⌘Z reverts both.
 
 ## Next Steps (Phase 14 order)
 
-F136 gate previews → F137 inline rename/edge labels → F138 context menus →
+F136 gate previews (COMPLETE) → F137 inline rename/edge labels → F138 context menus →
 F139 clipboard/duplicate/marquee → F140 IA cleanup → F141 one canvas →
 F142 real C4 drill-down → F143 ⌘K + total undo → F144 wire editor to model API →
 F145 real views (reuse across views).
