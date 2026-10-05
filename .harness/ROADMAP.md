@@ -282,7 +282,7 @@ Status: COMPLETE  ·  Depends on: Phase 01, Phase 06, Phase 11  ·  File: `phase
 
 # Phase 14 — UX Remediation
 
-Status: IN PROGRESS  ·  Depends on: Phase 01, Phase 02, Phase 03, Phase 04  ·  File: `phases/PHASE-14-UX-REMEDIATION.md`
+Status: COMPLETE  ·  Depends on: Phase 01, Phase 02, Phase 03, Phase 04  ·  File: `phases/PHASE-14-UX-REMEDIATION.md`
 
 ## Features
 
@@ -295,4 +295,4 @@ Status: IN PROGRESS  ·  Depends on: Phase 01, Phase 02, Phase 03, Phase 04  · 
 - [x] F142 — Real C4 drill-down
 - [x] F143 — ⌘K palette & universal command stack
 - [x] F144 — Wire studio to the model API
-- [ ] F145 — Real views: reuse across views
+- [x] F145 — Real views: reuse across views
