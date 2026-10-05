@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ViewsService } from './views.service';
 import type { PrismaService } from '../database/prisma.service';
 
@@ -12,9 +12,14 @@ describe('ViewsService', () => {
     member: {
       findUnique: ReturnType<typeof vi.fn>;
     };
+    modelObject: {
+      findUnique: ReturnType<typeof vi.fn>;
+      findMany: ReturnType<typeof vi.fn>;
+    };
     viewObject: {
       upsert: ReturnType<typeof vi.fn>;
       findMany: ReturnType<typeof vi.fn>;
+      deleteMany: ReturnType<typeof vi.fn>;
     };
     $transaction: ReturnType<typeof vi.fn>;
   };
@@ -41,9 +46,14 @@ describe('ViewsService', () => {
       member: {
         findUnique: vi.fn(),
       },
+      modelObject: {
+        findUnique: vi.fn(),
+        findMany: vi.fn(),
+      },
       viewObject: {
         upsert: vi.fn(),
         findMany: vi.fn(),
+        deleteMany: vi.fn(),
       },
       $transaction: vi.fn(),
     };
@@ -59,6 +69,10 @@ describe('ViewsService', () => {
         orgId: 'org_test',
         userId: 'usr_owner',
         role: 'owner',
+      });
+      prismaMock.modelObject.findUnique.mockResolvedValue({
+        id: 'obj_1',
+        architectureId: 'arch_test',
       });
       prismaMock.viewObject.upsert.mockResolvedValue({
         viewId: 'vw_test',
@@ -152,6 +166,62 @@ describe('ViewsService', () => {
       expect(prismaMock.member.findUnique).not.toHaveBeenCalled();
       expect(prismaMock.viewObject.upsert).not.toHaveBeenCalled();
     });
+    it('throws NotFoundException (404) when model object does not exist', async () => {
+      prismaMock.view.findUnique.mockResolvedValue(mockView);
+      prismaMock.member.findUnique.mockResolvedValue({
+        id: 'mem_1',
+        orgId: 'org_test',
+        userId: 'usr_owner',
+        role: 'owner',
+      });
+      prismaMock.modelObject.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.updateObjectPosition('usr_owner', 'vw_test', 'obj_nonexistent', { x: 10, y: 20 }),
+      ).rejects.toThrow(new NotFoundException("Object 'obj_nonexistent' not found"));
+
+      expect(prismaMock.viewObject.upsert).not.toHaveBeenCalled();
+    });
+
+    it('throws BadRequestException (400) when model object belongs to a different architecture', async () => {
+      prismaMock.view.findUnique.mockResolvedValue(mockView);
+      prismaMock.member.findUnique.mockResolvedValue({
+        id: 'mem_1',
+        orgId: 'org_test',
+        userId: 'usr_owner',
+        role: 'owner',
+      });
+      prismaMock.modelObject.findUnique.mockResolvedValue({
+        id: 'obj_other',
+        architectureId: 'arch_other',
+      });
+
+      await expect(
+        service.updateObjectPosition('usr_owner', 'vw_test', 'obj_other', { x: 10, y: 20 }),
+      ).rejects.toThrow(new BadRequestException("Object 'obj_other' belongs to a different architecture"));
+
+      expect(prismaMock.viewObject.upsert).not.toHaveBeenCalled();
+    });
+
+    it('catches P2003 and throws NotFoundException (404) on foreign key constraint violation', async () => {
+      prismaMock.view.findUnique.mockResolvedValue(mockView);
+      prismaMock.member.findUnique.mockResolvedValue({
+        id: 'mem_1',
+        orgId: 'org_test',
+        userId: 'usr_owner',
+        role: 'owner',
+      });
+      prismaMock.modelObject.findUnique.mockResolvedValue({
+        id: 'obj_1',
+        architectureId: 'arch_test',
+      });
+      const p2003Error = Object.assign(new Error('Foreign key constraint violated'), { code: 'P2003' });
+      prismaMock.viewObject.upsert.mockRejectedValue(p2003Error);
+
+      await expect(
+        service.updateObjectPosition('usr_owner', 'vw_test', 'obj_1', { x: 10, y: 20 }),
+      ).rejects.toThrow(new NotFoundException("Object 'obj_1' not found"));
+    });
   });
 
   describe('updateMultipleObjectPositions', () => {
@@ -170,6 +240,10 @@ describe('ViewsService', () => {
         userId: 'usr_owner',
         role: 'owner',
       });
+      prismaMock.modelObject.findMany.mockResolvedValue([
+        { id: 'obj_1', architectureId: 'arch_test' },
+        { id: 'obj_2', architectureId: 'arch_test' },
+      ]);
       prismaMock.viewObject.upsert.mockResolvedValue({});
       prismaMock.$transaction.mockResolvedValue([{}, {}]);
 
@@ -222,6 +296,65 @@ describe('ViewsService', () => {
 
       expect(prismaMock.$transaction).not.toHaveBeenCalled();
     });
+
+    it('throws NotFoundException (404) when an object does not exist in model objects', async () => {
+      prismaMock.view.findUnique.mockResolvedValue(mockView);
+      prismaMock.member.findUnique.mockResolvedValue({
+        id: 'mem_1',
+        orgId: 'org_test',
+        userId: 'usr_owner',
+        role: 'owner',
+      });
+      prismaMock.modelObject.findMany.mockResolvedValue([
+        { id: 'obj_1', architectureId: 'arch_test' },
+      ]); // obj_2 is missing
+
+      await expect(
+        service.updateMultipleObjectPositions('usr_owner', 'vw_test', batchDto),
+      ).rejects.toThrow(new NotFoundException("Object 'obj_2' not found"));
+
+      expect(prismaMock.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('throws BadRequestException (400) when an object belongs to a different architecture', async () => {
+      prismaMock.view.findUnique.mockResolvedValue(mockView);
+      prismaMock.member.findUnique.mockResolvedValue({
+        id: 'mem_1',
+        orgId: 'org_test',
+        userId: 'usr_owner',
+        role: 'owner',
+      });
+      prismaMock.modelObject.findMany.mockResolvedValue([
+        { id: 'obj_1', architectureId: 'arch_test' },
+        { id: 'obj_2', architectureId: 'arch_other' },
+      ]);
+
+      await expect(
+        service.updateMultipleObjectPositions('usr_owner', 'vw_test', batchDto),
+      ).rejects.toThrow(new BadRequestException("Object 'obj_2' belongs to a different architecture"));
+
+      expect(prismaMock.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('catches P2003 and throws NotFoundException (404) in batch update', async () => {
+      prismaMock.view.findUnique.mockResolvedValue(mockView);
+      prismaMock.member.findUnique.mockResolvedValue({
+        id: 'mem_1',
+        orgId: 'org_test',
+        userId: 'usr_owner',
+        role: 'owner',
+      });
+      prismaMock.modelObject.findMany.mockResolvedValue([
+        { id: 'obj_1', architectureId: 'arch_test' },
+        { id: 'obj_2', architectureId: 'arch_test' },
+      ]);
+      const p2003Error = Object.assign(new Error('Foreign key constraint violated'), { code: 'P2003' });
+      prismaMock.$transaction.mockRejectedValue(p2003Error);
+
+      await expect(
+        service.updateMultipleObjectPositions('usr_owner', 'vw_test', batchDto),
+      ).rejects.toThrow(new NotFoundException('Referenced object not found'));
+    });
   });
 
   describe('getViewObjects', () => {
@@ -272,6 +405,169 @@ describe('ViewsService', () => {
       );
 
       expect(prismaMock.viewObject.findMany).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('addObjectToView', () => {
+    it('successfully adds object to view when user has write permissions and object is valid', async () => {
+      prismaMock.view.findUnique.mockResolvedValue(mockView);
+      prismaMock.member.findUnique.mockResolvedValue({
+        id: 'mem_1',
+        orgId: 'org_test',
+        userId: 'usr_owner',
+        role: 'owner',
+      });
+      prismaMock.modelObject.findUnique.mockResolvedValue({
+        id: 'obj_1',
+        architectureId: 'arch_test',
+      });
+      prismaMock.viewObject.upsert.mockResolvedValue({
+        viewId: 'vw_test',
+        objectId: 'obj_1',
+        position: { x: 50, y: 75 },
+      });
+
+      const result = await service.addObjectToView('usr_owner', 'vw_test', {
+        objectId: 'obj_1',
+        position: { x: 50, y: 75 },
+      });
+
+      expect(result).toEqual({
+        viewObject: {
+          viewId: 'vw_test',
+          objectId: 'obj_1',
+          position: { x: 50, y: 75 },
+        },
+      });
+      expect(prismaMock.viewObject.upsert).toHaveBeenCalledWith({
+        where: { viewId_objectId: { viewId: 'vw_test', objectId: 'obj_1' } },
+        update: { position: { x: 50, y: 75 } },
+        create: {
+          viewId: 'vw_test',
+          objectId: 'obj_1',
+          position: { x: 50, y: 75 },
+        },
+      });
+    });
+
+    it('throws ForbiddenException (403) when user has viewer role', async () => {
+      prismaMock.view.findUnique.mockResolvedValue(mockView);
+      prismaMock.member.findUnique.mockResolvedValue({
+        id: 'mem_2',
+        orgId: 'org_test',
+        userId: 'usr_viewer',
+        role: 'viewer',
+      });
+
+      await expect(
+        service.addObjectToView('usr_viewer', 'vw_test', { objectId: 'obj_1' }),
+      ).rejects.toThrow(new ForbiddenException('Viewer role does not have write permissions'));
+
+      expect(prismaMock.viewObject.upsert).not.toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException (404) when model object does not exist', async () => {
+      prismaMock.view.findUnique.mockResolvedValue(mockView);
+      prismaMock.member.findUnique.mockResolvedValue({
+        id: 'mem_1',
+        orgId: 'org_test',
+        userId: 'usr_owner',
+        role: 'owner',
+      });
+      prismaMock.modelObject.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.addObjectToView('usr_owner', 'vw_test', { objectId: 'obj_missing' }),
+      ).rejects.toThrow(new NotFoundException("Object 'obj_missing' not found"));
+
+      expect(prismaMock.viewObject.upsert).not.toHaveBeenCalled();
+    });
+
+    it('throws BadRequestException (400) when model object belongs to a different architecture', async () => {
+      prismaMock.view.findUnique.mockResolvedValue(mockView);
+      prismaMock.member.findUnique.mockResolvedValue({
+        id: 'mem_1',
+        orgId: 'org_test',
+        userId: 'usr_owner',
+        role: 'owner',
+      });
+      prismaMock.modelObject.findUnique.mockResolvedValue({
+        id: 'obj_1',
+        architectureId: 'arch_other',
+      });
+
+      await expect(
+        service.addObjectToView('usr_owner', 'vw_test', { objectId: 'obj_1' }),
+      ).rejects.toThrow(new BadRequestException("Object 'obj_1' belongs to a different architecture"));
+
+      expect(prismaMock.viewObject.upsert).not.toHaveBeenCalled();
+    });
+
+    it('catches P2003 and throws NotFoundException (404) on foreign key constraint violation', async () => {
+      prismaMock.view.findUnique.mockResolvedValue(mockView);
+      prismaMock.member.findUnique.mockResolvedValue({
+        id: 'mem_1',
+        orgId: 'org_test',
+        userId: 'usr_owner',
+        role: 'owner',
+      });
+      prismaMock.modelObject.findUnique.mockResolvedValue({
+        id: 'obj_1',
+        architectureId: 'arch_test',
+      });
+      const p2003Error = Object.assign(new Error('Foreign key constraint violated'), { code: 'P2003' });
+      prismaMock.viewObject.upsert.mockRejectedValue(p2003Error);
+
+      await expect(
+        service.addObjectToView('usr_owner', 'vw_test', { objectId: 'obj_1' }),
+      ).rejects.toThrow(new NotFoundException("Object 'obj_1' not found"));
+    });
+  });
+
+  describe('removeObjectFromView', () => {
+    it('successfully removes object from view using deleteMany', async () => {
+      prismaMock.view.findUnique.mockResolvedValue(mockView);
+      prismaMock.member.findUnique.mockResolvedValue({
+        id: 'mem_1',
+        orgId: 'org_test',
+        userId: 'usr_owner',
+        role: 'owner',
+      });
+      prismaMock.viewObject.deleteMany.mockResolvedValue({ count: 1 });
+
+      const result = await service.removeObjectFromView('usr_owner', 'vw_test', 'obj_1');
+
+      expect(result).toEqual({ success: true });
+      expect(prismaMock.viewObject.deleteMany).toHaveBeenCalledWith({
+        where: { viewId: 'vw_test', objectId: 'obj_1' },
+      });
+    });
+
+    it('throws ForbiddenException (403) when user has viewer role', async () => {
+      prismaMock.view.findUnique.mockResolvedValue(mockView);
+      prismaMock.member.findUnique.mockResolvedValue({
+        id: 'mem_2',
+        orgId: 'org_test',
+        userId: 'usr_viewer',
+        role: 'viewer',
+      });
+
+      await expect(
+        service.removeObjectFromView('usr_viewer', 'vw_test', 'obj_1'),
+      ).rejects.toThrow(new ForbiddenException('Viewer role does not have write permissions'));
+
+      expect(prismaMock.viewObject.deleteMany).not.toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException (404) when user is not a member', async () => {
+      prismaMock.view.findUnique.mockResolvedValue(mockView);
+      prismaMock.member.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.removeObjectFromView('usr_non_member', 'vw_test', 'obj_1'),
+      ).rejects.toThrow(new NotFoundException('View not found'));
+
+      expect(prismaMock.viewObject.deleteMany).not.toHaveBeenCalled();
     });
   });
 });

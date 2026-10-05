@@ -250,24 +250,24 @@ export async function GET(): Promise<NextResponse> {
               if (postObj?.ok) {
                 const postData = await postObj.json();
                 modelObjects.push(postData.object);
-              }
 
-              // Add to view with position
-              await fetchFromApi(`/views/${viewId}/objects`, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({
+                // Add to view with position
+                await fetchFromApi(`/views/${viewId}/objects`, {
+                  method: 'POST',
+                  headers,
+                  body: JSON.stringify({
+                    objectId: node.id,
+                    position: node.position,
+                  }),
+                }).catch(() => null);
+
+                viewObjectsList.push({
+                  viewId,
                   objectId: node.id,
-                  position: node.position,
-                }),
-              }).catch(() => null);
-
-              viewObjectsList.push({
-                viewId,
-                objectId: node.id,
-                positionX: node.position.x,
-                positionY: node.position.y,
-              });
+                  positionX: node.position.x,
+                  positionY: node.position.y,
+                });
+              }
             }
 
             if (Array.isArray(legacy.edges)) {
@@ -444,28 +444,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         }
       }
 
-      // If viewId exists, persist positions per view via /views/:viewId/objects/positions
-      if (viewId && nodes.length > 0) {
-        const positions = nodes.map((n) => ({
-          objectId: n.id,
-          x: Math.round(n.position.x),
-          y: Math.round(n.position.y),
-        }));
-
-        await fetchFromApi(`/views/${viewId}/objects/positions`, {
-          method: 'PATCH',
-          headers,
-          body: JSON.stringify({ positions }),
-        }).catch(() => null);
-      }
-
       // Also ensure objects exist in model API
+      const validNodeIds = new Set<string>();
       if (architectureId && nodes.length > 0) {
         for (const node of nodes) {
           // Check if object exists, if not create
           const getObj = await fetchFromApi(`/objects/${node.id}`, { headers }).catch(() => null);
-          if (!getObj?.ok) {
-            await fetchFromApi(`/architectures/${architectureId}/objects`, {
+          let objectExists = Boolean(getObj?.ok);
+          if (!objectExists) {
+            const createRes = await fetchFromApi(`/architectures/${architectureId}/objects`, {
               method: 'POST',
               headers,
               body: JSON.stringify({
@@ -481,8 +468,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                 },
               }),
             }).catch(() => null);
+            objectExists = Boolean(createRes?.ok);
 
-            if (viewId) {
+            if (viewId && objectExists) {
               await fetchFromApi(`/views/${viewId}/objects`, {
                 method: 'POST',
                 headers,
@@ -493,6 +481,28 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
               }).catch(() => null);
             }
           }
+
+          if (objectExists) {
+            validNodeIds.add(node.id);
+          }
+        }
+      }
+
+      // If viewId exists, persist positions per view via /views/:viewId/objects/positions for existing objects
+      if (viewId && nodes.length > 0) {
+        const eligibleNodes = architectureId ? nodes.filter((n) => validNodeIds.has(n.id)) : nodes;
+        if (eligibleNodes.length > 0) {
+          const positions = eligibleNodes.map((n) => ({
+            objectId: n.id,
+            x: Math.round(n.position.x),
+            y: Math.round(n.position.y),
+          }));
+
+          await fetchFromApi(`/views/${viewId}/objects/positions`, {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify({ positions }),
+          }).catch(() => null);
         }
       }
 

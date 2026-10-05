@@ -1,6 +1,7 @@
 import { Catch, HttpException, HttpStatus } from '@nestjs/common';
 import type { ArgumentsHost, ExceptionFilter } from '@nestjs/common';
 import type { Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
 import { logError } from './logger';
 
 interface ErrorEnvelope {
@@ -72,6 +73,23 @@ export class AllExceptionsFilter implements ExceptionFilter {
           ? rawMessage
           : exception.message;
       return { status: exception.getStatus(), message, details };
+    }
+    if (
+      exception instanceof Prisma.PrismaClientKnownRequestError ||
+      (exception != null &&
+        typeof exception === 'object' &&
+        (exception as { name?: string }).name === 'PrismaClientKnownRequestError')
+    ) {
+      const prismaError = exception as Prisma.PrismaClientKnownRequestError;
+      if (prismaError.code === 'P2003') {
+        return { status: HttpStatus.NOT_FOUND, message: 'Referenced entity not found' };
+      }
+      if (prismaError.code === 'P2025') {
+        return { status: HttpStatus.NOT_FOUND, message: 'Record not found' };
+      }
+      if (prismaError.code === 'P2002') {
+        return { status: HttpStatus.CONFLICT, message: 'A record with this identifier already exists' };
+      }
     }
     // Not every thrown error is a NestJS HttpException -- e.g. Express's
     // body-parser throws a plain Error with a legitimate `.status` (413

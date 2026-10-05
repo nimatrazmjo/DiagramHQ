@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -128,34 +129,51 @@ export class ViewsService {
     objectId: string,
     dto: UpdateObjectPositionDto,
   ): Promise<ViewObjectPosition> {
-    const { role } = await this.resolveViewMember(userId, viewId);
+    const { role, view } = await this.resolveViewMember(userId, viewId);
 
     if (!canWrite(role)) {
       throw new ForbiddenException('Viewer role does not have write permissions');
     }
 
-    await this.prisma.viewObject.upsert({
-      where: {
-        viewId_objectId: {
+    const modelObject = await this.prisma.modelObject.findUnique({
+      where: { id: objectId },
+    });
+    if (!modelObject) {
+      throw new NotFoundException(`Object '${objectId}' not found`);
+    }
+    if (modelObject.architectureId !== view.architectureId) {
+      throw new BadRequestException(`Object '${objectId}' belongs to a different architecture`);
+    }
+
+    try {
+      await this.prisma.viewObject.upsert({
+        where: {
+          viewId_objectId: {
+            viewId,
+            objectId,
+          },
+        },
+        update: {
+          position: { x: dto.x, y: dto.y },
+        },
+        create: {
           viewId,
           objectId,
+          position: { x: dto.x, y: dto.y },
         },
-      },
-      update: {
-        position: { x: dto.x, y: dto.y },
-      },
-      create: {
+      });
+
+      return {
         viewId,
         objectId,
         position: { x: dto.x, y: dto.y },
-      },
-    });
-
-    return {
-      viewId,
-      objectId,
-      position: { x: dto.x, y: dto.y },
-    };
+      };
+    } catch (err) {
+      if ((err as { code?: string }).code === 'P2003') {
+        throw new NotFoundException(`Object '${objectId}' not found`);
+      }
+      throw err;
+    }
   }
 
   async updateMultipleObjectPositions(
@@ -163,27 +181,52 @@ export class ViewsService {
     viewId: string,
     dto: BatchUpdateObjectPositionsDto,
   ): Promise<BatchUpdateResult> {
-    const { role } = await this.resolveViewMember(userId, viewId);
+    const { role, view } = await this.resolveViewMember(userId, viewId);
 
     if (!canWrite(role)) {
       throw new ForbiddenException('Viewer role does not have write permissions');
     }
 
-    await this.prisma.$transaction(
-      dto.positions.map((item) =>
-        this.prisma.viewObject.upsert({
-          where: { viewId_objectId: { viewId, objectId: item.objectId } },
-          update: { position: { x: item.x, y: item.y } },
-          create: { viewId, objectId: item.objectId, position: { x: item.x, y: item.y } },
-        }),
-      ),
-    );
+    if (dto.positions.length > 0) {
+      const objectIds = dto.positions.map((p) => p.objectId);
+      const modelObjects = await this.prisma.modelObject.findMany({
+        where: { id: { in: objectIds } },
+      });
+      const foundMap = new Map(modelObjects.map((m) => [m.id, m]));
 
-    return {
-      viewId,
-      count: dto.positions.length,
-      positions: dto.positions.map((p) => ({ objectId: p.objectId, x: p.x, y: p.y })),
-    };
+      for (const objectId of objectIds) {
+        const obj = foundMap.get(objectId);
+        if (!obj) {
+          throw new NotFoundException(`Object '${objectId}' not found`);
+        }
+        if (obj.architectureId !== view.architectureId) {
+          throw new BadRequestException(`Object '${objectId}' belongs to a different architecture`);
+        }
+      }
+    }
+
+    try {
+      await this.prisma.$transaction(
+        dto.positions.map((item) =>
+          this.prisma.viewObject.upsert({
+            where: { viewId_objectId: { viewId, objectId: item.objectId } },
+            update: { position: { x: item.x, y: item.y } },
+            create: { viewId, objectId: item.objectId, position: { x: item.x, y: item.y } },
+          }),
+        ),
+      );
+
+      return {
+        viewId,
+        count: dto.positions.length,
+        positions: dto.positions.map((p) => ({ objectId: p.objectId, x: p.x, y: p.y })),
+      };
+    } catch (err) {
+      if ((err as { code?: string }).code === 'P2003') {
+        throw new NotFoundException('Referenced object not found');
+      }
+      throw err;
+    }
   }
 
   async getViewObjects(userId: string, viewId: string): Promise<ViewObject[]> {
@@ -358,21 +401,39 @@ export class ViewsService {
     viewId: string,
     dto: AddViewObjectDto,
   ): Promise<{ viewObject: { viewId: string; objectId: string; position?: { x: number; y: number } } }> {
-    const { role } = await this.resolveViewMember(userId, viewId);
+    const { role, view } = await this.resolveViewMember(userId, viewId);
     if (!canWrite(role)) {
       throw new ForbiddenException('Viewer role does not have write permissions');
     }
-    const viewObject = await this.prisma.viewObject.upsert({
-      where: { viewId_objectId: { viewId, objectId: dto.objectId } },
-      update: dto.position ? { position: { x: dto.position.x, y: dto.position.y } } : {},
-      create: {
-        viewId,
-        objectId: dto.objectId,
-        ...(dto.position ? { position: { x: dto.position.x, y: dto.position.y } } : {}),
-      },
+
+    const modelObject = await this.prisma.modelObject.findUnique({
+      where: { id: dto.objectId },
     });
-    const pos = viewObject.position as { x: number; y: number } | null | undefined;
-    return { viewObject: { viewId: viewObject.viewId, objectId: viewObject.objectId, position: pos ?? undefined } };
+    if (!modelObject) {
+      throw new NotFoundException(`Object '${dto.objectId}' not found`);
+    }
+    if (modelObject.architectureId !== view.architectureId) {
+      throw new BadRequestException(`Object '${dto.objectId}' belongs to a different architecture`);
+    }
+
+    try {
+      const viewObject = await this.prisma.viewObject.upsert({
+        where: { viewId_objectId: { viewId, objectId: dto.objectId } },
+        update: dto.position ? { position: { x: dto.position.x, y: dto.position.y } } : {},
+        create: {
+          viewId,
+          objectId: dto.objectId,
+          ...(dto.position ? { position: { x: dto.position.x, y: dto.position.y } } : {}),
+        },
+      });
+      const pos = viewObject.position as { x: number; y: number } | null | undefined;
+      return { viewObject: { viewId: viewObject.viewId, objectId: viewObject.objectId, position: pos ?? undefined } };
+    } catch (err) {
+      if ((err as { code?: string }).code === 'P2003') {
+        throw new NotFoundException(`Object '${dto.objectId}' not found`);
+      }
+      throw err;
+    }
   }
 
   async removeObjectFromView(
@@ -384,8 +445,8 @@ export class ViewsService {
     if (!canWrite(role)) {
       throw new ForbiddenException('Viewer role does not have write permissions');
     }
-    await this.prisma.viewObject.delete({
-      where: { viewId_objectId: { viewId, objectId } },
+    await this.prisma.viewObject.deleteMany({
+      where: { viewId, objectId },
     });
     return { success: true };
   }
