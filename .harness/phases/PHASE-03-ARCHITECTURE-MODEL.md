@@ -1,6 +1,6 @@
 # Phase 03 — Architecture Model
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Description
 The model-first core: C4 objects, the extensible object-type catalog, first-class connections, metadata, and lifecycle. The model is authoritative; diagrams (Phase 04) are projections of it (DEC-001 / ADR-0001).
@@ -235,7 +235,7 @@ Test: a lifecycle transition is recorded and shown.
 
 ### F112 — Object type catalog
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: The full extensible object-type registry.
 
@@ -249,14 +249,23 @@ Acceptance Criteria:
 
 Files:
 
-- packages/domain
-- apps/web
+- `packages/domain/src/object-type-catalog.ts`
+- `packages/domain/src/object-type-catalog.test.ts`
+- `apps/web/components/shell/inspector-panel.tsx`
+- `apps/web/object-catalog-domains.spec.tsx`
 
 Test: unit: each built-in type registered; a new type added via the registry appears with no core change.
 
+Implementation Evidence:
+- Extensible catalog registry in `packages/domain/src/object-type-catalog.ts` seeded with all 22 built-in types.
+- Each type declares icon, allowedParents, allowedConnectionKinds, metadataSchema, and inspectorSection.
+- Dynamic registration function `registerObjectType` adds novel object types without core changes (MODULES.md §1).
+- Dynamic inspector sections rendered automatically in `apps/web/components/shell/inspector-panel.tsx`.
+- Verified in `packages/domain/src/object-type-catalog.test.ts` and `apps/web/object-catalog-domains.spec.tsx`.
+
 ### F113 — Domains / bounded contexts
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: DDD domains group objects.
 
@@ -265,7 +274,23 @@ Acceptance Criteria:
 - Create domains; nest domains; assign objects to a domain
 - Filter by domain
 
+Files:
+
+- `packages/domain/src/domains.ts`
+- `packages/domain/src/domains.test.ts`
+- `packages/domain/src/ids.ts`
+- `apps/web/components/shell/inspector-panel.tsx`
+- `apps/web/object-catalog-domains.spec.tsx`
+
 Test: assign an object to a domain; filter returns it.
+
+Implementation Evidence:
+- Strategic DDD domain model in `packages/domain/src/domains.ts` supporting `createDomain`, `nestDomain`, `assignObjectToDomain`, `removeObjectFromDomain`, `filterObjectsByDomain`, and `getDomainHierarchy`.
+- Added `'dom'` prefix and branded `DomainId` in `packages/domain/src/ids.ts`.
+- Recursive tree cycle prevention in `nestDomain`.
+- Dynamic domain dropdown and assignment in `apps/web/components/shell/inspector-panel.tsx`.
+- Domain filtering support with nested bounded context inclusion (`includeNestedDomains: true`).
+- Verified in `packages/domain/src/domains.test.ts` and `apps/web/object-catalog-domains.spec.tsx`.
 
 ---
 

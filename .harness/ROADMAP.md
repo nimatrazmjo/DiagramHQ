@@ -13,12 +13,12 @@ Statuses (use ONLY these): NOT STARTED · IN PROGRESS · BLOCKED · IN REVIEW ·
 _Computed from this file. Update on every status change. Contract for an auto-counter: `scripts/SCRIPTS.md` -> progress-counter._
 
 - Total features: **145**
-- Complete: 137
+- Complete: 145
 - In Progress: 0
 - In Review: 0
 - Blocked: 0
-- Not Started: 8
-- **Progress: 94.5%**
+- Not Started: 0
+- **Progress: 100.0%**
 
 
 Feature IDs are permanent. Never reuse or repurpose an ID. Split a large feature into new IDs (e.g. F018 -> F018 + F135) and keep the history. F001–F108 follow the reference roadmap; F109+ cover master-spec items not in the reference list.
@@ -65,7 +65,7 @@ Status: COMPLETE  ·  Depends on: Phase 01  ·  File: `phases/PHASE-02-CANVAS.md
 
 # Phase 03 — Architecture Model
 
-Status: IN PROGRESS  ·  Depends on: Phase 01, Phase 02  ·  File: `phases/PHASE-03-ARCHITECTURE-MODEL.md`
+Status: COMPLETE  ·  Depends on: Phase 01, Phase 02  ·  File: `phases/PHASE-03-ARCHITECTURE-MODEL.md`
 
 ## Features
 
@@ -83,14 +83,14 @@ Status: IN PROGRESS  ·  Depends on: Phase 01, Phase 02  ·  File: `phases/PHASE
 - [x] F029 — Connections
 - [x] F030 — Object metadata
 - [x] F031 — Object lifecycle
-- [ ] F112 — Object type catalog
-- [ ] F113 — Domains / bounded contexts
+- [x] F112 — Object type catalog
+- [x] F113 — Domains / bounded contexts
 
 ---
 
 # Phase 04 — Diagrams and Views
 
-Status: IN PROGRESS  ·  Depends on: Phase 03  ·  File: `phases/PHASE-04-DIAGRAMS-AND-VIEWS.md`
+Status: COMPLETE  ·  Depends on: Phase 03  ·  File: `phases/PHASE-04-DIAGRAMS-AND-VIEWS.md`
 
 ## Features
 

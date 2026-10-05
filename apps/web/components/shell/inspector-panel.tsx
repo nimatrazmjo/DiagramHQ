@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { getTechnologyIconPath } from '../../lib/icons';
+import { getInspectorSectionsForType } from '@diagramhq/domain';
 
 export interface InspectorItem {
   id: string;
@@ -49,6 +50,9 @@ export interface InspectorPanelProps {
   incomingConnections?: Array<{ id: string; sourceId: string; sourceName: string; protocol?: string; description?: string }>;
   outgoingConnections?: Array<{ id: string; targetId: string; targetName: string; protocol?: string; description?: string }>;
   onConnectNodes?: (targetId: string, protocol?: string, description?: string) => void;
+  // DDD Domains (F113)
+  availableDomains?: Array<{ id: string; name: string; slug?: string }>;
+  initialTab?: 'details' | 'connections' | 'docs' | 'governance';
 }
 
 const COMMON_TECH_TAGS = [
@@ -86,10 +90,12 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
     incomingConnections = [],
     outgoingConnections = [],
     onConnectNodes,
+    availableDomains = [],
+    initialTab = 'details',
     children,
   } = props;
 
-  const [activeTab, setActiveTab] = useState<'details' | 'connections' | 'docs' | 'governance'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'connections' | 'docs' | 'governance'>(initialTab);
   const [techInput, setTechInput] = useState('');
   const [newConnectTarget, setNewConnectTarget] = useState('');
   const [newConnectProtocol, setNewConnectProtocol] = useState('HTTPS');
@@ -468,11 +474,88 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
 
                   <section>
                     <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2 border-b border-slate-800 pb-1">
-                      Ownership
+                      Ownership & Domain
                     </h3>
                     {renderInput('Owner', 'owner')}
                     {renderInput('Team', 'team')}
+                    {availableDomains && availableDomains.length > 0 && (
+                      <div className="mb-2.5">
+                        <label className="block text-xs text-slate-400 mb-1 font-medium">Domain / Bounded Context</label>
+                        <select
+                          data-testid="inspector-field-domain-select"
+                          value={String(metadata.domain || '')}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            handleFieldChange('domain', val);
+                            const matched = availableDomains.find((d) => d.name === val || d.id === val);
+                            if (matched) {
+                              handleFieldChange('domainId', matched.id);
+                            }
+                          }}
+                          className="w-full px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-slate-100 focus:outline-none focus:border-blue-500 mb-1"
+                        >
+                          <option value="">(No domain assigned)</option>
+                          {availableDomains.map((dom) => (
+                            <option key={dom.id} value={dom.name}>
+                              {dom.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                    {renderInput('Domain', 'domain')}
                   </section>
+
+                  {/* Extensible Object-Type Catalog Dynamic Sections (F112 / F030) */}
+                  {objectKind &&
+                    getInspectorSectionsForType(objectKind).map((section) => (
+                      <section
+                        key={section.id}
+                        data-testid={`inspector-section-${section.id}`}
+                        className="p-3 bg-slate-950/40 rounded-xl border border-slate-800/80 mb-2"
+                      >
+                        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-sky-400 mb-1">
+                          {section.title}
+                        </h3>
+                        {section.description && (
+                          <p className="text-[10px] text-slate-400 mb-2">{section.description}</p>
+                        )}
+                        {section.fields.map((field) => {
+                          if (field.type === 'select' && field.options) {
+                            const val =
+                              metadata[field.key] != null
+                                ? String(metadata[field.key])
+                                : field.defaultValue != null
+                                ? String(field.defaultValue)
+                                : '';
+                            return (
+                              <div key={field.key} className="mb-2.5">
+                                <label className="block text-xs text-slate-400 mb-1 font-medium">
+                                  {field.label}
+                                </label>
+                                <select
+                                  data-testid={`inspector-field-${field.key}`}
+                                  value={val}
+                                  onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                                  className="w-full px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-slate-100 focus:outline-none focus:border-blue-500"
+                                >
+                                  {field.options.map((opt) => (
+                                    <option key={opt} value={opt}>
+                                      {opt}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            );
+                          }
+                          return (
+                            <React.Fragment key={field.key}>
+                              {renderInput(field.label, field.key)}
+                            </React.Fragment>
+                          );
+                        })}
+                      </section>
+                    ))}
 
                   {onDeleteNode && (
                     <div className="pt-2">
@@ -639,6 +722,31 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
                     <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2 border-b border-slate-800 pb-1">
                       Classification & Domain
                     </h3>
+                    {availableDomains && availableDomains.length > 0 && (
+                      <div className="mb-2.5">
+                        <label className="block text-xs text-slate-400 mb-1 font-medium">Domain / Bounded Context</label>
+                        <select
+                          data-testid="inspector-field-domain-select"
+                          value={String(metadata.domain || '')}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            handleFieldChange('domain', val);
+                            const matched = availableDomains.find((d) => d.name === val || d.id === val);
+                            if (matched) {
+                              handleFieldChange('domainId', matched.id);
+                            }
+                          }}
+                          className="w-full px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-slate-100 focus:outline-none focus:border-blue-500 mb-1"
+                        >
+                          <option value="">(No domain assigned)</option>
+                          {availableDomains.map((dom) => (
+                            <option key={dom.id} value={dom.name}>
+                              {dom.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                     {renderInput('Domain', 'domain')}
                     {renderInput('Tags', 'tags')}
                     {renderInput('Links', 'links')}

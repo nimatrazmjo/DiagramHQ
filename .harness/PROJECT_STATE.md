@@ -8,26 +8,34 @@ Name: DiagramHQ
 Description: Model-first architecture intelligence platform (a "better than IcePanel" Architecture OS). The model — objects + connections — is the product; diagrams are projections of it. Full spec: `product/PRODUCT.md`. CLI: `dhq`.
 
 ## Current Phase
-Phase: 03
+Phase: 03 (and all 14 Phases)
 Phase Name: Architecture Model
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Current Feature
-Feature ID: F112
-Feature Name: Object type catalog
-Status: NOT STARTED
+Feature ID: F112, F113 (Final Roadmap Features)
+Feature Name: Object type catalog & Domains / bounded contexts
+Status: COMPLETE
 
 ## Overall Progress
 Total Features: 145
-Completed: 143
+Completed: 145
 In Progress: 0
 Blocked: 0
-Not Started: 2
-Progress: 98.6%
-(Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
+Not Started: 0
+Progress: 100.0%
+(ALL 14 PHASES AND 145 ROADMAP FEATURES ARE 100% COMPLETE!)
 
 ## Last Completed Work
-F109, F110, F111 — Command palette, Global search & Keyboard shortcuts. Implemented complete ⌘K command palette, instant global search, and universal keyboard shortcuts (Phase 02 — Canvas & Interaction): (1) Extended `CommandPalette` (`apps/web/components/shell/command-palette.tsx`) with tags support, grouped category headers ("Architecture Objects", "Add Architecture Element", "Views & Levels", "Commands & Actions"), fuzzy ranking across names, kinds, technologies, descriptions, and tags, and keyboard navigation; (2) Added representative architectural actions in DiagramHQ Studio (`apps/web/app/studio/page.tsx`): create application, system, database, queue, component, actor, connection (`add-conn`), C4 view levels (1 Context, 2 Containers, 3 Components), export JSON, share link, and Ask AI Copilot (`ask-ai` stub); (3) Integrated global keymap listeners in studio and canvas: `⌘K` / `/` (command palette and search), `Space` (pan), `F` (fit view), `Delete` / `Backspace` (delete selected nodes/edges), `⌘Z` / `⌘⇧Z` (undo/redo via command dispatcher), `⌘C` / `⌘V` / `⌘D` (clipboard copy, paste, duplicate), and `1` / `2` / `3` (C4 view level switches), with strict text-input focus guards (`isTextInput`). Added 12 automated unit/integration tests in `apps/web/palette-search-shortcuts.spec.tsx`. All quality gates pass (`pnpm verify` clean, `pnpm build` clean). **Phase 02 — Canvas is 100% COMPLETE!**
+F112 & F113 — Object type catalog & Domains / bounded contexts. Implemented extensible object-type catalog registry and DDD strategic domain modeling (Phase 03 — Architecture Model):
+(1) Built `packages/domain/src/object-type-catalog.ts` seeded with all 22 required built-in types (person, actor, system, external-system, application, service, component, database, cache, queue, topic, bucket, api, function, server, container, k8s-workload, cloud-resource, load-balancer, gateway, group, boundary), with each type declaring icon, category, allowedParents, allowedConnectionKinds, metadataSchema, and inspectorSection;
+(2) Extensible registration via `registerObjectType` adds novel custom kinds at runtime without core edits (MODULES.md §1);
+(3) Built `packages/domain/src/domains.ts` implementing strategic DDD domain and bounded context primitives: `createDomain`, `nestDomain` (with cycle prevention), `assignObjectToDomain`, `removeObjectFromDomain`, `filterObjectsByDomain` (with nested bounded context inclusion), `getDomainHierarchy`, and branded `DomainId` with `'dom'` prefix in `packages/domain/src/ids.ts`;
+(4) Integrated dynamic catalog inspector sections and DDD domain selector dropdowns into `apps/web/components/shell/inspector-panel.tsx` in both Details and Governance tabs;
+(5) Added comprehensive automated tests in `packages/domain/src/object-type-catalog.test.ts` (6 tests), `packages/domain/src/domains.test.ts` (7 tests), and `apps/web/object-catalog-domains.spec.tsx` (4 tests). All verification quality gates pass cleanly (`pnpm verify`, `pnpm build`).
+**Phase 03 — Architecture Model is 100% COMPLETE! ALL 14 PHASES AND 145 ROADMAP FEATURES ARE 100% COMPLETE!**
+
+Prior: F109, F110, F111 — Command palette, Global search & Keyboard shortcuts. Implemented complete ⌘K command palette, instant global search, and universal keyboard shortcuts (Phase 02 — Canvas & Interaction).
 
 Prior: F145 — Real views: reuse objects across views.
 

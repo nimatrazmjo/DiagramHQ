@@ -18,6 +18,8 @@ export * from './queue';
 export * from './group';
 export * from './connection';
 export * from './object-metadata';
+export * from './object-type-catalog';
+export * from './domains';
 export * from './lifecycle';
 export * from './view';
 export * from './view-filter';

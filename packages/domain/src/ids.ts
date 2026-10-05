@@ -50,7 +50,8 @@ export type IdPrefix =
   | 'cpl'
   | 'sub'
   | 'mkt'
-  | 'ins';
+  | 'ins'
+  | 'dom';
 
 export type Id<P extends IdPrefix> = string & { readonly __brand: P };
 
@@ -95,6 +96,7 @@ export type ComplianceMappingId = Id<'cpl'>;
 export type SubscriptionId = Id<'sub'>;
 export type MarketplaceItemId = Id<'mkt'>;
 export type InstallationId = Id<'ins'>;
+export type DomainId = Id<'dom'>;
 
 let sequence = 0;
 

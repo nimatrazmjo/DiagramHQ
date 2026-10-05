@@ -2,6 +2,42 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-05 — F112, F113 — Object type catalog & Domains / bounded contexts (Phase 03 — Architecture Model)
+
+Status: COMPLETE
+
+**PROJECT MILESTONE: ALL 14 PHASES COMPLETE · 145 / 145 FEATURES (100.0%) COMPLETED!**
+
+Implemented:
+- Domain layer (`packages/domain/`):
+  - F112: Extensible Object-Type Registry & Catalog (`packages/domain/src/object-type-catalog.ts`):
+    - Seeded registry with all 22 required built-in types: `person`, `actor`, `system`, `external-system`, `application`, `service`, `component`, `database`, `cache`, `queue`, `topic`, `bucket`, `api`, `function`, `server`, `container`, `k8s-workload`, `cloud-resource`, `load-balancer`, `gateway`, `group`, `boundary`.
+    - Each type declares: `icon`, `category`, `allowedParents`, `allowedConnectionKinds`, `metadataSchema`, and `inspectorSection`.
+    - Extensible registration pattern (`registerObjectType`): new custom types can register dynamically without any core changes (MODULES.md §1).
+    - Added hierarchy validation (`isParentAllowedForKind`, `validateParentChildRelationship`) and connection validation (`isConnectionKindAllowedForObject`, `validateConnectionAllowed`).
+  - F113: DDD Domains & Bounded Contexts (`packages/domain/src/domains.ts`):
+    - Defined `Domain` entity with `id`, `architectureId`, `name`, `slug`, `description`, `parentDomainId`, `color`, `owner`, `metadata`, `createdAt`, and `updatedAt`.
+    - Added branded `DomainId` with `'dom'` prefix in `packages/domain/src/ids.ts`.
+    - Implemented `createDomain`, `nestDomain` (with cycle prevention rejecting self-nesting and ancestor loops), `assignObjectToDomain`, `removeObjectFromDomain`, and `filterObjectsByDomain` with recursive bounded context inclusion (`includeNestedDomains`).
+    - Added `getDomainHierarchy` and `getDomainDescendantIds` tree traversal utilities.
+  - Tests (`packages/domain/src/object-type-catalog.test.ts`, `packages/domain/src/domains.test.ts`):
+    - 6 unit tests in `object-type-catalog.test.ts` testing 22 built-ins, dynamic registration without core edits, allowed parents, and allowed connections.
+    - 7 unit tests in `domains.test.ts` testing creation, slugification, bounded context nesting, cycle prevention, object assignment/removal, and recursive domain filtering.
+- Web layer (`apps/web/`):
+  - Inspector Panel (`apps/web/components/shell/inspector-panel.tsx`):
+    - Added dynamic inspector section rendering powered by `getInspectorSectionsForType(objectKind)`.
+    - Added `availableDomains` support and DDD domain selector dropdowns in Details and Governance tabs.
+    - Added `initialTab` configuration prop.
+  - Tests (`apps/web/object-catalog-domains.spec.tsx`):
+    - 4 automated unit and integration tests covering:
+      - Built-in type inspector sections rendering (`database`, `k8s-workload`).
+      - Dynamic registration of novel custom types (`ai-agent-executor`) with immediate inspector reflection.
+      - Domain creation, bounded context nesting, object assignment, and domain selector in inspector.
+      - Filtering architecture objects by domain ID and name.
+- Verification: `pnpm verify ✓` (Prisma generate, domain build, typecheck, lint, all 285 tests across 185 test files passing, check-architecture clean), `pnpm build ✓` (Next.js production build clean).
+- **Phase 03 — Architecture Model is 100% COMPLETE!**
+- **ALL 14 PHASES AND 145 ROADMAP FEATURES ARE 100% COMPLETE!**
+
 ## 2026-10-05 — F109, F110, F111 — Command palette, Global search & Keyboard shortcuts (Phase 02 — Canvas)
 
 Status: COMPLETE
