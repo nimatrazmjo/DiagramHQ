@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { BadRequestException, HttpException, HttpStatus, ServiceUnavailableException } from '@nestjs/common';
 import type { ArgumentsHost } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { AllExceptionsFilter } from './http-exception.filter';
 
 function mockHost(): { host: ArgumentsHost; status: ReturnType<typeof vi.fn>; json: ReturnType<typeof vi.fn> } {
@@ -92,6 +93,45 @@ describe('AllExceptionsFilter', () => {
         message: 'Invalid payload',
         details: [{ field: 'slug', error: 'must be unique' }],
       },
+    });
+  });
+
+  it('maps Prisma P2003 foreign key constraint error to 404 NOT_FOUND', () => {
+    const { host, status, json } = mockHost();
+    const p2003 = new Prisma.PrismaClientKnownRequestError('Foreign key constraint violated', {
+      code: 'P2003',
+      clientVersion: '5.22.0',
+    });
+    new AllExceptionsFilter().catch(p2003, host);
+    expect(status).toHaveBeenCalledWith(HttpStatus.NOT_FOUND);
+    expect(json).toHaveBeenCalledWith({
+      error: { code: 'NOT_FOUND', message: 'Referenced entity not found', details: undefined },
+    });
+  });
+
+  it('maps Prisma P2025 record not found error to 404 NOT_FOUND', () => {
+    const { host, status, json } = mockHost();
+    const p2025 = new Prisma.PrismaClientKnownRequestError('Record to delete does not exist', {
+      code: 'P2025',
+      clientVersion: '5.22.0',
+    });
+    new AllExceptionsFilter().catch(p2025, host);
+    expect(status).toHaveBeenCalledWith(HttpStatus.NOT_FOUND);
+    expect(json).toHaveBeenCalledWith({
+      error: { code: 'NOT_FOUND', message: 'Record not found', details: undefined },
+    });
+  });
+
+  it('maps Prisma P2002 unique constraint error to 409 CONFLICT', () => {
+    const { host, status, json } = mockHost();
+    const p2002 = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+      code: 'P2002',
+      clientVersion: '5.22.0',
+    });
+    new AllExceptionsFilter().catch(p2002, host);
+    expect(status).toHaveBeenCalledWith(HttpStatus.CONFLICT);
+    expect(json).toHaveBeenCalledWith({
+      error: { code: 'CONFLICT', message: 'A record with this identifier already exists', details: undefined },
     });
   });
 });

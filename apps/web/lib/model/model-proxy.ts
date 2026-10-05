@@ -79,21 +79,23 @@ export async function proxyApiRequest(
     }
   }
 
-  // 1. Attempt to forward to NestJS API
-  try {
-    const apiRes = await fetchFromApi(apiPath, {
-      method,
-      headers,
-      body: bodyText,
-      cache: 'no-store',
-    });
+  // 1. Attempt to forward to NestJS API (skipped in test environment to use in-memory store)
+  if (process.env.NODE_ENV !== 'test') {
+    try {
+      const apiRes = await fetchFromApi(apiPath, {
+        method,
+        headers,
+        body: bodyText,
+        cache: 'no-store',
+      });
 
-    if (apiRes.ok || apiRes.status < 500) {
-      const data = await apiRes.json().catch(() => null);
-      return NextResponse.json(data, { status: apiRes.status });
+      if (apiRes.ok || apiRes.status < 500) {
+        const data = await apiRes.json().catch(() => null);
+        return NextResponse.json(data, { status: apiRes.status });
+      }
+    } catch {
+      // API is unreachable; handle via in-memory fallback store
     }
-  } catch {
-    // API is unreachable; handle via in-memory fallback store
   }
 
   // 2. In-memory fallback handler for test / offline scenarios

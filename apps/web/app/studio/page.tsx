@@ -757,7 +757,7 @@ export default function StudioPage(): JSX.Element {
       if (!architectureId) return;
       try {
         const kind = mapCanvasKindToModelKind(node.data?.kind);
-        await fetch(`/architectures/${architectureId}/objects`, {
+        const createRes = await fetch(`/architectures/${architectureId}/objects`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -774,7 +774,7 @@ export default function StudioPage(): JSX.Element {
           }),
         });
 
-        if (effectiveViewId) {
+        if (effectiveViewId && createRes.ok) {
           await fetch(`/views/${effectiveViewId}/objects`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
