@@ -572,19 +572,82 @@ export default function StudioPage(): JSX.Element {
   const [parentHistory, setParentHistory] = useState<Array<{ id: string; name: string; level: 1 | 2 | 3 }>>([]);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
-  // Global ⌘K shortcut listener for Command Palette (F143)
+  const handleAscendTo = useCallback(
+    (targetLevel: 1 | 2 | 3, parentId: string | null = null) => {
+      if (targetLevel === 1) {
+        setC4Level(1);
+        setActiveView('context');
+        setActiveParentId(null);
+        setParentHistory([]);
+      } else if (targetLevel === 2) {
+        setC4Level(2);
+        setActiveView('container');
+        setActiveParentId(parentId);
+        setParentHistory((prev) => prev.filter((p) => p.level === 1));
+      } else if (targetLevel === 3) {
+        setC4Level(3);
+        setActiveView('all');
+        setActiveParentId(parentId);
+      }
+      setSelectedNodeId(null);
+      setSelectedEdgeId(null);
+      setCanvasKey((k) => k + 1);
+    },
+    [],
+  );
+
+  // Global keyboard shortcuts: ⌘K / '/' for Command Palette & Search, 1/2/3 for C4 view levels (F109, F110, F111, F143)
   useEffect(() => {
+    const isTextInput = (el: Element | null): boolean => {
+      if (!el) return false;
+      const tag = el.tagName.toLowerCase();
+      return (
+        tag === 'input' ||
+        tag === 'textarea' ||
+        tag === 'select' ||
+        (el as HTMLElement).isContentEditable
+      );
+    };
+
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (isTextInput(document.activeElement)) return;
       const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
       const isMod = isMac ? e.metaKey : e.ctrlKey;
-      if (isMod && (e.key === 'k' || e.key === 'K')) {
+
+      // ⌘K or / opens Command Palette & Global Search (F109, F110)
+      if ((isMod && (e.key === 'k' || e.key === 'K')) || (!isMod && e.key === '/')) {
         e.preventDefault();
         setIsCommandPaletteOpen((prev) => !prev);
+        return;
+      }
+
+      // 1 / 2 / 3 switches C4 view levels (F111)
+      if (!isMod && !e.shiftKey && !e.altKey && !isCommandPaletteOpen) {
+        if (e.key === '1') {
+          e.preventDefault();
+          handleAscendTo(1, null);
+        } else if (e.key === '2') {
+          e.preventDefault();
+          const defaultParent = parentHistory.find((p) => p.level === 1)?.id ?? 'sys-saas';
+          handleAscendTo(2, defaultParent);
+        } else if (e.key === '3') {
+          e.preventDefault();
+          setC4Level(3);
+          setActiveView('all');
+          setActiveParentId('app-auth');
+          setParentHistory([
+            { id: 'sys-saas', name: 'SaaS Platform', level: 1 },
+            { id: 'app-auth', name: 'Auth Service', level: 2 },
+          ]);
+          setSelectedNodeId(null);
+          setSelectedEdgeId(null);
+          setCanvasKey((k) => k + 1);
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [handleAscendTo, isCommandPaletteOpen, parentHistory]);
 
   const handleRestoreSavedDiagram = useCallback((saved: SavedDiagramData) => {
     if (Array.isArray(saved.nodes) && saved.nodes.length > 0) {
@@ -1750,29 +1813,6 @@ export default function StudioPage(): JSX.Element {
     [currentNodes],
   );
 
-  const handleAscendTo = useCallback(
-    (targetLevel: 1 | 2 | 3, parentId: string | null = null) => {
-      if (targetLevel === 1) {
-        setC4Level(1);
-        setActiveView('context');
-        setActiveParentId(null);
-        setParentHistory([]);
-      } else if (targetLevel === 2) {
-        setC4Level(2);
-        setActiveView('container');
-        setActiveParentId(parentId);
-        setParentHistory((prev) => prev.filter((p) => p.level === 1));
-      } else if (targetLevel === 3) {
-        setC4Level(3);
-        setActiveView('all');
-        setActiveParentId(parentId);
-      }
-      setSelectedNodeId(null);
-      setSelectedEdgeId(null);
-      setCanvasKey((k) => k + 1);
-    },
-    [],
-  );
 
   const handleClearDiagram = useCallback(() => {
     if (window.confirm('Clear all objects and connections from the diagram?')) {
@@ -1902,7 +1942,7 @@ export default function StudioPage(): JSX.Element {
     }));
   }, [currentNodes]);
 
-  // F143 Command Palette Objects & Actions
+  // F143, F109, F110 Command Palette Objects & Actions
   const paletteObjects: PaletteObjectItem[] = useMemo(() => {
     return currentNodes.map((n) => ({
       id: n.id,
@@ -1910,6 +1950,10 @@ export default function StudioPage(): JSX.Element {
       kind: (n.data?.kind as string) || (n.type as string),
       technology: (n.data?.technology as string) || undefined,
       description: (n.data?.description as string) || undefined,
+      tags:
+        ((n.data as { tags?: string[] })?.tags) ||
+        ((n.data as { metadata?: { tags?: string[] } })?.metadata?.tags) ||
+        undefined,
       c4Level: getNodeC4Level(n),
     }));
   }, [currentNodes]);
@@ -1969,6 +2013,24 @@ export default function StudioPage(): JSX.Element {
         icon: '👤',
         shortcut: 'U',
         onExecute: () => handleAddNode('person'),
+      },
+      {
+        id: 'add-conn',
+        title: 'Add Connection',
+        description: 'Connect selected node or open inspector connection tools',
+        category: 'create',
+        icon: '➡️',
+        shortcut: 'K',
+        onExecute: () => {
+          if (selectedNodeId && currentNodes.length > 1) {
+            const other = currentNodes.find((n) => n.id !== selectedNodeId);
+            if (other) {
+              handleConnectNodesFromInspector(other.id, 'HTTPS', 'Calls API');
+            }
+          } else {
+            setIsInspectorOpen(true);
+          }
+        },
       },
       {
         id: 'nav-lvl-1',
@@ -2041,6 +2103,17 @@ export default function StudioPage(): JSX.Element {
         },
       },
       {
+        id: 'ask-ai',
+        title: 'Ask AI Copilot',
+        description: 'Analyze architecture, review security, or draft ADR with AI',
+        category: 'action',
+        icon: '✨',
+        shortcut: 'AI',
+        onExecute: () => {
+          setIsAiCopilotOpen(true);
+        },
+      },
+      {
         id: 'act-export',
         title: 'Export Diagram JSON',
         description: 'Download the current architecture model as a JSON file',
@@ -2057,7 +2130,16 @@ export default function StudioPage(): JSX.Element {
         onExecute: () => setIsShareLinkModalOpen(true),
       },
     ],
-    [handleAddNode, handleAscendTo, handleDrillIn, handleExportJson, parentHistory, selectedNodeId],
+    [
+      handleAddNode,
+      handleAscendTo,
+      handleDrillIn,
+      handleExportJson,
+      handleConnectNodesFromInspector,
+      currentNodes,
+      parentHistory,
+      selectedNodeId,
+    ],
   );
 
   const handleLoadStarter = useCallback(() => {

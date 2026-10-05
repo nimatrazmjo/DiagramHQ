@@ -44,7 +44,7 @@ Status: COMPLETE  ·  Depends on: None  ·  File: `phases/PHASE-01-FOUNDATION.md
 
 # Phase 02 — Canvas
 
-Status: IN PROGRESS  ·  Depends on: Phase 01  ·  File: `phases/PHASE-02-CANVAS.md`
+Status: COMPLETE  ·  Depends on: Phase 01  ·  File: `phases/PHASE-02-CANVAS.md`
 
 ## Features
 
@@ -57,9 +57,9 @@ Status: IN PROGRESS  ·  Depends on: Phase 01  ·  File: `phases/PHASE-02-CANVAS
 - [x] F015 — Auto-layout
 - [x] F016 — Undo/redo
 - [x] F017 — Minimap
-- [ ] F109 — Command palette
-- [ ] F110 — Global search
-- [ ] F111 — Keyboard shortcuts
+- [x] F109 — Command palette
+- [x] F110 — Global search
+- [x] F111 — Keyboard shortcuts
 
 ---
 

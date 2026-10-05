@@ -8,28 +8,28 @@ Name: DiagramHQ
 Description: Model-first architecture intelligence platform (a "better than IcePanel" Architecture OS). The model — objects + connections — is the product; diagrams are projections of it. Full spec: `product/PRODUCT.md`. CLI: `dhq`.
 
 ## Current Phase
-Phase: 02
-Phase Name: Canvas & Interaction
+Phase: 03
+Phase Name: Architecture Model
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F109
-Feature Name: Command palette
+Feature ID: F112
+Feature Name: Object type catalog
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 145
-Completed: 140
+Completed: 143
 In Progress: 0
 Blocked: 0
-Not Started: 5
-Progress: 96.6%
+Not Started: 2
+Progress: 98.6%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F145 — Real views: reuse objects across views. Delivered one-object-many-views Architecture OS capabilities (Phase 14 — UX Remediation): (1) Extended `ArchitectureModelClient` in `apps/web/lib/model/architecture-model-client.ts` with `fetchViews`, `createView`, `deleteView`, `fetchViewObjects`, `addObjectToView`, `removeObjectFromView`, `saveViewPositions`, and `projectToView(viewObjects)` which projects member objects with their per-view layout coordinates and member connections; (2) Implemented real views API handlers and in-memory proxy state in `apps/web/lib/model/model-proxy.ts` supporting `GET/POST /architectures/:id/views`, `GET/PATCH/DELETE /views/:viewId`, `GET/POST /views/:viewId/objects`, `DELETE /views/:viewId/objects/:objectId` (removes view membership while strictly preserving the model object), `PATCH /views/:viewId/objects/positions`, and `GET /views/:viewId/projection`; (3) Added full Architecture Views management, active view indicators, and 1-click addition (`data-testid="add-to-view-${item.id}"` / `+ Add` button) and removal badges in `IcePanelSidebar` (`apps/web/components/canvas/icepanel-sidebar.tsx`); (4) Wired real views state, view switcher dropdown (`studio-view-switcher`), and live multi-view synchronization in DiagramHQ Studio (`apps/web/app/studio/page.tsx`), ensuring editing an object's name or metadata once reflects across all projecting views while per-view layout positions remain independent. Added 6 automated tests in `apps/web/real-views-reuse.spec.tsx`. All quality gates pass (`pnpm verify` clean, `pnpm build` clean). **Phase 14 — UX Remediation is 100% COMPLETE!**
+F109, F110, F111 — Command palette, Global search & Keyboard shortcuts. Implemented complete ⌘K command palette, instant global search, and universal keyboard shortcuts (Phase 02 — Canvas & Interaction): (1) Extended `CommandPalette` (`apps/web/components/shell/command-palette.tsx`) with tags support, grouped category headers ("Architecture Objects", "Add Architecture Element", "Views & Levels", "Commands & Actions"), fuzzy ranking across names, kinds, technologies, descriptions, and tags, and keyboard navigation; (2) Added representative architectural actions in DiagramHQ Studio (`apps/web/app/studio/page.tsx`): create application, system, database, queue, component, actor, connection (`add-conn`), C4 view levels (1 Context, 2 Containers, 3 Components), export JSON, share link, and Ask AI Copilot (`ask-ai` stub); (3) Integrated global keymap listeners in studio and canvas: `⌘K` / `/` (command palette and search), `Space` (pan), `F` (fit view), `Delete` / `Backspace` (delete selected nodes/edges), `⌘Z` / `⌘⇧Z` (undo/redo via command dispatcher), `⌘C` / `⌘V` / `⌘D` (clipboard copy, paste, duplicate), and `1` / `2` / `3` (C4 view level switches), with strict text-input focus guards (`isTextInput`). Added 12 automated unit/integration tests in `apps/web/palette-search-shortcuts.spec.tsx`. All quality gates pass (`pnpm verify` clean, `pnpm build` clean). **Phase 02 — Canvas is 100% COMPLETE!**
 
-Prior: F144 — Wire the editor to the model API.
+Prior: F145 — Real views: reuse objects across views.
 
 Prior: F142 — Real C4 drill-down. Implemented real C4 containment navigation across System Context (L1), Containers & Applications (L2), and Components (L3) levels in DiagramHQ Studio (Phase 14 — UX Remediation). Replaced dummy breadcrumb relabeling with a structured containment model: (1) Added `apps/web/lib/c4-hierarchy.ts` providing `getNodeC4Level`, `filterNodesByC4Level`, and `filterEdgesByVisibleNodes`; (2) Pre-seeded studio initial graph with a genuine 3-tier containment hierarchy (Level 1: `sys-saas`, `actor-user`, `sys-email`, `sys-billing`; Level 2: `app-web`, `app-api`, `app-auth`, `store-db`, `store-cache`, `store-storage` under `sys-saas`; Level 3: `cmp-auth-ctrl`, `cmp-jwt-svc`, `cmp-user-repo`, `cmp-pwd-hasher` under `app-auth`); (3) Double-clicking a drillable system node or container immediately descends into its children via `onDrillIn` (`apps/web/components/canvas/infinite-canvas.tsx`); (4) Breadcrumb hierarchy displays full containment path (`Model / System Context / [System Name] / [Container Name] / Level`) and clicking any parent breadcrumb or Level 1 ascends back to that level; (5) C4 level switcher tabs (`1. Context`, `2. Containers`, `3. Components`) switch levels and active parent seamlessly; (6) Graceful empty state renders an informational notice (`drill-empty-notice`) with a return button (`drill-ascend-btn`) whenever an object has no children, avoiding dead ends; (7) Newly created nodes automatically inherit the active C4 level and parent ID. Added 11 automated unit and integration tests in `apps/web/c4-drilldown.spec.tsx`. All quality gates pass (`pnpm verify` clean, `pnpm build` clean).
 
