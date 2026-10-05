@@ -149,4 +149,91 @@ describe('Studio & Interactive Canvas Drawing (Phase 0 / Guest Mode)', () => {
       expect(html).toContain('data-testid="inspector-panel"');
     });
   });
+
+  describe('5. F136 — Honest surface: gate simulated features', () => {
+    it('studio renders with 0 unlabelled preview controls', () => {
+      const html = renderToString(React.createElement(StudioPage));
+
+      // Each simulated feature must be wrapped with data-preview="true"
+      // and display the consistent "Preview — not saved" badge
+      const simulatedKeys = [
+        'branches',
+        'presence',
+        'versionHistory',
+        'visualDiff',
+        'pullRequests',
+        'comments',
+        'aiCopilot',
+        'aiGeneration',
+        'aiReview',
+        'aiAdr',
+      ];
+
+      for (const feature of simulatedKeys) {
+        expect(html).toContain(`data-preview-feature="${feature}"`);
+        expect(html).toContain(`data-feature="${feature}"`);
+      }
+
+      // Count the preview badges rendered in default view
+      const badgeOccurrences = (html.match(/data-testid="preview-badge"/g) || []).length;
+      expect(badgeOccurrences).toBe(simulatedKeys.length);
+
+      // Verify that every data-preview control has a corresponding badge
+      const previewContainers = (html.match(/data-preview="true"/g) || []).length;
+      expect(previewContainers).toBe(simulatedKeys.length);
+
+      // Unlabelled simulated controls = 0
+      const unlabelledSimulatedControls = previewContainers - badgeOccurrences;
+      expect(unlabelledSimulatedControls).toBe(0);
+    });
+
+    it('a preview control shows the badge', () => {
+      const html = renderToString(React.createElement(StudioPage));
+
+      // The badge text must be consistently "Preview — not saved"
+      expect(html).toContain('data-testid="preview-badge"');
+      expect(html).toContain('Preview — not saved');
+
+      // Specifically check simulated controls carry the badge and tooltip
+      expect(html).toContain('title="Toggle AI Architecture Copilot (Preview — not saved)"');
+      expect(html).toContain('title="Toggle Version History &amp; Snapshots (Preview — not saved)"');
+      expect(html).toContain('title="Toggle Architecture Visual Diff (Preview — not saved)"');
+      expect(html).toContain('title="Toggle Architecture Comments (Preview — not saved)"');
+    });
+
+    it('a real control (add object) still works', async () => {
+      const html = renderToString(React.createElement(StudioPage));
+
+      // Real controls are NOT wrapped with data-preview or preview badges
+      expect(html).toContain('data-testid="shape-palette"');
+      expect(html).toContain('data-testid="add-system-btn"');
+      expect(html).toContain('data-testid="toggle-export-btn"');
+      expect(html).toContain('data-testid="toggle-share-link-btn"');
+      expect(html).toContain('data-testid="autosave-status"');
+      expect(html).toContain('Inspector');
+
+      // Verify real controls do not carry preview attributes
+      expect(html).not.toContain('data-preview-feature="add"');
+      expect(html).not.toContain('data-preview-feature="export"');
+      expect(html).not.toContain('data-preview-feature="inspector"');
+
+      // Verify that creating a node (real control: add object) executes cleanly
+      const newNode: CanvasNode = {
+        id: 'real-node-1',
+        type: 'application',
+        position: { x: 300, y: 300 },
+        data: { label: 'Real Microservice', kind: 'application' },
+      };
+
+      const cmd = new CreateNodeCommand({ node: newNode });
+      const created = await defaultCommandDispatcher.dispatch(cmd);
+      expect(created).toEqual(newNode);
+
+      // Verify command is in undo stack
+      expect(defaultCommandDispatcher.canUndo()).toBe(true);
+      await defaultCommandDispatcher.undo();
+      expect(defaultCommandDispatcher.canRedo()).toBe(true);
+    });
+  });
 });
+

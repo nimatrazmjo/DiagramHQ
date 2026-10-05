@@ -82,7 +82,9 @@ import {
 } from '../../components/canvas';
 import { InspectorPanel } from '../../components/shell/inspector-panel';
 import { useDiagramAutosave, type SavedDiagramData } from '../../hooks/use-diagram-autosave';
+import { PreviewAffordance } from '../../lib/preview-flags';
 
+// F136 Preview Fixture: simulated peer presence (PREVIEW_REGISTRY.presence)
 const INITIAL_PEERS: PresencePeerBadge[] = [
   {
     userId: 'user-alice',
@@ -120,6 +122,7 @@ const CURRENT_AUTHOR: CommentAuthor = {
   color: '#3b82f6',
 };
 
+// F136 Preview Fixture: simulated architecture branches (PREVIEW_REGISTRY.branches)
 const INITIAL_BRANCHES: ArchitectureBranch[] = (() => {
   const main = createMainBranch('ws-demo' as WorkspaceId, 'arch-studio-init' as ArchitectureId, {
     objects: [
@@ -164,6 +167,7 @@ const INITIAL_BRANCHES: ArchitectureBranch[] = (() => {
   return [main, featAuth];
 })();
 
+// F136 Preview Fixture: simulated version history and snapshots (PREVIEW_REGISTRY.versionHistory)
 const INITIAL_SNAPSHOTS: NumberedSnapshot[] = [
   {
     id: 'snap-v10' as SnapshotId,
@@ -466,12 +470,12 @@ export default function StudioPage(): JSX.Element {
     };
   }, [selectedEdgeId, currentEdges, currentNodes]);
 
-  // Collaboration: Live Presence & Peer collaborators
+  // Collaboration: Live Presence & Peer collaborators (simulated preview)
   const [peers] = useState<PresencePeerBadge[]>(INITIAL_PEERS);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [isPullRequestModalOpen, setIsPullRequestModalOpen] = useState(false);
 
-  // Pre-seeded threaded comments
+  // F136 Preview Fixture: simulated threaded comments (PREVIEW_REGISTRY.comments)
   const [comments, setComments] = useState<Comment[]>(() => {
     const root1 = createComment({
       id: 'cmt-root-1',
@@ -498,7 +502,7 @@ export default function StudioPage(): JSX.Element {
     return [root1, reply1, resolvedRoot2];
   });
 
-  // Pull request review state
+  // F136 Preview Fixture: simulated architecture PR review (PREVIEW_REGISTRY.pullRequests)
   const [architecturePR, setArchitecturePR] = useState<ArchitecturePullRequest>(() => {
     return createArchitecturePullRequest({
       number: 14,
@@ -1505,7 +1509,7 @@ export default function StudioPage(): JSX.Element {
         </div>
 
         {/* Quick Actions & Admin Superuser Pill */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 overflow-x-auto max-w-full py-1">
           {/* Admin / User Status Pill */}
           {isLoggedIn ? (
             <Link
@@ -1530,89 +1534,101 @@ export default function StudioPage(): JSX.Element {
           )}
 
           {/* Active Architecture Branch Badge & Switcher */}
-          <BranchBadge
-            currentBranch={currentBranch}
-            onClick={() => setIsBranchSelectorOpen((v) => !v)}
-          />
+          <PreviewAffordance feature="branches">
+            <BranchBadge
+              currentBranch={currentBranch}
+              onClick={() => setIsBranchSelectorOpen((v) => !v)}
+            />
+          </PreviewAffordance>
 
           {/* Active Collaborators Presence Indicators */}
-          <PresenceIndicators peers={peers} currentUserId={CURRENT_AUTHOR.id} />
+          <PreviewAffordance feature="presence">
+            <PresenceIndicators peers={peers} currentUserId={CURRENT_AUTHOR.id} />
+          </PreviewAffordance>
 
           {/* Version History & Snapshots Trigger */}
-          <button
-            type="button"
-            data-testid="toggle-version-history-btn"
-            onClick={() => setIsVersionHistoryOpen((v) => !v)}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-              isVersionHistoryOpen
-                ? 'bg-emerald-600/30 text-emerald-300 border-emerald-500/50 shadow-sm shadow-emerald-500/20'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
-            }`}
-            title="Toggle Version History & Snapshots"
-          >
-            <span>🕒</span>
-            <span className="hidden sm:inline">Versions</span>
-          </button>
+          <PreviewAffordance feature="versionHistory">
+            <button
+              type="button"
+              data-testid="toggle-version-history-btn"
+              onClick={() => setIsVersionHistoryOpen((v) => !v)}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                isVersionHistoryOpen
+                  ? 'bg-emerald-600/30 text-emerald-300 border-emerald-500/50 shadow-sm shadow-emerald-500/20'
+                  : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+              }`}
+              title="Toggle Version History & Snapshots (Preview — not saved)"
+            >
+              <span>🕒</span>
+              <span className="hidden sm:inline">Versions</span>
+            </button>
+          </PreviewAffordance>
 
           {/* Visual Architecture Diff Trigger */}
-          <button
-            type="button"
-            data-testid="toggle-visual-diff-btn"
-            onClick={() => setIsVisualDiffOpen((v) => !v)}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-              isVisualDiffOpen
-                ? 'bg-purple-600/30 text-purple-300 border-purple-500/50 shadow-sm shadow-purple-500/20'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
-            }`}
-            title="Toggle Architecture Visual Diff"
-          >
-            <span>⚖️</span>
-            <span className="hidden sm:inline">Diff</span>
-            <span className="px-1.5 py-0.2 rounded-full bg-purple-500/30 text-purple-200 font-mono text-[10px]">
-              {`+${visualDiffResult.counts.added}`}
-            </span>
-          </button>
+          <PreviewAffordance feature="visualDiff">
+            <button
+              type="button"
+              data-testid="toggle-visual-diff-btn"
+              onClick={() => setIsVisualDiffOpen((v) => !v)}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                isVisualDiffOpen
+                  ? 'bg-purple-600/30 text-purple-300 border-purple-500/50 shadow-sm shadow-purple-500/20'
+                  : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+              }`}
+              title="Toggle Architecture Visual Diff (Preview — not saved)"
+            >
+              <span>⚖️</span>
+              <span className="hidden sm:inline">Diff</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-purple-500/30 text-purple-200 font-mono text-[10px]">
+                {`+${visualDiffResult.counts.added}`}
+              </span>
+            </button>
+          </PreviewAffordance>
 
           {/* Architecture Pull Request Review trigger */}
-          <button
-            type="button"
-            data-testid="toggle-review-pr-btn"
-            onClick={() => setIsPullRequestModalOpen(true)}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-              architecturePR.status === 'open'
-                ? 'bg-cyan-950/70 hover:bg-cyan-900/80 text-cyan-300 border-cyan-700/70'
-                : 'bg-emerald-950/70 hover:bg-emerald-900/80 text-emerald-300 border-emerald-700/70'
-            }`}
-            title={`Architecture PR #${architecturePR.number} (${architecturePR.status})`}
-          >
-            <span>🔀</span>
-            <span className="hidden md:inline font-mono font-bold">{`#${architecturePR.number}`}</span>
-            <span className="capitalize">{architecturePR.status}</span>
-          </button>
+          <PreviewAffordance feature="pullRequests">
+            <button
+              type="button"
+              data-testid="toggle-review-pr-btn"
+              onClick={() => setIsPullRequestModalOpen(true)}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                architecturePR.status === 'open'
+                  ? 'bg-cyan-950/70 hover:bg-cyan-900/80 text-cyan-300 border-cyan-700/70'
+                  : 'bg-emerald-950/70 hover:bg-emerald-900/80 text-emerald-300 border-emerald-700/70'
+              }`}
+              title={`Architecture PR #${architecturePR.number} (${architecturePR.status}) (Preview — not saved)`}
+            >
+              <span>🔀</span>
+              <span className="hidden md:inline font-mono font-bold">{`#${architecturePR.number}`}</span>
+              <span className="capitalize">{architecturePR.status}</span>
+            </button>
+          </PreviewAffordance>
 
           {/* Comments Panel Trigger */}
-          <button
-            type="button"
-            data-testid="toggle-comments-btn"
-            onClick={() => setIsCommentsOpen((prev) => !prev)}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-              isCommentsOpen
-                ? 'bg-amber-600/30 text-amber-300 border-amber-500/50 shadow-sm shadow-amber-500/20'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
-            }`}
-            title="Toggle Architecture Comments"
-          >
-            <span>💬</span>
-            <span className="hidden sm:inline">Comments</span>
-            {unresolvedCommentCount > 0 && (
-              <span
-                data-testid="comments-badge-count"
-                className="px-1.5 py-0.2 rounded-full bg-amber-500 text-white font-bold text-[10px]"
-              >
-                {unresolvedCommentCount}
-              </span>
-            )}
-          </button>
+          <PreviewAffordance feature="comments">
+            <button
+              type="button"
+              data-testid="toggle-comments-btn"
+              onClick={() => setIsCommentsOpen((prev) => !prev)}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                isCommentsOpen
+                  ? 'bg-amber-600/30 text-amber-300 border-amber-500/50 shadow-sm shadow-amber-500/20'
+                  : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+              }`}
+              title="Toggle Architecture Comments (Preview — not saved)"
+            >
+              <span>💬</span>
+              <span className="hidden sm:inline">Comments</span>
+              {unresolvedCommentCount > 0 && (
+                <span
+                  data-testid="comments-badge-count"
+                  className="px-1.5 py-0.2 rounded-full bg-amber-500 text-white font-bold text-[10px]"
+                >
+                  {unresolvedCommentCount}
+                </span>
+              )}
+            </button>
+          </PreviewAffordance>
 
           {/* Brand Icon catalog trigger */}
           <button
@@ -1674,56 +1690,64 @@ export default function StudioPage(): JSX.Element {
           </button>
 
           {/* AI Architecture Copilot Drawer Trigger */}
-          <button
-            type="button"
-            data-testid="toggle-ai-copilot-btn"
-            onClick={() => setIsAiCopilotOpen((v) => !v)}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-              isAiCopilotOpen
-                ? 'bg-cyan-600/30 text-cyan-300 border-cyan-500/50 shadow-sm shadow-cyan-500/20'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
-            }`}
-            title="Toggle AI Architecture Copilot"
-          >
-            <span>🤖</span>
-            <span className="hidden sm:inline">Copilot</span>
-          </button>
+          <PreviewAffordance feature="aiCopilot">
+            <button
+              type="button"
+              data-testid="toggle-ai-copilot-btn"
+              onClick={() => setIsAiCopilotOpen((v) => !v)}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                isAiCopilotOpen
+                  ? 'bg-cyan-600/30 text-cyan-300 border-cyan-500/50 shadow-sm shadow-cyan-500/20'
+                  : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+              }`}
+              title="Toggle AI Architecture Copilot (Preview — not saved)"
+            >
+              <span>🤖</span>
+              <span className="hidden sm:inline">Copilot</span>
+            </button>
+          </PreviewAffordance>
 
           {/* AI Architecture Generation Modal Trigger */}
-          <button
-            type="button"
-            data-testid="toggle-ai-generation-btn"
-            onClick={() => setIsAiGenerationOpen(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors shadow-sm"
-            title="Generate Architecture with AI"
-          >
-            <span>✨</span>
-            <span className="hidden sm:inline">AI Gen</span>
-          </button>
+          <PreviewAffordance feature="aiGeneration">
+            <button
+              type="button"
+              data-testid="toggle-ai-generation-btn"
+              onClick={() => setIsAiGenerationOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors shadow-sm"
+              title="Generate Architecture with AI (Preview — not saved)"
+            >
+              <span>✨</span>
+              <span className="hidden sm:inline">AI Gen</span>
+            </button>
+          </PreviewAffordance>
 
           {/* AI Architecture Review Modal Trigger */}
-          <button
-            type="button"
-            data-testid="toggle-ai-review-btn"
-            onClick={handleRunArchitectureReview}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors shadow-sm"
-            title="Run AI Architecture Governance Review"
-          >
-            <span>🛡️</span>
-            <span className="hidden sm:inline">AI Review</span>
-          </button>
+          <PreviewAffordance feature="aiReview">
+            <button
+              type="button"
+              data-testid="toggle-ai-review-btn"
+              onClick={handleRunArchitectureReview}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors shadow-sm"
+              title="Run AI Architecture Governance Review (Preview — not saved)"
+            >
+              <span>🛡️</span>
+              <span className="hidden sm:inline">AI Review</span>
+            </button>
+          </PreviewAffordance>
 
           {/* AI Architecture Decision Record (ADR) Modal Trigger */}
-          <button
-            type="button"
-            data-testid="toggle-ai-adr-btn"
-            onClick={handleOpenAiAdr}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors shadow-sm"
-            title="Draft Architecture Decision Record (ADR)"
-          >
-            <span>📜</span>
-            <span className="hidden sm:inline">Draft ADR</span>
-          </button>
+          <PreviewAffordance feature="aiAdr">
+            <button
+              type="button"
+              data-testid="toggle-ai-adr-btn"
+              onClick={handleOpenAiAdr}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors shadow-sm"
+              title="Draft Architecture Decision Record (ADR) (Preview — not saved)"
+            >
+              <span>📜</span>
+              <span className="hidden sm:inline">Draft ADR</span>
+            </button>
+          </PreviewAffordance>
 
           {/* Mobile Companion View Link */}
           <Link

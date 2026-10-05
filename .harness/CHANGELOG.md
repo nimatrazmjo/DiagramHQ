@@ -2,6 +2,26 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-04 — F136 — Honest surface: gate simulated features (Phase 14 — UX Remediation)
+
+Status: COMPLETE
+
+Implemented:
+- Web layer (`apps/web/`):
+  - `lib/preview-flags.ts`: Introduced preview flags and registry for simulated / not-yet-real studio features:
+    - Standard badge text `PREVIEW_BADGE_TEXT = 'Preview — not saved'`.
+    - Enumerated simulated features: `branches`, `presence`, `versionHistory`, `visualDiff`, `pullRequests`, `comments`, `aiCopilot`, `aiGeneration`, `aiReview`, `aiAdr`.
+    - Defined `PREVIEW_REGISTRY` with metadata, labels, tooltips, seed fixture tracking (`INITIAL_PEERS`, `INITIAL_BRANCHES`, etc.), and feature descriptions.
+    - Defined `REAL_STUDIO_CONTROLS` (`add`, `connect`, `inspector`, `autosave`, `export`, `layout`, `undo`, `share-link`) to guarantee real controls remain unflagged.
+    - Exported `PreviewBadge` indicator and `PreviewAffordance` container wrapper providing `data-preview="true"`, `data-preview-feature="..."`, and tooltip annotations.
+  - `app/studio/page.tsx`: Gated all 10 simulated top-bar controls behind `<PreviewAffordance feature="...">` with explicit tooltips and badges. Documented seed mock fixtures. Updated quick action container layout to prevent clipping on narrow viewports. Left all real controls completely untouched.
+  - `studio.spec.ts`: Added acceptance test suite `5. F136 — Honest surface: gate simulated features` with 3 test cases:
+    - `studio renders with 0 unlabelled preview controls`
+    - `a preview control shows the badge`
+    - `a real control (add object) still works`
+  - `preview-flags.spec.ts`: Added unit tests verifying preview registry completeness, distinction between simulated and real controls, and component rendering.
+- Verification: `pnpm typecheck ✓`, `pnpm lint ✓`, `pnpm check-architecture ✓`, API 37 test files / 270 tests ✓, Web 125 test files / 633 tests ✓, `next build ✓`. All Playwright E2E suites passing (18/18).
+
 ## 2026-10-04 — F134 — Mobile (Phase 13 Progress — ALL 135 FEATURES COMPLETE!)
 
 Status: COMPLETE
