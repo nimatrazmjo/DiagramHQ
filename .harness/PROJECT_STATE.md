@@ -13,21 +13,23 @@ Phase Name: UX Remediation
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F139
-Feature Name: Clipboard, duplicate & default marquee-select
+Feature ID: F140
+Feature Name: Information architecture & toolbar hierarchy
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 145
-Completed: 133
+Completed: 134
 In Progress: 0
 Blocked: 0
-Not Started: 12
-Progress: 91.7%
+Not Started: 11
+Progress: 92.4%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F138 — Canvas context menus. Implemented complete right-click contextual menus for nodes, edges, and the canvas pane (Phase 14 — UX Remediation). Wired `onNodeContextMenu`, `onEdgeContextMenu`, and `onPaneContextMenu` in `infinite-canvas.tsx`. Built `apps/web/components/canvas/context-menu.tsx` providing: (1) Node menu: Rename (inline focus), Duplicate (creates copy with offset), Delete (removes node and connected edges via `DeleteNodeCommand`), Add connection (connects to other node or emits event), Add to view (`onAddToView` / event), Drill in (`onDrillIn` / event); (2) Edge menu: Edit label (inline focus), Reverse (swaps source and target via `ReverseEdgeCommand`), Delete (removes edge via `DeleteEdgeCommand`); (3) Pane menu: Add object by kind (Application, System, Database, Queue, Component, Person, Group) placed at cursor position, Paste (pastes clipboard node or duplicate at cursor), Select all, Fit view (`reactFlow.fitView`), Auto-layout (Dagre layered layout); (4) Positioning: automatic viewport boundary clamping preventing clipping off-screen, auto-dismissal on Escape, outside click, and action selection. All actions route through the command stack (`CreateNodeCommand`, `DeleteNodeCommand`, `ReverseEdgeCommand`, `DeleteEdgeCommand`) ensuring ⌘Z reverts and ⌘⇧Z redoes. Added 8 unit and integration tests in `apps/web/context-menu.spec.tsx`. All quality gates pass (`pnpm verify` clean, `pnpm build` clean).
+F139 — Clipboard, duplicate & default marquee-select. Implemented canvas-convention parity with in-app clipboard, duplicate, and default marquee selection (Phase 14 — UX Remediation). Added `apps/web/lib/canvas-clipboard.ts` providing in-memory clipboard storage for selected nodes and internal edges between them. Added `DuplicateSelectionCommand` and `PasteSelectionCommand` to `apps/web/lib/commands/` supporting full undo/redo state synchronization via `applyCanvasUpdate`. Implemented ⌘C (copies selected nodes + internal edges to clipboard), ⌘V (pastes nodes and remapped edges at cursor or with offset, regenerating IDs while preserving kind, metadata, labels, and relative layout), ⌘D (duplicates selection with regenerated IDs and small offset), and Alt-drag duplicate (holding Option/Alt while dragging a node preserves the original at start position and creates a duplicate at the drop position). Updated `useCanvasStore` so `isBoxSelectMode` is `true` by default, making empty-canvas drag marquee-select enclosed nodes by default while Space pans the canvas and Shift adds/removes items from selection. All operations route through `defaultCommandDispatcher` and are undoable via ⌘Z and redoable via ⌘⇧Z. Added comprehensive test suite in `apps/web/clipboard-duplicate.spec.tsx` (7 tests) covering clipboard round-trip, ⌘D duplicate, ⌘C/⌘V multi-node + edge round-trip, Alt-drag, default marquee select, and Space panning. All quality gates pass (`pnpm verify` clean, `pnpm build` clean).
+
+Prior: F138 — Canvas context menus. Implemented complete right-click contextual menus for nodes, edges, and the canvas pane (Phase 14 — UX Remediation). Wired `onNodeContextMenu`, `onEdgeContextMenu`, and `onPaneContextMenu` in `infinite-canvas.tsx`. Built `apps/web/components/canvas/context-menu.tsx` providing: (1) Node menu: Rename (inline focus), Duplicate (creates copy with offset), Delete (removes node and connected edges via `DeleteNodeCommand`), Add connection (connects to other node or emits event), Add to view (`onAddToView` / event), Drill in (`onDrillIn` / event); (2) Edge menu: Edit label (inline focus), Reverse (swaps source and target via `ReverseEdgeCommand`), Delete (removes edge via `DeleteEdgeCommand`); (3) Pane menu: Add object by kind (Application, System, Database, Queue, Component, Person, Group) placed at cursor position, Paste (pastes clipboard node or duplicate at cursor), Select all, Fit view (`reactFlow.fitView`), Auto-layout (Dagre layered layout); (4) Positioning: automatic viewport boundary clamping preventing clipping off-screen, auto-dismissal on Escape, outside click, and action selection. All actions route through the command stack (`CreateNodeCommand`, `DeleteNodeCommand`, `ReverseEdgeCommand`, `DeleteEdgeCommand`) ensuring ⌘Z reverts and ⌘⇧Z redoes. Added 8 unit and integration tests in `apps/web/context-menu.spec.tsx`. All quality gates pass (`pnpm verify` clean, `pnpm build` clean).
 
 Prior: F137 — Inline rename & edge labels. Implemented double-click inline renaming for canvas nodes and double-click inline labelling for connection edges (Phase 14 — UX Remediation). Name an object in ≤ 2 interactions (double-click node label/node → inline input with current text selected → Enter/blur commits, Esc cancels). Label a connection in ≤ 2 interactions (double-click edge path or pill badge → inline input rendered at edge midpoint (labelX, labelY) → Enter/blur commits, Esc cancels). Commit routes through the undoable command stack (`UpdateNodeMetadataCommand`, `UpdateEdgeDataCommand` via `defaultCommandDispatcher`), ensuring ⌘Z reverts both and ⌘⇧Z redoes. Inspector editing remains in sync through canvas node/edge rename event listeners. Edit mode input retains `nodrag nopan` and `isTextInput` focus guards to ignore canvas delete/select hotkeys while typing. Added 8 unit/integration tests in `apps/web/inline-rename.spec.tsx`. All checks pass (`pnpm verify` clean, `pnpm build` clean).
 

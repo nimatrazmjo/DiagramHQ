@@ -131,15 +131,15 @@ test.describe('Advanced Canvas & Layouts Suite', () => {
   test('5. Box-select mode toggles marquee drag selection', async ({ page }) => {
     const boxSelectBtn = page.locator('[data-testid="box-select-btn"]');
     await expect(boxSelectBtn).toBeVisible();
-    await expect(boxSelectBtn).toContainText('Box Select');
-
-    // Toggle box select mode ON
-    await boxSelectBtn.click();
     await expect(boxSelectBtn).toContainText('BOX SELECT');
 
     // Toggle box select mode OFF
     await boxSelectBtn.click();
     await expect(boxSelectBtn).toContainText('Box Select');
+
+    // Toggle box select mode ON
+    await boxSelectBtn.click();
+    await expect(boxSelectBtn).toContainText('BOX SELECT');
   });
 
   test('6. Multi-selection via Shift+Click displays Alignment Toolbar and Clear button', async ({ page }) => {

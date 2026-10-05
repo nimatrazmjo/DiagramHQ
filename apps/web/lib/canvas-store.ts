@@ -60,7 +60,7 @@ export const useCanvasStore = create<CanvasStoreState>((set, get) => ({
   selectedEdgeIds: [],
   hoveredNodeId: null,
   isSpacePanning: false,
-  isBoxSelectMode: false,
+  isBoxSelectMode: true,
   isSnapToGridEnabled: false,
   isMinimapVisible: true,
   isFullscreen: false,

@@ -64,11 +64,17 @@ import {
   UpdateEdgeDataCommand,
   DeleteEdgeCommand,
   ReverseEdgeCommand,
+  DuplicateSelectionCommand,
+  PasteSelectionCommand,
   defaultCommandDispatcher,
   type Command,
   type NodeMoveItem,
   type AlignOperation,
 } from '../../lib/commands';
+import {
+  setCanvasClipboard,
+  getCanvasClipboard,
+} from '../../lib/canvas-clipboard';
 import { nodeTypes } from './custom-nodes';
 import { IcePanelEdge } from './icepanel-edge';
 import { AlignmentToolbar } from './alignment-toolbar';
@@ -333,6 +339,8 @@ function InfiniteCanvasContent({
   );
 
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const mouseCanvasPosRef = React.useRef<{ x: number; y: number } | null>(null);
+  const isAltDragRef = React.useRef<boolean>(false);
 
   const handleToggleFullscreen = useCallback(() => {
     if (typeof document === 'undefined') return;
@@ -523,7 +531,9 @@ function InfiniteCanvasContent({
 
   const dragStartPositions = React.useRef<Map<string, { x: number; y: number }>>(new Map());
 
-  const handleNodeDragStart = useCallback((_event: unknown, node: Node) => {
+  const handleNodeDragStart = useCallback((event: unknown, node: Node) => {
+    const isAlt = Boolean((event as React.MouseEvent)?.altKey);
+    isAltDragRef.current = isAlt;
     const currentInState = nodes.find((n) => n.id === node.id);
     dragStartPositions.current.set(node.id, {
       x: currentInState ? currentInState.position.x : node.position.x,
@@ -532,6 +542,60 @@ function InfiniteCanvasContent({
   }, [nodes]);
 
   const handleNodeDragStop = useCallback((event: unknown, node: Node) => {
+    const isAlt = isAltDragRef.current || Boolean((event as React.MouseEvent)?.altKey);
+    isAltDragRef.current = false;
+
+    const startPos = dragStartPositions.current.get(node.id);
+    dragStartPositions.current.delete(node.id);
+
+    if (isAlt && startPos) {
+      // Revert original node to startPos
+      setNodes((nds) =>
+        nds.map((n) => (n.id === node.id ? { ...n, position: { ...startPos } } : n)),
+      );
+
+      const kind =
+        ((node.data?.kind as ShapeKind) ||
+        (node.type as ShapeKind) ||
+        'application');
+      const label = String(node.data?.label || 'Object');
+      const newId = `${kind}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+
+      const canvasNode: CanvasNode = {
+        id: newId,
+        type: node.type ?? (kind === 'database' ? 'database' : kind),
+        position: {
+          x: Math.round(node.position.x),
+          y: Math.round(node.position.y),
+        },
+        data: {
+          ...node.data,
+          label: `${label} (Copy)`,
+        },
+      };
+
+      const command = new CreateNodeCommand({
+        viewId,
+        node: canvasNode,
+      });
+
+      if (onCommandDispatched) {
+        onCommandDispatched(command);
+      }
+      void defaultCommandDispatcher.dispatch(command);
+
+      const flowNode = toFlowNode(canvasNode);
+      setNodes((nds) => [...nds, flowNode]);
+      useCanvasStore.getState().setSelectedNodes([newId]);
+      if (onNodeSelect) {
+        onNodeSelect(newId);
+      }
+      if (onNodeCreate) {
+        onNodeCreate(canvasNode);
+      }
+      return;
+    }
+
     const handler = createNodeDragStopHandler({
       getNodes: () => nodes,
       viewId,
@@ -547,12 +611,103 @@ function InfiniteCanvasContent({
       snapToGridEnabled: isSnapToGridEnabled,
     });
     return handler(event, node);
-  }, [nodes, viewId, persistFn, onCommandDispatched, onNodeDragStop, isSnapToGridEnabled]);
+  }, [nodes, viewId, persistFn, onCommandDispatched, onNodeDragStop, isSnapToGridEnabled, onNodeSelect, onNodeCreate]);
 
   /** Group drag stop: fired when a multi-selection is dragged and released. */
   const handleSelectionDragStop: SelectionDragHandler = useCallback(
-    (_event, draggedNodes) => {
+    (event, draggedNodes) => {
       if (draggedNodes.length === 0) return;
+      const isAlt = isAltDragRef.current || Boolean((event as React.MouseEvent)?.altKey);
+      isAltDragRef.current = false;
+
+      if (isAlt) {
+        // Revert original nodes to start positions
+        setNodes((nds) =>
+          nds.map((n) => {
+            const startPos = dragStartPositions.current.get(n.id);
+            return startPos ? { ...n, position: { ...startPos } } : n;
+          }),
+        );
+
+        const idMap = new Map<string, string>();
+        const newCanvasNodes: CanvasNode[] = draggedNodes.map((n) => {
+          const kind =
+            ((n.data?.kind as ShapeKind) ||
+            (n.type as ShapeKind) ||
+            'application');
+          const label = String(n.data?.label || 'Object');
+          const newId = `${kind}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+          idMap.set(n.id, newId);
+
+          return {
+            id: newId,
+            type: n.type ?? (kind === 'database' ? 'database' : kind),
+            position: {
+              x: Math.round(n.position.x),
+              y: Math.round(n.position.y),
+            },
+            data: {
+              ...n.data,
+              label: `${label} (Copy)`,
+            },
+          };
+        });
+
+        const draggedIdSet = new Set(draggedNodes.map((n) => n.id));
+        const internalEdges = edges.filter(
+          (e) => draggedIdSet.has(e.source) && draggedIdSet.has(e.target),
+        );
+
+        const newCanvasEdges: CanvasEdge[] = internalEdges
+          .filter((e) => idMap.has(e.source) && idMap.has(e.target))
+          .map((e) => ({
+            id: `edge-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+            source: idMap.get(e.source)!,
+            target: idMap.get(e.target)!,
+            type: e.type ?? 'icepanel',
+            label: typeof e.label === 'string' ? e.label : undefined,
+            animated: e.animated,
+            data: e.data as Record<string, unknown>,
+          }));
+
+        const command = new DuplicateSelectionCommand({
+          viewId,
+          nodes: newCanvasNodes,
+          edges: newCanvasEdges,
+        });
+
+        if (onCommandDispatched) {
+          onCommandDispatched(command);
+        }
+        void defaultCommandDispatcher.dispatch(command);
+
+        const newFlowNodes = newCanvasNodes.map(toFlowNode);
+        const newFlowEdges: Edge[] = newCanvasEdges.map((e) => ({
+          id: e.id,
+          source: e.source,
+          target: e.target,
+          type: e.type ?? 'icepanel',
+          label: e.label,
+          animated: e.animated,
+          data: e.data,
+        }));
+
+        setNodes((nds) => [...nds, ...newFlowNodes]);
+        setEdges((eds) => [...eds, ...newFlowEdges]);
+
+        const newNodeIds = newCanvasNodes.map((n) => n.id);
+        useCanvasStore.getState().setSelectedNodes(newNodeIds);
+        useCanvasStore.getState().setSelectedEdges(newCanvasEdges.map((e) => e.id));
+        if (onNodeSelect && newNodeIds.length > 0) {
+          onNodeSelect(newNodeIds[0] ?? null);
+        }
+        if (onNodeCreate) {
+          for (const n of newCanvasNodes) {
+            onNodeCreate(n);
+          }
+        }
+        return;
+      }
 
       const snappedById = isSnapToGridEnabled
         ? snapGroupPositions(
@@ -609,7 +764,7 @@ function InfiniteCanvasContent({
         );
       });
     },
-    [nodes, viewId, batchPersistFn, onCommandDispatched, onNodeDragStop, isSnapToGridEnabled],
+    [nodes, edges, viewId, batchPersistFn, onCommandDispatched, onNodeDragStop, isSnapToGridEnabled, onNodeSelect, onNodeCreate],
   );
 
   // Shared guard across every whole-graph position mutation (align,
@@ -1221,8 +1376,218 @@ function InfiniteCanvasContent({
     [handleAddNode],
   );
 
+  const handleCopySelection = useCallback(() => {
+    const curSelectedNodeIds = useCanvasStore.getState().selectedNodeIds;
+    if (curSelectedNodeIds.length === 0) return;
+
+    const selectedNodes = nodes.filter((n) => curSelectedNodeIds.includes(n.id));
+    const selectedIdSet = new Set(curSelectedNodeIds);
+
+    // Internal edges: edges whose source AND target are in the selected nodes
+    const internalEdges = edges.filter(
+      (e) => selectedIdSet.has(e.source) && selectedIdSet.has(e.target),
+    );
+
+    setCanvasClipboard({
+      nodes: selectedNodes,
+      edges: internalEdges,
+    });
+
+    if (selectedNodes.length > 0) {
+      setClipboardNode(selectedNodes[0] ?? null);
+    }
+  }, [nodes, edges]);
+
+  const handlePasteSelection = useCallback(
+    async (targetPosition?: { x: number; y: number }) => {
+      const clipboard = getCanvasClipboard();
+      if (!clipboard || clipboard.nodes.length === 0) {
+        return;
+      }
+
+      const { nodes: clipNodes, edges: clipEdges } = clipboard;
+
+      // Determine offset
+      let dx = 40;
+      let dy = 40;
+      if (targetPosition) {
+        const minX = Math.min(...clipNodes.map((n) => n.position.x));
+        const minY = Math.min(...clipNodes.map((n) => n.position.y));
+        dx = targetPosition.x - minX;
+        dy = targetPosition.y - minY;
+      }
+
+      const idMap = new Map<string, string>();
+      const newCanvasNodes: CanvasNode[] = clipNodes.map((node) => {
+        const kind =
+          ((node.data?.kind as ShapeKind) ||
+          (node.type as ShapeKind) ||
+          'application');
+        const label = String(node.data?.label || 'Object');
+        const newId = `${kind}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+        idMap.set(node.id, newId);
+
+        return {
+          id: newId,
+          type: node.type ?? (kind === 'database' ? 'database' : kind),
+          position: {
+            x: Math.round(node.position.x + dx),
+            y: Math.round(node.position.y + dy),
+          },
+          data: {
+            ...node.data,
+            label: `${label} (Paste)`,
+          },
+        };
+      });
+
+      const newCanvasEdges: CanvasEdge[] = clipEdges
+        .filter((e) => idMap.has(e.source) && idMap.has(e.target))
+        .map((e) => ({
+          id: `edge-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+          source: idMap.get(e.source)!,
+          target: idMap.get(e.target)!,
+          type: e.type ?? 'icepanel',
+          label: typeof e.label === 'string' ? e.label : undefined,
+          animated: e.animated,
+          data: e.data as Record<string, unknown>,
+        }));
+
+      const command = new PasteSelectionCommand({
+        viewId,
+        nodes: newCanvasNodes,
+        edges: newCanvasEdges,
+      });
+
+      if (onCommandDispatched) {
+        onCommandDispatched(command);
+      }
+      await defaultCommandDispatcher.dispatch(command);
+
+      const newFlowNodes = newCanvasNodes.map(toFlowNode);
+      const newFlowEdges: Edge[] = newCanvasEdges.map((e) => ({
+        id: e.id,
+        source: e.source,
+        target: e.target,
+        type: e.type ?? 'icepanel',
+        label: e.label,
+        animated: e.animated,
+        data: e.data,
+      }));
+
+      setNodes((nds) => [...nds, ...newFlowNodes]);
+      setEdges((eds) => [...eds, ...newFlowEdges]);
+
+      const newNodeIds = newCanvasNodes.map((n) => n.id);
+      useCanvasStore.getState().setSelectedNodes(newNodeIds);
+      useCanvasStore.getState().setSelectedEdges(newCanvasEdges.map((e) => e.id));
+      if (onNodeSelect && newNodeIds.length > 0) {
+        onNodeSelect(newNodeIds[0] ?? null);
+      }
+      if (onNodeCreate) {
+        for (const n of newCanvasNodes) {
+          onNodeCreate(n);
+        }
+      }
+    },
+    [viewId, onCommandDispatched, onNodeSelect, onNodeCreate],
+  );
+
+  const handleDuplicateSelection = useCallback(
+    async (offset = { x: 30, y: 30 }) => {
+      const curSelectedNodeIds = useCanvasStore.getState().selectedNodeIds;
+      if (curSelectedNodeIds.length === 0) return;
+
+      const selectedNodes = nodes.filter((n) => curSelectedNodeIds.includes(n.id));
+      const selectedIdSet = new Set(curSelectedNodeIds);
+      const internalEdges = edges.filter(
+        (e) => selectedIdSet.has(e.source) && selectedIdSet.has(e.target),
+      );
+
+      const idMap = new Map<string, string>();
+      const newCanvasNodes: CanvasNode[] = selectedNodes.map((node) => {
+        const kind =
+          ((node.data?.kind as ShapeKind) ||
+          (node.type as ShapeKind) ||
+          'application');
+        const label = String(node.data?.label || 'Object');
+        const newId = `${kind}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+        idMap.set(node.id, newId);
+
+        return {
+          id: newId,
+          type: node.type ?? (kind === 'database' ? 'database' : kind),
+          position: {
+            x: Math.round(node.position.x + offset.x),
+            y: Math.round(node.position.y + offset.y),
+          },
+          data: {
+            ...node.data,
+            label: `${label} (Copy)`,
+          },
+        };
+      });
+
+      const newCanvasEdges: CanvasEdge[] = internalEdges
+        .filter((e) => idMap.has(e.source) && idMap.has(e.target))
+        .map((e) => ({
+          id: `edge-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+          source: idMap.get(e.source)!,
+          target: idMap.get(e.target)!,
+          type: e.type ?? 'icepanel',
+          label: typeof e.label === 'string' ? e.label : undefined,
+          animated: e.animated,
+          data: e.data as Record<string, unknown>,
+        }));
+
+      const command = new DuplicateSelectionCommand({
+        viewId,
+        nodes: newCanvasNodes,
+        edges: newCanvasEdges,
+      });
+
+      if (onCommandDispatched) {
+        onCommandDispatched(command);
+      }
+      await defaultCommandDispatcher.dispatch(command);
+
+      const newFlowNodes = newCanvasNodes.map(toFlowNode);
+      const newFlowEdges: Edge[] = newCanvasEdges.map((e) => ({
+        id: e.id,
+        source: e.source,
+        target: e.target,
+        type: e.type ?? 'icepanel',
+        label: e.label,
+        animated: e.animated,
+        data: e.data,
+      }));
+
+      setNodes((nds) => [...nds, ...newFlowNodes]);
+      setEdges((eds) => [...eds, ...newFlowEdges]);
+
+      const newNodeIds = newCanvasNodes.map((n) => n.id);
+      useCanvasStore.getState().setSelectedNodes(newNodeIds);
+      useCanvasStore.getState().setSelectedEdges(newCanvasEdges.map((e) => e.id));
+      if (onNodeSelect && newNodeIds.length > 0) {
+        onNodeSelect(newNodeIds[0] ?? null);
+      }
+      if (onNodeCreate) {
+        for (const n of newCanvasNodes) {
+          onNodeCreate(n);
+        }
+      }
+    },
+    [nodes, edges, viewId, onCommandDispatched, onNodeSelect, onNodeCreate],
+  );
+
   const handleContextPaste = useCallback(
     async (position: { x: number; y: number }) => {
+      const clipboard = getCanvasClipboard();
+      if (clipboard && clipboard.nodes.length > 0) {
+        await handlePasteSelection(position);
+        return;
+      }
+
       const source =
         clipboardNode ||
         (selectedNodeIds.length > 0 ? nodes.find((n) => n.id === selectedNodeIds[0]) : null);
@@ -1268,7 +1633,7 @@ function InfiniteCanvasContent({
         onNodeCreate(canvasNode);
       }
     },
-    [clipboardNode, selectedNodeIds, nodes, viewId, onCommandDispatched, onNodeSelect, onNodeCreate],
+    [handlePasteSelection, clipboardNode, selectedNodeIds, nodes, viewId, onCommandDispatched, onNodeSelect, onNodeCreate],
   );
 
   const handleContextSelectAll = useCallback(() => {
@@ -1595,6 +1960,15 @@ function InfiniteCanvasContent({
       ) {
         event.preventDefault();
         void handleRedo();
+      } else if (isMod && !event.shiftKey && (event.key === 'c' || event.key === 'C')) {
+        event.preventDefault();
+        handleCopySelection();
+      } else if (isMod && !event.shiftKey && (event.key === 'v' || event.key === 'V')) {
+        event.preventDefault();
+        void handlePasteSelection(mouseCanvasPosRef.current ?? undefined);
+      } else if (isMod && !event.shiftKey && (event.key === 'd' || event.key === 'D')) {
+        event.preventDefault();
+        void handleDuplicateSelection({ x: 30, y: 30 });
       } else if (event.code === 'Space' && !event.repeat) {
         useCanvasStore.getState().setIsSpacePanning(true);
       } else if (event.shiftKey && (event.key === 'f' || event.key === 'F')) {
@@ -1640,13 +2014,39 @@ function InfiniteCanvasContent({
       }
     };
 
+    const handleCopyEvent = () => handleCopySelection();
+    const handlePasteEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<{ position?: { x: number; y: number } }>;
+      void handlePasteSelection(customEvent.detail?.position ?? mouseCanvasPosRef.current ?? undefined);
+    };
+    const handleDuplicateEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<{ offset?: { x: number; y: number } }>;
+      void handleDuplicateSelection(customEvent.detail?.offset ?? { x: 30, y: 30 });
+    };
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('canvas:copy-selection', handleCopyEvent);
+    window.addEventListener('canvas:paste-selection', handlePasteEvent);
+    window.addEventListener('canvas:duplicate-selection', handleDuplicateEvent);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('canvas:copy-selection', handleCopyEvent);
+      window.removeEventListener('canvas:paste-selection', handlePasteEvent);
+      window.removeEventListener('canvas:duplicate-selection', handleDuplicateEvent);
     };
-  }, [reactFlow, onNodeSelect, handleUndo, handleRedo, handleToggleFullscreen, handleDeleteSelected]);
+  }, [
+    reactFlow,
+    onNodeSelect,
+    handleUndo,
+    handleRedo,
+    handleCopySelection,
+    handlePasteSelection,
+    handleDuplicateSelection,
+    handleToggleFullscreen,
+    handleDeleteSelected,
+  ]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes((nds) => applyNodeChanges(changes, nds));
@@ -1740,6 +2140,16 @@ function InfiniteCanvasContent({
       className={`w-full h-full relative bg-slate-950 select-none ${
         isSpacePanning ? 'cursor-grab active:cursor-grabbing' : ''
       } ${className}`}
+      onMouseMove={(e) => {
+        try {
+          mouseCanvasPosRef.current = reactFlow.screenToFlowPosition({
+            x: e.clientX,
+            y: e.clientY,
+          });
+        } catch {
+          // ignore in tests or mock environments
+        }
+      }}
     >
       {/* Node position indicators for SSR verification & inspection */}
       <div data-testid="canvas-nodes-data" className="hidden" aria-hidden="true">
@@ -1788,7 +2198,8 @@ function InfiniteCanvasContent({
         selectionMode={'partial' as SelectionMode}
         selectionKeyCode="Shift"
         multiSelectionKeyCode={['Shift', 'Meta', 'Control']}
-        selectionOnDrag={isBoxSelectMode}
+        selectionOnDrag={!isSpacePanning && isBoxSelectMode}
+        panOnDrag={isSpacePanning ? true : [1, 2]}
         minZoom={MIN_ZOOM}
         maxZoom={MAX_ZOOM}
         panActivationKeyCode="Space"
@@ -2050,7 +2461,7 @@ function InfiniteCanvasContent({
         onSelectAll={handleContextSelectAll}
         onFitView={handleContextFitView}
         onAutoLayout={handleContextAutoLayout}
-        canPaste={Boolean(clipboardNode) || selectedNodeIds.length > 0}
+        canPaste={Boolean(getCanvasClipboard()?.nodes.length || clipboardNode || selectedNodeIds.length > 0)}
       />
 
       {/* Template Picker Modal Overlay */}

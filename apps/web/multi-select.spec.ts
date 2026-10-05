@@ -127,7 +127,7 @@ describe('useCanvasStore — multi-select state', () => {
     useCanvasStore.setState({
       selectedNodeIds: [],
       selectedEdgeIds: [],
-      isBoxSelectMode: false,
+      isBoxSelectMode: true,
     });
   });
 
@@ -158,19 +158,19 @@ describe('useCanvasStore — multi-select state', () => {
     expect(useCanvasStore.getState().selectedEdgeIds).not.toContain('edge_1');
   });
 
-  it('isBoxSelectMode is false by default', () => {
-    expect(useCanvasStore.getState().isBoxSelectMode).toBe(false);
-  });
-
-  it('toggleBoxSelectMode turns box-select on', () => {
-    useCanvasStore.getState().toggleBoxSelectMode();
+  it('isBoxSelectMode is true by default', () => {
     expect(useCanvasStore.getState().isBoxSelectMode).toBe(true);
   });
 
-  it('toggleBoxSelectMode turns box-select off when already on', () => {
-    useCanvasStore.getState().setBoxSelectMode(true);
+  it('toggleBoxSelectMode turns box-select off', () => {
     useCanvasStore.getState().toggleBoxSelectMode();
     expect(useCanvasStore.getState().isBoxSelectMode).toBe(false);
+  });
+
+  it('toggleBoxSelectMode turns box-select on when already off', () => {
+    useCanvasStore.getState().setBoxSelectMode(false);
+    useCanvasStore.getState().toggleBoxSelectMode();
+    expect(useCanvasStore.getState().isBoxSelectMode).toBe(true);
   });
 
   it('clearSelection resets all selected IDs', () => {

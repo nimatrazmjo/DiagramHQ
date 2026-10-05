@@ -2,6 +2,34 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-04 — F139 — Clipboard, duplicate & default marquee-select (Phase 14 — UX Remediation)
+
+Status: COMPLETE
+
+Implemented:
+- Web layer (`apps/web/`):
+  - `lib/canvas-clipboard.ts`: Created in-app clipboard store (`setCanvasClipboard`, `getCanvasClipboard`, `clearCanvasClipboard`) supporting deep-copied nodes and internal edges.
+  - `lib/commands/duplicate-selection-command.ts`: Added undoable `DuplicateSelectionCommand` supporting undo/redo state synchronization for duplicated nodes and remapped internal edges via `applyCanvasUpdate`.
+  - `lib/commands/paste-selection-command.ts`: Added undoable `PasteSelectionCommand` supporting undo/redo state synchronization for pasted selections via `applyCanvasUpdate`.
+  - `lib/commands/index.ts`: Exported `DuplicateSelectionCommand` and `PasteSelectionCommand`.
+  - `lib/canvas-store.ts`: Changed `isBoxSelectMode` default to `true` to enable marquee selection on empty-drag by default.
+  - `components/canvas/infinite-canvas.tsx`:
+    - Wired `handleCopySelection`: copies selected nodes and internal edges (both source and target in selection) to the in-app clipboard on ⌘C / Ctrl+C.
+    - Wired `handlePasteSelection`: pastes clipboard nodes and remapped internal edges with regenerated IDs, preserves kind, label, metadata, and relative layout at cursor or offset on ⌘V / Ctrl+V and context menu paste.
+    - Wired `handleDuplicateSelection`: duplicates selected nodes and internal edges with regenerated IDs and offset (+30px) on ⌘D / Ctrl+D.
+    - Wired Alt-drag duplicate in `handleNodeDragStart`, `handleNodeDragStop`, and `handleSelectionDragStop`: holding Option/Alt while dragging retains the original object(s) at start position and creates duplicate(s) at the drop position, backed by undoable command dispatcher.
+    - Configured `<ReactFlow>`: `selectionOnDrag={!isSpacePanning && isBoxSelectMode}`, `panOnDrag={isSpacePanning ? true : [1, 2]}`, `panActivationKeyCode="Space"`. Holding Space switches to grab cursor and pans the canvas; dragging empty canvas marquee-selects enclosed nodes.
+    - Added mouse position tracking (`mouseCanvasPosRef`) to paste precisely at cursor location.
+    - Added window event listeners: `canvas:copy-selection`, `canvas:paste-selection`, `canvas:duplicate-selection`.
+  - `clipboard-duplicate.spec.tsx`: Added 7 comprehensive unit/integration tests verifying:
+    - In-app canvas clipboard round-tripping and clearing.
+    - ⌘D duplication and ⌘Z undo/redo.
+    - ⌘C/⌘V round-trip for 2 nodes + 1 internal edge preserving relative layout, metadata, kinds, edge labels, and ⌘Z reversion.
+    - Alt-drag duplicate preserving original at startPos and placing clone at dropPos, with ⌘Z reversion.
+    - Default marquee selection state and Space-key panning activation.
+  - Updated `multi-select.spec.ts` and `e2e/canvas-advanced.spec.ts` to reflect default active box-select mode.
+- Verification: `pnpm verify ✓` (`pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm check-architecture`), `pnpm build ✓`.
+
 ## 2026-10-04 — F138 — Canvas context menus (Phase 14 — UX Remediation)
 
 Status: COMPLETE
