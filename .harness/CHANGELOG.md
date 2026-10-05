@@ -2,6 +2,32 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-04 — F138 — Canvas context menus (Phase 14 — UX Remediation)
+
+Status: COMPLETE
+
+Implemented:
+- Web layer (`apps/web/`):
+  - `lib/commands/delete-edge-command.ts`: Added undoable `DeleteEdgeCommand` supporting undo/redo edge deletion via `applyCanvasUpdate`.
+  - `lib/commands/reverse-edge-command.ts`: Added undoable `ReverseEdgeCommand` supporting undo/redo edge direction reversal via `applyCanvasUpdate`.
+  - `lib/commands/index.ts`: Exported `DeleteEdgeCommand` and `ReverseEdgeCommand`.
+  - `components/canvas/context-menu.tsx`: Created reusable `CanvasContextMenu` component:
+    - Node menu: Rename, Duplicate (+40px offset, `CreateNodeCommand`), Delete (`DeleteNodeCommand`), Add Connection, Add to View, Drill in.
+    - Edge menu: Edit Label, Reverse Direction (`ReverseEdgeCommand`), Delete (`DeleteEdgeCommand`).
+    - Pane menu: Add Object by kind (`App`, `System`, `Store`, `Component`, `Queue`, `Person`, `Group`, etc. at click coordinates), Paste, Select All, Fit View, Auto-layout.
+    - Viewport boundary auto-clamping ensuring menus stay within browser window.
+    - Dismissal listeners for Escape key, outside click, and window resize/scroll.
+  - `components/canvas/index.ts`: Exported `CanvasContextMenu`.
+  - `components/canvas/infinite-canvas.tsx`:
+    - Wired `onNodeContextMenu`, `onEdgeContextMenu`, and `onPaneContextMenu` handlers to `<ReactFlow>`.
+    - Integrated with command dispatcher for undo/redo tracking.
+    - Rendered `<CanvasContextMenu />`.
+  - `context-menu.spec.tsx`: Added 8-test unit and integration test suite:
+    - Verified Node, Edge, and Pane context menu rendering and action callbacks.
+    - Verified `CreateNodeCommand`, `DeleteNodeCommand`, `ReverseEdgeCommand`, and `DeleteEdgeCommand` undo and redo via `defaultCommandDispatcher`.
+    - Verified auto-layout and fit-view callbacks.
+- Verification: `pnpm verify ✓` (`pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm check-architecture`), `pnpm build ✓`.
+
 ## 2026-10-04 — F137 — Inline rename & edge labels (Phase 14 — UX Remediation)
 
 Status: COMPLETE

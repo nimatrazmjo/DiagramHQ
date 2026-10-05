@@ -100,7 +100,7 @@ Success metric: name-object ≤ 2, label-edge ≤ 2 interactions.
 
 ### F138 — Canvas context menus
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Priority: P1 · Effort: Low
 

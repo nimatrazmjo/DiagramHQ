@@ -1,5 +1,6 @@
 export * from './canvas-renderer';
 export * from './custom-nodes';
+export * from './context-menu';
 export * from './infinite-canvas';
 export * from './alignment-toolbar';
 export * from './layout-menu';
