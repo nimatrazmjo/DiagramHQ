@@ -20,6 +20,7 @@ import {
   type CanvasNode,
   type CanvasEdge,
   type VersionId,
+  type View,
 } from '@diagramhq/domain';
 
 export type ModelSubscriber = (model: ArchitectureModel) => void;
@@ -562,5 +563,163 @@ export class ArchitectureModelClient {
   isIdenticalTo(otherModel: ArchitectureModel): boolean {
     if (!this.currentModel) return false;
     return isModelIdentical(this.currentModel, otherModel);
+  }
+
+  /**
+   * Projects the model to canvas nodes and edges for a SPECIFIC view.
+   * Only includes objects that are members of that view (using their per-view layout position).
+   * Only includes connections whose source and target are both in the view.
+   */
+  projectToView(
+    viewObjects: Array<{ objectId: string; positionX: number; positionY: number }>,
+  ): { nodes: CanvasNode[]; edges: CanvasEdge[] } {
+    if (!this.currentModel) {
+      return { nodes: [], edges: [] };
+    }
+
+    const posMap = new Map<string, { x: number; y: number }>();
+    const memberIds = new Set<string>();
+    for (const vo of viewObjects) {
+      posMap.set(vo.objectId, { x: vo.positionX, y: vo.positionY });
+      memberIds.add(vo.objectId);
+    }
+
+    // Canvas nodes for objects present in this view
+    const nodes: CanvasNode[] = this.currentModel.objects
+      .filter((obj) => memberIds.has(obj.id))
+      .map((obj) => mapModelObjectToCanvasNode(obj, posMap.get(obj.id)));
+
+    // Canvas edges for connections where both endpoints are visible in this view
+    const edges: CanvasEdge[] = this.currentModel.connections
+      .filter((conn) => memberIds.has(conn.sourceObjectId) && memberIds.has(conn.targetObjectId))
+      .map((conn) => mapModelConnectionToCanvasEdge(conn));
+
+    return { nodes, edges };
+  }
+
+  /**
+   * Fetches all views belonging to an architecture.
+   */
+  async fetchViews(architectureId: string): Promise<View[]> {
+    try {
+      const res = await fetch(`/architectures/${architectureId}/views`);
+      if (res.ok) {
+        const data = await res.json();
+        return Array.isArray(data.views) ? data.views : [];
+      }
+    } catch (err) {
+      console.warn('Failed to fetch views:', err);
+    }
+    return [];
+  }
+
+  /**
+   * Creates a new view for an architecture.
+   */
+  async createView(
+    architectureId: string,
+    input: { name: string; kind?: string; level?: number; description?: string },
+  ): Promise<View | null> {
+    try {
+      const res = await fetch(`/architectures/${architectureId}/views`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.view || null;
+      }
+    } catch (err) {
+      console.warn('Failed to create view:', err);
+    }
+    return null;
+  }
+
+  /**
+   * Deletes a view. Keeps all model objects intact.
+   */
+  async deleteView(viewId: string): Promise<boolean> {
+    try {
+      const res = await fetch(`/views/${viewId}`, { method: 'DELETE' });
+      return res.ok;
+    } catch (err) {
+      console.warn('Failed to delete view:', err);
+      return false;
+    }
+  }
+
+  /**
+   * Fetches view object memberships and layout positions for a view.
+   */
+  async fetchViewObjects(
+    viewId: string,
+  ): Promise<Array<{ viewId: string; objectId: string; positionX: number; positionY: number }>> {
+    try {
+      const res = await fetch(`/views/${viewId}/objects`);
+      if (res.ok) {
+        const data = await res.json();
+        return Array.isArray(data.viewObjects) ? data.viewObjects : [];
+      }
+    } catch (err) {
+      console.warn('Failed to fetch view objects:', err);
+    }
+    return [];
+  }
+
+  /**
+   * Adds an existing model object to a view with optional position.
+   */
+  async addObjectToView(
+    viewId: string,
+    objectId: string,
+    position?: { x: number; y: number },
+  ): Promise<boolean> {
+    try {
+      const res = await fetch(`/views/${viewId}/objects`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ objectId, position: position || { x: 100, y: 100 } }),
+      });
+      return res.ok;
+    } catch (err) {
+      console.warn('Failed to add object to view:', err);
+      return false;
+    }
+  }
+
+  /**
+   * Removes an object from a view without deleting it from the model.
+   */
+  async removeObjectFromView(viewId: string, objectId: string): Promise<boolean> {
+    try {
+      const res = await fetch(`/views/${viewId}/objects/${objectId}`, {
+        method: 'DELETE',
+      });
+      return res.ok;
+    } catch (err) {
+      console.warn('Failed to remove object from view:', err);
+      return false;
+    }
+  }
+
+  /**
+   * Batch persists layout positions for objects in a view.
+   */
+  async saveViewPositions(
+    viewId: string,
+    positions: Array<{ objectId: string; x: number; y: number }>,
+  ): Promise<boolean> {
+    try {
+      const res = await fetch(`/views/${viewId}/objects/positions`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ positions }),
+      });
+      return res.ok;
+    } catch (err) {
+      console.warn('Failed to save view positions:', err);
+      return false;
+    }
   }
 }

@@ -2,6 +2,40 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-05 — F145 — Real views: reuse objects across views (Phase 14 — UX Remediation)
+
+Status: COMPLETE
+
+Implemented:
+- Web layer (`apps/web/`):
+  - Architecture Model Client (`apps/web/lib/model/architecture-model-client.ts`):
+    - Added `projectToView(viewObjects)` which projects only view member objects with their per-view layout positions and visible connections between member objects.
+    - Added real views client API methods: `fetchViews`, `createView`, `deleteView`, `fetchViewObjects`, `addObjectToView`, `removeObjectFromView`, `saveViewPositions`.
+  - Model Proxy (`apps/web/lib/model/model-proxy.ts`):
+    - Added API endpoints and in-memory mock handlers:
+      - `GET /architectures/:id/views` (lists all architecture views)
+      - `POST /architectures/:id/views` (creates a view)
+      - `GET /views/:viewId` and `PATCH /views/:viewId`
+      - `DELETE /views/:viewId` (deletes view and associated view objects)
+      - `GET /views/:viewId/objects` (lists view members with per-view positions)
+      - `POST /views/:viewId/objects` (adds model object to view with position)
+      - `DELETE /views/:viewId/objects/:objectId` (removes object from view without deleting it from model)
+      - `PATCH /views/:viewId/objects/positions` (updates per-view layout coordinates)
+      - `GET /views/:viewId/projection` (projects view members and positions)
+  - IcePanel Sidebar (`apps/web/components/canvas/icepanel-sidebar.tsx`):
+    - Added Architecture Views section in Diagrams tab with active indicator, 1-click view switching, delete confirmation, and inline create view form (`name`, `kind`, `level`).
+    - Added 1-click addition button (`data-testid="add-to-view-${item.id}"` / `+ Add`) in Model Catalog for any model object not currently in the active view (≤ 2 interaction budget satisfied in 1 click).
+    - Added "In View ✓" badge and remove button (`data-testid="remove-from-view-${item.id}"`) for objects already in the view.
+  - DiagramHQ Studio (`apps/web/app/studio/page.tsx`):
+    - Added real views state: `views`, `activeViewId`, `effectiveViewId`, and `allModelObjects`.
+    - Added header view switcher dropdown (`studio-view-switcher`) for switching views.
+    - Added `handleSelectView`, `handleCreateView`, `handleDeleteView`, `handleAddObjectToActiveView`, `handleRemoveObjectFromActiveView`.
+    - Synchronized `allModelObjects` so renaming or updating an object once reflects across all projecting views while preserving independent per-view layouts.
+  - Tests (`apps/web/real-views-reuse.spec.tsx`):
+    - 6 unit & integration tests covering view creation & listing, independent per-view layout coordinates, single-point editing reflecting across multiple views, remove-from-view invariance (`remove ≠ delete`), `projectToView` layout projection, and IcePanelSidebar 1-click addition/removal UI affordances.
+- Verification: `pnpm verify ✓` (Prisma generate, domain build, typecheck, lint, 134 test suites / 698 tests passing, check-architecture clean), `pnpm build ✓` (Next.js production build clean).
+- **Phase 14 — UX Remediation is 100% COMPLETE!**
+
 ## 2026-10-04 — F144 — Wire the editor to the model API (Phase 14 — UX Remediation)
 
 Status: COMPLETE

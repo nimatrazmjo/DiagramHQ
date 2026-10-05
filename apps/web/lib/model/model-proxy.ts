@@ -12,6 +12,7 @@ import {
   type Version,
   type VersionId,
   type View,
+  type ViewId,
   type WorkspaceId,
 } from '@diagramhq/domain';
 
@@ -164,6 +165,44 @@ function handleInMemoryFallback(
     }
   }
 
+  // /architectures/:id/views
+  const archViewsMatch = cleanPath.match(/^\/?architectures\/([^/]+)\/views$/);
+  if (archViewsMatch) {
+    const archId = archViewsMatch[1]!;
+    if (method === 'GET') {
+      const viewsList = Array.from(inMemModelStore.views.values()).filter(
+        (v) => v.architectureId === archId,
+      );
+      if (viewsList.length === 0) {
+        const defaultView: View = {
+          id: `view-${archId}` as unknown as ViewId,
+          architectureId: archId as unknown as ArchitectureId,
+          name: 'System Context',
+          kind: 'context',
+          level: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        inMemModelStore.views.set(defaultView.id, defaultView);
+        viewsList.push(defaultView);
+      }
+      return NextResponse.json({ views: viewsList });
+    }
+    if (method === 'POST') {
+      const newView: View = {
+        id: (parsedBody.id || createId('vw')) as unknown as ViewId,
+        architectureId: archId as unknown as ArchitectureId,
+        name: parsedBody.name || 'New Architecture View',
+        kind: parsedBody.kind || 'context',
+        level: parsedBody.level || 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      inMemModelStore.views.set(newView.id, newView);
+      return NextResponse.json({ view: newView }, { status: 201 });
+    }
+  }
+
   // GET /architectures/:id/model
   const archModelMatch = cleanPath.match(/^\/?architectures\/([^/]+)\/model$/);
   if (archModelMatch && method === 'GET') {
@@ -303,9 +342,81 @@ function handleInMemoryFallback(
       const pos = parsedBody.position || { x: 100, y: 100 };
       const list = inMemModelStore.viewObjects.get(viewId) || [];
       const item = { viewId, objectId, positionX: pos.x, positionY: pos.y };
-      list.push(item);
+      const existingIdx = list.findIndex((vo) => vo.objectId === objectId);
+      if (existingIdx >= 0) {
+        list[existingIdx] = item;
+      } else {
+        list.push(item);
+      }
       inMemModelStore.viewObjects.set(viewId, list);
       return NextResponse.json({ viewObject: item }, { status: 201 });
+    }
+  }
+
+  // DELETE /views/:viewId/objects/:objectId
+  const viewObjDelMatch = cleanPath.match(/^\/?views\/([^/]+)\/objects\/([^/]+)$/);
+  if (viewObjDelMatch && method === 'DELETE') {
+    const viewId = viewObjDelMatch[1]!;
+    const objectId = viewObjDelMatch[2]!;
+    const list = inMemModelStore.viewObjects.get(viewId) || [];
+    inMemModelStore.viewObjects.set(
+      viewId,
+      list.filter((vo) => vo.objectId !== objectId),
+    );
+    // Crucially do NOT delete from inMemModelStore.objects: removal from view preserves model object!
+    return NextResponse.json({ success: true, removedObjectId: objectId });
+  }
+
+  // GET /views/:viewId/projection
+  const viewProjMatch = cleanPath.match(/^\/?views\/([^/]+)\/projection$/);
+  if (viewProjMatch && method === 'GET') {
+    const viewId = viewProjMatch[1]!;
+    const view = inMemModelStore.views.get(viewId);
+    if (!view) return NextResponse.json({ error: 'View not found' }, { status: 404 });
+    const viewObjs = inMemModelStore.viewObjects.get(viewId) || [];
+    const objects = viewObjs
+      .map((vo) => {
+        const obj = inMemModelStore.objects.get(vo.objectId);
+        if (!obj) return null;
+        return {
+          id: obj.id,
+          name: obj.name,
+          kind: obj.kind,
+          description: obj.description,
+          metadata: obj.metadata,
+          position: { x: vo.positionX, y: vo.positionY },
+        };
+      })
+      .filter(Boolean);
+    return NextResponse.json({ view, objects });
+  }
+
+  // /views/:viewId
+  const viewMatch = cleanPath.match(/^\/?views\/([^/]+)$/);
+  if (viewMatch) {
+    const viewId = viewMatch[1]!;
+    if (method === 'GET') {
+      const view = inMemModelStore.views.get(viewId);
+      if (!view) return NextResponse.json({ error: 'View not found' }, { status: 404 });
+      return NextResponse.json({ view });
+    }
+    if (method === 'PATCH') {
+      const view = inMemModelStore.views.get(viewId);
+      if (!view) return NextResponse.json({ error: 'View not found' }, { status: 404 });
+      const updated: View = {
+        ...view,
+        name: parsedBody.name ?? view.name,
+        kind: parsedBody.kind ?? view.kind,
+        level: parsedBody.level ?? view.level,
+        updatedAt: new Date(),
+      };
+      inMemModelStore.views.set(viewId, updated);
+      return NextResponse.json({ view: updated });
+    }
+    if (method === 'DELETE') {
+      inMemModelStore.views.delete(viewId);
+      inMemModelStore.viewObjects.delete(viewId);
+      return NextResponse.json({ success: true, id: viewId });
     }
   }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import type { CanvasNode } from '@diagramhq/domain';
+import type { CanvasNode, View, ModelObject } from '@diagramhq/domain';
 import { getTechnologyIconPath } from '../../lib/icons';
 
 export interface IcePanelSidebarProps {
@@ -17,6 +17,15 @@ export interface IcePanelSidebarProps {
     customData?: { label?: string; technology?: string; icon?: string; description?: string }
   ) => void;
   onOpenIconPicker?: () => void;
+  // Real Views (F145)
+  views?: View[];
+  activeViewId?: string;
+  onSelectView?: (viewId: string) => void;
+  onCreateView?: (input: { name: string; kind?: string; level?: number; description?: string }) => void;
+  onDeleteView?: (viewId: string) => void;
+  allModelObjects?: ModelObject[];
+  onAddObjectToActiveView?: (objectId: string) => void;
+  onRemoveObjectFromActiveView?: (objectId: string) => void;
 }
 
 export type ModelCategory = 'actor' | 'system' | 'application' | 'database' | 'queue' | 'component';
@@ -90,6 +99,14 @@ export function IcePanelSidebar({
   selectedNodeId,
   onSelectNode,
   onAddNode,
+  views,
+  activeViewId,
+  onSelectView,
+  onCreateView,
+  onDeleteView,
+  allModelObjects,
+  onAddObjectToActiveView,
+  onRemoveObjectFromActiveView,
 }: IcePanelSidebarProps): JSX.Element {
   const [sidebarTab, setSidebarTab] = useState<'diagrams' | 'model'>('model');
   const [searchQuery, setSearchQuery] = useState('');
@@ -109,44 +126,97 @@ export function IcePanelSidebar({
   const [newObjectTech, setNewObjectTech] = useState('');
   const [newObjectDesc, setNewObjectDesc] = useState('');
 
+  // Quick View Creation State (F145)
+  const [isCreatingView, setIsCreatingView] = useState(false);
+  const [newViewName, setNewViewName] = useState('');
+  const [newViewKind, setNewViewKind] = useState<string>('context');
+
   const toggleCategory = (cat: string) => {
     setExpandedCategories((prev) => ({ ...prev, [cat]: !prev[cat] }));
   };
 
-  // Group nodes by category
+  // Active canvas node IDs
+  const activeNodeIds = useMemo(() => new Set(nodes.map((n) => n.id)), [nodes]);
+
+  // Group objects by category (either from allModelObjects or from nodes)
   const groupedNodes = useMemo(() => {
-    const map = new Map<ModelCategory, CanvasNode[]>();
+    const map = new Map<
+      ModelCategory,
+      Array<{
+        id: string;
+        label: string;
+        technology?: string;
+        category: ModelCategory;
+        isInActiveView: boolean;
+        icon?: string;
+      }>
+    >();
+
     for (const cat of CATEGORIES) {
       map.set(cat.kind, []);
     }
 
     const q = searchQuery.trim().toLowerCase();
 
-    for (const node of nodes) {
-      const type = (node.type || 'application') as string;
-      const data = (node.data || {}) as Record<string, unknown>;
-      const label = String(data.label || node.id);
-      const tech = String(data.technology || data.databaseKind || '');
+    if (allModelObjects && allModelObjects.length > 0) {
+      for (const obj of allModelObjects) {
+        const label = obj.name || obj.id;
+        const tech = (obj.metadata?.technology as string) || '';
+        if (q && !label.toLowerCase().includes(q) && !tech.toLowerCase().includes(q)) {
+          continue;
+        }
 
-      if (q && !label.toLowerCase().includes(q) && !tech.toLowerCase().includes(q)) {
-        continue;
+        let category: ModelCategory = 'application';
+        if (obj.kind === 'system') category = 'system';
+        else if (obj.kind === 'actor') category = 'actor';
+        else if (obj.kind === 'store') category = 'database';
+        else if (obj.kind === 'component') category = 'component';
+        else if (obj.kind === 'application') category = 'application';
+
+        const list = map.get(category) ?? [];
+        list.push({
+          id: obj.id,
+          label,
+          technology: tech,
+          category,
+          isInActiveView: activeNodeIds.has(obj.id),
+        });
+        map.set(category, list);
       }
+    } else {
+      for (const node of nodes) {
+        const type = (node.type || 'application') as string;
+        const data = (node.data || {}) as Record<string, unknown>;
+        const label = String(data.label || node.id);
+        const tech = String(data.technology || data.databaseKind || '');
 
-      let category: ModelCategory = 'application';
-      if (type === 'system' || type === 'c4Context') category = 'system';
-      else if (type === 'person' || type === 'actor') category = 'actor';
-      else if (type === 'database' || type === 'store') category = 'database';
-      else if (type === 'queue') category = 'queue';
-      else if (type === 'component' || type === 'c4Component') category = 'component';
-      else if (type === 'application' || type === 'c4Container') category = 'application';
+        if (q && !label.toLowerCase().includes(q) && !tech.toLowerCase().includes(q)) {
+          continue;
+        }
 
-      const list = map.get(category) ?? [];
-      list.push(node);
-      map.set(category, list);
+        let category: ModelCategory = 'application';
+        if (type === 'system' || type === 'c4Context') category = 'system';
+        else if (type === 'person' || type === 'actor') category = 'actor';
+        else if (type === 'database' || type === 'store') category = 'database';
+        else if (type === 'queue') category = 'queue';
+        else if (type === 'component' || type === 'c4Component') category = 'component';
+        else if (type === 'application' || type === 'c4Container') category = 'application';
+
+        const list = map.get(category) ?? [];
+        list.push({
+          id: node.id,
+          label,
+          technology: tech,
+          category,
+          isInActiveView: true,
+          icon: data.icon as string | undefined,
+        });
+        map.set(category, list);
+      }
     }
 
     return map;
-  }, [nodes, searchQuery]);
+  }, [allModelObjects, nodes, activeNodeIds, searchQuery]);
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -385,26 +455,31 @@ export function IcePanelSidebar({
                           No {cat.title.toLowerCase()} in model
                         </div>
                       ) : (
-                        items.map((node) => {
-                          const data = (node.data || {}) as Record<string, unknown>;
-                          const label = String(data.label || node.id);
-                          const tech = String(data.technology || data.databaseKind || '');
-                          const isSelected = selectedNodeId === node.id;
+                        items.map((item) => {
+                          const label = item.label;
+                          const tech = item.technology || '';
+                          const isSelected = selectedNodeId === item.id;
                           const brandIcon =
-                            (data.icon as string) ||
+                            item.icon ||
                             getTechnologyIconPath(tech || label);
 
                           return (
                             <div
-                              key={node.id}
-                              onClick={() => onSelectNode(node.id)}
-                              className={`group flex items-center justify-between p-1.5 rounded-lg cursor-pointer transition-all border ${
+                              key={item.id}
+                              onClick={() => {
+                                if (item.isInActiveView) {
+                                  onSelectNode(item.id);
+                                }
+                              }}
+                              className={`group flex items-center justify-between p-1.5 rounded-lg transition-all border ${
                                 isSelected
                                   ? 'bg-blue-600/20 border-blue-500 text-white shadow-sm'
-                                  : 'bg-slate-950/40 border-slate-800/80 hover:bg-slate-800/80 hover:border-slate-700 text-slate-300'
+                                  : item.isInActiveView
+                                  ? 'bg-slate-950/40 border-slate-800/80 hover:bg-slate-800/80 hover:border-slate-700 text-slate-300'
+                                  : 'bg-slate-950/20 border-slate-800/40 hover:bg-slate-900/60 text-slate-400'
                               }`}
                             >
-                              <div className="flex items-center gap-2 min-w-0">
+                              <div className="flex items-center gap-2 min-w-0 flex-1">
                                 <div className="w-5 h-5 rounded bg-slate-800 border border-slate-700 flex items-center justify-center p-0.5 shrink-0">
                                   {brandIcon ? (
                                     <img src={brandIcon} alt="" className="w-full h-full object-contain" />
@@ -422,9 +497,44 @@ export function IcePanelSidebar({
                                 </div>
                               </div>
 
-                              <span className="text-[9px] font-mono text-emerald-400/80 opacity-0 group-hover:opacity-100 transition-opacity">
-                                Canvas
-                              </span>
+                              <div className="flex items-center gap-1 shrink-0 ml-1">
+                                {item.isInActiveView ? (
+                                  <>
+                                    <span className="text-[9px] font-mono text-emerald-400 px-1 py-0.2 rounded bg-emerald-500/10 border border-emerald-500/30">
+                                      In View
+                                    </span>
+                                    {onRemoveObjectFromActiveView && (
+                                      <button
+                                        type="button"
+                                        data-testid={`remove-from-view-${item.id}`}
+                                        title="Remove from this view (keeps in model)"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          onRemoveObjectFromActiveView(item.id);
+                                        }}
+                                        className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-400 p-0.5 rounded hover:bg-slate-800 transition-opacity text-xs"
+                                      >
+                                        ✕
+                                      </button>
+                                    )}
+                                  </>
+                                ) : (
+                                  onAddObjectToActiveView && (
+                                    <button
+                                      type="button"
+                                      data-testid={`add-to-view-${item.id}`}
+                                      title="Add object to active view (1 click)"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onAddObjectToActiveView(item.id);
+                                      }}
+                                      className="text-[10px] bg-blue-600/80 hover:bg-blue-600 text-white px-2 py-0.5 rounded font-medium shadow-sm transition-colors"
+                                    >
+                                      + Add
+                                    </button>
+                                  )
+                                )}
+                              </div>
                             </div>
                           );
                         })
@@ -438,70 +548,187 @@ export function IcePanelSidebar({
         </div>
       )}
 
-      {/* TAB 2: DIAGRAMS / VIEWS (C4 Levels) */}
+      {/* TAB 2: DIAGRAMS / VIEWS */}
       {sidebarTab === 'diagrams' && (
         <div className="flex flex-col flex-1 overflow-hidden p-3 space-y-4">
           <div>
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 font-mono">
-              C4 Perspective Views
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider font-mono">
+                Architecture Views
+              </div>
+              {onCreateView && (
+                <button
+                  type="button"
+                  data-testid="create-view-open-btn"
+                  onClick={() => setIsCreatingView((v) => !v)}
+                  className="text-xs text-blue-400 hover:text-blue-300 font-medium px-2 py-0.5 rounded hover:bg-slate-800 transition-colors"
+                >
+                  {isCreatingView ? 'Cancel' : '+ New View'}
+                </button>
+              )}
             </div>
-            <div className="space-y-2">
-              {[
-                {
-                  level: 1 as const,
-                  title: '1. System Context View',
-                  desc: 'High-level business boundaries, external systems, and users.',
-                  badge: 'Context (L1)',
-                  icon: '🌐',
-                },
-                {
-                  level: 2 as const,
-                  title: '2. Containers & Applications',
-                  desc: 'Microservices, APIs, frontend clients, and databases.',
-                  badge: 'Container (L2)',
-                  icon: '📦',
-                },
-                {
-                  level: 3 as const,
-                  title: '3. Components & Modules',
-                  desc: 'Internal modules, controllers, repositories, and services.',
-                  badge: 'Component (L3)',
-                  icon: '🧩',
-                },
-              ].map((view) => {
-                const isActive = c4Level === view.level;
-                return (
-                  <div
-                    key={view.level}
-                    onClick={() => onSelectC4Level(view.level)}
-                    className={`p-2.5 rounded-xl border cursor-pointer transition-all ${
-                      isActive
-                        ? 'bg-blue-600/20 border-blue-500 text-white shadow-md shadow-blue-500/10'
-                        : 'bg-slate-950/40 border-slate-800 hover:bg-slate-800/60 hover:border-slate-700 text-slate-300'
-                    }`}
+
+            {/* Inline New View Form */}
+            {isCreatingView && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!newViewName.trim()) return;
+                  let level = 1;
+                  if (newViewKind === 'container') level = 2;
+                  else if (newViewKind === 'component') level = 3;
+                  onCreateView?.({
+                    name: newViewName.trim(),
+                    kind: newViewKind,
+                    level,
+                  });
+                  setNewViewName('');
+                  setIsCreatingView(false);
+                }}
+                className="mb-3 p-2.5 bg-slate-950/80 border border-blue-500/40 rounded-xl space-y-2"
+              >
+                <input
+                  type="text"
+                  placeholder="View Name (e.g. Data Flow, Security)"
+                  value={newViewName}
+                  onChange={(e) => setNewViewName(e.target.value)}
+                  data-testid="new-view-name-input"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                  required
+                />
+                <div className="flex items-center gap-2">
+                  <select
+                    value={newViewKind}
+                    onChange={(e) => setNewViewKind(e.target.value)}
+                    data-testid="new-view-kind-select"
+                    className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none focus:border-blue-500"
                   >
-                    <div className="flex items-center justify-between gap-1 mb-1">
-                      <div className="flex items-center gap-1.5 font-medium text-xs">
-                        <span>{view.icon}</span>
-                        <span>{view.title}</span>
+                    <option value="context">System Context (L1)</option>
+                    <option value="container">Containers & Apps (L2)</option>
+                    <option value="component">Components & Modules (L3)</option>
+                    <option value="security">Security Architecture</option>
+                    <option value="data">Data Lineage & Flow</option>
+                    <option value="custom">Custom View</option>
+                  </select>
+                  <button
+                    type="submit"
+                    data-testid="confirm-create-view-btn"
+                    className="bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1 rounded-lg font-medium shadow-sm transition-colors"
+                  >
+                    Create
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* List of Real Architecture Views */}
+            {views && views.length > 0 ? (
+              <div className="space-y-2">
+                {views.map((view) => {
+                  const isActive = view.id === activeViewId;
+                  return (
+                    <div
+                      key={view.id}
+                      data-testid={`view-item-${view.id}`}
+                      onClick={() => onSelectView?.(view.id)}
+                      className={`group p-2.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
+                        isActive
+                          ? 'bg-blue-600/20 border-blue-500 text-white shadow-md shadow-blue-500/10'
+                          : 'bg-slate-950/40 border-slate-800 hover:bg-slate-800/60 hover:border-slate-700 text-slate-300'
+                      }`}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="text-xs font-medium truncate">{view.name}</span>
+                          {isActive && (
+                            <span className="text-[9px] bg-blue-500 text-white px-1.5 py-0.2 rounded font-mono font-bold">
+                              ACTIVE
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[10px] text-slate-400 font-mono flex items-center gap-2">
+                          <span className="uppercase">{view.kind || 'context'}</span>
+                          {view.level ? <span>L{view.level}</span> : null}
+                        </div>
                       </div>
-                      <span
-                        className={`text-[9px] font-mono px-1.5 py-0.5 rounded border ${
-                          isActive
-                            ? 'bg-blue-500 text-white border-blue-400'
-                            : 'bg-slate-800 text-slate-400 border-slate-700'
-                        }`}
-                      >
-                        {view.badge}
-                      </span>
+
+                      {views.length > 1 && onDeleteView && (
+                        <button
+                          type="button"
+                          data-testid={`delete-view-btn-${view.id}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteView(view.id);
+                          }}
+                          title="Delete view (objects remain in model)"
+                          className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-rose-400 p-1 rounded hover:bg-slate-800 transition-all text-xs"
+                        >
+                          🗑️
+                        </button>
+                      )}
                     </div>
-                    <p className="text-[11px] text-slate-400 leading-snug line-clamp-2">
-                      {view.desc}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {[
+                  {
+                    level: 1 as const,
+                    title: '1. System Context View',
+                    desc: 'High-level business boundaries, external systems, and users.',
+                    badge: 'Context (L1)',
+                    icon: '🌐',
+                  },
+                  {
+                    level: 2 as const,
+                    title: '2. Containers & Applications',
+                    desc: 'Microservices, APIs, frontend clients, and databases.',
+                    badge: 'Container (L2)',
+                    icon: '📦',
+                  },
+                  {
+                    level: 3 as const,
+                    title: '3. Components & Modules',
+                    desc: 'Internal modules, controllers, repositories, and services.',
+                    badge: 'Component (L3)',
+                    icon: '🧩',
+                  },
+                ].map((view) => {
+                  const isActive = c4Level === view.level;
+                  return (
+                    <div
+                      key={view.level}
+                      onClick={() => onSelectC4Level(view.level)}
+                      className={`p-2.5 rounded-xl border cursor-pointer transition-all ${
+                        isActive
+                          ? 'bg-blue-600/20 border-blue-500 text-white shadow-md shadow-blue-500/10'
+                          : 'bg-slate-950/40 border-slate-800 hover:bg-slate-800/60 hover:border-slate-700 text-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <div className="flex items-center gap-1.5 font-medium text-xs">
+                          <span>{view.icon}</span>
+                          <span>{view.title}</span>
+                        </div>
+                        <span
+                          className={`text-[9px] font-mono px-1.5 py-0.5 rounded border ${
+                            isActive
+                              ? 'bg-blue-500 text-white border-blue-400'
+                              : 'bg-slate-800 text-slate-400 border-slate-700'
+                          }`}
+                        >
+                          {view.badge}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 leading-snug line-clamp-2">
+                        {view.desc}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="pt-2 border-t border-slate-800 text-xs text-slate-400">

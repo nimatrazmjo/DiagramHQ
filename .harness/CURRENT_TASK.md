@@ -1,11 +1,11 @@
-# CURRENT TASK: F043 — Flow visualization (NOT STARTED)
+# CURRENT TASK: F109 — Command palette (NOT STARTED)
 
 ## Status: NOT STARTED
 
 ## Current Feature
-**F043 — Flow visualization** (Phase 05 — Flows)
-- Highlight the flow path over the existing architecture
-- Test: flow path renders over the model.
+**F109 — Command palette** (Phase 02 — Canvas & Interaction)
+- ⌘K command palette for creating objects, jumping to objects, actions, and global command dispatching
+- Test: representative palette actions execute and command dispatcher runs.
 
 ## Next Feature
-- **F044 — Flow playback** (Phase 05 — Flows)
+- **F110 — Global search** (Phase 02 — Canvas & Interaction)

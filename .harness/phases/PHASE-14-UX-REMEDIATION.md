@@ -356,7 +356,7 @@ Success metric: activation = first real object persisted to a model.
 
 ### F145 — Real views: reuse objects across views
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Priority: P1 · Effort: Medium
 

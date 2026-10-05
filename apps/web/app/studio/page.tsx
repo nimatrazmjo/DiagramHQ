@@ -39,6 +39,7 @@ import {
   createArchitectureModel,
   type ArchitectureModel,
   type View,
+  type ModelObject,
   type ArchitectureBranch,
   type LiveArchitectureVersion,
   type NumberedSnapshot,
@@ -98,7 +99,11 @@ import {
   ConnectNodesCommand,
   defaultCommandDispatcher,
 } from '../../lib/commands';
-import { mapCanvasKindToModelKind } from '../../lib/model/architecture-model-client';
+import {
+  mapCanvasKindToModelKind,
+  mapModelObjectToCanvasNode,
+  mapCanvasNodeToModelObject,
+} from '../../lib/model/architecture-model-client';
 
 // F136 Preview Fixture: simulated peer presence (PREVIEW_REGISTRY.presence)
 const INITIAL_PEERS: PresencePeerBadge[] = [
@@ -652,6 +657,38 @@ export default function StudioPage(): JSX.Element {
     [],
   );
 
+  // Real Views State & Synchronization (F145)
+  const [views, setViews] = useState<View[]>([]);
+  const [activeViewId, setActiveViewId] = useState<string | null>(null);
+  const [allModelObjects, setAllModelObjects] = useState<ModelObject[]>([]);
+
+  const effectiveViewId = activeViewId || viewId || (views.length > 0 && views[0] ? views[0].id : null);
+
+  useEffect(() => {
+    if (!architectureId) return;
+
+    fetch(`/architectures/${architectureId}/views`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data.views)) {
+          setViews(data.views);
+          if (!activeViewId && data.views.length > 0) {
+            setActiveViewId(data.views[0].id);
+          }
+        }
+      })
+      .catch(() => {});
+
+    fetch(`/architectures/${architectureId}/objects`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && Array.isArray(data.objects)) {
+          setAllModelObjects(data.objects);
+        }
+      })
+      .catch(() => {});
+  }, [architectureId, activeViewId]);
+
   const persistModelObject = useCallback(
     async (node: CanvasNode) => {
       if (!architectureId) return;
@@ -674,8 +711,8 @@ export default function StudioPage(): JSX.Element {
           }),
         });
 
-        if (viewId) {
-          await fetch(`/views/${viewId}/objects`, {
+        if (effectiveViewId) {
+          await fetch(`/views/${effectiveViewId}/objects`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -688,7 +725,7 @@ export default function StudioPage(): JSX.Element {
         console.warn('Failed to persist model object:', e);
       }
     },
-    [architectureId, viewId],
+    [architectureId, effectiveViewId],
   );
 
   const deleteModelObject = useCallback(
@@ -734,6 +771,156 @@ export default function StudioPage(): JSX.Element {
       }
     },
     [],
+  );
+
+  const handleSelectView = useCallback(
+    async (targetViewId: string) => {
+      // 1. Batch persist current view's positions before leaving
+      if (effectiveViewId && currentNodes.length > 0) {
+        await handleBatchPersist(
+          effectiveViewId,
+          currentNodes.map((n) => ({
+            objectId: n.id,
+            x: Math.round(n.position.x),
+            y: Math.round(n.position.y),
+          })),
+        );
+      }
+
+      setActiveViewId(targetViewId);
+
+      // 2. Fetch target view's objects & layout
+      try {
+        const res = await fetch(`/views/${targetViewId}/objects`);
+        if (res.ok) {
+          const data = await res.json();
+          const viewObjs: Array<{ objectId: string; positionX: number; positionY: number }> =
+            Array.isArray(data.viewObjects) ? data.viewObjects : [];
+
+          const posMap = new Map<string, { x: number; y: number }>();
+          const memberIds = new Set<string>();
+          for (const vo of viewObjs) {
+            posMap.set(vo.objectId, { x: vo.positionX, y: vo.positionY });
+            memberIds.add(vo.objectId);
+          }
+
+          // Project objects from allModelObjects
+          const targetNodes: CanvasNode[] = allModelObjects
+            .filter((obj) => memberIds.has(obj.id))
+            .map((obj) => mapModelObjectToCanvasNode(obj, posMap.get(obj.id)));
+
+          const targetEdges: CanvasEdge[] = currentEdges.filter(
+            (e) => memberIds.has(e.source) && memberIds.has(e.target),
+          );
+
+          setCurrentNodes(targetNodes);
+          setCurrentEdges(targetEdges);
+          setSelectedNodeId(null);
+          setSelectedEdgeId(null);
+          setCanvasKey((k) => k + 1);
+        }
+      } catch (err) {
+        console.warn('Failed to switch view:', err);
+      }
+    },
+    [effectiveViewId, currentNodes, currentEdges, allModelObjects, handleBatchPersist],
+  );
+
+  const handleCreateView = useCallback(
+    async (input: { name: string; kind?: string; level?: number; description?: string }) => {
+      if (!architectureId) return;
+      try {
+        const res = await fetch(`/architectures/${architectureId}/views`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(input),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.view) {
+            setViews((prev) => [...prev, data.view]);
+            await handleSelectView(data.view.id);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to create view:', err);
+      }
+    },
+    [architectureId, handleSelectView],
+  );
+
+  const handleDeleteView = useCallback(
+    async (targetViewId: string) => {
+      if (views.length <= 1) return;
+      try {
+        await fetch(`/views/${targetViewId}`, { method: 'DELETE' });
+        setViews((prev) => prev.filter((v) => v.id !== targetViewId));
+        if (effectiveViewId === targetViewId) {
+          const remaining = views.filter((v) => v.id !== targetViewId);
+          if (remaining.length > 0 && remaining[0]) {
+            await handleSelectView(remaining[0].id);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to delete view:', err);
+      }
+    },
+    [views, effectiveViewId, handleSelectView],
+  );
+
+  const handleAddObjectToActiveView = useCallback(
+    async (objectId: string) => {
+      const targetViewId = effectiveViewId;
+      if (!targetViewId) return;
+
+      const existingObj = allModelObjects.find((o) => o.id === objectId);
+      if (!existingObj) return;
+
+      const defaultPos = {
+        x: 200 + (currentNodes.length % 5) * 40,
+        y: 160 + (currentNodes.length % 5) * 40,
+      };
+
+      try {
+        await fetch(`/views/${targetViewId}/objects`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ objectId, position: defaultPos }),
+        });
+
+        if (!currentNodes.some((n) => n.id === objectId)) {
+          const newNode = mapModelObjectToCanvasNode(existingObj, defaultPos);
+          setCurrentNodes((prev) => [...prev, newNode]);
+          setSelectedNodeId(objectId);
+          setCanvasKey((k) => k + 1);
+        }
+      } catch (err) {
+        console.warn('Failed to add object to active view:', err);
+      }
+    },
+    [effectiveViewId, allModelObjects, currentNodes],
+  );
+
+  const handleRemoveObjectFromActiveView = useCallback(
+    async (objectId: string) => {
+      const targetViewId = effectiveViewId;
+      if (!targetViewId) return;
+
+      try {
+        await fetch(`/views/${targetViewId}/objects/${objectId}`, { method: 'DELETE' });
+
+        // Remove node and connected edges from current canvas, keeping object in model!
+        setCurrentNodes((prev) => prev.filter((n) => n.id !== objectId));
+        setCurrentEdges((prev) => prev.filter((e) => e.source !== objectId && e.target !== objectId));
+        if (selectedNodeId === objectId) {
+          setSelectedNodeId(null);
+        }
+        setCanvasKey((k) => k + 1);
+      } catch (err) {
+        console.warn('Failed to remove object from active view:', err);
+      }
+    },
+    [effectiveViewId, selectedNodeId],
   );
 
   const [isFlowPlaybackActive, setIsFlowPlaybackActive] = useState(false);
@@ -1367,6 +1554,26 @@ export default function StudioPage(): JSX.Element {
       setCurrentNodes((prev) =>
         prev.map((n) => (n.id === selectedNodeId ? { ...n, data: newData } : n)),
       );
+
+      setAllModelObjects((prev) =>
+        prev.map((o) =>
+          o.id === selectedNodeId
+            ? {
+                ...o,
+                name: (newData.label as string) || (newData.name as string) || o.name,
+                description:
+                  newData.description !== undefined ? (newData.description as string) : o.description,
+                metadata: {
+                  ...o.metadata,
+                  technology:
+                    newData.technology !== undefined
+                      ? (newData.technology as string)
+                      : o.metadata?.technology,
+                },
+              }
+            : o,
+        ),
+      );
     },
     [selectedNodeId, currentNodes],
   );
@@ -1401,6 +1608,7 @@ export default function StudioPage(): JSX.Element {
     (nodeId: string) => {
       setCurrentNodes((prev) => prev.filter((n) => n.id !== nodeId));
       setCurrentEdges((prev) => prev.filter((e) => e.source !== nodeId && e.target !== nodeId));
+      setAllModelObjects((prev) => prev.filter((o) => o.id !== nodeId));
       if (selectedNodeId === nodeId) setSelectedNodeId(null);
       void deleteModelObject(nodeId);
     },
@@ -1438,7 +1646,7 @@ export default function StudioPage(): JSX.Element {
 
       const command = new ConnectNodesCommand({
         edge: newEdge,
-        viewId: viewId || undefined,
+        viewId: effectiveViewId || undefined,
         persistCreateFn: async (_vId, edge) => {
           await persistModelConnection(edge);
         },
@@ -1452,7 +1660,7 @@ export default function StudioPage(): JSX.Element {
       setCurrentEdges((prev) => [...prev, newEdge]);
       void persistModelConnection(newEdge);
     },
-    [selectedNodeId, viewId, persistModelConnection, deleteModelConnection],
+    [selectedNodeId, effectiveViewId, persistModelConnection, deleteModelConnection],
   );
 
   // Add node from Sidebar or Palette
@@ -1491,12 +1699,16 @@ export default function StudioPage(): JSX.Element {
       };
 
       setCurrentNodes((nds) => [...nds, newNode]);
+      setAllModelObjects((prev) => [
+        ...prev,
+        mapCanvasNodeToModelObject(newNode, architectureId || 'arch-default', 'ver-default'),
+      ]);
       void persistModelObject(newNode);
       setSelectedNodeId(id);
       setSelectedEdgeId(null);
       if (!isInspectorOpen) setIsInspectorOpen(true);
     },
-    [currentNodes.length, isInspectorOpen, c4Level, activeParentId, persistModelObject],
+    [currentNodes.length, isInspectorOpen, c4Level, activeParentId, architectureId, persistModelObject],
   );
 
   const handleDrillIn = useCallback(
@@ -2108,6 +2320,28 @@ export default function StudioPage(): JSX.Element {
             </button>
           </div>
 
+          {/* Real Architecture Views Switcher (F145) */}
+          {views.length > 0 && (
+            <div className="flex items-center gap-1.5 bg-slate-950/80 p-1 rounded-xl border border-slate-800 text-xs">
+              <span className="text-[11px] text-slate-400 px-1 font-mono flex items-center gap-1">
+                <span>🗺️</span>
+                <span className="hidden sm:inline">View:</span>
+              </span>
+              <select
+                value={effectiveViewId || ''}
+                onChange={(e) => void handleSelectView(e.target.value)}
+                data-testid="studio-view-switcher"
+                className="bg-slate-900 text-slate-100 text-xs py-1 px-2 rounded-lg border border-slate-700/80 focus:outline-none focus:border-blue-500 cursor-pointer font-medium max-w-[160px] truncate"
+              >
+                {views.map((v) => (
+                  <option key={v.id} value={v.id} className="bg-slate-900 text-slate-100">
+                    {v.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Perspective View Switcher */}
           <div className="hidden md:flex items-center gap-1 bg-slate-950/60 p-1 rounded-lg border border-slate-800 text-xs">
             <span className="text-[11px] text-slate-400 px-1 font-mono">View:</span>
@@ -2538,14 +2772,21 @@ export default function StudioPage(): JSX.Element {
           selectedNodeId={selectedNodeId}
           onSelectNode={handleNodeSelect}
           onAddNode={handleAddNode}
-          onOpenIconPicker={() => setIsIconPickerOpen(true)}
+          views={views}
+          activeViewId={effectiveViewId || undefined}
+          onSelectView={handleSelectView}
+          onCreateView={handleCreateView}
+          onDeleteView={handleDeleteView}
+          allModelObjects={allModelObjects}
+          onAddObjectToActiveView={handleAddObjectToActiveView}
+          onRemoveObjectFromActiveView={handleRemoveObjectFromActiveView}
         />
 
         {/* Full-bleed Infinite Canvas */}
         <div className="flex-1 h-full w-full relative">
           <InfiniteCanvas
             key={canvasKey}
-            viewId={viewId || 'default-view'}
+            viewId={effectiveViewId || 'default-view'}
             persistFn={handleSinglePersist}
             batchPersistFn={handleBatchPersist}
             initialNodes={displayNodes}
@@ -2554,6 +2795,7 @@ export default function StudioPage(): JSX.Element {
             onEdgeSelect={handleEdgeSelect}
             onNodeDragStop={handleNodeDragStop}
             onDrillIn={handleDrillIn}
+            onAddToView={handleAddObjectToActiveView}
             showPalette
             showTemplatePicker
             onNodeCreate={(newNode) => {
@@ -2566,6 +2808,10 @@ export default function StudioPage(): JSX.Element {
                 },
               };
               setCurrentNodes((nds) => [...nds, enrichedNode]);
+              setAllModelObjects((prev) => [
+                ...prev,
+                mapCanvasNodeToModelObject(enrichedNode, architectureId || 'arch-default', 'ver-default'),
+              ]);
               void persistModelObject(enrichedNode);
             }}
             onEdgeConnect={(newEdge) => {
@@ -2588,6 +2834,9 @@ export default function StudioPage(): JSX.Element {
                   return { ...n, data };
                 }),
               );
+              setAllModelObjects((prev) =>
+                prev.map((o) => (o.id === nodeId ? { ...o, name: newLabel } : o)),
+              );
               void fetch(`/objects/${nodeId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
@@ -2597,6 +2846,22 @@ export default function StudioPage(): JSX.Element {
             onNodeMetadataUpdate={(nodeId, data) => {
               setCurrentNodes((prev) =>
                 prev.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, ...data } } : n)),
+              );
+              setAllModelObjects((prev) =>
+                prev.map((o) => {
+                  if (o.id !== nodeId) return o;
+                  return {
+                    ...o,
+                    name: (data.label as string) || (data.name as string) || o.name,
+                    description:
+                      data.description !== undefined ? (data.description as string) : o.description,
+                    metadata: {
+                      ...o.metadata,
+                      technology:
+                        data.technology !== undefined ? (data.technology as string) : o.metadata?.technology,
+                    },
+                  };
+                }),
               );
               void fetch(`/objects/${nodeId}`, {
                 method: 'PATCH',
