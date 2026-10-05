@@ -12,6 +12,7 @@ import { ComponentNode } from './component-node';
 import { DatabaseNode } from './database-node';
 import { QueueNode } from './queue-node';
 import { GroupNode } from './group-node';
+import { EditableNodeLabel } from './editable-node-label';
 
 export { C4ContextNode } from './c4-context-node';
 export { C4ContainerNode } from './c4-container-node';
@@ -25,12 +26,15 @@ export { ComponentNode } from './component-node';
 export { DatabaseNode } from './database-node';
 export { QueueNode } from './queue-node';
 export { GroupNode } from './group-node';
+export { EditableNodeLabel, type EditableNodeLabelProps } from './editable-node-label';
 
 export interface CustomNodeData {
   label: string;
   kind?: string;
   description?: string;
   status?: string;
+  isEditing?: boolean;
+  onRename?: (newLabel: string) => void;
   [key: string]: unknown;
 }
 
@@ -56,7 +60,7 @@ function StoreIcon(): JSX.Element {
 /**
  * Database / storage node with cylinder icon, label, and kind.
  */
-export function StoreNode({ data, selected }: NodeProps): JSX.Element {
+export function StoreNode({ id, data, selected }: NodeProps): JSX.Element {
   const nodeData = (data ?? {}) as unknown as CustomNodeData;
   const label = typeof nodeData.label === 'string' ? nodeData.label : 'Storage Node';
   const kind = typeof nodeData.kind === 'string' ? nodeData.kind : 'store';
@@ -94,7 +98,17 @@ export function StoreNode({ data, selected }: NodeProps): JSX.Element {
         </span>
       </div>
 
-      <div className="text-sm font-semibold text-slate-100 truncate">{label}</div>
+      <EditableNodeLabel
+        nodeId={id}
+        label={label}
+        isEditing={Boolean(nodeData.isEditing)}
+        onCommit={(newLabel) => {
+          if (typeof nodeData.onRename === 'function') {
+            (nodeData.onRename as (val: string) => void)(newLabel);
+          }
+        }}
+        className="text-sm font-semibold text-slate-100 truncate"
+      />
 
       {description && (
         <div className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">

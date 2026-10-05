@@ -8,6 +8,7 @@ import { OwnershipBadges } from './ownership-badges';
 import { TechnologyBadges } from './technology-badges';
 import { PersonaBadges } from './persona-badges';
 import { FlowBadges } from './flow-badges';
+import { EditableNodeLabel } from './editable-node-label';
 
 
 function DatabaseIcon(): JSX.Element {
@@ -125,9 +126,17 @@ export function DatabaseNode({ id: _id, data, selected }: NodeProps): JSX.Elemen
         </span>
       </div>
 
-      <h3 className="font-semibold text-sm leading-tight text-white mb-1 truncate">
-        {label}
-      </h3>
+      <EditableNodeLabel
+        nodeId={_id}
+        label={label}
+        isEditing={Boolean(nodeData.isEditing)}
+        onCommit={(newLabel) => {
+          if (typeof nodeData.onRename === 'function') {
+            (nodeData.onRename as (val: string) => void)(newLabel);
+          }
+        }}
+        className="font-semibold text-sm leading-tight text-white mb-1 truncate"
+      />
 
       {technology && (
         <div className="mt-1 mb-1.5 flex gap-1">

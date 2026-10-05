@@ -60,6 +60,8 @@ import {
   CreateNodeCommand,
   DeleteNodeCommand,
   ConnectNodesCommand,
+  UpdateNodeMetadataCommand,
+  UpdateEdgeDataCommand,
   defaultCommandDispatcher,
   type Command,
   type NodeMoveItem,
@@ -103,6 +105,8 @@ export interface InfiniteCanvasProps {
   onEdgeReconnect?: (oldEdge: CanvasEdge, newConnection: Connection, updatedEdge: CanvasEdge) => void;
   onNodeCreate?: (node: CanvasNode) => void;
   onNodeDelete?: (nodeId: string) => void;
+  onNodeRename?: (nodeId: string, newLabel: string, prevLabel: string) => void;
+  onEdgeLabelChange?: (edgeId: string, newLabel: string, prevLabel: string) => void;
 }
 
 export interface NodeDragStopHandlerOptions {
@@ -290,9 +294,13 @@ function InfiniteCanvasContent({
   onEdgeReconnect,
   onNodeCreate,
   onNodeDelete,
+  onNodeRename,
+  onEdgeLabelChange,
 }: InfiniteCanvasProps): JSX.Element {
   const [nodes, setNodes] = useState<Node[]>(() => initialNodes.map(toFlowNode));
   const [edges, setEdges] = useState<Edge[]>(() => initialEdges.map(toFlowEdge));
+  const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
+  const [editingEdgeId, setEditingEdgeId] = useState<string | null>(null);
   const storeIsSpacePanning = useCanvasStore((s) => s.isSpacePanning);
   const isSpacePanning = propIsSpacePanning ?? storeIsSpacePanning;
   const storeSelectedNodeIds = useCanvasStore((s) => s.selectedNodeIds);
@@ -343,40 +351,166 @@ function InfiniteCanvasContent({
     };
   }, []);
 
+  const handleNodeDoubleClick = useCallback((_event: React.MouseEvent, node: Node) => {
+    setEditingNodeId(node.id);
+  }, []);
+
+  const handleEdgeDoubleClick = useCallback((_event: React.MouseEvent, edge: Edge) => {
+    setEditingEdgeId(edge.id);
+  }, []);
+
+  const handleCommitNodeRename = useCallback(
+    async (nodeId: string, newLabel: string, prevLabel: string) => {
+      setEditingNodeId(null);
+      if (!newLabel || newLabel === prevLabel) return;
+
+      const cmd = new UpdateNodeMetadataCommand({
+        nodeId,
+        prevData: { label: prevLabel, name: prevLabel },
+        newData: { label: newLabel, name: newLabel },
+        viewId,
+        persistFn: persistFn
+          ? async (vId, nId, data) => {
+              if (typeof data.x === 'number' && typeof data.y === 'number') {
+                await persistFn(vId, nId, { x: data.x, y: data.y });
+              }
+            }
+          : undefined,
+      });
+
+      if (onCommandDispatched) {
+        onCommandDispatched(cmd);
+      }
+      await defaultCommandDispatcher.dispatch(cmd);
+      cmd.applyCanvasUpdate(setNodes, setEdges, 'execute');
+
+      if (onNodeRename) {
+        onNodeRename(nodeId, newLabel, prevLabel);
+      }
+    },
+    [viewId, persistFn, onCommandDispatched, onNodeRename],
+  );
+
+  const handleCommitEdgeLabel = useCallback(
+    async (edgeId: string, newLabel: string, prevLabel: string) => {
+      setEditingEdgeId(null);
+      if (newLabel === prevLabel) return;
+
+      const currentEdge = edges.find((e) => e.id === edgeId);
+      const prevData = { ...(currentEdge?.data || {}) };
+      const newData = { ...prevData, description: newLabel, label: newLabel };
+
+      const cmd = new UpdateEdgeDataCommand({
+        edgeId,
+        prevData,
+        newData,
+        prevLabel,
+        newLabel,
+      });
+
+      if (onCommandDispatched) {
+        onCommandDispatched(cmd);
+      }
+      await defaultCommandDispatcher.dispatch(cmd);
+      cmd.applyCanvasUpdate(setNodes, setEdges, 'execute');
+
+      if (onEdgeLabelChange) {
+        onEdgeLabelChange(edgeId, newLabel, prevLabel);
+      }
+    },
+    [edges, onCommandDispatched, onEdgeLabelChange],
+  );
+
+  useEffect(() => {
+    const onNodeRenameEvent = (e: Event) => {
+      const detail = (e as CustomEvent<{ nodeId: string; newLabel: string; prevLabel: string }>).detail;
+      if (detail) {
+        void handleCommitNodeRename(detail.nodeId, detail.newLabel, detail.prevLabel);
+      }
+    };
+
+    const onEdgeLabelChangeEvent = (e: Event) => {
+      const detail = (e as CustomEvent<{ edgeId: string; newLabel: string; prevLabel: string }>).detail;
+      if (detail) {
+        void handleCommitEdgeLabel(detail.edgeId, detail.newLabel, detail.prevLabel);
+      }
+    };
+
+    window.addEventListener('canvas:node-rename', onNodeRenameEvent);
+    window.addEventListener('canvas:edge-label-change', onEdgeLabelChangeEvent);
+    return () => {
+      window.removeEventListener('canvas:node-rename', onNodeRenameEvent);
+      window.removeEventListener('canvas:edge-label-change', onEdgeLabelChangeEvent);
+    };
+  }, [handleCommitNodeRename, handleCommitEdgeLabel]);
+
   // In Focus Mode (F017), unselected nodes and unconnected edges are visually dimmed
   // so the user can isolate the selected architecture component or sub-graph.
   const displayedNodes = React.useMemo(() => {
-    if (!isFocusMode || selectedNodeIds.length === 0) return nodes;
     const selectedSet = new Set(selectedNodeIds);
     return nodes.map((n) => {
       const isSelected = selectedSet.has(n.id);
+      const isEditing = editingNodeId === n.id;
+      const baseNode =
+        isFocusMode && selectedNodeIds.length > 0
+          ? {
+              ...n,
+              style: {
+                ...n.style,
+                opacity: isSelected ? 1 : 0.15,
+                filter: isSelected ? 'none' : 'grayscale(100%)',
+                transition: 'opacity 0.2s ease, filter 0.2s ease',
+              },
+            }
+          : n;
+
       return {
-        ...n,
-        style: {
-          ...n.style,
-          opacity: isSelected ? 1 : 0.15,
-          filter: isSelected ? 'none' : 'grayscale(100%)',
-          transition: 'opacity 0.2s ease, filter 0.2s ease',
+        ...baseNode,
+        data: {
+          ...baseNode.data,
+          isEditing,
+          onStartEdit: () => setEditingNodeId(n.id),
+          onRename: (newLabel: string) =>
+            handleCommitNodeRename(n.id, newLabel, String(n.data?.label || '')),
         },
       };
     });
-  }, [nodes, isFocusMode, selectedNodeIds]);
+  }, [nodes, isFocusMode, selectedNodeIds, editingNodeId, handleCommitNodeRename]);
 
   const displayedEdges = React.useMemo(() => {
-    if (!isFocusMode || selectedNodeIds.length === 0) return edges;
     const selectedSet = new Set(selectedNodeIds);
     return edges.map((e) => {
       const isConnected = selectedSet.has(e.source) || selectedSet.has(e.target);
+      const isEditing = editingEdgeId === e.id;
+      const baseEdge =
+        isFocusMode && selectedNodeIds.length > 0
+          ? {
+              ...e,
+              style: {
+                ...e.style,
+                opacity: isConnected ? 1 : 0.08,
+                transition: 'opacity 0.2s ease',
+              },
+            }
+          : e;
+
       return {
-        ...e,
-        style: {
-          ...e.style,
-          opacity: isConnected ? 1 : 0.08,
-          transition: 'opacity 0.2s ease',
+        ...baseEdge,
+        data: {
+          ...baseEdge.data,
+          isEditing,
+          onStartEdit: () => setEditingEdgeId(e.id),
+          onCancelEdit: () => setEditingEdgeId(null),
+          onLabelChange: (newLabel: string) =>
+            handleCommitEdgeLabel(
+              e.id,
+              newLabel,
+              String(e.data?.description || e.label || ''),
+            ),
         },
       };
     });
-  }, [edges, isFocusMode, selectedNodeIds]);
+  }, [edges, isFocusMode, selectedNodeIds, editingEdgeId, handleCommitEdgeLabel]);
 
   const dragStartPositions = React.useRef<Map<string, { x: number; y: number }>>(new Map());
 
@@ -683,13 +817,26 @@ function InfiniteCanvasContent({
       if ('applyCanvasUpdate' in cmd && typeof cmd.applyCanvasUpdate === 'function') {
         cmd.applyCanvasUpdate(setNodes, setEdges, 'undo');
       }
+      if (cmd instanceof UpdateNodeMetadataCommand && onNodeRename) {
+        onNodeRename(
+          cmd.params.nodeId,
+          String(cmd.params.prevData.label ?? ''),
+          String(cmd.params.newData.label ?? ''),
+        );
+      } else if (cmd instanceof UpdateEdgeDataCommand && onEdgeLabelChange) {
+        onEdgeLabelChange(
+          cmd.params.edgeId,
+          cmd.params.prevLabel ?? '',
+          cmd.params.newLabel ?? '',
+        );
+      }
     } catch (error) {
       console.error('Failed to undo command:', error);
     } finally {
       isMutatingGraphRef.current = false;
       setIsMutatingGraph(false);
     }
-  }, []);
+  }, [onNodeRename, onEdgeLabelChange]);
 
   const handleRedo = useCallback(async () => {
     if (isMutatingGraphRef.current) return;
@@ -702,13 +849,26 @@ function InfiniteCanvasContent({
       if ('applyCanvasUpdate' in cmd && typeof cmd.applyCanvasUpdate === 'function') {
         cmd.applyCanvasUpdate(setNodes, setEdges, 'execute');
       }
+      if (cmd instanceof UpdateNodeMetadataCommand && onNodeRename) {
+        onNodeRename(
+          cmd.params.nodeId,
+          String(cmd.params.newData.label ?? ''),
+          String(cmd.params.prevData.label ?? ''),
+        );
+      } else if (cmd instanceof UpdateEdgeDataCommand && onEdgeLabelChange) {
+        onEdgeLabelChange(
+          cmd.params.edgeId,
+          cmd.params.newLabel ?? '',
+          cmd.params.prevLabel ?? '',
+        );
+      }
     } catch (error) {
       console.error('Failed to redo command:', error);
     } finally {
       isMutatingGraphRef.current = false;
       setIsMutatingGraph(false);
     }
-  }, []);
+  }, [onNodeRename, onEdgeLabelChange]);
 
   const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
 
@@ -1238,8 +1398,14 @@ function InfiniteCanvasContent({
         onReconnect={onReconnect}
         edgesReconnectable={true}
         onEdgeClick={handleEdgeClick}
+        onNodeDoubleClick={handleNodeDoubleClick}
+        onEdgeDoubleClick={handleEdgeDoubleClick}
         onSelectionChange={onSelectionChange}
-        onPaneClick={onPaneClick}
+        onPaneClick={() => {
+          onPaneClick();
+          setEditingNodeId(null);
+          setEditingEdgeId(null);
+        }}
         onMoveEnd={onMoveEnd}
         onNodeMouseEnter={onNodeMouseEnter}
         onNodeMouseLeave={onNodeMouseLeave}

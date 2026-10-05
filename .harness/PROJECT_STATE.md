@@ -13,21 +13,23 @@ Phase Name: UX Remediation
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F137
-Feature Name: Inline rename & edge labels
+Feature ID: F138
+Feature Name: Canvas context menus
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 145
-Completed: 131
+Completed: 132
 In Progress: 0
 Blocked: 0
-Not Started: 14
-Progress: 90.3%
+Not Started: 13
+Progress: 91.0%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F136 — Honest surface: gate simulated features. Gated every studio control not wired to real data behind a visible "Preview — not saved" badge (or overflow affordance) and updated seed mock annotations, while leaving real controls (add, connect, inspector, autosave, export, layout, undo, share-link) completely untouched (Phase 14 — UX Remediation). Built `apps/web/lib/preview-flags.ts` with typed simulated feature registry, real controls registry, `PreviewBadge`, and `PreviewAffordance` wrappers. Gated 10 simulated top-bar features in `apps/web/app/studio/page.tsx` (`branches`, `presence`, `versionHistory`, `visualDiff`, `pullRequests`, `comments`, `aiCopilot`, `aiGeneration`, `aiReview`, `aiAdr`). Added 3 unit tests in `apps/web/studio.spec.ts` matching F136 Test requirements, plus 5 unit tests in `apps/web/preview-flags.spec.ts`. All checks, typecheck, lint, architecture boundaries, unit/integration tests, and Next.js production build pass cleanly.
+F137 — Inline rename & edge labels. Implemented double-click inline renaming for canvas nodes and double-click inline labelling for connection edges (Phase 14 — UX Remediation). Name an object in ≤ 2 interactions (double-click node label/node → inline input with current text selected → Enter/blur commits, Esc cancels). Label a connection in ≤ 2 interactions (double-click edge path or pill badge → inline input rendered at edge midpoint (labelX, labelY) → Enter/blur commits, Esc cancels). Commit routes through the undoable command stack (`UpdateNodeMetadataCommand`, `UpdateEdgeDataCommand` via `defaultCommandDispatcher`), ensuring ⌘Z reverts both and ⌘⇧Z redoes. Inspector editing remains in sync through canvas node/edge rename event listeners. Edit mode input retains `nodrag nopan` and `isTextInput` focus guards to ignore canvas delete/select hotkeys while typing. Added 8 unit/integration tests in `apps/web/inline-rename.spec.tsx`. All checks pass (`pnpm verify` clean, `pnpm build` clean).
+
+Prior: F136 — Honest surface: gate simulated features. Gated every studio control not wired to real data behind a visible "Preview — not saved" badge (or overflow affordance) and updated seed mock annotations, while leaving real controls (add, connect, inspector, autosave, export, layout, undo, share-link) completely untouched (Phase 14 — UX Remediation). Built `apps/web/lib/preview-flags.ts` with typed simulated feature registry, real controls registry, `PreviewBadge`, and `PreviewAffordance` wrappers. Gated 10 simulated top-bar features in `apps/web/app/studio/page.tsx` (`branches`, `presence`, `versionHistory`, `visualDiff`, `pullRequests`, `comments`, `aiCopilot`, `aiGeneration`, `aiReview`, `aiAdr`). Added 3 unit tests in `apps/web/studio.spec.ts` matching F136 Test requirements, plus 5 unit tests in `apps/web/preview-flags.spec.ts`. All checks, typecheck, lint, architecture boundaries, unit/integration tests, and Next.js production build pass cleanly.
 
 Prior: F134 — Mobile. Implemented DiagramHQ Mobile Web Companion and enforced the desktop-first architecture canvas invariant (Phase 13 — Enterprise). Built pure TypeScript domain logic (`mobile.ts`) providing: (1) Viewport detection and classification (`isMobileViewport`, `getCanvasDisplayMode`) strictly upholding the invariant that complex 2D node drag-and-drop canvas editing is desktop-first, while mobile viewports (< 768px) activate the dedicated mobile companion experience; (2) 6 core mobile workflows: Architecture Views inspection with level badges and component counts, instant fuzzy search (`searchMobileCatalog`), change and pull request review approvals (`approveArchitectureChange`, `rejectArchitectureChange`), threaded architecture review comments (`addMobileComment`, `resolveMobileComment`), notification stream, and lightweight Mobile AI Copilot architectural Q&A (`askMobileAiCopilot`); (3) Acceptance criteria verified: viewing an architecture view, approving a pending change, and posting a review comment under simulated mobile viewport constraints (375px). Added Web layer mobile shell (`MobileCompanion`) with top header, desktop-first advisory ribbon, responsive view cards, instant search, review approvals deck, comments feed, and bottom mobile navigation bar. 6 domain unit tests, 3 web integration tests (`mobile.spec.tsx`). **Phase 13 — Enterprise is 100% COMPLETE! Monorepo milestone: ALL 135 / 135 features completed overall (100.0%)!**
 

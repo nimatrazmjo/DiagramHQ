@@ -1,6 +1,7 @@
 import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { C4ContextElementKind, C4ContextNodeData } from '@diagramhq/domain';
+import { EditableNodeLabel } from './editable-node-label';
 
 function PersonIcon(): JSX.Element {
   return (
@@ -109,7 +110,17 @@ export function C4ContextNode({ id, data, selected }: NodeProps): JSX.Element {
           </span>
         </div>
 
-        <div className="text-sm font-semibold text-slate-100 truncate">{label}</div>
+        <EditableNodeLabel
+          nodeId={id}
+          label={label}
+          isEditing={Boolean(nodeData.isEditing)}
+          onCommit={(newLabel) => {
+            if (typeof nodeData.onRename === 'function') {
+              (nodeData.onRename as (val: string) => void)(newLabel);
+            }
+          }}
+          className="text-sm font-semibold text-slate-100 truncate"
+        />
 
         {description && (
           <div className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">
@@ -154,7 +165,17 @@ export function C4ContextNode({ id, data, selected }: NodeProps): JSX.Element {
           </span>
         </div>
 
-        <div className="text-sm font-semibold text-slate-300 truncate">{label}</div>
+        <EditableNodeLabel
+          nodeId={id}
+          label={label}
+          isEditing={Boolean(nodeData.isEditing)}
+          onCommit={(newLabel) => {
+            if (typeof nodeData.onRename === 'function') {
+              (nodeData.onRename as (val: string) => void)(newLabel);
+            }
+          }}
+          className="text-sm font-semibold text-slate-300 truncate"
+        />
 
         {description && (
           <div className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
@@ -199,7 +220,17 @@ export function C4ContextNode({ id, data, selected }: NodeProps): JSX.Element {
         </span>
       </div>
 
-      <div className="text-sm font-semibold text-slate-100 truncate">{label}</div>
+      <EditableNodeLabel
+        nodeId={id}
+        label={label}
+        isEditing={Boolean(nodeData.isEditing)}
+        onCommit={(newLabel) => {
+          if (typeof nodeData.onRename === 'function') {
+            (nodeData.onRename as (val: string) => void)(newLabel);
+          }
+        }}
+        className="text-sm font-semibold text-slate-100 truncate"
+      />
 
       {description && (
         <div className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">

@@ -19,5 +19,9 @@ export {
   UpdateNodeMetadataCommand,
   type UpdateNodeMetadataCommandParams,
 } from './update-metadata-command';
+export {
+  UpdateEdgeDataCommand,
+  type UpdateEdgeDataCommandParams,
+} from './update-edge-data-command';
 export { CommandDispatcher, defaultCommandDispatcher } from './dispatcher';
 

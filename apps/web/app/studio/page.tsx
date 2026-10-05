@@ -1871,6 +1871,18 @@ export default function StudioPage(): JSX.Element {
               );
             }}
             onNodeDelete={handleDeleteNode}
+            onNodeRename={(nodeId, newLabel) => {
+              setCurrentNodes((prev) =>
+                prev.map((n) => {
+                  if (n.id !== nodeId) return n;
+                  const data = { ...n.data, label: newLabel, name: newLabel };
+                  return { ...n, data };
+                }),
+              );
+            }}
+            onEdgeLabelChange={(edgeId, newLabel) => {
+              handleEdgeMetadataChange(edgeId, { description: newLabel });
+            }}
           />
 
           {/* IcePanel Empty State Helper */}

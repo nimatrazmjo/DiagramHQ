@@ -2,6 +2,39 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-04 — F137 — Inline rename & edge labels (Phase 14 — UX Remediation)
+
+Status: COMPLETE
+
+Implemented:
+- Web layer (`apps/web/`):
+  - `lib/commands/update-edge-data-command.ts`: Added undoable `UpdateEdgeDataCommand` integrating edge label and description modifications with the command dispatcher and canvas state synchronizers (`setEdges`, `applyCanvasUpdate`).
+  - `lib/commands/index.ts`: Exported `UpdateEdgeDataCommand`.
+  - `components/canvas/editable-node-label.tsx`: Created reusable inline label editor component for nodes:
+    - Display mode renders label with tooltip `"Double-click to rename"` and `data-testid="node-label"`.
+    - Edit mode renders input with `nodrag nopan` classes, text selection on autofocus, `data-testid="inline-node-rename-input"`.
+    - Keydown handling: Enter commits, Escape cancels, stops canvas propagation.
+    - Blur handling: commits draft value.
+  - `components/canvas/custom-nodes.tsx`: Updated `CustomNodeData` interface with `isEditing`, `onRename`, `onCancelEdit`, `onStartEdit`. Updated `StoreNode` to render `EditableNodeLabel`.
+  - Node components: `app-node.tsx`, `system-node.tsx`, `database-node.tsx`, `component-node.tsx`, `queue-node.tsx`, `person-node.tsx`, `group-node.tsx`, `c4-context-node.tsx`, `c4-container-node.tsx`, `c4-component-node.tsx`: Integrated `EditableNodeLabel` across all standard and C4 node types.
+  - `components/canvas/icepanel-edge.tsx`:
+    - Added double-click listener on edge hit-area `<path>` and centered pill badge to enter inline editing mode.
+    - Added inline label input editor rendered at edge midpoint `(labelX, labelY)` via `EdgeLabelRenderer` with `nopan nodrag`, autofocus, Enter/blur commit, and Escape cancel.
+  - `components/canvas/infinite-canvas.tsx`:
+    - Added `onNodeRename` and `onEdgeLabelChange` props and handlers.
+    - Added `editingNodeId` and `editingEdgeId` states and double-click listeners (`onNodeDoubleClick`, `onEdgeDoubleClick`).
+    - Routed commits through `defaultCommandDispatcher.dispatch(new UpdateNodeMetadataCommand(...))` and `defaultCommandDispatcher.dispatch(new UpdateEdgeDataCommand(...))`.
+    - Added window event bridges `canvas:node-rename` and `canvas:edge-label-change`.
+    - Added state synchronizations on undo/redo to notify parents and keep inspector in sync.
+  - `app/studio/page.tsx`: Wired `onNodeRename` and `onEdgeLabelChange` to synchronize `currentNodes` and `currentEdges` state in the studio editor.
+  - `inline-rename.spec.tsx`: Added comprehensive 8-test unit and integration test suite:
+    - `EditableNodeLabel` rendering in display and edit mode.
+    - Custom nodes (`AppNode`, `SystemNode`, `StoreNode`) rendering with `EditableNodeLabel`.
+    - `IcePanelEdge` rendering with inline label editor and badge.
+    - ⌘Z undo and redo command stack verification for node rename and edge labelling.
+    - Inspector synchronization verification.
+- Verification: `pnpm verify ✓` (`pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm check-architecture`), `pnpm build ✓`.
+
 ## 2026-10-04 — F136 — Honest surface: gate simulated features (Phase 14 — UX Remediation)
 
 Status: COMPLETE

@@ -2,6 +2,7 @@ import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { PersonNodeData } from '@diagramhq/domain';
 import { FlowBadges } from './flow-badges';
+import { EditableNodeLabel } from './editable-node-label';
 
 
 import { getTechnologyIconPath } from '../../lib/icons';
@@ -111,7 +112,17 @@ export function PersonNode({ data, selected }: NodeProps): JSX.Element {
       </div>
 
       {/* Label / Name */}
-      <div className="text-sm font-semibold text-slate-100 truncate">{label}</div>
+      <EditableNodeLabel
+        nodeId={nodeData.id as string}
+        label={label}
+        isEditing={Boolean(nodeData.isEditing)}
+        onCommit={(newLabel) => {
+          if (typeof nodeData.onRename === 'function') {
+            (nodeData.onRename as (val: string) => void)(newLabel);
+          }
+        }}
+        className="text-sm font-semibold text-slate-100 truncate"
+      />
 
       {/* Role & Department */}
       {(role || department) && (

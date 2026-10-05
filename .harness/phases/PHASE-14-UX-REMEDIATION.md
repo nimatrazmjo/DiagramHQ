@@ -66,7 +66,7 @@ Success metric: 0 unlabelled simulated controls in default view.
 
 ### F137 — Inline rename & edge labels
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Priority: P1 · Effort: Low
 

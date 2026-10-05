@@ -8,6 +8,7 @@ import { OwnershipBadges } from './ownership-badges';
 import { TechnologyBadges } from './technology-badges';
 import { PersonaBadges } from './persona-badges';
 import { FlowBadges } from './flow-badges';
+import { EditableNodeLabel } from './editable-node-label';
 
 
 function ControllerIcon(): JSX.Element {
@@ -238,9 +239,17 @@ export function ComponentNode({ id, data, selected }: NodeProps): JSX.Element {
       </div>
 
       {/* Label */}
-      <h3 className="font-semibold text-sm leading-tight text-white mb-1 truncate">
-        {label}
-      </h3>
+      <EditableNodeLabel
+        nodeId={id}
+        label={label}
+        isEditing={Boolean(nodeData.isEditing)}
+        onCommit={(newLabel) => {
+          if (typeof nodeData.onRename === 'function') {
+            (nodeData.onRename as (val: string) => void)(newLabel);
+          }
+        }}
+        className="font-semibold text-sm leading-tight text-white mb-1 truncate"
+      />
 
       {/* Technology tag */}
       {technology && (
