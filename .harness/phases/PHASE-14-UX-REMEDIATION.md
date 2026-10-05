@@ -167,7 +167,7 @@ Success metric: duplicate workflow = 1 interaction.
 
 ### F140 — IA cleanup: hide plumbing, one brand, honest copy
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Priority: P2 · Effort: Low
 

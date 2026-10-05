@@ -30,22 +30,30 @@ export default async function DashboardPage(): Promise<JSX.Element> {
       <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow space-y-8">
         <div className="flex justify-between items-center border-b pb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Architecture OS</h1>
-            <p className="text-sm text-gray-500">Multi-tenant architecture intelligence platform</p>
+            <h1 className="text-2xl font-bold text-gray-900">DiagramHQ</h1>
+            <p className="text-sm text-gray-500">Model-first architecture intelligence platform</p>
           </div>
-          <form
-            action={async () => {
-              'use server';
-              await signOut({ redirectTo: '/login' });
-            }}
-          >
-            <button
-              type="submit"
-              className="py-1.5 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded font-medium text-sm transition-colors"
+          <div className="flex items-center gap-3">
+            <Link
+              href="/studio"
+              className="py-1.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium text-sm transition-colors"
             >
-              Sign out
-            </button>
-          </form>
+              Open Studio
+            </Link>
+            <form
+              action={async () => {
+                'use server';
+                await signOut({ redirectTo: '/login' });
+              }}
+            >
+              <button
+                type="submit"
+                className="py-1.5 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded font-medium text-sm transition-colors"
+              >
+                Sign out
+              </button>
+            </form>
+          </div>
         </div>
 
         <div className="bg-blue-50 border border-blue-200 rounded p-4">
@@ -53,7 +61,14 @@ export default async function DashboardPage(): Promise<JSX.Element> {
           <p className="text-sm text-blue-800">
             Signed in as <strong>{session?.user?.name || session?.user?.email}</strong>
           </p>
-          <p className="text-xs text-blue-600 mt-1">User ID: {session?.user?.id}</p>
+          {session?.user?.id && (
+            <details className="mt-2 text-xs text-blue-700/70" data-testid="dev-session-details">
+              <summary className="cursor-pointer hover:text-blue-900 select-none">
+                Developer info
+              </summary>
+              <p className="mt-1 font-mono text-[11px] text-blue-600">{`User ID: ${session.user.id}`}</p>
+            </details>
+          )}
         </div>
 
         <section aria-labelledby="organizations-heading" className="border-t pt-6">
@@ -75,10 +90,15 @@ export default async function DashboardPage(): Promise<JSX.Element> {
                   <div className="flex items-center justify-between border-b pb-3">
                     <div>
                       <h3 className="font-bold text-base text-gray-900">{org.name}</h3>
-                      <div className="flex items-center gap-3 text-xs text-gray-500 mt-0.5">
-                        <span>slug: <code className="text-gray-700">{org.slug}</code></span>
-                        <span>ID: <code className="text-gray-400">{org.id}</code></span>
-                      </div>
+                      <details className="mt-1 text-xs text-gray-400" data-testid="dev-org-details">
+                        <summary className="cursor-pointer hover:text-gray-600 select-none">
+                          Developer info
+                        </summary>
+                        <div className="flex items-center gap-3 text-[11px] text-gray-500 font-mono mt-1">
+                          <span>slug: <code>{org.slug}</code></span>
+                          <span>ID: <code>{org.id}</code></span>
+                        </div>
+                      </details>
                     </div>
                     <RoleBadge role={org.role} />
                   </div>

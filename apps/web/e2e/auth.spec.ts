@@ -35,7 +35,7 @@ test.describe('DiagramHQ Authentication & Session Flows', () => {
 
     // Verify redirected to dashboard with authenticated session
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
-    await expect(page.getByRole('heading', { name: 'Architecture OS' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'DiagramHQ' })).toBeVisible();
     await expect(page.getByText('Authenticated Session')).toBeVisible();
     await expect(page.getByText(/Signed in as admin/i)).toBeVisible();
   });
@@ -47,7 +47,7 @@ test.describe('DiagramHQ Authentication & Session Flows', () => {
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
-    await expect(page.getByRole('heading', { name: 'Architecture OS' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'DiagramHQ' })).toBeVisible();
     await expect(page.getByText('Authenticated Session')).toBeVisible();
     await expect(page.getByText(/Signed in as admin/i)).toBeVisible();
   });

@@ -1,3 +1,4 @@
+import React from 'react';
 import Link from 'next/link';
 import { projectViewModelToCanvas } from '@diagramhq/domain';
 import { InfiniteCanvas } from '../../../components/canvas';
@@ -102,11 +103,23 @@ export default function WorkspaceOverviewPage({
             </span>
           </div>
           <p className="text-sm text-slate-400 mt-1">
-            Workspace ID: <code className="text-slate-300 font-mono text-xs">{workspaceId}</code>
+            Architecture model and diagram projections
           </p>
+          <details className="mt-1 text-xs text-slate-500" data-testid="dev-workspace-details">
+            <summary className="cursor-pointer hover:text-slate-400 select-none">
+              Developer info
+            </summary>
+            <p className="mt-1 font-mono text-[11px] text-slate-400">{`Workspace ID: ${workspaceId}`}</p>
+          </details>
         </div>
 
         <div className="flex items-center gap-3">
+          <Link
+            href="/studio"
+            className="px-3.5 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-md transition-colors"
+          >
+            Open Studio
+          </Link>
           <Link
             href="/dashboard"
             className="px-3.5 py-1.5 text-xs font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md transition-colors"

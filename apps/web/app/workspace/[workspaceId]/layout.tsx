@@ -3,7 +3,7 @@ import { AppShell } from '@/components/shell';
 
 export const metadata = {
   title: 'Architecture Studio — DiagramHQ',
-  description: 'DiagramHQ Architecture OS Studio',
+  description: 'DiagramHQ Architecture Studio',
 };
 
 export interface WorkspaceLayoutProps {

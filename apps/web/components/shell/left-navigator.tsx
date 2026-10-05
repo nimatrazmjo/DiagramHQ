@@ -287,9 +287,9 @@ export function LeftNavigator({
 
       {/* Footer / Status Area */}
       <div className="p-3 border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between">
-        <span className="inline-flex items-center gap-1.5">
+        <span className="inline-flex items-center gap-1.5 font-medium text-slate-400">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_#10b981]" />
-          Architecture OS
+          DiagramHQ
         </span>
         <span className="opacity-70 font-mono">v0.1</span>
       </div>
