@@ -13,6 +13,8 @@ export interface SavedDiagramData {
   activePersona?: string;
   updatedAt?: string;
   savedBy?: string;
+  architectureId?: string | null;
+  viewId?: string | null;
 }
 
 export interface UseDiagramAutosaveOptions {
@@ -30,6 +32,8 @@ export interface UseDiagramAutosaveResult {
   lastSavedAt: Date | null;
   isLoggedIn: boolean;
   sessionUser: { id?: string; email?: string | null; name?: string | null; role?: string } | null;
+  architectureId: string | null;
+  viewId: string | null;
   isInitialized: boolean;
   saveNow: () => Promise<void>;
   resetSavedDiagram: () => Promise<void>;
@@ -68,8 +72,12 @@ export function useDiagramAutosave({
     name?: string | null;
     role?: string;
   } | null>(null);
+  const [architectureId, setArchitectureId] = useState<string | null>(null);
+  const [viewId, setViewId] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
+  const architectureIdRef = useRef<string | null>(null);
+  const viewIdRef = useRef<string | null>(null);
   const lastSavedHashRef = useRef<string>('');
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const userKeyRef = useRef<string>('guest');
@@ -84,6 +92,15 @@ export function useDiagramAutosave({
         const data = await res.json().catch(() => ({ authenticated: false, diagram: null }));
 
         if (isCancelled) return;
+
+        if (data.architectureId) {
+          setArchitectureId(data.architectureId);
+          architectureIdRef.current = data.architectureId;
+        }
+        if (data.viewId) {
+          setViewId(data.viewId);
+          viewIdRef.current = data.viewId;
+        }
 
         if (data.authenticated && data.user) {
           setIsLoggedIn(true);
@@ -186,6 +203,8 @@ export function useDiagramAutosave({
         c4Level: level,
         activeView: view,
         activePersona: persona,
+        architectureId: architectureIdRef.current,
+        viewId: viewIdRef.current,
         updatedAt: new Date().toISOString(),
       };
 
@@ -325,6 +344,8 @@ export function useDiagramAutosave({
     lastSavedAt,
     isLoggedIn,
     sessionUser,
+    architectureId,
+    viewId,
     isInitialized,
     saveNow,
     resetSavedDiagram,

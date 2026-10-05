@@ -13,21 +13,23 @@ Phase Name: UX Remediation
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F144
-Feature Name: Wire the editor to the model API
+Feature ID: F145
+Feature Name: Real views: reuse objects across views
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 145
-Completed: 138
+Completed: 139
 In Progress: 0
 Blocked: 0
-Not Started: 7
-Progress: 95.2%
+Not Started: 6
+Progress: 95.9%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F143 — Command palette (⌘K) + total undo coverage. Implemented global command palette (`apps/web/components/shell/command-palette.tsx`) and universal undo coverage across the entire studio canvas and inspector mutation paths (Phase 14 — UX Remediation). (1) Built fast fuzzy-search palette (< 2ms) searching across all architecture objects (name, technology, kind, description) and quick actions (Add Service, Add System, Add Database, Add Queue, Add Component, Add Actor, Switch C4 levels 1-3, Toggle perspectives, Drill in, Export JSON, Share link); (2) Emits `canvas:center-node` custom event to immediately focus, select, and center the targeted node on the canvas via `reactFlow.setCenter`; (3) Unified all inspector mutations (`handleMetadataChange` for name, technology, description, and `handleConnectNodesFromInspector` for connection creation) through the undoable command stack (`UpdateNodeMetadataCommand`, `ConnectNodesCommand`, `defaultCommandDispatcher`), ensuring ⌘Z completely reverts and ⌘⇧Z redoes every inspector edit and connection; (4) Wired canvas undo/redo events to notify studio state of reverted or reapplied metadata changes and connections; (5) Bound `⌘K` / `Ctrl+K` globally and added dedicated `data-testid="open-command-palette-btn"` button to top toolbar. Added 6 automated tests in `apps/web/command-palette-undo.spec.tsx`. All quality gates pass (`pnpm verify` clean, `pnpm build` clean).
+F144 — Wire the editor to the model API. Wired DiagramHQ Studio directly to the live domain architecture model API and retired diagram JSON blob storage (`workspace.settings.studioDiagram`) (Phase 14 — UX Remediation). (1) Built Next.js catch-all proxy routes `apps/web/app/architectures/[...slug]/route.ts`, `apps/web/app/objects/[...slug]/route.ts`, `apps/web/app/connections/[...slug]/route.ts`, and `apps/web/app/views/[...slug]/route.ts` with authenticated forwarding (`signApiToken`, `fetchFromApi`) and robust in-memory server fallback (`inMemModelStore`) for tests and guest sessions; (2) Added bidirectional mapping helpers and `loadFromModel` model-to-canvas projection in `apps/web/lib/model/architecture-model-client.ts`; (3) Overhauled autosave route `apps/web/app/api/diagrams/autosave/route.ts` to automatically resolve or initialize an architecture and default view, migrate legacy diagram blobs into genuine model objects, connections, and view object positions, clear the legacy settings blob, load graphs directly from the model, and batch-persist layout coordinates to `/views/:viewId/objects/positions`; (4) Wired real-time model object and connection persistence into studio page operations (`handleAddNode`, `handleDeleteNode`, `handleDeleteEdge`, `handleConnectNodesFromInspector`, and `InfiniteCanvas` mutation callbacks). Added 9 automated tests in `apps/web/editor-model-wiring.spec.tsx`. All quality gates pass (`pnpm verify` clean, `pnpm build` clean).
+
+Prior: F143 — Command palette (⌘K) + total undo coverage.
 
 Prior: F142 — Real C4 drill-down. Implemented real C4 containment navigation across System Context (L1), Containers & Applications (L2), and Components (L3) levels in DiagramHQ Studio (Phase 14 — UX Remediation). Replaced dummy breadcrumb relabeling with a structured containment model: (1) Added `apps/web/lib/c4-hierarchy.ts` providing `getNodeC4Level`, `filterNodesByC4Level`, and `filterEdgesByVisibleNodes`; (2) Pre-seeded studio initial graph with a genuine 3-tier containment hierarchy (Level 1: `sys-saas`, `actor-user`, `sys-email`, `sys-billing`; Level 2: `app-web`, `app-api`, `app-auth`, `store-db`, `store-cache`, `store-storage` under `sys-saas`; Level 3: `cmp-auth-ctrl`, `cmp-jwt-svc`, `cmp-user-repo`, `cmp-pwd-hasher` under `app-auth`); (3) Double-clicking a drillable system node or container immediately descends into its children via `onDrillIn` (`apps/web/components/canvas/infinite-canvas.tsx`); (4) Breadcrumb hierarchy displays full containment path (`Model / System Context / [System Name] / [Container Name] / Level`) and clicking any parent breadcrumb or Level 1 ascends back to that level; (5) C4 level switcher tabs (`1. Context`, `2. Containers`, `3. Components`) switch levels and active parent seamlessly; (6) Graceful empty state renders an informational notice (`drill-empty-notice`) with a return button (`drill-ascend-btn`) whenever an object has no children, avoiding dead ends; (7) Newly created nodes automatically inherit the active C4 level and parent ID. Added 11 automated unit and integration tests in `apps/web/c4-drilldown.spec.tsx`. All quality gates pass (`pnpm verify` clean, `pnpm build` clean).
 

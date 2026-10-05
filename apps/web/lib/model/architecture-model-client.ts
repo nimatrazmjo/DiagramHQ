@@ -8,6 +8,7 @@ import {
   removeModelObject,
   updateModelConnection,
   updateModelObject,
+  type ArchitectureId,
   type ArchitectureModel,
   type ConnectionId,
   type ConnectionKind,
@@ -16,9 +17,136 @@ import {
   type ObjectId,
   type ObjectKind,
   type ProjectViewModelViewObject,
+  type CanvasNode,
+  type CanvasEdge,
+  type VersionId,
 } from '@diagramhq/domain';
 
 export type ModelSubscriber = (model: ArchitectureModel) => void;
+
+export function mapCanvasKindToModelKind(kind?: string): ObjectKind {
+  switch (kind) {
+    case 'system':
+      return 'system';
+    case 'service':
+    case 'application':
+      return 'application';
+    case 'database':
+    case 'queue':
+    case 'store':
+      return 'store';
+    case 'component':
+      return 'component';
+    case 'actor':
+    case 'person':
+      return 'actor';
+    case 'group':
+    case 'boundary':
+      return 'group';
+    default:
+      return 'application';
+  }
+}
+
+export function mapModelKindToCanvasKind(kind: ObjectKind, originalKind?: string): string {
+  if (originalKind) return originalKind;
+  switch (kind) {
+    case 'system':
+      return 'system';
+    case 'application':
+      return 'service';
+    case 'store':
+      return 'database';
+    case 'component':
+      return 'component';
+    case 'actor':
+      return 'actor';
+    case 'group':
+      return 'group';
+    default:
+      return 'service';
+  }
+}
+
+export function mapCanvasNodeToModelObject(
+  node: CanvasNode,
+  architectureId: string,
+  versionId: string,
+): ModelObject {
+  return {
+    id: node.id as unknown as ObjectId,
+    architectureId: architectureId as unknown as ArchitectureId,
+    versionId: versionId as unknown as VersionId,
+    kind: mapCanvasKindToModelKind(node.data?.kind),
+    name: node.data?.label || node.id,
+    description: node.data?.description ?? null,
+    parentId: (node.data?.parentId as unknown as ObjectId) ?? null,
+    metadata: {
+      technology: node.data?.technology,
+      originalKind: node.data?.kind,
+      c4Level: node.data?.c4Level,
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+}
+
+export function mapCanvasEdgeToModelConnection(
+  edge: CanvasEdge,
+  architectureId: string,
+  versionId: string,
+): ModelConnection {
+  return {
+    id: edge.id as unknown as ConnectionId,
+    architectureId: architectureId as unknown as ArchitectureId,
+    versionId: versionId as unknown as VersionId,
+    sourceObjectId: edge.source as unknown as ObjectId,
+    targetObjectId: edge.target as unknown as ObjectId,
+    kind: (edge.data?.kind as unknown as ConnectionKind) || 'sync',
+    label: edge.label ?? null,
+    description: typeof edge.data?.description === 'string' ? edge.data.description : null,
+    metadata: {},
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+}
+
+export function mapModelObjectToCanvasNode(
+  obj: ModelObject,
+  position?: { x: number; y: number },
+): CanvasNode {
+  const meta = obj.metadata && typeof obj.metadata === 'object' ? (obj.metadata as Record<string, unknown>) : {};
+  const originalKind = typeof meta.originalKind === 'string' ? meta.originalKind : undefined;
+  const technology = typeof meta.technology === 'string' ? meta.technology : undefined;
+  const c4Level = typeof meta.c4Level === 'number' ? (meta.c4Level as 1 | 2 | 3) : undefined;
+
+  return {
+    id: obj.id,
+    type: 'customNode',
+    position: position ?? { x: 100, y: 100 },
+    data: {
+      label: obj.name,
+      kind: mapModelKindToCanvasKind(obj.kind, originalKind),
+      technology: technology ?? '',
+      description: obj.description ?? '',
+      c4Level: c4Level ?? (obj.kind === 'system' || obj.kind === 'actor' ? 1 : obj.kind === 'component' ? 3 : 2),
+      parentId: obj.parentId ?? null,
+    },
+  };
+}
+
+export function mapModelConnectionToCanvasEdge(conn: ModelConnection): CanvasEdge {
+  return {
+    id: conn.id,
+    source: conn.sourceObjectId,
+    target: conn.targetObjectId,
+    label: conn.label ?? '',
+    data: {
+      kind: conn.kind,
+      description: conn.description ?? '',
+    },
+  };
+}
 
 export interface CreateObjectInput {
   name: string;
@@ -46,11 +174,67 @@ export interface CreateConnectionInput {
 export class ArchitectureModelClient {
   private currentModel: ArchitectureModel | null = null;
   private readonly subscribers = new Set<ModelSubscriber>();
+  private architectureId: string | null = null;
+  private viewId: string | null = null;
 
-  constructor(initialModel?: ArchitectureModel) {
+  constructor(
+    initialModel?: ArchitectureModel,
+    options?: { architectureId?: string; viewId?: string },
+  ) {
     if (initialModel) {
       this.currentModel = initialModel;
     }
+    if (options?.architectureId) {
+      this.architectureId = options.architectureId;
+    }
+    if (options?.viewId) {
+      this.viewId = options.viewId;
+    }
+  }
+
+  getArchitectureId(): string | null {
+    return this.architectureId;
+  }
+
+  setArchitectureId(id: string | null): void {
+    this.architectureId = id;
+  }
+
+  getViewId(): string | null {
+    return this.viewId;
+  }
+
+  setViewId(id: string | null): void {
+    this.viewId = id;
+  }
+
+  /**
+   * Loads a full model snapshot and projects it to CanvasNodes and CanvasEdges
+   * using the provided viewObject positions.
+   */
+  loadFromModel(
+    model: ArchitectureModel,
+    viewObjects?: Array<{ objectId: string; positionX: number; positionY: number }>,
+  ): { nodes: CanvasNode[]; edges: CanvasEdge[] } {
+    this.currentModel = model;
+    this.architectureId = model.architecture.id;
+    this.notify();
+
+    const posMap = new Map<string, { x: number; y: number }>();
+    if (viewObjects) {
+      for (const vo of viewObjects) {
+        posMap.set(vo.objectId, { x: vo.positionX, y: vo.positionY });
+      }
+    }
+
+    const nodes: CanvasNode[] = model.objects.map((obj) =>
+      mapModelObjectToCanvasNode(obj, posMap.get(obj.id)),
+    );
+    const edges: CanvasEdge[] = model.connections.map((conn) =>
+      mapModelConnectionToCanvasEdge(conn),
+    );
+
+    return { nodes, edges };
   }
 
   /** Gets the active architecture model snapshot. */
