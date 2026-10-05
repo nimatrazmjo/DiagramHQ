@@ -62,6 +62,8 @@ import {
   ConnectNodesCommand,
   UpdateNodeMetadataCommand,
   UpdateEdgeDataCommand,
+  DeleteEdgeCommand,
+  ReverseEdgeCommand,
   defaultCommandDispatcher,
   type Command,
   type NodeMoveItem,
@@ -73,6 +75,7 @@ import { AlignmentToolbar } from './alignment-toolbar';
 import { LayoutMenu } from './layout-menu';
 import { ShapePalette, type ShapeKind } from './shape-palette';
 import { TemplatePanel } from './template-panel';
+import { CanvasContextMenu, type ContextMenuState } from './context-menu';
 
 const edgeTypes = {
   icepanel: IcePanelEdge,
@@ -107,6 +110,8 @@ export interface InfiniteCanvasProps {
   onNodeDelete?: (nodeId: string) => void;
   onNodeRename?: (nodeId: string, newLabel: string, prevLabel: string) => void;
   onEdgeLabelChange?: (edgeId: string, newLabel: string, prevLabel: string) => void;
+  onDrillIn?: (nodeId: string) => void;
+  onAddToView?: (nodeId: string) => void;
 }
 
 export interface NodeDragStopHandlerOptions {
@@ -296,11 +301,15 @@ function InfiniteCanvasContent({
   onNodeDelete,
   onNodeRename,
   onEdgeLabelChange,
+  onDrillIn,
+  onAddToView,
 }: InfiniteCanvasProps): JSX.Element {
   const [nodes, setNodes] = useState<Node[]>(() => initialNodes.map(toFlowNode));
   const [edges, setEdges] = useState<Edge[]>(() => initialEdges.map(toFlowEdge));
   const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
   const [editingEdgeId, setEditingEdgeId] = useState<string | null>(null);
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+  const [clipboardNode, setClipboardNode] = useState<Node | null>(null);
   const storeIsSpacePanning = useCanvasStore((s) => s.isSpacePanning);
   const isSpacePanning = propIsSpacePanning ?? storeIsSpacePanning;
   const storeSelectedNodeIds = useCanvasStore((s) => s.selectedNodeIds);
@@ -873,25 +882,27 @@ function InfiniteCanvasContent({
   const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
 
   const handleAddNode = useCallback(
-    (kind: ShapeKind) => {
-      const flowBounds = containerRef.current?.getBoundingClientRect();
-      const centerX = flowBounds ? flowBounds.width / 2 : 400;
-      const centerY = flowBounds ? flowBounds.height / 2 : 300;
+    (kind: ShapeKind, customPos?: { x: number; y: number }) => {
+      let flowPos = customPos ?? { x: 250, y: 180 };
+      if (!customPos) {
+        const flowBounds = containerRef.current?.getBoundingClientRect();
+        const centerX = flowBounds ? flowBounds.width / 2 : 400;
+        const centerY = flowBounds ? flowBounds.height / 2 : 300;
 
-      let flowPos = { x: 250, y: 180 };
-      try {
-        if (flowBounds && reactFlow.screenToFlowPosition) {
-          flowPos = reactFlow.screenToFlowPosition({
-            x: flowBounds.left + centerX,
-            y: flowBounds.top + centerY,
-          });
+        try {
+          if (flowBounds && reactFlow.screenToFlowPosition) {
+            flowPos = reactFlow.screenToFlowPosition({
+              x: flowBounds.left + centerX,
+              y: flowBounds.top + centerY,
+            });
+          }
+        } catch {
+          // Fallback for SSR or mock environments
         }
-      } catch {
-        // Fallback for SSR or mock environments
       }
 
-      const jitterX = Math.round((Math.random() - 0.5) * 80);
-      const jitterY = Math.round((Math.random() - 0.5) * 80);
+      const jitterX = customPos ? 0 : Math.round((Math.random() - 0.5) * 80);
+      const jitterY = customPos ? 0 : Math.round((Math.random() - 0.5) * 80);
 
       const id = `${kind}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
       const defaultLabels: Record<string, string> = {
@@ -931,6 +942,7 @@ function InfiniteCanvasContent({
 
       const flowNode = toFlowNode(canvasNode);
       setNodes((nds) => [...nds, flowNode]);
+      setClipboardNode(flowNode);
       useCanvasStore.getState().setSelectedNodes([id]);
       if (onNodeSelect) {
         onNodeSelect(id);
@@ -941,6 +953,340 @@ function InfiniteCanvasContent({
     },
     [viewId, onCommandDispatched, reactFlow, onNodeSelect, onNodeCreate],
   );
+
+  const handleNodeContextMenu = useCallback(
+    (event: React.MouseEvent, node: Node) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setContextMenu({
+        type: 'node',
+        x: event.clientX,
+        y: event.clientY,
+        node,
+      });
+    },
+    [],
+  );
+
+  const handleEdgeContextMenu = useCallback(
+    (event: React.MouseEvent, edge: Edge) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setContextMenu({
+        type: 'edge',
+        x: event.clientX,
+        y: event.clientY,
+        edge,
+      });
+    },
+    [],
+  );
+
+  const handlePaneContextMenu = useCallback(
+    (event: MouseEvent | React.MouseEvent) => {
+      event.preventDefault();
+      let flowPos = { x: 250, y: 180 };
+      try {
+        if (reactFlow.screenToFlowPosition) {
+          flowPos = reactFlow.screenToFlowPosition({
+            x: event.clientX,
+            y: event.clientY,
+          });
+        }
+      } catch {
+        // fallback
+      }
+      setContextMenu({
+        type: 'pane',
+        x: event.clientX,
+        y: event.clientY,
+        flowX: flowPos.x,
+        flowY: flowPos.y,
+      });
+    },
+    [reactFlow],
+  );
+
+  const handleContextRenameNode = useCallback((node: Node) => {
+    setEditingNodeId(node.id);
+  }, []);
+
+  const handleContextDuplicateNode = useCallback(
+    async (nodeToDuplicate: Node) => {
+      const kind =
+        ((nodeToDuplicate.data?.kind as ShapeKind) ||
+        (nodeToDuplicate.type as ShapeKind) ||
+        'application');
+      const label = String(nodeToDuplicate.data?.label || 'Object');
+      const newId = `${kind}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+
+      const canvasNode: CanvasNode = {
+        id: newId,
+        type: nodeToDuplicate.type ?? (kind === 'database' ? 'database' : kind),
+        position: {
+          x: nodeToDuplicate.position.x + 40,
+          y: nodeToDuplicate.position.y + 40,
+        },
+        data: {
+          ...nodeToDuplicate.data,
+          label: `${label} (Copy)`,
+        },
+      };
+
+      const command = new CreateNodeCommand({
+        viewId,
+        node: canvasNode,
+      });
+
+      if (onCommandDispatched) {
+        onCommandDispatched(command);
+      }
+      await defaultCommandDispatcher.dispatch(command);
+
+      const flowNode = toFlowNode(canvasNode);
+      setNodes((nds) => [...nds, flowNode]);
+      setClipboardNode(flowNode);
+      useCanvasStore.getState().setSelectedNodes([newId]);
+      if (onNodeSelect) {
+        onNodeSelect(newId);
+      }
+      if (onNodeCreate) {
+        onNodeCreate(canvasNode);
+      }
+    },
+    [viewId, onCommandDispatched, onNodeSelect, onNodeCreate],
+  );
+
+  const handleContextDeleteNode = useCallback(
+    async (nodeToDelete: Node) => {
+      const connectedEdges: CanvasEdge[] = edges
+        .filter((e) => e.source === nodeToDelete.id || e.target === nodeToDelete.id)
+        .map((e) => ({
+          id: e.id,
+          source: e.source,
+          target: e.target,
+          type: e.type,
+          label: typeof e.label === 'string' ? e.label : undefined,
+          animated: e.animated,
+          data: e.data as Record<string, unknown>,
+        }));
+
+      const nodeData = (nodeToDelete.data ?? {}) as Record<string, unknown>;
+      const canvasNode: CanvasNode = {
+        id: nodeToDelete.id,
+        type: nodeToDelete.type ?? 'system',
+        position: { x: nodeToDelete.position.x, y: nodeToDelete.position.y },
+        data: {
+          label: typeof nodeData.label === 'string' ? nodeData.label : nodeToDelete.id,
+          ...nodeData,
+        },
+      };
+
+      const command = new DeleteNodeCommand({
+        viewId,
+        node: canvasNode,
+        connectedEdges,
+      });
+
+      if (onCommandDispatched) {
+        onCommandDispatched(command);
+      }
+      await defaultCommandDispatcher.dispatch(command);
+
+      if (onNodeDelete) {
+        onNodeDelete(nodeToDelete.id);
+      }
+
+      setNodes((nds) => nds.filter((n) => n.id !== nodeToDelete.id));
+      setEdges((eds) =>
+        eds.filter((e) => e.source !== nodeToDelete.id && e.target !== nodeToDelete.id),
+      );
+
+      useCanvasStore.getState().clearSelection();
+      if (onNodeSelect) {
+        onNodeSelect(null);
+      }
+    },
+    [edges, viewId, onCommandDispatched, onNodeDelete, onNodeSelect],
+  );
+
+  const handleContextAddToView = useCallback(
+    (node: Node) => {
+      if (onAddToView) {
+        onAddToView(node.id);
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('canvas:add-to-view', {
+            detail: { nodeId: node.id },
+          }),
+        );
+      }
+    },
+    [onAddToView],
+  );
+
+  const handleContextDrillIn = useCallback(
+    (node: Node) => {
+      if (onDrillIn) {
+        onDrillIn(node.id);
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('canvas:drill-in', {
+            detail: { nodeId: node.id },
+          }),
+        );
+      }
+    },
+    [onDrillIn],
+  );
+
+  const handleContextEditEdgeLabel = useCallback((edge: Edge) => {
+    setEditingEdgeId(edge.id);
+  }, []);
+
+  const handleContextReverseEdge = useCallback(
+    async (edge: Edge) => {
+      const edgeData = (edge.data || {}) as Record<string, unknown>;
+      const revCommand = new ReverseEdgeCommand({
+        edgeId: edge.id,
+        prevSource: edge.source,
+        newSource: edge.target,
+        prevTarget: edge.target,
+        newTarget: edge.source,
+        prevSourceHandle: edge.sourceHandle ?? null,
+        newSourceHandle: edge.targetHandle ?? null,
+        prevTargetHandle: edge.targetHandle ?? null,
+        newTargetHandle: edge.sourceHandle ?? null,
+      });
+
+      if (onCommandDispatched) {
+        onCommandDispatched(revCommand);
+      }
+      await defaultCommandDispatcher.dispatch(revCommand);
+      revCommand.applyCanvasUpdate(setNodes, setEdges, 'execute');
+
+      if (onEdgeReconnect) {
+        const updatedCanvasEdge: CanvasEdge = {
+          id: edge.id,
+          source: edge.target,
+          target: edge.source,
+          sourceHandle: edge.targetHandle ?? undefined,
+          targetHandle: edge.sourceHandle ?? undefined,
+          type: edge.type ?? 'icepanel',
+          label: typeof edge.label === 'string' ? edge.label : '',
+          data: {
+            ...edgeData,
+            sourceHandle: edge.targetHandle ?? undefined,
+            targetHandle: edge.sourceHandle ?? undefined,
+          },
+        };
+        onEdgeReconnect(
+          edge as unknown as CanvasEdge,
+          {
+            source: edge.target,
+            target: edge.source,
+            sourceHandle: edge.targetHandle ?? null,
+            targetHandle: edge.sourceHandle ?? null,
+          },
+          updatedCanvasEdge,
+        );
+      }
+    },
+    [onCommandDispatched, onEdgeReconnect],
+  );
+
+  const handleContextDeleteEdge = useCallback(
+    async (edge: Edge) => {
+      const delCommand = new DeleteEdgeCommand({ edge });
+      if (onCommandDispatched) {
+        onCommandDispatched(delCommand);
+      }
+      await defaultCommandDispatcher.dispatch(delCommand);
+      delCommand.applyCanvasUpdate(setNodes, setEdges, 'execute');
+
+      useCanvasStore.getState().setSelectedEdges([]);
+      if (onEdgeSelect) {
+        onEdgeSelect(null);
+      }
+    },
+    [onCommandDispatched, onEdgeSelect],
+  );
+
+  const handleContextAddObject = useCallback(
+    (kind: ShapeKind, position: { x: number; y: number }) => {
+      handleAddNode(kind, position);
+    },
+    [handleAddNode],
+  );
+
+  const handleContextPaste = useCallback(
+    async (position: { x: number; y: number }) => {
+      const source =
+        clipboardNode ||
+        (selectedNodeIds.length > 0 ? nodes.find((n) => n.id === selectedNodeIds[0]) : null);
+      if (!source) return;
+
+      const kind =
+        ((source.data?.kind as ShapeKind) ||
+        (source.type as ShapeKind) ||
+        'application');
+      const label = String(source.data?.label || 'Object');
+      const newId = `${kind}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+
+      const canvasNode: CanvasNode = {
+        id: newId,
+        type: source.type ?? (kind === 'database' ? 'database' : kind),
+        position: {
+          x: Math.round(position.x),
+          y: Math.round(position.y),
+        },
+        data: {
+          ...source.data,
+          label: `${label} (Paste)`,
+        },
+      };
+
+      const command = new CreateNodeCommand({
+        viewId,
+        node: canvasNode,
+      });
+
+      if (onCommandDispatched) {
+        onCommandDispatched(command);
+      }
+      await defaultCommandDispatcher.dispatch(command);
+
+      const flowNode = toFlowNode(canvasNode);
+      setNodes((nds) => [...nds, flowNode]);
+      useCanvasStore.getState().setSelectedNodes([newId]);
+      if (onNodeSelect) {
+        onNodeSelect(newId);
+      }
+      if (onNodeCreate) {
+        onNodeCreate(canvasNode);
+      }
+    },
+    [clipboardNode, selectedNodeIds, nodes, viewId, onCommandDispatched, onNodeSelect, onNodeCreate],
+  );
+
+  const handleContextSelectAll = useCallback(() => {
+    setNodes((nds) => nds.map((n) => ({ ...n, selected: true })));
+    useCanvasStore.getState().setSelectedNodes(nodes.map((n) => n.id));
+  }, [nodes]);
+
+  const handleContextFitView = useCallback(() => {
+    try {
+      reactFlow.fitView({ padding: 0.2, duration: 250 });
+    } catch {
+      // fallback
+    }
+  }, [reactFlow]);
+
+  const handleContextAutoLayout = useCallback(() => {
+    handleApplyLayout('layered');
+  }, [handleApplyLayout]);
 
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -991,6 +1337,28 @@ function InfiniteCanvasContent({
       }
     },
     [viewId, onCommandDispatched, onEdgeConnect],
+  );
+
+  const handleContextAddConnection = useCallback(
+    (node: Node) => {
+      const otherNode = nodes.find((n) => n.id !== node.id);
+      if (otherNode) {
+        onConnect({
+          source: node.id,
+          target: otherNode.id,
+          sourceHandle: null,
+          targetHandle: null,
+        });
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('canvas:add-connection', {
+            detail: { sourceNodeId: node.id },
+          }),
+        );
+      }
+    },
+    [nodes, onConnect],
   );
 
   const onReconnect = useCallback(
@@ -1313,6 +1681,7 @@ function InfiniteCanvasContent({
 
   const handleEdgeClick = useCallback(
     (_event: React.MouseEvent, edge: Edge) => {
+      setContextMenu(null);
       if (onEdgeSelect) {
         onEdgeSelect(edge.id);
       }
@@ -1400,11 +1769,15 @@ function InfiniteCanvasContent({
         onEdgeClick={handleEdgeClick}
         onNodeDoubleClick={handleNodeDoubleClick}
         onEdgeDoubleClick={handleEdgeDoubleClick}
+        onNodeContextMenu={handleNodeContextMenu}
+        onEdgeContextMenu={handleEdgeContextMenu}
+        onPaneContextMenu={handlePaneContextMenu}
         onSelectionChange={onSelectionChange}
         onPaneClick={() => {
           onPaneClick();
           setEditingNodeId(null);
           setEditingEdgeId(null);
+          setContextMenu(null);
         }}
         onMoveEnd={onMoveEnd}
         onNodeMouseEnter={onNodeMouseEnter}
@@ -1658,6 +2031,27 @@ function InfiniteCanvasContent({
           </Panel>
         )}
       </ReactFlow>
+
+      {/* Canvas Context Menu (F138) */}
+      <CanvasContextMenu
+        menu={contextMenu}
+        onClose={() => setContextMenu(null)}
+        onRenameNode={handleContextRenameNode}
+        onDuplicateNode={handleContextDuplicateNode}
+        onDeleteNode={handleContextDeleteNode}
+        onAddConnection={handleContextAddConnection}
+        onAddToView={handleContextAddToView}
+        onDrillIn={handleContextDrillIn}
+        onEditEdgeLabel={handleContextEditEdgeLabel}
+        onReverseEdge={handleContextReverseEdge}
+        onDeleteEdge={handleContextDeleteEdge}
+        onAddObject={handleContextAddObject}
+        onPaste={handleContextPaste}
+        onSelectAll={handleContextSelectAll}
+        onFitView={handleContextFitView}
+        onAutoLayout={handleContextAutoLayout}
+        canPaste={Boolean(clipboardNode) || selectedNodeIds.length > 0}
+      />
 
       {/* Template Picker Modal Overlay */}
       {isTemplatePickerOpen && (

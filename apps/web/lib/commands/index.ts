@@ -23,5 +23,14 @@ export {
   UpdateEdgeDataCommand,
   type UpdateEdgeDataCommandParams,
 } from './update-edge-data-command';
+export {
+  DeleteEdgeCommand,
+  type DeleteEdgeCommandParams,
+} from './delete-edge-command';
+export {
+  ReverseEdgeCommand,
+  type ReverseEdgeCommandParams,
+} from './reverse-edge-command';
 export { CommandDispatcher, defaultCommandDispatcher } from './dispatcher';
+
 

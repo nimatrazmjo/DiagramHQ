@@ -13,21 +13,23 @@ Phase Name: UX Remediation
 Status: IN PROGRESS
 
 ## Current Feature
-Feature ID: F138
-Feature Name: Canvas context menus
+Feature ID: F139
+Feature Name: Clipboard, duplicate & default marquee-select
 Status: NOT STARTED
 
 ## Overall Progress
 Total Features: 145
-Completed: 132
+Completed: 133
 In Progress: 0
 Blocked: 0
-Not Started: 13
-Progress: 91.0%
+Not Started: 12
+Progress: 91.7%
 (Recompute from ROADMAP.md on every status change; counter contract in `scripts/SCRIPTS.md`.)
 
 ## Last Completed Work
-F137 — Inline rename & edge labels. Implemented double-click inline renaming for canvas nodes and double-click inline labelling for connection edges (Phase 14 — UX Remediation). Name an object in ≤ 2 interactions (double-click node label/node → inline input with current text selected → Enter/blur commits, Esc cancels). Label a connection in ≤ 2 interactions (double-click edge path or pill badge → inline input rendered at edge midpoint (labelX, labelY) → Enter/blur commits, Esc cancels). Commit routes through the undoable command stack (`UpdateNodeMetadataCommand`, `UpdateEdgeDataCommand` via `defaultCommandDispatcher`), ensuring ⌘Z reverts both and ⌘⇧Z redoes. Inspector editing remains in sync through canvas node/edge rename event listeners. Edit mode input retains `nodrag nopan` and `isTextInput` focus guards to ignore canvas delete/select hotkeys while typing. Added 8 unit/integration tests in `apps/web/inline-rename.spec.tsx`. All checks pass (`pnpm verify` clean, `pnpm build` clean).
+F138 — Canvas context menus. Implemented complete right-click contextual menus for nodes, edges, and the canvas pane (Phase 14 — UX Remediation). Wired `onNodeContextMenu`, `onEdgeContextMenu`, and `onPaneContextMenu` in `infinite-canvas.tsx`. Built `apps/web/components/canvas/context-menu.tsx` providing: (1) Node menu: Rename (inline focus), Duplicate (creates copy with offset), Delete (removes node and connected edges via `DeleteNodeCommand`), Add connection (connects to other node or emits event), Add to view (`onAddToView` / event), Drill in (`onDrillIn` / event); (2) Edge menu: Edit label (inline focus), Reverse (swaps source and target via `ReverseEdgeCommand`), Delete (removes edge via `DeleteEdgeCommand`); (3) Pane menu: Add object by kind (Application, System, Database, Queue, Component, Person, Group) placed at cursor position, Paste (pastes clipboard node or duplicate at cursor), Select all, Fit view (`reactFlow.fitView`), Auto-layout (Dagre layered layout); (4) Positioning: automatic viewport boundary clamping preventing clipping off-screen, auto-dismissal on Escape, outside click, and action selection. All actions route through the command stack (`CreateNodeCommand`, `DeleteNodeCommand`, `ReverseEdgeCommand`, `DeleteEdgeCommand`) ensuring ⌘Z reverts and ⌘⇧Z redoes. Added 8 unit and integration tests in `apps/web/context-menu.spec.tsx`. All quality gates pass (`pnpm verify` clean, `pnpm build` clean).
+
+Prior: F137 — Inline rename & edge labels. Implemented double-click inline renaming for canvas nodes and double-click inline labelling for connection edges (Phase 14 — UX Remediation). Name an object in ≤ 2 interactions (double-click node label/node → inline input with current text selected → Enter/blur commits, Esc cancels). Label a connection in ≤ 2 interactions (double-click edge path or pill badge → inline input rendered at edge midpoint (labelX, labelY) → Enter/blur commits, Esc cancels). Commit routes through the undoable command stack (`UpdateNodeMetadataCommand`, `UpdateEdgeDataCommand` via `defaultCommandDispatcher`), ensuring ⌘Z reverts both and ⌘⇧Z redoes. Inspector editing remains in sync through canvas node/edge rename event listeners. Edit mode input retains `nodrag nopan` and `isTextInput` focus guards to ignore canvas delete/select hotkeys while typing. Added 8 unit/integration tests in `apps/web/inline-rename.spec.tsx`. All checks pass (`pnpm verify` clean, `pnpm build` clean).
 
 Prior: F136 — Honest surface: gate simulated features. Gated every studio control not wired to real data behind a visible "Preview — not saved" badge (or overflow affordance) and updated seed mock annotations, while leaving real controls (add, connect, inspector, autosave, export, layout, undo, share-link) completely untouched (Phase 14 — UX Remediation). Built `apps/web/lib/preview-flags.ts` with typed simulated feature registry, real controls registry, `PreviewBadge`, and `PreviewAffordance` wrappers. Gated 10 simulated top-bar features in `apps/web/app/studio/page.tsx` (`branches`, `presence`, `versionHistory`, `visualDiff`, `pullRequests`, `comments`, `aiCopilot`, `aiGeneration`, `aiReview`, `aiAdr`). Added 3 unit tests in `apps/web/studio.spec.ts` matching F136 Test requirements, plus 5 unit tests in `apps/web/preview-flags.spec.ts`. All checks, typecheck, lint, architecture boundaries, unit/integration tests, and Next.js production build pass cleanly.
 
