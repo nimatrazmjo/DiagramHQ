@@ -245,7 +245,7 @@ Success metric: 1 editor implementation in repo.
 
 ### F142 — Real C4 drill-down
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Priority: P0 · Effort: Medium
 

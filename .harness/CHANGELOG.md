@@ -2,6 +2,31 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-04 — F142 — Real C4 drill-down (Phase 14 — UX Remediation)
+
+Status: COMPLETE
+
+Implemented:
+- Web layer (`apps/web/`):
+  - Built `apps/web/lib/c4-hierarchy.ts` utility providing:
+    - `getNodeC4Level`: extracts explicit `c4Level` or infers 1 (System Context for systems, external systems, actors), 2 (Containers & Applications for apps, stores, queues), or 3 (Components for modules, controllers, repositories).
+    - `filterNodesByC4Level`: filters canvas nodes according to the active level (1, 2, or 3) and active parent ID (`activeParentId`), ensuring Level 1 shows only systems/actors, Level 2 shows child containers of the active system, and Level 3 shows components of the active container.
+    - `filterEdgesByVisibleNodes`: dynamically preserves only connections between nodes that are visible at the current level.
+  - Studio page (`apps/web/app/studio/page.tsx`):
+    - Pre-seeded `initialGraph` with a genuine 3-tier SaaS reference architecture respecting containment hierarchy: Level 1 systems (`sys-saas`, `actor-user`, `sys-email`, `sys-billing`), Level 2 containers (`app-web`, `app-api`, `app-auth`, `store-db`, `store-cache`, `store-storage` under `sys-saas`), Level 3 components (`cmp-auth-ctrl`, `cmp-jwt-svc`, `cmp-user-repo`, `cmp-pwd-hasher` under `app-auth`).
+    - Added `handleDrillIn(nodeId)`: descends from Level 1 system to Level 2 containers, or Level 2 container to Level 3 components, updating `parentHistory`, `activeParentId`, and resetting canvas key.
+    - Added `handleAscendTo(level, parentId)`: ascends back to parent level or root, trimming `parentHistory`.
+    - Added breadcrumb hierarchy (`data-testid="studio-breadcrumb"`, `breadcrumb-root`, `breadcrumb-l1`, `breadcrumb-parent-${id}`, `studio-breadcrumb-level`) allowing direct ascension to any ancestor level.
+    - Updated C4 level tabs (`data-testid="c4-level-1-btn"`, `data-testid="c4-level-2-btn"`, `data-testid="c4-level-3-btn"`) with active parent synchronisation.
+    - Added graceful empty state (`data-testid="drill-empty-notice"`, `data-testid="drill-ascend-btn"`) when drilling into an object with no child components, preventing dead ends.
+    - Updated `handleAddNode` and `onNodeCreate` to automatically inherit current `c4Level` and `activeParentId`.
+  - Infinite Canvas (`apps/web/components/canvas/infinite-canvas.tsx`):
+    - Updated `handleNodeDoubleClick`: if `onDrillIn` is provided and the node is a system (L1) or drillable container (L2), immediately invokes `onDrillIn(node.id)`. Otherwise falls back to inline text editing.
+    - Connected context menu "Drill in" (`handleContextDrillIn`) to invoke `onDrillIn`.
+  - Tests (`apps/web/c4-drilldown.spec.tsx`):
+    - Added 11 automated unit and integration tests covering level resolution, L1/L2/L3 containment filtering, graceful empty degradation, edge filtering across levels, studio test IDs, and double-click forwarding.
+- Verification: `pnpm verify ✓` (`pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm check-architecture`), `pnpm build ✓`.
+
 ## 2026-10-04 — F141 — Unify to one canvas (Phase 14 — UX Remediation)
 
 Status: COMPLETE

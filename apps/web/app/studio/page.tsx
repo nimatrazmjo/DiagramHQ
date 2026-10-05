@@ -83,6 +83,11 @@ import {
 import { InspectorPanel } from '../../components/shell/inspector-panel';
 import { useDiagramAutosave, type SavedDiagramData } from '../../hooks/use-diagram-autosave';
 import { PreviewAffordance } from '../../lib/preview-flags';
+import {
+  getNodeC4Level,
+  filterNodesByC4Level,
+  filterEdgesByVisibleNodes,
+} from '../../lib/c4-hierarchy';
 
 // F136 Preview Fixture: simulated peer presence (PREVIEW_REGISTRY.presence)
 const INITIAL_PEERS: PresencePeerBadge[] = [
@@ -305,45 +310,233 @@ const SAMPLE_FULL_SNAPSHOT: FullArchitectureSnapshot = {
 };
 
 export default function StudioPage(): JSX.Element {
-  // Pre-seed with the SaaS 3-tier starter architecture
+  // Pre-seed with the SaaS 3-tier starter architecture respecting containment hierarchy (F142)
   const [initialGraph] = useState(() => {
-    let objCount = 0;
-    let connCount = 0;
-    const instantiated = instantiateTemplate({
-      templateId: 'saas' as TemplateId,
-      architectureId: 'arch-studio-init' as ArchitectureId,
-      versionId: 'v1' as VersionId,
-      createObjectId: () => `obj-${++objCount}` as ObjectId,
-      createConnectionId: () => `conn-${++connCount}` as ConnectionId,
-    });
+    // Level 1: Systems & Actors
+    const sysSaas: CanvasNode = {
+      id: 'sys-saas',
+      type: 'system',
+      position: { x: 420, y: 180 },
+      data: {
+        label: 'SaaS Platform',
+        kind: 'system',
+        c4Level: 1,
+        canDrillDown: true,
+        status: 'Active',
+        description: 'Core multi-tenant SaaS application system',
+      },
+    };
+    const actorUser: CanvasNode = {
+      id: 'actor-user',
+      type: 'person',
+      position: { x: 80, y: 180 },
+      data: {
+        label: 'End User',
+        kind: 'actor',
+        c4Level: 1,
+        status: 'Active',
+        description: 'Customer using web browser or mobile client',
+      },
+    };
+    const sysEmail: CanvasNode = {
+      id: 'sys-email',
+      type: 'system',
+      position: { x: 780, y: 100 },
+      data: {
+        label: 'Email Service',
+        kind: 'system',
+        c4Level: 1,
+        external: true,
+        status: 'Active',
+        description: 'External transactional email delivery (SendGrid / SES)',
+      },
+    };
+    const sysBilling: CanvasNode = {
+      id: 'sys-billing',
+      type: 'system',
+      position: { x: 780, y: 260 },
+      data: {
+        label: 'Billing Service',
+        kind: 'system',
+        c4Level: 1,
+        external: true,
+        status: 'Active',
+        description: 'External recurring subscription provider (Stripe)',
+      },
+    };
 
-    const { nodes: initNodes, edges: initEdges } = projectViewModelToCanvas({
-      objects: instantiated.objects,
-      connections: instantiated.connections.map((c) => ({
-        id: c.id,
-        sourceId: c.sourceObjectId,
-        targetId: c.targetObjectId,
-        kind: c.kind,
-        description: c.description,
-      })),
-    });
+    // Level 2: Containers of sys-saas
+    const appWeb: CanvasNode = {
+      id: 'app-web',
+      type: 'app',
+      position: { x: 80, y: 140 },
+      data: {
+        label: 'Web App',
+        kind: 'application',
+        c4Level: 2,
+        parentId: 'sys-saas',
+        technology: 'Next.js 14, React, Tailwind',
+        status: 'Active',
+        description: 'Single-page web frontend application bundle',
+      },
+    };
+    const appApi: CanvasNode = {
+      id: 'app-api',
+      type: 'app',
+      position: { x: 380, y: 140 },
+      data: {
+        label: 'API Gateway',
+        kind: 'application',
+        c4Level: 2,
+        parentId: 'sys-saas',
+        technology: 'Node.js, Express, Envoy',
+        status: 'Active',
+        description: 'Reverse proxy and API gateway routing requests',
+      },
+    };
+    const appAuth: CanvasNode = {
+      id: 'app-auth',
+      type: 'app',
+      position: { x: 680, y: 80 },
+      data: {
+        label: 'Auth Service',
+        kind: 'application',
+        c4Level: 2,
+        parentId: 'sys-saas',
+        canDrillToComponents: true,
+        canDrillDown: true,
+        technology: 'Go 1.22, gRPC',
+        status: 'Active',
+        description: 'Microservice managing authentication, sessions, and tokens',
+      },
+    };
+    const storeDb: CanvasNode = {
+      id: 'store-db',
+      type: 'store',
+      position: { x: 680, y: 240 },
+      data: {
+        label: 'Primary Database',
+        kind: 'store',
+        c4Level: 2,
+        parentId: 'sys-saas',
+        technology: 'PostgreSQL 16',
+        status: 'Active',
+        description: 'Multi-AZ relational database for tenant records',
+      },
+    };
+    const storeCache: CanvasNode = {
+      id: 'store-cache',
+      type: 'store',
+      position: { x: 380, y: 320 },
+      data: {
+        label: 'Cache Cluster',
+        kind: 'store',
+        c4Level: 2,
+        parentId: 'sys-saas',
+        technology: 'Redis 7.2',
+        status: 'Active',
+        description: 'In-memory cache for fast session and token lookup',
+      },
+    };
+    const storeStorage: CanvasNode = {
+      id: 'store-storage',
+      type: 'store',
+      position: { x: 80, y: 320 },
+      data: {
+        label: 'Object Storage',
+        kind: 'store',
+        c4Level: 2,
+        parentId: 'sys-saas',
+        technology: 'AWS S3',
+        status: 'Active',
+        description: 'Encrypted object storage for user assets and reports',
+      },
+    };
 
-    const layoutNodes = initNodes.map(toAlignableNode);
-    const layoutEdges: LayoutEdge[] = initEdges.map((e) => ({
-      source: e.source,
-      target: e.target,
-    }));
+    // Level 3: Components of app-auth
+    const cmpAuthCtrl: CanvasNode = {
+      id: 'cmp-auth-ctrl',
+      type: 'component',
+      position: { x: 100, y: 160 },
+      data: {
+        label: 'Auth Controller',
+        kind: 'component',
+        c4Level: 3,
+        parentId: 'app-auth',
+        technology: 'Go Gin / REST',
+        status: 'Active',
+        description: 'HTTP controller handling /login, /register, /refresh',
+      },
+    };
+    const cmpJwtSvc: CanvasNode = {
+      id: 'cmp-jwt-svc',
+      type: 'component',
+      position: { x: 380, y: 100 },
+      data: {
+        label: 'JWT Token Service',
+        kind: 'component',
+        c4Level: 3,
+        parentId: 'app-auth',
+        technology: 'golang-jwt/jwt',
+        status: 'Active',
+        description: 'Signs and validates RS256 JSON Web Tokens',
+      },
+    };
+    const cmpUserRepo: CanvasNode = {
+      id: 'cmp-user-repo',
+      type: 'component',
+      position: { x: 380, y: 230 },
+      data: {
+        label: 'User Repository',
+        kind: 'component',
+        c4Level: 3,
+        parentId: 'app-auth',
+        technology: 'pgx / SQL',
+        status: 'Active',
+        description: 'Data access repository queries for user accounts',
+      },
+    };
+    const cmpPwdHasher: CanvasNode = {
+      id: 'cmp-pwd-hasher',
+      type: 'component',
+      position: { x: 650, y: 160 },
+      data: {
+        label: 'Password Hasher',
+        kind: 'component',
+        c4Level: 3,
+        parentId: 'app-auth',
+        technology: 'Argon2id',
+        status: 'Active',
+        description: 'Cryptographic password verification and hashing engine',
+      },
+    };
 
-    try {
-      const positions = applyLayout(layoutNodes, layoutEdges, 'layered');
-      const posMap = new Map(layoutNodes.map((n, i) => [n.id, positions[i] ?? n.position]));
-      return {
-        nodes: initNodes.map((n) => ({ ...n, position: posMap.get(n.id) ?? n.position })),
-        edges: initEdges,
-      };
-    } catch {
-      return { nodes: initNodes, edges: initEdges };
-    }
+    const nodes = [
+      sysSaas, actorUser, sysEmail, sysBilling,
+      appWeb, appApi, appAuth, storeDb, storeCache, storeStorage,
+      cmpAuthCtrl, cmpJwtSvc, cmpUserRepo, cmpPwdHasher,
+    ];
+
+    const edges: CanvasEdge[] = [
+      // Level 1 Edges
+      { id: 'e-l1-1', source: 'actor-user', target: 'sys-saas', type: 'icepanel', label: 'HTTPS : 443' },
+      { id: 'e-l1-2', source: 'sys-saas', target: 'sys-email', type: 'icepanel', label: 'SES / SMTP' },
+      { id: 'e-l1-3', source: 'sys-saas', target: 'sys-billing', type: 'icepanel', label: 'mTLS REST' },
+
+      // Level 2 Edges
+      { id: 'e-l2-1', source: 'app-web', target: 'app-api', type: 'icepanel', label: 'HTTPS / REST' },
+      { id: 'e-l2-2', source: 'app-api', target: 'app-auth', type: 'icepanel', label: 'gRPC / TLS' },
+      { id: 'e-l2-3', source: 'app-api', target: 'store-db', type: 'icepanel', label: 'TCP : 5432' },
+      { id: 'e-l2-4', source: 'app-api', target: 'store-cache', type: 'icepanel', label: 'TCP : 6379' },
+      { id: 'e-l2-5', source: 'app-api', target: 'store-storage', type: 'icepanel', label: 'S3 API' },
+
+      // Level 3 Edges
+      { id: 'e-l3-1', source: 'cmp-auth-ctrl', target: 'cmp-jwt-svc', type: 'icepanel', label: 'generateToken()' },
+      { id: 'e-l3-2', source: 'cmp-auth-ctrl', target: 'cmp-user-repo', type: 'icepanel', label: 'findUserByEmail()' },
+      { id: 'e-l3-3', source: 'cmp-user-repo', target: 'cmp-pwd-hasher', type: 'icepanel', label: 'verifyHash()' },
+    ];
+
+    return { nodes, edges };
   });
 
   const [activeView, setActiveView] = useState<
@@ -359,6 +552,8 @@ export default function StudioPage(): JSX.Element {
   const [currentEdges, setCurrentEdges] = useState<CanvasEdge[]>(initialGraph.edges);
   const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
   const [c4Level, setC4Level] = useState<1 | 2 | 3>(1);
+  const [activeParentId, setActiveParentId] = useState<string | null>(null);
+  const [parentHistory, setParentHistory] = useState<Array<{ id: string; name: string; level: 1 | 2 | 3 }>>([]);
 
   const handleRestoreSavedDiagram = useCallback((saved: SavedDiagramData) => {
     if (Array.isArray(saved.nodes) && saved.nodes.length > 0) {
@@ -971,9 +1166,20 @@ export default function StudioPage(): JSX.Element {
       if (nodeId) {
         setSelectedEdgeId(null);
         if (!isInspectorOpen) setIsInspectorOpen(true);
+        const node = currentNodes.find((n) => n.id === nodeId);
+        if (node) {
+          const nodeLvl = getNodeC4Level(node);
+          if (nodeLvl !== c4Level) {
+            setC4Level(nodeLvl);
+            if (node.data?.parentId) {
+              setActiveParentId(node.data.parentId as string);
+            }
+            setCanvasKey((k) => k + 1);
+          }
+        }
       }
     },
-    [isInspectorOpen],
+    [isInspectorOpen, currentNodes, c4Level],
   );
 
   const handleEdgeSelect = useCallback(
@@ -1103,6 +1309,8 @@ export default function StudioPage(): JSX.Element {
         data: {
           label,
           kind,
+          c4Level,
+          parentId: activeParentId || undefined,
           technology: customData?.technology,
           description: customData?.description || 'Newly created architecture element.',
           icon: customData?.icon,
@@ -1115,7 +1323,70 @@ export default function StudioPage(): JSX.Element {
       setSelectedEdgeId(null);
       if (!isInspectorOpen) setIsInspectorOpen(true);
     },
-    [currentNodes.length, isInspectorOpen],
+    [currentNodes.length, isInspectorOpen, c4Level, activeParentId],
+  );
+
+  const handleDrillIn = useCallback(
+    (nodeId: string) => {
+      const targetNode = currentNodes.find((n) => n.id === nodeId);
+      if (!targetNode) return;
+      const currentLvl = getNodeC4Level(targetNode);
+      const targetName =
+        (targetNode.data?.label as string) ||
+        (targetNode.data?.name as string) ||
+        targetNode.id;
+
+      if (currentLvl === 1) {
+        // Descend into Container level (L2)
+        setC4Level(2);
+        setActiveView('container');
+        setActiveParentId(nodeId);
+        setParentHistory([{ id: nodeId, name: targetName, level: 1 }]);
+        setSelectedNodeId(null);
+        setSelectedEdgeId(null);
+        setCanvasKey((k) => k + 1);
+      } else if (currentLvl === 2) {
+        // Descend into Component level (L3)
+        setC4Level(3);
+        setActiveView('all');
+        setActiveParentId(nodeId);
+        setParentHistory((prev) => {
+          const l1 = prev.find((p) => p.level === 1);
+          return [
+            ...(l1 ? [l1] : []),
+            { id: nodeId, name: targetName, level: 2 },
+          ];
+        });
+        setSelectedNodeId(null);
+        setSelectedEdgeId(null);
+        setCanvasKey((k) => k + 1);
+      }
+    },
+    [currentNodes],
+  );
+
+  const handleAscendTo = useCallback(
+    (targetLevel: 1 | 2 | 3, parentId: string | null = null) => {
+      if (targetLevel === 1) {
+        setC4Level(1);
+        setActiveView('context');
+        setActiveParentId(null);
+        setParentHistory([]);
+      } else if (targetLevel === 2) {
+        setC4Level(2);
+        setActiveView('container');
+        setActiveParentId(parentId);
+        setParentHistory((prev) => prev.filter((p) => p.level === 1));
+      } else if (targetLevel === 3) {
+        setC4Level(3);
+        setActiveView('all');
+        setActiveParentId(parentId);
+      }
+      setSelectedNodeId(null);
+      setSelectedEdgeId(null);
+      setCanvasKey((k) => k + 1);
+    },
+    [],
   );
 
   const handleClearDiagram = useCallback(() => {
@@ -1169,9 +1440,11 @@ export default function StudioPage(): JSX.Element {
     event.target.value = '';
   }, []);
 
-  // Filtered nodes based on active view and persona
+  // Filtered nodes based on active C4 level, parent hierarchy, active view and persona
   const displayNodes = useMemo(() => {
-    return currentNodes.map((node) => {
+    const filteredByLevel = filterNodesByC4Level(currentNodes, c4Level, activeParentId);
+
+    return filteredByLevel.map((node) => {
       const data = { ...node.data };
       if (activePersona !== 'all') {
         data.personaView = true;
@@ -1190,7 +1463,15 @@ export default function StudioPage(): JSX.Element {
         data,
       };
     });
-  }, [currentNodes, activeView, activePersona, selectedNodeId]);
+  }, [currentNodes, c4Level, activeParentId, activePersona, activeView, selectedNodeId]);
+
+  // Edges filtered to only connect currently visible nodes
+  const displayEdges = useMemo(() => {
+    const visibleNodeIds = new Set(displayNodes.map((n) => n.id));
+    return filterEdgesByVisibleNodes(currentEdges, visibleNodeIds);
+  }, [displayNodes, currentEdges]);
+
+  const isDrillDownEmpty = activeParentId !== null && displayNodes.length === 0;
 
   // Connections formatted for the Inspector
   const incomingConnectionsForSelectedNode = useMemo(() => {
@@ -1390,13 +1671,46 @@ export default function StudioPage(): JSX.Element {
             className="hidden lg:flex items-center gap-1.5 text-xs text-slate-400 font-medium"
           >
             <span className="text-slate-600">/</span>
-            <span>Model</span>
+            <button
+              type="button"
+              data-testid="breadcrumb-root"
+              onClick={() => handleAscendTo(1, null)}
+              className="hover:text-blue-400 transition-colors"
+            >
+              Model
+            </button>
+            <span className="text-slate-600">/</span>
+            <button
+              type="button"
+              data-testid="breadcrumb-l1"
+              onClick={() => handleAscendTo(1, null)}
+              className={`hover:text-blue-400 transition-colors ${c4Level === 1 && !activeParentId ? 'text-white font-semibold' : ''}`}
+            >
+              System Context
+            </button>
+            {parentHistory.map((parent, idx) => (
+              <React.Fragment key={parent.id}>
+                <span className="text-slate-600">/</span>
+                <button
+                  type="button"
+                  data-testid={`breadcrumb-parent-${parent.id}`}
+                  onClick={() => {
+                    if (parent.level === 1) {
+                      handleAscendTo(2, parent.id);
+                    }
+                  }}
+                  className={`hover:text-blue-400 transition-colors ${idx === parentHistory.length - 1 && c4Level === (parent.level + 1) ? 'text-white font-semibold' : ''}`}
+                >
+                  {parent.name}
+                </button>
+              </React.Fragment>
+            ))}
             <span className="text-slate-600">/</span>
             <span data-testid="studio-breadcrumb-level" className="text-white font-semibold">
               {c4Level === 1
-                ? 'System Context'
+                ? 'Context'
                 : c4Level === 2
-                  ? 'Containers & Apps'
+                  ? 'Containers'
                   : 'Components'}
             </span>
           </div>
@@ -1408,9 +1722,9 @@ export default function StudioPage(): JSX.Element {
           <div className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800 text-xs">
             <button
               type="button"
+              data-testid="c4-level-1-btn"
               onClick={() => {
-                setC4Level(1);
-                setActiveView('context');
+                handleAscendTo(1, null);
               }}
               title="Level 1: System Context (High-level boundary)"
               className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
@@ -1423,9 +1737,10 @@ export default function StudioPage(): JSX.Element {
             </button>
             <button
               type="button"
+              data-testid="c4-level-2-btn"
               onClick={() => {
-                setC4Level(2);
-                setActiveView('container');
+                const defaultParent = parentHistory.find((p) => p.level === 1)?.id ?? 'sys-saas';
+                handleAscendTo(2, defaultParent);
               }}
               title="Level 2: Containers & Applications (Services, DBs, Queues)"
               className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
@@ -1438,9 +1753,18 @@ export default function StudioPage(): JSX.Element {
             </button>
             <button
               type="button"
+              data-testid="c4-level-3-btn"
               onClick={() => {
                 setC4Level(3);
                 setActiveView('all');
+                setActiveParentId('app-auth');
+                setParentHistory([
+                  { id: 'sys-saas', name: 'SaaS Platform', level: 1 },
+                  { id: 'app-auth', name: 'Auth Service', level: 2 },
+                ]);
+                setSelectedNodeId(null);
+                setSelectedEdgeId(null);
+                setCanvasKey((k) => k + 1);
               }}
               title="Level 3: Components (Internal modules & controllers)"
               className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
@@ -1836,10 +2160,23 @@ export default function StudioPage(): JSX.Element {
           onToggle={() => setIsSidebarOpen((prev) => !prev)}
           c4Level={c4Level}
           onSelectC4Level={(lvl) => {
-            setC4Level(lvl);
-            if (lvl === 1) setActiveView('context');
-            else if (lvl === 2) setActiveView('container');
-            else setActiveView('all');
+            if (lvl === 1) {
+              handleAscendTo(1, null);
+            } else if (lvl === 2) {
+              const defaultParent = parentHistory.find((p) => p.level === 1)?.id ?? 'sys-saas';
+              handleAscendTo(2, defaultParent);
+            } else {
+              setC4Level(3);
+              setActiveView('all');
+              setActiveParentId('app-auth');
+              setParentHistory([
+                { id: 'sys-saas', name: 'SaaS Platform', level: 1 },
+                { id: 'app-auth', name: 'Auth Service', level: 2 },
+              ]);
+              setSelectedNodeId(null);
+              setSelectedEdgeId(null);
+              setCanvasKey((k) => k + 1);
+            }
           }}
           nodes={currentNodes}
           selectedNodeId={selectedNodeId}
@@ -1853,14 +2190,23 @@ export default function StudioPage(): JSX.Element {
           <InfiniteCanvas
             key={canvasKey}
             initialNodes={displayNodes}
-            initialEdges={currentEdges}
+            initialEdges={displayEdges}
             onNodeSelect={handleNodeSelect}
             onEdgeSelect={handleEdgeSelect}
             onNodeDragStop={handleNodeDragStop}
+            onDrillIn={handleDrillIn}
             showPalette
             showTemplatePicker
             onNodeCreate={(newNode) => {
-              setCurrentNodes((nds) => [...nds, newNode]);
+              const enrichedNode: CanvasNode = {
+                ...newNode,
+                data: {
+                  ...newNode.data,
+                  c4Level: newNode.data?.c4Level ?? c4Level,
+                  parentId: newNode.data?.parentId ?? (activeParentId || undefined),
+                },
+              };
+              setCurrentNodes((nds) => [...nds, enrichedNode]);
             }}
             onEdgeConnect={(newEdge) => {
               setCurrentEdges((eds) => [...eds, newEdge]);
@@ -1884,6 +2230,38 @@ export default function StudioPage(): JSX.Element {
               handleEdgeMetadataChange(edgeId, { description: newLabel });
             }}
           />
+
+          {/* F142 Graceful Empty State for Drill-Down with No Children */}
+          {isDrillDownEmpty && (
+            <div
+              data-testid="drill-empty-notice"
+              className="absolute inset-0 pointer-events-none flex items-center justify-center z-20 p-4"
+            >
+              <div className="pointer-events-auto bg-slate-900/95 border border-slate-700/80 rounded-2xl p-6 max-w-sm text-center shadow-2xl backdrop-blur-md">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl mx-auto mb-3">
+                  🔍
+                </div>
+                <h3 className="text-base font-semibold text-white mb-1">No Child Components</h3>
+                <p className="text-xs text-slate-400 mb-4 leading-relaxed">
+                  This object has no child components defined yet. You can add components using the insert bar or return to the higher level.
+                </p>
+                <button
+                  type="button"
+                  data-testid="drill-ascend-btn"
+                  onClick={() => {
+                    if (c4Level === 3) {
+                      handleAscendTo(2, parentHistory[0]?.id ?? null);
+                    } else {
+                      handleAscendTo(1, null);
+                    }
+                  }}
+                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium shadow-md shadow-blue-600/30 transition-all inline-flex items-center gap-1.5"
+                >
+                  <span>← Return to {c4Level === 3 ? 'Containers' : 'System Context'}</span>
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* IcePanel Empty State Helper */}
           {currentNodes.length === 0 && (
