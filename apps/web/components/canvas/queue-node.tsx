@@ -3,6 +3,7 @@ import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { QueueNodeData } from '@diagramhq/domain';
 import { getTechnologyIconPath } from '../../lib/icons';
 import { FlowBadges } from './flow-badges';
+import { EditableNodeLabel } from './editable-node-label';
 
 
 function QueueIcon(): JSX.Element {
@@ -118,9 +119,17 @@ export function QueueNode({ id: _id, data, selected }: NodeProps): JSX.Element {
         </span>
       </div>
 
-      <h3 className="font-semibold text-sm leading-tight text-white mb-1 truncate">
-        {label}
-      </h3>
+      <EditableNodeLabel
+        nodeId={_id}
+        label={label}
+        isEditing={Boolean(nodeData.isEditing)}
+        onCommit={(newLabel) => {
+          if (typeof nodeData.onRename === 'function') {
+            (nodeData.onRename as (val: string) => void)(newLabel);
+          }
+        }}
+        className="font-semibold text-sm leading-tight text-white mb-1 truncate"
+      />
 
       {technology && (
         <div className="mt-1 mb-1.5">

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { GroupNodeData } from '@diagramhq/domain';
+import { EditableNodeLabel } from './editable-node-label';
 
 function GroupIcon(): JSX.Element {
   return (
@@ -90,9 +91,17 @@ export function GroupNode({ id: _id, data, selected }: NodeProps): JSX.Element {
         )}
       </div>
 
-      <h3 className="font-semibold text-sm leading-tight text-white mb-1 truncate">
-        {label}
-      </h3>
+      <EditableNodeLabel
+        nodeId={_id}
+        label={label}
+        isEditing={Boolean(nodeData.isEditing)}
+        onCommit={(newLabel) => {
+          if (typeof nodeData.onRename === 'function') {
+            (nodeData.onRename as (val: string) => void)(newLabel);
+          }
+        }}
+        className="font-semibold text-sm leading-tight text-white mb-1 truncate"
+      />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { OwnershipBadges } from './ownership-badges';
 import { TechnologyBadges } from './technology-badges';
 import { PersonaBadges } from './persona-badges';
 import { FlowBadges } from './flow-badges';
+import { EditableNodeLabel } from './editable-node-label';
 
 
 function AppIcon(): JSX.Element {
@@ -119,7 +120,17 @@ export function AppNode({ id, data, selected }: NodeProps): JSX.Element {
       </div>
 
       {/* Label */}
-      <div className="text-sm font-semibold text-slate-100 truncate">{label}</div>
+      <EditableNodeLabel
+        nodeId={id}
+        label={label}
+        isEditing={Boolean(nodeData.isEditing)}
+        onCommit={(newLabel) => {
+          if (typeof nodeData.onRename === 'function') {
+            (nodeData.onRename as (val: string) => void)(newLabel);
+          }
+        }}
+        className="text-sm font-semibold text-slate-100 truncate"
+      />
 
       {/* Technology, Type & Runtime tags */}
       {(technology || applicationType || runtime) && (

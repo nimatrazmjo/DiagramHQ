@@ -1,4 +1,6 @@
-import React, { useMemo } from 'react';
+'use client';
+
+import React, { useMemo, useState, useRef, useCallback, useEffect } from 'react';
 import {
   BaseEdge,
   EdgeLabelRenderer,
@@ -150,6 +152,66 @@ export function IcePanelEdge({
     description = label;
   }
 
+  const [isLocalEditing, setIsLocalEditing] = useState(false);
+  const isEditing = Boolean(edgeData.isEditing) || isLocalEditing;
+  const currentText = description || (typeof label === 'string' ? label : '');
+  const [draftLabel, setDraftLabel] = useState(currentText);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setDraftLabel(currentText);
+  }, [currentText]);
+
+  useEffect(() => {
+    if (isEditing) {
+      setDraftLabel(currentText);
+      requestAnimationFrame(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+          inputRef.current.select();
+        }
+      });
+    }
+  }, [isEditing, currentText]);
+
+  const handleCommit = useCallback(() => {
+    const trimmed = draftLabel.trim();
+    setIsLocalEditing(false);
+    if (trimmed !== currentText) {
+      if (typeof edgeData.onLabelChange === 'function') {
+        (edgeData.onLabelChange as (newLabel: string) => void)(trimmed);
+      }
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('canvas:edge-label-change', {
+            detail: { edgeId: id, newLabel: trimmed, prevLabel: currentText },
+          }),
+        );
+      }
+    }
+  }, [draftLabel, currentText, edgeData, id]);
+
+  const handleCancel = useCallback(() => {
+    setIsLocalEditing(false);
+    setDraftLabel(currentText);
+    if (typeof edgeData.onCancelEdit === 'function') {
+      (edgeData.onCancelEdit as () => void)();
+    }
+  }, [currentText, edgeData]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      e.stopPropagation();
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleCommit();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        handleCancel();
+      }
+    },
+    [handleCommit, handleCancel],
+  );
 
   // Calculate dynamic routing & anchor positions
   const routeGeometry = useMemo(() => {
@@ -325,7 +387,7 @@ export function IcePanelEdge({
         </marker>
       </defs>
 
-      {/* Invisible wider hit area for easy selection */}
+      {/* Invisible wider hit area for easy selection and double-click */}
       <path
         d={edgePath}
         fill="none"
@@ -333,6 +395,13 @@ export function IcePanelEdge({
         strokeWidth={24}
         className="react-flow__edge-interaction cursor-pointer"
         style={{ pointerEvents: 'stroke' }}
+        onDoubleClick={(e) => {
+          e.stopPropagation();
+          setIsLocalEditing(true);
+          if (typeof edgeData.onStartEdit === 'function') {
+            (edgeData.onStartEdit as () => void)();
+          }
+        }}
       />
 
       {/* Visible Base Edge */}
@@ -354,8 +423,8 @@ export function IcePanelEdge({
         markerEnd={markerEnd ?? `url(#${markerId})`}
       />
 
-      {/* Pill Badge */}
-      {(isFlowView ? isInFlow : protocol || description) && (
+      {/* Inline Edge Label Editor or Pill Badge */}
+      {isEditing ? (
         <EdgeLabelRenderer>
           <div
             style={{
@@ -363,37 +432,74 @@ export function IcePanelEdge({
               transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
               pointerEvents: 'all',
             }}
-            data-testid={isFlowView ? 'flow-edge-badge' : 'edge-pill-badge'}
-            className={`nopan nodrag flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-sans border backdrop-blur-md shadow-lg select-none cursor-pointer transition-all ${
-              isFlowView && isInFlow
-                ? isActiveStep
-                  ? 'bg-cyan-950/95 border-cyan-400 text-cyan-200 ring-2 ring-cyan-500/50 shadow-cyan-500/30 scale-110 animate-pulse'
-                  : 'bg-sky-950/95 border-sky-400 text-sky-200 ring-2 ring-sky-500/40 shadow-sky-500/20 scale-105'
-                : selected
-                ? 'bg-slate-900 border-sky-400 text-sky-200 ring-2 ring-sky-500/40 shadow-sky-500/20 scale-105'
-                : 'bg-slate-900/95 border-slate-700/80 text-slate-300 hover:border-slate-500 hover:text-white hover:scale-102'
-            }`}
+            className="nopan nodrag z-40"
           >
-            {isFlowView && isInFlow && flowStepNumber && (
-              <span
-                data-testid="badge-flow-step-number"
-                className="px-1.5 py-0.2 rounded bg-sky-500/30 text-sky-200 border border-sky-400/50 font-mono text-[10px] font-bold uppercase tracking-wider"
-              >
-                #{flowStepNumber}
-              </span>
-            )}
-            {protocol && (
-              <span className="px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 font-mono text-[9px] font-semibold uppercase tracking-wider">
-                {protocol}
-              </span>
-            )}
-            {(flowStepNote || description) && (
-              <span className="truncate max-w-[160px] text-slate-200 font-medium">
-                {flowStepNote || description}
-              </span>
-            )}
+            <input
+              ref={inputRef}
+              type="text"
+              data-testid="inline-edge-label-input"
+              data-edge-id={id}
+              value={draftLabel}
+              placeholder="Edge label..."
+              onChange={(e) => setDraftLabel(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onBlur={handleCommit}
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+              onDoubleClick={(e) => e.stopPropagation()}
+              className="bg-slate-900 border-2 border-sky-400 text-sky-100 text-xs px-3 py-1 rounded-full shadow-2xl font-sans font-medium focus:outline-none focus:ring-2 focus:ring-sky-400/50 min-w-[130px] max-w-[260px] text-center"
+            />
           </div>
         </EdgeLabelRenderer>
+      ) : (
+        (isFlowView ? isInFlow : protocol || description || label) && (
+          <EdgeLabelRenderer>
+            <div
+              style={{
+                position: 'absolute',
+                transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+                pointerEvents: 'all',
+              }}
+              data-testid={isFlowView ? 'flow-edge-badge' : 'edge-pill-badge'}
+              title="Double-click to edit label"
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                setIsLocalEditing(true);
+                if (typeof edgeData.onStartEdit === 'function') {
+                  (edgeData.onStartEdit as () => void)();
+                }
+              }}
+              className={`nopan nodrag flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-sans border backdrop-blur-md shadow-lg select-none cursor-pointer transition-all ${
+                isFlowView && isInFlow
+                  ? isActiveStep
+                    ? 'bg-cyan-950/95 border-cyan-400 text-cyan-200 ring-2 ring-cyan-500/50 shadow-cyan-500/30 scale-110 animate-pulse'
+                    : 'bg-sky-950/95 border-sky-400 text-sky-200 ring-2 ring-sky-500/40 shadow-sky-500/20 scale-105'
+                  : selected
+                  ? 'bg-slate-900 border-sky-400 text-sky-200 ring-2 ring-sky-500/40 shadow-sky-500/20 scale-105'
+                  : 'bg-slate-900/95 border-slate-700/80 text-slate-300 hover:border-slate-500 hover:text-white hover:scale-102'
+              }`}
+            >
+              {isFlowView && isInFlow && flowStepNumber && (
+                <span
+                  data-testid="badge-flow-step-number"
+                  className="px-1.5 py-0.2 rounded bg-sky-500/30 text-sky-200 border border-sky-400/50 font-mono text-[10px] font-bold uppercase tracking-wider"
+                >
+                  #{flowStepNumber}
+                </span>
+              )}
+              {protocol && (
+                <span className="px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 font-mono text-[9px] font-semibold uppercase tracking-wider">
+                  {protocol}
+                </span>
+              )}
+              {(flowStepNote || description || label) && (
+                <span className="truncate max-w-[160px] text-slate-200 font-medium">
+                  {flowStepNote || description || label}
+                </span>
+              )}
+            </div>
+          </EdgeLabelRenderer>
+        )
       )}
 
     </>

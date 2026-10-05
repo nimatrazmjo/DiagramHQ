@@ -1,6 +1,7 @@
 import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { C4CodeMappingStub, C4ComponentKind, C4ComponentNodeData } from '@diagramhq/domain';
+import { EditableNodeLabel } from './editable-node-label';
 
 function ControllerIcon(): JSX.Element {
   return (
@@ -205,9 +206,17 @@ export function C4ComponentNode({ id, data, selected }: NodeProps): JSX.Element 
       </div>
 
       {/* Title */}
-      <h3 className="font-semibold text-sm leading-tight text-white mb-1">
-        {label}
-      </h3>
+      <EditableNodeLabel
+        nodeId={id}
+        label={label}
+        isEditing={Boolean(nodeData.isEditing)}
+        onCommit={(newLabel) => {
+          if (typeof nodeData.onRename === 'function') {
+            (nodeData.onRename as (val: string) => void)(newLabel);
+          }
+        }}
+        className="font-semibold text-sm leading-tight text-white mb-1 truncate"
+      />
 
       {/* Technology Tag */}
       {technology && (
