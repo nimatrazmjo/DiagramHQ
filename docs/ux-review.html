@@ -1,0 +1,839 @@
+<title>DiagramHQ UX Teardown</title>
+<style>
+  /* Layout: fixed sticky section rail on the left (desktop), single reading column of findings on the right; tables scroll inside their own tracks. */
+  :root {
+    --paper: #f7f6f2;
+    --surface: #ffffff;
+    --surface-2: #f0efe9;
+    --ink: #1c1d22;
+    --ink-soft: #4a4d57;
+    --ink-faint: #797d88;
+    --rule: #e2e0d7;
+    --rule-strong: #cfccc0;
+    --accent: #2b57c4;
+    --accent-soft: #e5ebf9;
+    --crit: #b4232a;
+    --crit-bg: #f7e3e2;
+    --high: #b26a00;
+    --high-bg: #f8ecd6;
+    --med: #1f6f8b;
+    --med-bg: #dcecf1;
+    --low: #5c6270;
+    --low-bg: #e8e8e4;
+    --good: #2f7a4d;
+    --good-bg: #ddeee2;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    --serif: "Spectral", Georgia, "Times New Roman", serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #16171b;
+      --surface: #1d1f24;
+      --surface-2: #24262c;
+      --ink: #e9e8e3;
+      --ink-soft: #b7b8bd;
+      --ink-faint: #878a93;
+      --rule: #2d2f36;
+      --rule-strong: #3c3f47;
+      --accent: #8fa9f0;
+      --accent-soft: #23304f;
+      --crit: #f08d8d;
+      --crit-bg: #3a2122;
+      --high: #e6b765;
+      --high-bg: #3a2f1a;
+      --med: #7cc6dc;
+      --med-bg: #15323b;
+      --low: #a3a8b3;
+      --low-bg: #2a2c32;
+      --good: #85d3a1;
+      --good-bg: #1a3324;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #16171b;
+    --surface: #1d1f24;
+    --surface-2: #24262c;
+    --ink: #e9e8e3;
+    --ink-soft: #b7b8bd;
+    --ink-faint: #878a93;
+    --rule: #2d2f36;
+    --rule-strong: #3c3f47;
+    --accent: #8fa9f0;
+    --accent-soft: #23304f;
+    --crit: #f08d8d;
+    --crit-bg: #3a2122;
+    --high: #e6b765;
+    --high-bg: #3a2f1a;
+    --med: #7cc6dc;
+    --med-bg: #15323b;
+    --low: #a3a8b3;
+    --low-bg: #2a2c32;
+    --good: #85d3a1;
+    --good-bg: #1a3324;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.6;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    display: grid;
+    grid-template-columns: 232px minmax(0, 1fr);
+    gap: 0;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  /* Rail */
+  nav.rail {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    align-self: start;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 28px 18px 40px 20px;
+    border-right: 1px solid var(--rule);
+    font-size: 12.5px;
+  }
+  nav.rail .brand {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  nav.rail .brandsub { color: var(--ink-faint); font-size: 11px; margin-bottom: 20px; display:block; }
+  nav.rail a {
+    display: block;
+    color: var(--ink-soft);
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 5px;
+    border-left: 2px solid transparent;
+  }
+  nav.rail a:hover { color: var(--ink); background: var(--surface-2); }
+  nav.rail a.grp { margin-top: 14px; color: var(--ink-faint); font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+  main { padding: 36px 40px 120px; min-width: 0; }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(30px, 5vw, 46px);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    margin: 0 0 10px;
+  }
+  .dek { font-size: 17px; color: var(--ink-soft); max-width: 62ch; margin: 0 0 20px; }
+  .meta { font-family: var(--mono); font-size: 11.5px; color: var(--ink-faint); display:flex; flex-wrap:wrap; gap:6px 18px; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); padding:12px 0; margin-bottom: 36px; }
+  h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 26px;
+    letter-spacing: -0.01em;
+    margin: 56px 0 6px;
+    padding-top: 14px;
+    scroll-margin-top: 20px;
+    text-wrap: balance;
+  }
+  h2 .num { font-family: var(--mono); font-size: 13px; color: var(--accent); margin-right: 10px; font-weight: 500; }
+  h3 { font-family: var(--sans); font-weight: 600; font-size: 17px; margin: 30px 0 4px; }
+  h4 { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); margin: 22px 0 6px; }
+  p { max-width: 68ch; margin: 10px 0; }
+  main > section > p:first-of-type { margin-top: 12px; }
+  a.inline { color: var(--accent); }
+  code, .mono { font-family: var(--mono); font-size: 0.86em; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+  strong { font-weight: 600; }
+  ul, ol { max-width: 68ch; padding-left: 22px; }
+  li { margin: 5px 0; }
+
+  .lead {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 18px 0;
+    max-width: 72ch;
+  }
+  .lead p { margin: 6px 0; max-width: none; }
+
+  /* chips */
+  .chip { font-family: var(--mono); font-size: 10.5px; font-weight: 500; padding: 2px 7px; border-radius: 20px; letter-spacing: .02em; white-space: nowrap; display:inline-block; }
+  .c-crit { background: var(--crit-bg); color: var(--crit); }
+  .c-high { background: var(--high-bg); color: var(--high); }
+  .c-med  { background: var(--med-bg);  color: var(--med); }
+  .c-low  { background: var(--low-bg);  color: var(--low); }
+  .c-good { background: var(--good-bg); color: var(--good); }
+  .c-accent { background: var(--accent-soft); color: var(--accent); }
+
+  /* tables */
+  .tscroll { overflow-x: auto; margin: 16px 0; border: 1px solid var(--rule); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 560px; }
+  table.wide { min-width: 820px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { background: var(--surface-2); font-family: var(--mono); font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; position: sticky; top: 0; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--surface-2) 40%, transparent); }
+  td .mono, td code { font-size: 11.5px; }
+  .num-cell { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  /* scorecard */
+  .scorecard { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 20px 0; }
+  .score { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 14px; }
+  .score .lab { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-faint); }
+  .score .val { font-family: var(--serif); font-size: 30px; font-weight: 600; line-height: 1.1; margin: 4px 0 6px; }
+  .bar { height: 5px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+  .bar > i { display:block; height: 100%; border-radius: 3px; background: var(--accent); }
+
+  .finding { border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; margin: 14px 0; background: var(--surface); }
+  .finding .hd { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+  .finding .hd h3 { margin: 0; font-size: 16px; }
+  .finding dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px 14px; margin: 10px 0 0; font-size: 13.5px; }
+  .finding dt { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-faint); padding-top: 3px; }
+  .finding dd { margin: 0; max-width: none; }
+  .ref { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); }
+
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 14px; margin: 16px 0; }
+  .panel { border: 1px solid var(--rule); border-radius: 10px; padding: 16px; background: var(--surface); }
+  .panel h3 { margin-top: 0; }
+  .panel.good { border-left: 3px solid var(--good); }
+  .panel.warn { border-left: 3px solid var(--high); }
+  .panel.stop { border-left: 3px solid var(--crit); }
+
+  hr { border: none; border-top: 1px solid var(--rule); margin: 40px 0; }
+  .toggle { position: fixed; top: 12px; right: 12px; z-index: 50; font-family: var(--mono); font-size: 11px; background: var(--surface); color: var(--ink-soft); border: 1px solid var(--rule-strong); border-radius: 20px; padding: 5px 12px; cursor: pointer; }
+  .toggle:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @media (max-width: 860px) {
+    .wrap { grid-template-columns: 1fr; }
+    nav.rail { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--rule); display: flex; flex-wrap: wrap; gap: 2px 4px; padding: 16px; }
+    nav.rail .brand, nav.rail .brandsub { width: 100%; }
+    nav.rail a { border-left: none; font-size: 12px; }
+    nav.rail a.grp { width: 100%; margin-top: 8px; }
+    main { padding: 24px 18px 90px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+  html { scroll-behavior: smooth; }
+</style>
+
+<button class="toggle" id="themeBtn" aria-label="Toggle light or dark theme">◐ theme</button>
+
+<div class="wrap">
+<nav class="rail">
+  <div class="brand">DiagramHQ</div>
+  <span class="brandsub">UX teardown · v0.1 · 2026-10-04</span>
+  <a href="#summary">Executive summary</a>
+  <a href="#assessment">Overall assessment</a>
+  <a href="#personas">Personas &amp; JTBD</a>
+  <a href="#strengths">Strengths</a>
+  <a href="#critical">Critical problems</a>
+  <a class="grp">Analysis</a>
+  <a href="#workflow">Workflow &amp; interaction cost</a>
+  <a href="#canvas">Canvas</a>
+  <a href="#modeling">Architecture modeling</a>
+  <a href="#ia">Information architecture</a>
+  <a href="#interaction">Interaction model</a>
+  <a class="grp">Comparison</a>
+  <a href="#matrix">Competitive matrix</a>
+  <a href="#friction">Friction &amp; opportunity</a>
+  <a href="#keyq">The draw.io architect</a>
+  <a class="grp">Action</a>
+  <a href="#wins">Wins / mid / redesign</a>
+  <a href="#principles">Product principles</a>
+  <a href="#top10">Top 10 changes</a>
+  <a class="grp">Roadmap</a>
+  <a href="#priority">Prioritization</a>
+  <a href="#phases">Phased roadmap</a>
+  <a href="#timeline">30 / 90 / 365 day</a>
+  <a href="#metrics">Success metrics</a>
+  <a href="#targets">Before / after targets</a>
+  <a href="#gaps">Competitive gaps</a>
+  <a href="#notbuild">Do not build yet</a>
+  <a href="#final">Final recommendation</a>
+</nav>
+
+<main>
+  <h1>DiagramHQ: a UX teardown</h1>
+  <p class="dek">A model-first architecture tool with an exceptional thesis and a fragmented product. The idea beats IcePanel; the implemented experience does not yet exist as one coherent tool. This review traces every significant workflow through the actual code and turns the gaps into a prioritized roadmap.</p>
+  <div class="meta">
+    <span>METHOD · source-grounded</span>
+    <span>SURFACES READ · studio, canvas, workspace, dashboard, share</span>
+    <span>REFERENCES · IcePanel, draw.io, Lucidchart, Miro/FigJam, Excalidraw, Structurizr</span>
+    <span>STATE · Phases 01–04 "complete"</span>
+  </div>
+
+  <!-- ============ EXECUTIVE SUMMARY ============ -->
+  <section id="summary">
+  <h2><span class="num">00</span>Executive summary</h2>
+
+  <div class="lead">
+    <p><strong>The thesis is the strongest thing here, and it is not yet in the product.</strong> DiagramHQ's premise — objects are the source of truth, diagrams are disposable projections, drilling down is navigation over one model — is a genuinely better mental model than draw.io and a cleaner one than IcePanel. The domain layer actually implements it. The <em>UI the user touches does not.</em></p>
+  </div>
+
+  <p>There are <strong>four separate front doors, each a different product</strong>, and no single coherent editor behind them:</p>
+  <ol>
+    <li><code>/studio</code> — the flagship React Flow editor. Rich, dark, login-free. But it is a <strong>single-canvas drawing tool</strong> that saves one JSON blob into <code>workspace.settings.studioDiagram</code>. It does not read or write the objects/connections/views API.</li>
+    <li><code>/dashboard</code> + <code>/workspace/[id]/*</code> — a light-theme CRUD app branded "Architecture OS", exposing raw org slugs and user IDs, with a small embedded canvas fed by <strong>hard-coded sample objects</strong>.</li>
+    <li><code>/canvas/[workspaceId]/[diagramId]</code> — a <strong>second, hand-rolled SVG canvas</strong> (not React Flow) with its own select/connector/hand tool modes and hard-coded L1/L2 node sets, ignoring its own route params.</li>
+    <li><code>/share</code> and <code>/mobile</code> — further standalone views.</li>
+  </ol>
+
+  <p>Inside the flagship, the two features that are supposed to make this an <em>architecture</em> tool rather than a <em>drawing</em> tool are cosmetic:</p>
+  <ul>
+    <li><strong>C4 drill-down does nothing to the canvas.</strong> Switching Context → Container → Component changes a breadcrumb label and a sidebar highlight. <code>displayNodes</code> never filters by <code>c4Level</code> (<span class="ref">app/studio/page.tsx:1169</span>). You see the same graph at every "level."</li>
+    <li><strong>"Views" are badge overlays on one canvas</strong>, not independent saved projections with their own membership and layout. Security / Data / Ownership toggle a flag that lights up badges on the same nodes.</li>
+  </ul>
+
+  <p>And a large share of the top bar is a <strong>demo shell</strong>: presence cursors are three hard-coded teammates, the AI copilot / generation / review / ADR features are deterministic domain functions (not model calls), the pull request, branches, snapshots and visual diff are seeded fixtures. These are impressive to click through and misleading to rely on.</p>
+
+  <p>The net: a first-time architect sees a dense, confident interface and a beautiful reference diagram, then hits a wall the moment they try to do the things the landing page promises. The work ahead is less "add features" and more <strong>collapse four half-products into one real model-first editor, then make the model-first behaviors actually work.</strong></p>
+  </section>
+
+  <!-- ============ OVERALL ASSESSMENT ============ -->
+  <section id="assessment">
+  <h2><span class="num">01</span>Overall UX assessment</h2>
+  <p>Scores are relative to the best-in-class behavior for each dimension, not to a fixed rubric. Reasoning is in the competitive matrix.</p>
+  <div class="scorecard">
+    <div class="score"><div class="lab">Concept / mental model</div><div class="val">9</div><div class="bar"><i style="width:90%"></i></div></div>
+    <div class="score"><div class="lab">First-run clarity</div><div class="val">4</div><div class="bar"><i style="width:40%"></i></div></div>
+    <div class="score"><div class="lab">Core diagramming</div><div class="val">5</div><div class="bar"><i style="width:50%"></i></div></div>
+    <div class="score"><div class="lab">Canvas feel</div><div class="val">6</div><div class="bar"><i style="width:60%"></i></div></div>
+    <div class="score"><div class="lab">Architecture modeling</div><div class="val">3</div><div class="bar"><i style="width:30%"></i></div></div>
+    <div class="score"><div class="lab">Information arch.</div><div class="val">3</div><div class="bar"><i style="width:30%"></i></div></div>
+    <div class="score"><div class="lab">Keyboard / expert</div><div class="val">3</div><div class="bar"><i style="width:30%"></i></div></div>
+    <div class="score"><div class="lab">Coherence / trust</div><div class="val">3</div><div class="bar"><i style="width:30%"></i></div></div>
+  </div>
+  <p><strong>Overall: the ceiling is very high, the current floor is low.</strong> The same person will rate this a 9 on the pitch and a 3 on the thirty-minute trial, because the pitch is real and the trial exposes that most of it is staged. The single most valuable thing the team can do is make a small number of things <em>genuinely true</em> rather than adding a tenth simulated capability.</p>
+  </section>
+
+  <!-- ============ PERSONAS ============ -->
+  <section id="personas">
+  <h2><span class="num">02</span>Primary personas &amp; jobs-to-be-done</h2>
+  <p>Taken from the project's own persona definitions and checked against what the product actually lets each one do today.</p>
+  <div class="tscroll">
+  <table class="wide">
+    <thead><tr><th>Persona</th><th>Core job (hires the tool to…)</th><th>Served today?</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Priya</strong><br><span class="ref">Staff eng / architect</span></td><td>Keep one accurate model; explore "what if we split this service" without redrawing; hand new hires something true.</td><td><span class="chip c-crit">No</span> Reuse-across-views and forking are the core promise and are not functional in the editor. She would still redraw.</td></tr>
+      <tr><td><strong>Marcus</strong><br><span class="ref">Platform / DevProd</span></td><td>Detect drift; keep the model synced from Terraform / K8s / GitHub; gate risky changes with architecture PRs.</td><td><span class="chip c-crit">No</span> Drift, scanners and PRs exist as panels but are seeded fixtures, not live integrations.</td></tr>
+      <tr><td><strong>Dana</strong><br><span class="ref">Eng leader</span></td><td>Explain a system to execs; see ownership, criticality, SPOFs at a glance; answer a board question in a click.</td><td><span class="chip c-high">Partial</span> Ownership/persona overlays and the share link are the closest-to-real wins; undermined by fake data and no real views.</td></tr>
+      <tr><td><strong>Sam</strong><br><span class="ref">Security / compliance</span></td><td>Trace every path PII takes to a third party; prove boundaries; turn an audit question into a query.</td><td><span class="chip c-high">Partial</span> Security view overlay + flow playback demo the idea; querying the model is not possible.</td></tr>
+      <tr><td><strong>Alex</strong><br><span class="ref">New developer</span></td><td>Understand a system fast; drill down; read object docs; search.</td><td><span class="chip c-med">Weakest link</span> Drill-down is cosmetic, so the one job a newcomer most needs is the one that doesn't work.</td></tr>
+      <tr><td><strong>An AI agent</strong><br><span class="ref">Cursor / Claude</span></td><td>Read and safely edit the model via MCP with stable IDs and evidence on every change.</td><td><span class="chip c-low">Backend-ready</span> The API is agent-shaped; no MCP surface is wired yet. This is the differentiator least damaged by the UI problems.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The anti-persona is explicit and correct: <em>"If someone wants Miro, that is not us."</em> That discipline is a strength — it means the roadmap should <strong>not</strong> chase freeform-canvas parity.</p>
+  </section>
+
+  <!-- ============ STRENGTHS ============ -->
+  <section id="strengths">
+  <h2><span class="num">03</span>Strengths — do not change these</h2>
+  <div class="cols">
+    <div class="panel good"><h3>The model-first thesis</h3><p>Objects independent of diagrams, connections as first-class typed entities, views as projections, stable IDs for canvas / API / agents. This is a better foundation than draw.io (file of shapes) and cleaner than IcePanel. Protect it.</p></div>
+    <div class="panel good"><h3>The domain layer</h3><p><code>@diagramhq/domain</code> is framework-free and enforced by <code>check-architecture</code>. Layouts, projections, invariants, filters and templates are real and unit-tested. The hard part is done; the UI just isn't using it.</p></div>
+    <div class="panel good"><h3>The model navigator</h3><p>The studio left sidebar — objects grouped by kind, live counts, instant search, inline quick-create, per-category "+" — is genuinely better than draw.io's flat shape tray and competitive with IcePanel's tree.</p></div>
+    <div class="panel good"><h3>Login-free instant start</h3><p><code>/studio</code> opens straight into a laid-out reference architecture with no signup. This is a better cold-open than IcePanel (which gates behind an account) and matches draw.io's best trait.</p></div>
+    <div class="panel good"><h3>Undo as a command stack</h3><p>A real command-pattern dispatcher with optimistic apply + rollback-on-failure for moves, align, layout, create, connect, delete. The architecture is right; it just needs to cover every mutation.</p></div>
+    <div class="panel good"><h3>Auto-layout range</h3><p>Layered, grid, radial and force-directed via a registry, one click from the canvas. draw.io buries layout in a submenu; Excalidraw has none. This is a real speed advantage for architecture graphs.</p></div>
+  </div>
+  <p><strong>Better than IcePanel today:</strong> the no-login open, the single-screen density, and the breadth of one-click layouts. <strong>Better than draw.io today:</strong> the typed object navigator and the fact that an object is a thing, not a shape. Keep all of these intact through any redesign.</p>
+  </section>
+
+  <!-- ============ CRITICAL PROBLEMS ============ -->
+  <section id="critical">
+  <h2><span class="num">04</span>Critical UX problems</h2>
+  <p>Each follows: observation → user problem → why it matters → competitive reference → recommendation.</p>
+
+  <div class="finding">
+    <div class="hd"><span class="chip c-crit">CRITICAL</span><h3>Four disconnected products wearing one name</h3></div>
+    <dl>
+      <dt>Observation</dt><dd>Three independent canvas implementations (<code>/studio</code> React Flow, <code>/canvas/*</code> hand-rolled SVG, the embedded workspace canvas) with different tool models, plus a light CRUD dashboard. Nothing you make in one appears in another.</dd>
+      <dt>User problem</dt><dd>The tool you get depends on which URL you landed on. Work doesn't carry. The mental model resets every navigation.</dd>
+      <dt>Why it matters</dt><dd>Coherence <em>is</em> usability. A user cannot build a workflow on a product that is actually four products.</dd>
+      <dt>Reference</dt><dd>IcePanel, Lucidchart and Figma each have exactly one editor reached many ways. The surface is consistent no matter how you arrive.</dd>
+      <dt>Recommendation</dt><dd>Pick <code>/studio</code>'s React Flow editor as the one true canvas. Delete the hand-rolled <code>/canvas/*</code> implementation. Make the workspace shell host the same editor on real data. One editor, one interaction model.</dd>
+    </dl>
+  </div>
+
+  <div class="finding">
+    <div class="hd"><span class="chip c-crit">CRITICAL</span><h3>The model-first promise isn't realized in the editor</h3></div>
+    <dl>
+      <dt>Observation</dt><dd>Studio holds nodes/edges in local React state and autosaves one blob. It never calls the objects/connections/views endpoints. "One object, many views" has no UI expression — there is one canvas.</dd>
+      <dt>User problem</dt><dd>Priya cannot reuse an object across views, cannot fork current vs. future, cannot trust that the diagram reflects a model — because there is no model behind the diagram she's editing.</dd>
+      <dt>Why it matters</dt><dd>This is the entire reason to choose DiagramHQ over draw.io. Without it, it's a worse draw.io.</dd>
+      <dt>Reference</dt><dd>Structurizr and IcePanel both make the model the document and views queries over it. That is the category.</dd>
+      <dt>Recommendation</dt><dd>Wire studio to the real model API: objects persist as objects, the canvas is a view with its own membership + layout, adding the same object to a second view is a first-class action.</dd>
+    </dl>
+  </div>
+
+  <div class="finding">
+    <div class="hd"><span class="chip c-crit">CRITICAL</span><h3>C4 drill-down is a label, not navigation</h3></div>
+    <dl>
+      <dt>Observation</dt><dd>Context/Container/Component tabs update a breadcrumb and sidebar state only; the canvas graph is identical at all three levels (<code>displayNodes</code> ignores <code>c4Level</code>).</dd>
+      <dt>User problem</dt><dd>Clicking into a system expecting to see its internals shows the same picture. The signature architecture interaction silently fails.</dd>
+      <dt>Why it matters</dt><dd>Drill-down is the #1 job for the newcomer persona (Alex) and the explanation job for the leader (Dana).</dd>
+      <dt>Reference</dt><dd>IcePanel's double-click-to-descend and Structurizr's level views are the whole point of C4 tooling.</dd>
+      <dt>Recommendation</dt><dd>Make level switching a real filter over a parent/child hierarchy; double-click a system to descend, breadcrumb to ascend.</dd>
+    </dl>
+  </div>
+
+  <div class="finding">
+    <div class="hd"><span class="chip c-crit">CRITICAL</span><h3>Simulated features presented as real</h3></div>
+    <dl>
+      <dt>Observation</dt><dd>Presence (3 hard-coded peers), comments, PR review, branches, snapshots, visual diff, and all four "AI" actions are seeded fixtures or deterministic domain functions — not live collaboration or model calls.</dd>
+      <dt>User problem</dt><dd>A user who shares a link, assigns a comment, or trusts an "AI review" is relying on nothing. Discovering this destroys trust in the parts that <em>are</em> real.</dd>
+      <dt>Why it matters</dt><dd>A trial that feels like a stage set converts worse than a small honest tool.</dd>
+      <dt>Reference</dt><dd>n/a — this is a credibility problem, not a feature gap.</dd>
+      <dt>Recommendation</dt><dd>Hide everything not wired to real data behind a clearly labeled "Preview / coming soon" state, or remove it from the default toolbar. Ship fewer, true things.</dd>
+    </dl>
+  </div>
+
+  <div class="finding">
+    <div class="hd"><span class="chip c-high">HIGH</span><h3>The top bar has ~25 equal-weight controls</h3></div>
+    <dl>
+      <dt>Observation</dt><dd>A single 56px header crams C4 tabs, view switcher, persona select, sign-in, branch, presence, versions, diff, PR, comments, icons, export, mermaid, plantuml, share, copilot, AI-gen, AI-review, ADR, mobile, demo-loader, import, export-JSON, reset, trace, inspector (<span class="ref">app/studio/page.tsx:1507–1804</span>).</dd>
+      <dt>User problem</dt><dd>Nothing is primary, so nothing is findable. The most common actions (add, connect, name) are not even in the bar; they're buried or implicit.</dd>
+      <dt>Why it matters</dt><dd>Visual hierarchy is how a user learns what to do next. This bar teaches nothing.</dd>
+      <dt>Reference</dt><dd>Figma: a small left tool cluster, a contextual right panel, everything else in menus / <span class="mono">⌘K</span>. IcePanel keeps the top bar to model-level actions.</dd>
+      <dt>Recommendation</dt><dd>Reduce to ~5 primary controls; move the rest into a command palette, an overflow menu, and context-sensitive panels.</dd>
+    </dl>
+  </div>
+  </section>
+
+  <!-- ============ WORKFLOW ============ -->
+  <section id="workflow">
+  <h2><span class="num">05</span>Core workflow &amp; interaction cost</h2>
+  <p>Interaction counts measured from the current studio build versus the best competitor path. "Interaction" = a discrete click, drag, or field entry.</p>
+  <div class="tscroll">
+  <table class="wide">
+    <thead><tr><th>Workflow</th><th>DiagramHQ today</th><th>Best competitor</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr><td>Add an object</td><td class="num-cell">1 (palette / sidebar "+")</td><td class="num-cell">1 (draw.io double-click; Figma drag)</td><td><span class="chip c-good">At par</span></td></tr>
+      <tr><td>Name a new object</td><td class="num-cell">3+ (select → inspector → field; no inline rename)</td><td class="num-cell">1–2 (type immediately after create)</td><td><span class="chip c-high">Worse</span></td></tr>
+      <tr><td>Connect two objects</td><td class="num-cell">1 drag (edge is unlabeled)</td><td class="num-cell">1 drag</td><td><span class="chip c-good">At par</span></td></tr>
+      <tr><td>Label a connection</td><td class="num-cell">4 (select edge → inspector → protocol → desc)</td><td class="num-cell">2 (double-click edge → type)</td><td><span class="chip c-high">Worse</span></td></tr>
+      <tr><td>Duplicate an object</td><td class="num-cell">— (not possible)</td><td class="num-cell">1 (<span class="mono">⌘D</span> / alt-drag)</td><td><span class="chip c-crit">Missing</span></td></tr>
+      <tr><td>Copy / paste objects</td><td class="num-cell">— (not implemented)</td><td class="num-cell">2 (<span class="mono">⌘C ⌘V</span>)</td><td><span class="chip c-crit">Missing</span></td></tr>
+      <tr><td>Find an object</td><td class="num-cell">2 (open sidebar → type) — good</td><td class="num-cell">1–2 (<span class="mono">⌘K</span> / <span class="mono">⌘F</span>)</td><td><span class="chip c-med">Close</span></td></tr>
+      <tr><td>Drill into a system</td><td class="num-cell">∞ (cosmetic — never works)</td><td class="num-cell">1 (double-click in IcePanel)</td><td><span class="chip c-crit">Broken</span></td></tr>
+      <tr><td>Reuse an object in another view</td><td class="num-cell">— (no real views)</td><td class="num-cell">1–2 (IcePanel drag onto new diagram)</td><td><span class="chip c-crit">Missing</span></td></tr>
+      <tr><td>Undo a rename</td><td class="num-cell">— (inspector edits bypass the command stack)</td><td class="num-cell">1 (<span class="mono">⌘Z</span>)</td><td><span class="chip c-high">Broken</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The pattern is clear: <strong>creation is fast, but every follow-up edit costs 2–4× what it should</strong> because there is no inline editing, no clipboard, no duplicate, and the right-click menu that would carry these doesn't exist. The fixes are small and high-leverage.</p>
+  </section>
+
+  <!-- ============ CANVAS ============ -->
+  <section id="canvas">
+  <h2><span class="num">06</span>Canvas experience</h2>
+  <h4>What works</h4>
+  <ul>
+    <li>Infinite pan/zoom, minimap, fit-to-view, fullscreen, focus mode (dims non-selected), and a group-move that snaps as a rigid body and reverts on persistence failure — all solid.</li>
+    <li>Auto-layout is one click and genuinely useful on architecture graphs.</li>
+    <li>Dragged positions persist and survive parent re-renders (a real bug that was fixed recently — good).</li>
+  </ul>
+  <h4>What fights the user</h4>
+  <div class="finding">
+    <div class="hd"><span class="chip c-high">HIGH</span><h3>Two competing zoom/pan clusters + colliding panels</h3></div>
+    <dl>
+      <dt>Observation</dt><dd>React Flow's native <code>&lt;Controls&gt;</code> (bottom-left) and a custom pan/zoom toolbar (top-right) both exist; the auto-layout menu also anchors bottom-left, on top of the native controls.</dd>
+      <dt>Impact</dt><dd>Redundant, conflicting affordances; overlapping hit targets on small screens.</dd>
+      <dt>Recommendation</dt><dd>Keep one zoom cluster (bottom-right, Figma convention). Drop React Flow's default Controls. Give the layout menu its own corner.</dd>
+    </dl>
+  </div>
+  <div class="finding">
+    <div class="hd"><span class="chip c-high">HIGH</span><h3>Box-select is a mode toggle, not the default</h3></div>
+    <dl>
+      <dt>Observation</dt><dd>Drag-select only works after toggling a "Box Select" button (or holding Shift); <code>selectionOnDrag</code> is off by default.</dd>
+      <dt>Impact</dt><dd>Every tool the user already knows (Figma, Miro, draw.io, Excalidraw) drag-selects on empty canvas by default. Here, dragging empty space does nothing until you find a button.</dd>
+      <dt>Recommendation</dt><dd>Make drag-on-empty-canvas marquee-select by default; keep space-to-pan. This is a one-line default change with outsized payoff.</dd>
+    </dl>
+  </div>
+  <div class="finding">
+    <div class="hd"><span class="chip c-high">HIGH</span><h3>No right-click context menu anywhere</h3></div>
+    <dl>
+      <dt>Observation</dt><dd>Zero <code>onNodeContextMenu</code> / <code>onPaneContextMenu</code> handlers in the codebase.</dd>
+      <dt>Impact</dt><dd>The universal "right-click the thing → act on the thing" expectation fails. Every object action requires a trip to the inspector or a hidden shortcut.</dd>
+      <dt>Recommendation</dt><dd>Add a context menu on node, edge and pane: rename, duplicate, delete, add connection, bring to front, add to view, drill in.</dd>
+    </dl>
+  </div>
+  <h4>At scale (hundreds of objects)</h4>
+  <p>The canvas has not been designed for density. Everything renders every frame (no virtualization / LOD), there is no collapse-to-boundary for groups, no semantic zoom (labels at 10% zoom are unreadable), and focus mode is the only tool for isolating a subgraph. A real architecture of 300+ objects will be slow and unnavigable. This is acceptable for now — but it means <em>large-diagram UX is a future workstream, and the drill-down fix is also the scale fix</em> (you navigate levels instead of one giant graph).</p>
+  </section>
+
+  <!-- ============ MODELING ============ -->
+  <section id="modeling">
+  <h2><span class="num">07</span>Architecture-modeling UX</h2>
+  <p><strong>What advantages <em>should</em> an architecture tool have over draw.io?</strong> Five, and here is whether DiagramHQ delivers each:</p>
+  <div class="tscroll">
+  <table class="wide">
+    <thead><tr><th>Expected advantage</th><th>What it should feel like</th><th>DiagramHQ today</th></tr></thead>
+    <tbody>
+      <tr><td>Single source of truth</td><td>Edit an object once; every view updates.</td><td><span class="chip c-crit">Not delivered</span> — editor is a diagram blob.</td></tr>
+      <tr><td>Reuse across views</td><td>Same object on many diagrams; delete-from-view ≠ delete.</td><td><span class="chip c-crit">Not delivered</span> — one canvas, overlays only.</td></tr>
+      <tr><td>Abstraction levels</td><td>Drill down/up the same model.</td><td><span class="chip c-crit">Not delivered</span> — cosmetic labels.</td></tr>
+      <tr><td>Typed semantics</td><td>Objects and connections carry meaning you can query.</td><td><span class="chip c-med">Partial</span> — types exist on nodes; no query/validation surfaced.</td></tr>
+      <tr><td>Consistency / correctness</td><td>Invariants stop impossible architectures.</td><td><span class="chip c-med">Partial</span> — invariants live in domain, unused by the editor.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>So the honest answer to the key question — <em>does this make architecture modeling easier than draw.io?</em> — is <strong>not yet</strong>. It currently makes <em>drawing</em> slightly harder than draw.io (more edit steps) while promising modeling it doesn't do. The entire differentiation is latent in the domain layer, one integration away. That is the opportunity and the risk in one sentence.</p>
+  </section>
+
+  <!-- ============ IA ============ -->
+  <section id="ia">
+  <h2><span class="num">08</span>Information architecture</h2>
+  <p>The hierarchy on paper — Organization → Workspace → Architecture → (Objects, Connections, Views, Flows, Decisions) — matches the architect's mental model well. The <em>exposure</em> of it does not.</p>
+  <ul>
+    <li><strong>The flagship editor lives outside the hierarchy.</strong> <code>/studio</code> has no workspace, no architecture, no view. The dashboard → workspace path (where the hierarchy lives) uses a different, weaker canvas. A user cannot tell where their work belongs.</li>
+    <li><strong>Internal model leaks to the surface.</strong> The dashboard shows org <code>slug</code>, org <code>id</code>, and <code>User ID</code> as primary content; the workspace header shows the raw <code>workspaceId</code>. Users should never see these — they're implementation, not information.</li>
+    <li><strong>Two brand names.</strong> The dark editor says "DiagramHQ"; the dashboard says "Architecture OS." Same product, two identities.</li>
+    <li><strong>"Diagrams" vs "Views" vs "Levels" are three names for overlapping ideas</strong> exposed to the user at once (sidebar tabs + C4 tabs + perspective switcher). The user must hold three mental models of "a way of looking at the model."</li>
+  </ul>
+  <p><strong>Progressive disclosure opportunity:</strong> the user should never need to know the words "projection", "version id", "workspace id", or "C4 level number" to do the common jobs. Hide org/workspace plumbing behind a single project switcher; present "views" as the one concept and let level and perspective be properties of a view.</p>
+  </section>
+
+  <!-- ============ INTERACTION MODEL ============ -->
+  <section id="interaction">
+  <h2><span class="num">09</span>Interaction model</h2>
+  <div class="cols">
+    <div class="panel warn"><h3>Predictable</h3><p>Single-click selects, click-empty deselects, drag moves, drag-from-handle connects, <span class="mono">⌘Z</span> undoes moves. These match convention.</p></div>
+    <div class="panel stop"><h3>Missing conventions</h3><p>No right-click menu. No double-click to rename a node or label an edge. No <span class="mono">⌘C/⌘V/⌘D</span>. No <span class="mono">⌘K</span> command palette (README lists it as "pending" since Phase 02). No discoverable shortcut list — the ~8 shortcuts that exist (<span class="mono">F</span>, <span class="mono">M</span>, <span class="mono">Space</span>, <span class="mono">Shift+F</span>, <span class="mono">Alt+F</span>) are hidden in button tooltips only.</p></div>
+    <div class="panel warn"><h3>Inconsistent</h3><p>Creating a node via the palette goes through the undoable command stack; creating/connecting from the inspector mutates state directly and <em>cannot be undone</em>. The same logical action has two code paths with different guarantees.</p></div>
+  </div>
+  <p><strong>Borrow directly:</strong> draw.io's hover-arrow-to-create-and-connect, Figma's <span class="mono">⌘K</span> + double-click-to-edit, Miro's drag-from-empty-to-marquee. These are well-understood patterns; copying them is pure upside here.</p>
+
+  <h4>Error prevention &amp; recovery</h4>
+  <ul>
+    <li><strong>No inline <code>window.confirm</code> fallback awareness:</strong> the "Reset / clear diagram" action uses <code>window.confirm</code> — fine in-app, but the destructive clear is a top-bar button one click from the primary workspace, with only a native dialog between the user and total loss.</li>
+    <li><strong>Undo doesn't cover metadata</strong>, so an accidental rename or retyped description is unrecoverable via <span class="mono">⌘Z</span>.</li>
+    <li><strong>No invalid-connection prevention</strong> — any handle connects to any handle; the typed model that could forbid nonsensical links isn't consulted.</li>
+    <li><strong>Autosave status is honest and well done</strong> (saving / saved / saved-local / cloud vs guest) — a genuine bright spot in system-status feedback.</li>
+  </ul>
+
+  <h4>Accessibility</h4>
+  <p>Keyboard-only users cannot create or connect nodes (both require pointer drag). Many controls are emoji + hidden text, so the meaning depends on an emoji glyph. Focus states exist on links but not consistently on canvas controls. Color alone carries meaning in the view overlays (security/data/ownership badges). Treat as a dedicated later pass; none of it is a quick win, but the emoji-as-icon habit should stop now in new UI.</p>
+  </section>
+
+  <!-- ============ MATRIX ============ -->
+  <section id="matrix">
+  <h2><span class="num">10</span>Competitive comparison</h2>
+  <p>Scale 1–5. Cells state the reason, not just the number.</p>
+  <div class="tscroll">
+  <table class="wide">
+    <thead><tr><th>Dimension</th><th>DiagramHQ</th><th>IcePanel</th><th>draw.io</th><th>Lucidchart</th><th>Miro / FigJam</th><th>Excalidraw</th></tr></thead>
+    <tbody>
+      <tr><td>Learning curve</td><td class="num-cell">2 <span class="ref">dense, promises mislead</span></td><td class="num-cell">4</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">5</td><td class="num-cell">5</td></tr>
+      <tr><td>Canvas UX</td><td class="num-cell">3 <span class="ref">good base, non-standard defaults</span></td><td class="num-cell">4</td><td class="num-cell">4</td><td class="num-cell">4</td><td class="num-cell">5</td><td class="num-cell">5</td></tr>
+      <tr><td>Creation speed</td><td class="num-cell">3 <span class="ref">fast add, slow edit</span></td><td class="num-cell">4</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">4</td><td class="num-cell">5</td></tr>
+      <tr><td>Architecture modeling</td><td class="num-cell">2 <span class="ref">latent, not wired</span></td><td class="num-cell">5</td><td class="num-cell">1</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">1</td></tr>
+      <tr><td>Navigation / drill-down</td><td class="num-cell">1 <span class="ref">cosmetic</span></td><td class="num-cell">5</td><td class="num-cell">2</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">1</td></tr>
+      <tr><td>Large diagrams</td><td class="num-cell">2 <span class="ref">no LOD/virtualization</span></td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">2</td></tr>
+      <tr><td>Organization</td><td class="num-cell">2 <span class="ref">editor outside hierarchy</span></td><td class="num-cell">4</td><td class="num-cell">2</td><td class="num-cell">4</td><td class="num-cell">4</td><td class="num-cell">2</td></tr>
+      <tr><td>Collaboration</td><td class="num-cell">1 <span class="ref">simulated</span></td><td class="num-cell">4</td><td class="num-cell">2</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">3</td></tr>
+      <tr><td>Discoverability</td><td class="num-cell">2 <span class="ref">flat, overloaded bar</span></td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">4</td><td class="num-cell">4</td><td class="num-cell">4</td></tr>
+      <tr><td>Keyboard efficiency</td><td class="num-cell">2 <span class="ref">no palette/clipboard</span></td><td class="num-cell">3</td><td class="num-cell">4</td><td class="num-cell">4</td><td class="num-cell">4</td><td class="num-cell">4</td></tr>
+      <tr><td>Visual clarity</td><td class="num-cell">3 <span class="ref">handsome but busy</span></td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">4</td><td class="num-cell">4</td><td class="num-cell">5</td></tr>
+      <tr><td>Error recovery</td><td class="num-cell">3 <span class="ref">partial undo</span></td><td class="num-cell">4</td><td class="num-cell">4</td><td class="num-cell">4</td><td class="num-cell">4</td><td class="num-cell">4</td></tr>
+      <tr><td><strong>Overall UX</strong></td><td class="num-cell"><strong>2.3</strong></td><td class="num-cell"><strong>4.1</strong></td><td class="num-cell"><strong>3.2</strong></td><td class="num-cell"><strong>3.8</strong></td><td class="num-cell"><strong>3.8</strong></td><td class="num-cell"><strong>3.4</strong></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Read this as: <strong>the gap to IcePanel is almost entirely "make the latent model behaviors real."</strong> DiagramHQ already matches or beats everyone on concept and on raw object-creation; it loses on every dimension that depends on the model being wired and on following canvas conventions.</p>
+  </section>
+
+  <!-- ============ FRICTION MATRIX ============ -->
+  <section id="friction">
+  <h2><span class="num">11</span>Friction &amp; opportunity matrix</h2>
+  <p>Priority ≈ Impact × Frequency ÷ Effort. Sorted by priority.</p>
+  <div class="tscroll">
+  <table class="wide">
+    <thead><tr><th>#</th><th>Problem</th><th>Sev</th><th>Freq</th><th>Effort</th><th>Fix</th><th>Better in</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Drill-down cosmetic</td><td><span class="chip c-crit">Crit</span></td><td>Every session</td><td>M</td><td>Real level filter + double-click descend</td><td>IcePanel</td></tr>
+      <tr><td>2</td><td>Editor not wired to model</td><td><span class="chip c-crit">Crit</span></td><td>Every edit</td><td>H</td><td>Persist objects/views via API</td><td>IcePanel/Structurizr</td></tr>
+      <tr><td>3</td><td>Four disconnected surfaces</td><td><span class="chip c-crit">Crit</span></td><td>Every nav</td><td>M</td><td>One canvas; delete the others</td><td>All</td></tr>
+      <tr><td>4</td><td>No inline rename / edge label</td><td><span class="chip c-high">High</span></td><td>Constant</td><td>L</td><td>Double-click to edit</td><td>draw.io/Figma</td></tr>
+      <tr><td>5</td><td>No right-click menu</td><td><span class="chip c-high">High</span></td><td>Constant</td><td>L</td><td>Node/edge/pane context menu</td><td>All</td></tr>
+      <tr><td>6</td><td>No copy/paste/duplicate</td><td><span class="chip c-high">High</span></td><td>Constant</td><td>L</td><td><span class="mono">⌘C/V/D</span> + alt-drag</td><td>All</td></tr>
+      <tr><td>7</td><td>Box-select is a toggle</td><td><span class="chip c-high">High</span></td><td>Constant</td><td>L</td><td>Marquee-on-empty by default</td><td>All</td></tr>
+      <tr><td>8</td><td>Overloaded top bar</td><td><span class="chip c-high">High</span></td><td>Every session</td><td>M</td><td>5 primary + palette + overflow</td><td>Figma/IcePanel</td></tr>
+      <tr><td>9</td><td>Simulated features look real</td><td><span class="chip c-crit">Crit</span></td><td>On trust</td><td>L</td><td>Label/gate "Preview"</td><td>—</td></tr>
+      <tr><td>10</td><td>No command palette</td><td><span class="chip c-high">High</span></td><td>Expert use</td><td>M</td><td><span class="mono">⌘K</span> over objects+actions</td><td>Figma</td></tr>
+      <tr><td>11</td><td>Undo misses metadata</td><td><span class="chip c-high">High</span></td><td>Frequent</td><td>M</td><td>Route all mutations through commands</td><td>All</td></tr>
+      <tr><td>12</td><td>Raw IDs/slugs on screen</td><td><span class="chip c-med">Med</span></td><td>Dashboard</td><td>L</td><td>Hide plumbing; name things</td><td>Lucidchart</td></tr>
+      <tr><td>13</td><td>No shortcut discoverability</td><td><span class="chip c-med">Med</span></td><td>Learning</td><td>L</td><td><span class="mono">?</span> cheat-sheet overlay</td><td>Figma/Miro</td></tr>
+      <tr><td>14</td><td>Stale landing copy</td><td><span class="chip c-med">Med</span></td><td>First visit</td><td>L</td><td>Rewrite ("canvas arrives Phase 02")</td><td>—</td></tr>
+      <tr><td>15</td><td>Two brand names</td><td><span class="chip c-low">Low</span></td><td>Cross-nav</td><td>L</td><td>Pick one name</td><td>—</td></tr>
+      <tr><td>16</td><td>Dup zoom clusters / panel collision</td><td><span class="chip c-med">Med</span></td><td>Every session</td><td>L</td><td>One zoom cluster, reposition layout menu</td><td>Figma</td></tr>
+      <tr><td>17</td><td>No large-diagram LOD</td><td><span class="chip c-med">Med</span></td><td>Big models</td><td>H</td><td>Semantic zoom + collapse</td><td>IcePanel</td></tr>
+    </tbody>
+  </table>
+  </div>
+  </section>
+
+  <!-- ============ KEY QUESTION ============ -->
+  <section id="keyq">
+  <h2><span class="num">12</span>The draw.io architect walks in</h2>
+  <div class="cols">
+    <div class="panel good"><h3>Immediately better</h3><p>Opens with a real, auto-laid-out architecture — no blank page. A typed object navigator with search instead of a shape tray. Brand-icon picker for tech. One-click layouts. "This clearly knows what a service is."</p></div>
+    <div class="panel warn"><h3>Immediately worse</h3><p>Can't double-click to rename. No right-click. No copy/duplicate. Dragging empty space does nothing. The toolbar is a wall. "Why is the easy stuff hard?"</p></div>
+    <div class="panel stop"><h3>Confusing</h3><p>C4 tabs change nothing visible. "Views" don't make new diagrams. The AI button produces a canned result. Signing in drops them into a different, uglier app that shows database IDs. "Which one is the real product?"</p></div>
+  </div>
+  <h3>After 30 minutes, what makes them switch from draw.io?</h3>
+  <p>Only one thing, and it isn't built yet: <strong>"I edited the object once and it updated everywhere, and I drilled from the context view into the container view of the same model."</strong> That single true experience is worth more than all 25 toolbar buttons. Nothing else will pull a draw.io user across, because for pure drawing draw.io is faster today.</p>
+  <h3>What makes them choose IcePanel over DiagramHQ?</h3>
+  <p>IcePanel delivers the model-first experience <em>now</em> — real drill-down, real reuse, real teams — with conventional canvas interactions and without the uncanny feeling that half the buttons are props. DiagramHQ wins only once its model behaviors are real and its canvas stops surprising people.</p>
+  </section>
+
+  <!-- ============ WINS ============ -->
+  <section id="wins">
+  <h2><span class="num">13</span>Quick wins · mid-term · redesign</h2>
+  <div class="cols">
+    <div class="panel"><h3>Quick wins <span class="chip c-low">days</span></h3><ul>
+      <li>Double-click to rename node / label edge.</li>
+      <li>Node/edge/pane right-click menu.</li>
+      <li><span class="mono">⌘C / ⌘V / ⌘D</span> and alt-drag duplicate.</li>
+      <li>Marquee-select on empty drag by default.</li>
+      <li>One zoom cluster; fix panel collision.</li>
+      <li><span class="mono">?</span> shortcut cheat-sheet.</li>
+      <li>Rewrite stale landing copy; one brand name.</li>
+      <li>Gate simulated features as "Preview".</li>
+    </ul></div>
+    <div class="panel"><h3>Mid-term <span class="chip c-med">weeks</span></h3><ul>
+      <li>Collapse the top bar to 5 primary + <span class="mono">⌘K</span> palette + overflow.</li>
+      <li>Route every mutation through the command stack (undo everywhere).</li>
+      <li>Wire studio to the real objects/connections/views API.</li>
+      <li>Make C4 levels a real filter over a parent/child hierarchy.</li>
+      <li>Hide org/workspace plumbing behind one project switcher.</li>
+      <li>Real views: add existing object to a second view.</li>
+    </ul></div>
+    <div class="panel"><h3>Redesign <span class="chip c-high">months</span></h3><ul>
+      <li>One editor hosted inside the workspace hierarchy; delete the other two canvases.</li>
+      <li>Large-model navigation: semantic zoom, collapse-to-boundary, level-based loading.</li>
+      <li>Real collaboration (presence, comments) on live data.</li>
+      <li>MCP surface for the AI-agent persona.</li>
+      <li>Query the model: "show every path PII takes to a third party."</li>
+    </ul></div>
+  </div>
+  </section>
+
+  <!-- ============ PRINCIPLES ============ -->
+  <section id="principles">
+  <h2><span class="num">14</span>Recommended product principles</h2>
+  <ol>
+    <li><strong>Model once, draw never twice.</strong> Every edit is to the model; a diagram is a disposable view. If a change doesn't propagate, it's a bug.</li>
+    <li><strong>Nothing in the UI is a prop.</strong> A control that doesn't act on real data is labeled "Preview" or isn't shipped. Trust is the moat.</li>
+    <li><strong>The canvas never surprises a Figma user.</strong> Right-click acts, double-click edits, empty-drag selects, <span class="mono">⌘K</span> finds. Convention first, cleverness second.</li>
+    <li><strong>Hide the plumbing.</strong> No user should see a workspace id, version id, or the word "projection" to do a common job.</li>
+    <li><strong>Depth is navigation, not a label.</strong> Levels and views are ways to move through one model, and they must actually move you.</li>
+    <li><strong>Common actions cost one or two interactions.</strong> Measure the top ten workflows in clicks; defend the budget.</li>
+    <li><strong>One tool, many doors.</strong> However you arrive — share link, dashboard, deep link — you land in the same editor on the same model.</li>
+    <li><strong>We model software; we are not a whiteboard.</strong> Correctness and reuse over drawing freedom. Say no to Miro parity.</li>
+  </ol>
+  </section>
+
+  <!-- ============ TOP 10 ============ -->
+  <section id="top10">
+  <h2><span class="num">15</span>Top 10 changes, in order</h2>
+  <ol>
+    <li><strong>Gate or remove every simulated feature.</strong> Cheapest possible trust repair; do it first.</li>
+    <li><strong>Inline rename + edge labels (double-click).</strong> Removes the most frequent friction.</li>
+    <li><strong>Right-click context menus</strong> on node/edge/pane carrying rename, duplicate, delete, connect, drill-in.</li>
+    <li><strong>Copy / paste / duplicate + default marquee-select.</strong> Canvas-convention parity.</li>
+    <li><strong>Make C4 drill-down real.</strong> The signature interaction must work.</li>
+    <li><strong>Wire the editor to the model API.</strong> Objects persist as objects; the canvas is a view.</li>
+    <li><strong>Collapse to one editor inside the workspace.</strong> Delete the hand-rolled canvas and the duplicate zoom cluster.</li>
+    <li><strong>Command palette (<span class="mono">⌘K</span>)</strong> over objects + actions; route all mutations through undo.</li>
+    <li><strong>Slim the top bar to five primary controls;</strong> everything else to palette/overflow/context panels.</li>
+    <li><strong>Hide org/workspace IDs; one brand, honest landing copy.</strong></li>
+  </ol>
+  </section>
+
+  <hr>
+
+  <!-- ============ ROADMAP ============ -->
+  <section id="priority">
+  <h2><span class="num">16</span>Roadmap — prioritization</h2>
+  <p>Priority = User Impact × Frequency × Strategic Importance ÷ Effort. Classification below drives the phasing.</p>
+  <div class="tscroll">
+  <table class="wide">
+    <thead><tr><th>Item</th><th>Class</th><th>Impact</th><th>Freq</th><th>Strategic</th><th>Effort</th></tr></thead>
+    <tbody>
+      <tr><td>Gate simulated features</td><td><span class="chip c-crit">P0</span></td><td>High</td><td>On trust</td><td>High</td><td>Low</td></tr>
+      <tr><td>Wire editor to model API</td><td><span class="chip c-crit">P0</span></td><td>Very high</td><td>Every edit</td><td>Decisive</td><td>High</td></tr>
+      <tr><td>Real C4 drill-down</td><td><span class="chip c-crit">P0</span></td><td>Very high</td><td>Every session</td><td>Decisive</td><td>Med</td></tr>
+      <tr><td>One editor / kill extra canvases</td><td><span class="chip c-crit">P0</span></td><td>High</td><td>Every nav</td><td>High</td><td>Med</td></tr>
+      <tr><td>Inline rename + edge labels</td><td><span class="chip c-high">P1</span></td><td>High</td><td>Constant</td><td>Med</td><td>Low</td></tr>
+      <tr><td>Context menus</td><td><span class="chip c-high">P1</span></td><td>High</td><td>Constant</td><td>Med</td><td>Low</td></tr>
+      <tr><td>Copy/paste/duplicate + marquee default</td><td><span class="chip c-high">P1</span></td><td>High</td><td>Constant</td><td>Med</td><td>Low</td></tr>
+      <tr><td>Top-bar collapse + <span class="mono">⌘K</span></td><td><span class="chip c-high">P1</span></td><td>High</td><td>Every session</td><td>Med</td><td>Med</td></tr>
+      <tr><td>Undo covers all mutations</td><td><span class="chip c-high">P1</span></td><td>Med</td><td>Frequent</td><td>Med</td><td>Med</td></tr>
+      <tr><td>Hide plumbing / one brand / landing copy</td><td><span class="chip c-med">P2</span></td><td>Med</td><td>First-run</td><td>Med</td><td>Low</td></tr>
+      <tr><td>Real views (reuse across diagrams)</td><td><span class="chip c-high">P1</span></td><td>Very high</td><td>Weekly</td><td>Decisive</td><td>Med</td></tr>
+      <tr><td>Large-model LOD / navigation</td><td><span class="chip c-med">P2</span></td><td>High</td><td>Big models</td><td>High</td><td>High</td></tr>
+      <tr><td>Real collaboration</td><td><span class="chip c-med">P2</span></td><td>High</td><td>Team use</td><td>High</td><td>High</td></tr>
+      <tr><td>MCP agent surface</td><td><span class="chip c-med">P2</span></td><td>High</td><td>Agent use</td><td>Differentiator</td><td>Med</td></tr>
+      <tr><td>Accessibility pass / polish</td><td><span class="chip c-low">P3</span></td><td>Med</td><td>Subset</td><td>Low</td><td>Med</td></tr>
+    </tbody>
+  </table>
+  </div>
+  </section>
+
+  <section id="phases">
+  <h2><span class="num">17</span>Phased roadmap</h2>
+
+  <h3>Phase 0 — Foundations (what "good" means)</h3>
+  <p>Before large changes: instrument the editor (event tracking on add/connect/rename/drill/undo), record baseline interaction counts for the ten workflows in §19, run 5 moderated trials with real architects on the "drill into a system and reuse an object" task, and define activation = <em>first real object persisted to a model</em> (not a blob saved). <strong>Deliverable:</strong> a one-page "good UX" definition with the baseline numbers this roadmap is measured against.</p>
+
+  <h3>Phase 1 — Critical friction removal</h3>
+  <div class="tscroll"><table class="wide">
+    <thead><tr><th>Initiative</th><th>Problem → solution</th><th>Eng change</th><th>Success metric</th></tr></thead>
+    <tbody>
+      <tr><td>Honest surface</td><td>Props feel real → gate behind "Preview"</td><td>Feature flags on seeded panels</td><td>0 unlabeled simulated controls in default view</td></tr>
+      <tr><td>Edit-in-place</td><td>3–4-step edits → double-click rename/label</td><td>Node/edge editable text; route through commands</td><td>Name-object ≤2, label-edge ≤2 interactions</td></tr>
+      <tr><td>Context menus</td><td>No right-click → full menu</td><td><code>onNodeContextMenu</code>/pane/edge handlers</td><td>&gt;60% of object actions start from right-click</td></tr>
+      <tr><td>Clipboard + marquee</td><td>No dup/select → <span class="mono">⌘C/V/D</span>, drag-select default</td><td>Clipboard commands; <code>selectionOnDrag</code> on</td><td>Duplicate workflow = 1 interaction</td></tr>
+      <tr><td>One canvas</td><td>Four surfaces → delete <code>/canvas/*</code>, unify zoom</td><td>Remove SVG canvas; single control cluster</td><td>1 editor implementation in repo</td></tr>
+    </tbody>
+  </table></div>
+  <p><em>No new functionality in Phase 1 beyond what removes top friction.</em></p>
+
+  <h3>Phase 2 — Core workflow optimization</h3>
+  <p>Target the 80% actions: make add/connect/edit/move/select/search/undo fast and identical everywhere. Collapse the top bar to five primary controls + <span class="mono">⌘K</span> palette + overflow. Route <em>every</em> mutation through the command stack so undo is total. Measure each workflow before/after (§19).</p>
+
+  <h3>Phase 3 — Architecture-specific differentiation <span class="chip c-accent">the moat</span></h3>
+  <p>Now make the category behaviors real: wire the editor to the model API; C4 drill-down as navigation over a parent/child hierarchy; <strong>one object in many views</strong> with per-view layout; current/future forking; model validation surfaced as gentle warnings. <strong>Primary differentiators to pursue:</strong> (1) model-as-single-source with live propagation, (2) real drill-down, (3) query-the-model for security/ownership questions. These, not drawing, are why anyone leaves IcePanel or draw.io.</p>
+
+  <h3>Phase 4 — Power-user experience</h3>
+  <p>Palette actions for everything, bulk edit of selection metadata, reusable object library, smart alignment guides, templates that instantiate real model objects, navigation shortcuts between views. Goal: an expert is measurably faster here than in draw.io.</p>
+
+  <h3>Phase 5 — Collaboration &amp; communication</h3>
+  <p>Split "building the architecture" from "communicating it." Real presence/comments on live data; a polished read-only explorer and architecture walkthrough (flow playback on real flows); deep links to a specific view/object; export that reflects the model. The share viewer and persona overlays are the seed — make them real.</p>
+
+  <h3>Phase 6 — Polish &amp; delight</h3>
+  <p>Only after the above: empty states, onboarding, transitions, accessibility, replace emoji-icons with a real icon set, loading states. Never ahead of workflow fixes.</p>
+  </section>
+
+  <section id="timeline">
+  <h2><span class="num">18</span>30 / 90 / 365-day views</h2>
+  <div class="cols">
+    <div class="panel"><h3>30 days</h3><p>All Phase-1 quick wins: edit-in-place, context menus, clipboard + marquee default, kill the extra canvas and duplicate zoom cluster, gate simulated features, fix landing copy and brand, ship a <span class="mono">?</span> shortcut sheet. Result: the canvas stops surprising people and the trial stops feeling staged.</p></div>
+    <div class="panel"><h3>90 days</h3><p>Top-bar collapse + <span class="mono">⌘K</span>, total undo, editor wired to the model API, real C4 drill-down, real views (reuse across diagrams), plumbing hidden behind a project switcher. Result: the model-first promise is true for the first time.</p></div>
+    <div class="panel"><h3>6–12 months</h3><p>Large-model navigation (semantic zoom, collapse-to-boundary), forking current/future, real collaboration, the MCP agent surface, and model querying for security/ownership. Result: differentiation draw.io and Miro structurally cannot match.</p></div>
+  </div>
+  </section>
+
+  <section id="metrics">
+  <h2><span class="num">19</span>Success metrics</h2>
+  <ul>
+    <li><strong>Activation:</strong> % of first sessions that persist ≥1 real object to a model (not a blob). <em>North star.</em></li>
+    <li><strong>Drill-down usage:</strong> % of sessions that descend at least one C4 level (today: ~0, because it doesn't work).</li>
+    <li><strong>Reuse rate:</strong> % of objects appearing in ≥2 views — the single best proxy for "model-first is landing."</li>
+    <li><strong>Interaction cost</strong> for the ten §20 workflows, tracked against targets.</li>
+    <li><strong>Edit-after-create rate:</strong> % of created objects that get named (today the inspector tax suppresses this).</li>
+    <li><strong>Undo frequency &amp; failed-undo</strong> (an undo that didn't change anything = a coverage gap).</li>
+    <li><strong>Time-to-first-connected-pair</strong> and time-to-first-shared-view.</li>
+    <li><strong>Trial-to-trust:</strong> qualitative — do users in moderated tests ever say "wait, is this real?" (target: never).</li>
+  </ul>
+  <p>Deliberately <em>not</em> tracking vanity counts (buttons clicked, diagrams created) — they'd look healthy today precisely because the tool rewards drawing over modeling.</p>
+  </section>
+
+  <section id="targets">
+  <h2><span class="num">20</span>Before / after workflow targets</h2>
+  <div class="tscroll"><table>
+    <thead><tr><th>Workflow</th><th>Current</th><th>Target</th></tr></thead>
+    <tbody>
+      <tr><td>Create diagram/view</td><td class="num-cell">n/a (one canvas)</td><td class="num-cell">≤ 2</td></tr>
+      <tr><td>Add object</td><td class="num-cell">1</td><td class="num-cell">1</td></tr>
+      <tr><td>Name object</td><td class="num-cell">3+</td><td class="num-cell">≤ 2</td></tr>
+      <tr><td>Connect two objects</td><td class="num-cell">1</td><td class="num-cell">1</td></tr>
+      <tr><td>Label a connection</td><td class="num-cell">4</td><td class="num-cell">≤ 2</td></tr>
+      <tr><td>Duplicate object</td><td class="num-cell">— impossible</td><td class="num-cell">1</td></tr>
+      <tr><td>Drill into a system</td><td class="num-cell">broken</td><td class="num-cell">1</td></tr>
+      <tr><td>Reuse object in new view</td><td class="num-cell">— impossible</td><td class="num-cell">≤ 2</td></tr>
+      <tr><td>Find a component</td><td class="num-cell">~4s (open sidebar, type)</td><td class="num-cell">≤ 2s (<span class="mono">⌘K</span>)</td></tr>
+      <tr><td>Edit properties</td><td class="num-cell">2–3</td><td class="num-cell">2</td></tr>
+    </tbody>
+  </table></div>
+  </section>
+
+  <section id="gaps">
+  <h2><span class="num">21</span>Competitive gaps to close</h2>
+  <h4>vs IcePanel</h4>
+  <p>IcePanel does better: real drill-down, real reuse across diagrams, real teams/presence, conventional canvas. <strong>Must close:</strong> drill-down, reuse, model-wiring. <strong>Worth closing:</strong> presence/comments. <strong>Not strategic:</strong> matching their exact visual style — DiagramHQ's density and no-login open are its own.</p>
+  <h4>vs draw.io</h4>
+  <p>draw.io does better: raw drawing speed, flexibility, familiarity, keyboard flow, templates, export. <strong>Match:</strong> inline edit, right-click, clipboard, marquee — table stakes. <strong>Exceed:</strong> typed objects + layout + model. <strong>Ignore by philosophy:</strong> arbitrary freeform shapes and unrestricted drawing — that's the anti-persona.</p>
+  <h4>vs Miro / FigJam / Lucidchart</h4>
+  <p>Worth adopting: Lucidchart's conditional/data-linked formatting (maps straight onto typed metadata), Miro's frictionless multiplayer and presentation mode, FigJam's effortless onboarding. Adopt the <em>interaction polish</em>, not the freeform canvas.</p>
+  <h4>Opportunities no competitor nails</h4>
+  <p>(1) <strong>A model an AI agent can safely edit with evidence</strong> — IcePanel and draw.io are human-only; this is the clearest open lane. (2) <strong>Querying architecture</strong> ("every path PII takes to a third party") — nobody makes this a first-class, answerable question. (3) <strong>Automatic truth</strong> — a model that updates itself from infra/code so diagrams can't rot. Win one of these decisively and the category shifts.</p>
+  </section>
+
+  <section id="notbuild">
+  <h2><span class="num">22</span>Do not build yet</h2>
+  <div class="cols">
+    <div class="panel stop"><h3>More AI buttons</h3><p>A fifth deterministic "AI" action adds surface and subtracts trust. No new AI UI until one is a real model call.</p></div>
+    <div class="panel stop"><h3>Enterprise shell (SSO/SCIM/RBAC/billing modals)</h3><p>These modals exist already and solve nothing for a product with no working core. Freeze until activation is real.</p></div>
+    <div class="panel stop"><h3>More export formats</h3><p>Mermaid + PlantUML + PDF + SVG + PNG + JSON already outnumber the real features. Stop adding; make export reflect the model.</p></div>
+    <div class="panel stop"><h3>Freeform drawing tools</h3><p>Shapes, sticky notes, freehand — this is the anti-persona. Saying no here is strategy.</p></div>
+    <div class="panel stop"><h3>Mobile editing</h3><p>A companion view is fine; full mobile editing of architecture is premature polish.</p></div>
+    <div class="panel stop"><h3>Cosmetic theming / animations</h3><p>No micro-interaction work while double-click-to-rename is missing.</p></div>
+  </div>
+  </section>
+
+  <section id="final">
+  <h2><span class="num">23</span>Final recommendation</h2>
+  <p>If a small team could make only ten UX improvements in six months, these — in this order — convert DiagramHQ from a convincing demo into the best architecture-modeling tool available.</p>
+  <div class="tscroll"><table class="wide">
+    <thead><tr><th>#</th><th>Change</th><th>Why it matters</th><th>Effort</th><th>Metric</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Gate simulated features</td><td>Repairs trust instantly; nothing else lands if the tool feels staged</td><td>Low</td><td>0 unlabeled props</td></tr>
+      <tr><td>2</td><td>Inline rename + edge labels</td><td>Kills the most frequent friction</td><td>Low</td><td>Name ≤2 / label ≤2</td></tr>
+      <tr><td>3</td><td>Context menus</td><td>Restores the universal "act on the thing"</td><td>Low</td><td>&gt;60% actions via menu</td></tr>
+      <tr><td>4</td><td>Clipboard + default marquee</td><td>Canvas-convention parity with every rival</td><td>Low</td><td>Duplicate = 1</td></tr>
+      <tr><td>5</td><td>One editor; delete extra canvases</td><td>Makes it one product</td><td>Med</td><td>1 editor in repo</td></tr>
+      <tr><td>6</td><td>Real C4 drill-down</td><td>The signature interaction must work</td><td>Med</td><td>Drill usage &gt;0</td></tr>
+      <tr><td>7</td><td>Wire editor to model API</td><td>Delivers the entire thesis</td><td>High</td><td>Activation = real object</td></tr>
+      <tr><td>8</td><td>Real views (reuse across diagrams)</td><td>The one thing that beats draw.io</td><td>Med</td><td>Reuse rate &gt;0</td></tr>
+      <tr><td>9</td><td>Top-bar collapse + <span class="mono">⌘K</span> + total undo</td><td>Makes the common 80% fast and recoverable</td><td>Med</td><td>Workflow budgets met</td></tr>
+      <tr><td>10</td><td>Hide plumbing; one brand; honest copy</td><td>Removes the "which product is this?" confusion</td><td>Low</td><td>0 raw IDs on screen</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Implementation order:</strong> ship 1–4 and 10 in the first month (all low-effort, all trust/friction) → 5, 6, 9 next → then the heavier 7 and 8 that unlock the moat. Trust and convention first, because they're cheap and they're what a trial judges; the model-wiring last within the window, because it's the expensive, decisive bet everything else prepares the ground for.</p>
+  <div class="lead"><p><strong>Bottom line.</strong> DiagramHQ versus IcePanel: behind on execution, ahead on idea. Versus generic diagramming tools: currently a slower draw.io wearing an architecture costume, one integration away from being something neither of them can be. The roadmap isn't about catching up — it's about making true the things you've already designed.</p></div>
+  </section>
+
+  <p class="ref" style="margin-top:40px">Source-grounded against the repository at 2026-10-04 · studio, infinite-canvas, icepanel-sidebar, inspector-panel, canvas-store, autosave, dashboard, workspace, canvas and share surfaces.</p>
+</main>
+</div>
+
+<script>
+  (function () {
+    var btn = document.getElementById('themeBtn');
+    function current() {
+      var set = document.documentElement.getAttribute('data-theme');
+      if (set) return set;
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    try {
+      var saved = localStorage.getItem('dhq-ux-theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    } catch (e) {}
+    btn.addEventListener('click', function () {
+      var next = current() === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('dhq-ux-theme', next); } catch (e) {}
+    });
+  })();
+</script>
