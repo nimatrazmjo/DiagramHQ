@@ -279,7 +279,7 @@ Success metric: drill-down usage > 0 (today ~0).
 
 ### F143 — Command palette (⌘K) + total undo coverage
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Priority: P1 · Effort: Medium
 
