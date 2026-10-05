@@ -88,6 +88,16 @@ import {
   filterNodesByC4Level,
   filterEdgesByVisibleNodes,
 } from '../../lib/c4-hierarchy';
+import {
+  CommandPalette,
+  type PaletteObjectItem,
+  type PaletteActionItem,
+} from '../../components/shell';
+import {
+  UpdateNodeMetadataCommand,
+  ConnectNodesCommand,
+  defaultCommandDispatcher,
+} from '../../lib/commands';
 
 // F136 Preview Fixture: simulated peer presence (PREVIEW_REGISTRY.presence)
 const INITIAL_PEERS: PresencePeerBadge[] = [
@@ -554,6 +564,21 @@ export default function StudioPage(): JSX.Element {
   const [c4Level, setC4Level] = useState<1 | 2 | 3>(1);
   const [activeParentId, setActiveParentId] = useState<string | null>(null);
   const [parentHistory, setParentHistory] = useState<Array<{ id: string; name: string; level: 1 | 2 | 3 }>>([]);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+
+  // Global ⌘K shortcut listener for Command Palette (F143)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+      const isMod = isMac ? e.metaKey : e.ctrlKey;
+      if (isMod && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleRestoreSavedDiagram = useCallback((saved: SavedDiagramData) => {
     if (Array.isArray(saved.nodes) && saved.nodes.length > 0) {
@@ -1196,23 +1221,34 @@ export default function StudioPage(): JSX.Element {
   const handleMetadataChange = useCallback(
     (field: string, value: unknown) => {
       if (!selectedNodeId) return;
+      const targetNode = currentNodes.find((n) => n.id === selectedNodeId);
+      if (!targetNode) return;
+
+      const prevData = { ...targetNode.data };
+      const newData = { ...targetNode.data };
+      if (field === 'name') {
+        newData.label = String(value);
+        newData.name = String(value);
+      } else if (field === 'description') {
+        newData.description = String(value);
+      } else {
+        newData[field] = value;
+      }
+
+      // Route through CommandDispatcher for full undoability (F143)
+      const command = new UpdateNodeMetadataCommand({
+        nodeId: selectedNodeId,
+        prevData,
+        newData,
+      });
+
+      void defaultCommandDispatcher.dispatch(command);
+
       setCurrentNodes((prev) =>
-        prev.map((n) => {
-          if (n.id !== selectedNodeId) return n;
-          const data = { ...n.data };
-          if (field === 'name') {
-            data.label = String(value);
-            data.name = String(value);
-          } else if (field === 'description') {
-            data.description = String(value);
-          } else {
-            data[field] = value;
-          }
-          return { ...n, data };
-        }),
+        prev.map((n) => (n.id === selectedNodeId ? { ...n, data: newData } : n)),
       );
     },
-    [selectedNodeId],
+    [selectedNodeId, currentNodes],
   );
 
   const handleEdgeMetadataChange = useCallback(
@@ -1258,7 +1294,7 @@ export default function StudioPage(): JSX.Element {
     [],
   );
 
-  // Connect two nodes from the Inspector
+  // Connect two nodes from the Inspector (routed through CommandDispatcher for undoability, F143)
   const handleConnectNodesFromInspector = useCallback(
     (targetId: string, protocol?: string, description?: string) => {
       if (!selectedNodeId || !targetId || selectedNodeId === targetId) return;
@@ -1277,6 +1313,12 @@ export default function StudioPage(): JSX.Element {
           description: description || undefined,
         },
       };
+
+      const command = new ConnectNodesCommand({
+        edge: newEdge,
+      });
+
+      void defaultCommandDispatcher.dispatch(command);
 
       setCurrentEdges((prev) => [...prev, newEdge]);
     },
@@ -1516,6 +1558,164 @@ export default function StudioPage(): JSX.Element {
       icon: (n.data?.icon as string) || undefined,
     }));
   }, [currentNodes]);
+
+  // F143 Command Palette Objects & Actions
+  const paletteObjects: PaletteObjectItem[] = useMemo(() => {
+    return currentNodes.map((n) => ({
+      id: n.id,
+      name: (n.data?.label as string) || (n.data?.name as string) || n.id,
+      kind: (n.data?.kind as string) || (n.type as string),
+      technology: (n.data?.technology as string) || undefined,
+      description: (n.data?.description as string) || undefined,
+      c4Level: getNodeC4Level(n),
+    }));
+  }, [currentNodes]);
+
+  const paletteActions: PaletteActionItem[] = useMemo(
+    () => [
+      {
+        id: 'add-app',
+        title: 'Add Application Service',
+        description: 'Microservice, web app, or worker container',
+        category: 'create',
+        icon: '📦',
+        shortcut: 'A',
+        onExecute: () => handleAddNode('application'),
+      },
+      {
+        id: 'add-system',
+        title: 'Add System Boundary',
+        description: 'High-level software system or external SaaS boundary',
+        category: 'create',
+        icon: '🌐',
+        shortcut: 'S',
+        onExecute: () => handleAddNode('system'),
+      },
+      {
+        id: 'add-db',
+        title: 'Add Database / Store',
+        description: 'Relational database, key-value store, or blob storage',
+        category: 'create',
+        icon: '🗄️',
+        shortcut: 'D',
+        onExecute: () => handleAddNode('database'),
+      },
+      {
+        id: 'add-queue',
+        title: 'Add Message Queue',
+        description: 'Event broker, queue, or pub/sub channel',
+        category: 'create',
+        icon: '📨',
+        shortcut: 'Q',
+        onExecute: () => handleAddNode('queue'),
+      },
+      {
+        id: 'add-comp',
+        title: 'Add Component',
+        description: 'Internal module, controller, or repository',
+        category: 'create',
+        icon: '🧩',
+        shortcut: 'C',
+        onExecute: () => handleAddNode('component'),
+      },
+      {
+        id: 'add-actor',
+        title: 'Add User / Actor',
+        description: 'Customer, admin, or external persona',
+        category: 'create',
+        icon: '👤',
+        shortcut: 'U',
+        onExecute: () => handleAddNode('person'),
+      },
+      {
+        id: 'nav-lvl-1',
+        title: 'Switch to Level 1: System Context',
+        description: 'High-level architecture view showing systems & users',
+        category: 'view',
+        icon: '1️⃣',
+        shortcut: '1',
+        onExecute: () => handleAscendTo(1, null),
+      },
+      {
+        id: 'nav-lvl-2',
+        title: 'Switch to Level 2: Containers & Applications',
+        description: 'Services, databases, and message brokers',
+        category: 'view',
+        icon: '2️⃣',
+        shortcut: '2',
+        onExecute: () => {
+          const defaultParent = parentHistory.find((p) => p.level === 1)?.id ?? 'sys-saas';
+          handleAscendTo(2, defaultParent);
+        },
+      },
+      {
+        id: 'nav-lvl-3',
+        title: 'Switch to Level 3: Components',
+        description: 'Internal components of active container',
+        category: 'view',
+        icon: '3️⃣',
+        shortcut: '3',
+        onExecute: () => {
+          setC4Level(3);
+          setActiveView('all');
+          setActiveParentId('app-auth');
+          setParentHistory([
+            { id: 'sys-saas', name: 'SaaS Platform', level: 1 },
+            { id: 'app-auth', name: 'Auth Service', level: 2 },
+          ]);
+          setSelectedNodeId(null);
+          setSelectedEdgeId(null);
+          setCanvasKey((k) => k + 1);
+        },
+      },
+      {
+        id: 'view-security',
+        title: 'Toggle Security Perspective',
+        description: 'Highlight authentication boundaries and trust zones',
+        category: 'view',
+        icon: '🛡️',
+        onExecute: () => setActiveView((v) => (v === 'security' ? 'all' : 'security')),
+      },
+      {
+        id: 'view-data',
+        title: 'Toggle Data Classification Perspective',
+        description: 'Highlight data classifications and data stores',
+        category: 'view',
+        icon: '📊',
+        onExecute: () => setActiveView((v) => (v === 'data' ? 'all' : 'data')),
+      },
+      {
+        id: 'act-drill',
+        title: 'Drill Into Selected Object',
+        description: 'Descend one C4 level deeper into child containers or components',
+        category: 'action',
+        icon: '🔍',
+        shortcut: '↵',
+        onExecute: () => {
+          if (selectedNodeId) {
+            handleDrillIn(selectedNodeId);
+          }
+        },
+      },
+      {
+        id: 'act-export',
+        title: 'Export Diagram JSON',
+        description: 'Download the current architecture model as a JSON file',
+        category: 'action',
+        icon: '📤',
+        onExecute: handleExportJson,
+      },
+      {
+        id: 'act-share',
+        title: 'Share Diagram Link',
+        description: 'Open share link modal to create shareable view link',
+        category: 'action',
+        icon: '🔗',
+        onExecute: () => setIsShareLinkModalOpen(true),
+      },
+    ],
+    [handleAddNode, handleAscendTo, handleDrillIn, handleExportJson, parentHistory, selectedNodeId],
+  );
 
   const handleLoadStarter = useCallback(() => {
     let objCount = 0;
@@ -2139,6 +2339,31 @@ export default function StudioPage(): JSX.Element {
 
           <button
             type="button"
+            data-testid="open-command-palette-btn"
+            onClick={() => setIsCommandPaletteOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 border border-slate-700 transition-colors shadow-sm"
+            title="Open Command Palette (Cmd+K)"
+          >
+            <svg
+              className="w-3.5 h-3.5 text-blue-400"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <span className="hidden sm:inline">Palette</span>
+            <kbd className="hidden sm:inline-block px-1 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-900 border border-slate-700 rounded">
+              ⌘K
+            </kbd>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setIsInspectorOpen((prev) => !prev)}
             className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
               isInspectorOpen
@@ -2225,6 +2450,14 @@ export default function StudioPage(): JSX.Element {
                   return { ...n, data };
                 }),
               );
+            }}
+            onNodeMetadataUpdate={(nodeId, data) => {
+              setCurrentNodes((prev) =>
+                prev.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, ...data } } : n)),
+              );
+            }}
+            onEdgeDisconnect={(edgeId) => {
+              setCurrentEdges((prev) => prev.filter((e) => e.id !== edgeId));
             }}
             onEdgeLabelChange={(edgeId, newLabel) => {
               handleEdgeMetadataChange(edgeId, { description: newLabel });
@@ -2548,6 +2781,17 @@ export default function StudioPage(): JSX.Element {
           }}
         />
       )}
+
+      {/* Universal ⌘K Command Palette (F143) */}
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        objects={paletteObjects}
+        onSelectObject={(objId) => {
+          handleNodeSelect(objId);
+        }}
+        actions={paletteActions}
+      />
 
       {/* Area 10: AI Architecture Copilot Drawer */}
       <AICopilotPanel

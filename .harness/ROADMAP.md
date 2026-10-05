@@ -293,6 +293,6 @@ Status: IN PROGRESS  ·  Depends on: Phase 01, Phase 02, Phase 03, Phase 04  · 
 - [x] F140 — Information architecture & toolbar hierarchy
 - [x] F141 — Single canvas architecture (kill dual renderers)
 - [x] F142 — Real C4 drill-down
-- [ ] F143 — ⌘K palette & universal command stack
+- [x] F143 — ⌘K palette & universal command stack
 - [ ] F144 — Wire studio to the model API
 - [ ] F145 — Real views: reuse across views

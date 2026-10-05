@@ -2,6 +2,39 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-04 — F143 — Command palette (⌘K) + total undo coverage (Phase 14 — UX Remediation)
+
+Status: COMPLETE
+
+Implemented:
+- Web layer (`apps/web/`):
+  - Command Palette component (`apps/web/components/shell/command-palette.tsx`):
+    - Added fuzzy search (< 2ms) over all canvas architecture objects (name, technology, kind, description) and built-in actions.
+    - Added quick architectural actions: Add Service, Add System, Add Database, Add Queue, Add Component, Add Actor, Switch C4 Level (1 Context, 2 Containers, 3 Components), Toggle Perspectives (Security, Data, Ownership), Drill In, Export JSON, Share Link.
+    - Keyboard navigation (ArrowUp, ArrowDown, Enter, Escape).
+    - Emits `canvas:center-node` custom event with node coordinates and ID, smoothly centering the canvas on the selected object via `reactFlow.setCenter`.
+  - Infinite Canvas (`apps/web/components/canvas/infinite-canvas.tsx`):
+    - Added `onNodeMetadataUpdate` and `onEdgeDisconnect` callbacks to `InfiniteCanvasProps` to notify parent state when commands mutate nodes/edges outside direct canvas events.
+    - Wired `handleUndo` and `handleRedo` to emit these callbacks on `UpdateNodeMetadataCommand` and `ConnectNodesCommand`, keeping studio state perfectly synchronised with the command history.
+    - Added `canvas:center-node` window event listener that centers and zooms the viewport to target coordinates and selects the node.
+  - Studio page (`apps/web/app/studio/page.tsx`):
+    - Added `isCommandPaletteOpen` state and global `⌘K` / `Ctrl+K` keyboard shortcut listener.
+    - Added dedicated Palette button (`data-testid="open-command-palette-btn"`) with `⌘K` shortcut badge in the top toolbar.
+    - Refactored `handleMetadataChange` (Inspector name, description, technology inputs) to route through `UpdateNodeMetadataCommand` and `defaultCommandDispatcher`.
+    - Refactored `handleConnectNodesFromInspector` (Inspector connections) to route through `ConnectNodesCommand` and `defaultCommandDispatcher`.
+    - Passed `onNodeMetadataUpdate` and `onEdgeDisconnect` to `<InfiniteCanvas>`, ensuring no mutation bypasses the command dispatcher.
+    - Rendered `<CommandPalette>` with canvas nodes and actions.
+  - Tests (`apps/web/command-palette-undo.spec.tsx`):
+    - Added 6 automated unit and integration tests covering:
+      - CommandPalette component rendering and filter scoring.
+      - Center node event emission on object selection.
+      - ⌘K hotkey listener opening palette.
+      - Undoable inspector node metadata changes (rename, technology, description).
+      - Undoable inspector connections.
+      - Palette action execution (add node, switch level).
+- Verification: `pnpm verify ✓` (`pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm check-architecture`), `pnpm build ✓`.
+
+
 ## 2026-10-04 — F142 — Real C4 drill-down (Phase 14 — UX Remediation)
 
 Status: COMPLETE

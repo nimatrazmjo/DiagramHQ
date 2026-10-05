@@ -114,6 +114,8 @@ export interface InfiniteCanvasProps {
   onNodeCreate?: (node: CanvasNode) => void;
   onNodeDelete?: (nodeId: string) => void;
   onNodeRename?: (nodeId: string, newLabel: string, prevLabel: string) => void;
+  onNodeMetadataUpdate?: (nodeId: string, data: Record<string, unknown>) => void;
+  onEdgeDisconnect?: (edgeId: string) => void;
   onEdgeLabelChange?: (edgeId: string, newLabel: string, prevLabel: string) => void;
   onDrillIn?: (nodeId: string) => void;
   onAddToView?: (nodeId: string) => void;
@@ -305,6 +307,8 @@ function InfiniteCanvasContent({
   onNodeCreate,
   onNodeDelete,
   onNodeRename,
+  onNodeMetadataUpdate,
+  onEdgeDisconnect,
   onEdgeLabelChange,
   onDrillIn,
   onAddToView,
@@ -997,12 +1001,21 @@ function InfiniteCanvasContent({
       if ('applyCanvasUpdate' in cmd && typeof cmd.applyCanvasUpdate === 'function') {
         cmd.applyCanvasUpdate(setNodes, setEdges, 'undo');
       }
-      if (cmd instanceof UpdateNodeMetadataCommand && onNodeRename) {
-        onNodeRename(
-          cmd.params.nodeId,
-          String(cmd.params.prevData.label ?? ''),
-          String(cmd.params.newData.label ?? ''),
-        );
+      if (cmd instanceof UpdateNodeMetadataCommand) {
+        if (onNodeMetadataUpdate) {
+          onNodeMetadataUpdate(cmd.params.nodeId, cmd.params.prevData);
+        }
+        if (onNodeRename) {
+          onNodeRename(
+            cmd.params.nodeId,
+            String(cmd.params.prevData.label ?? ''),
+            String(cmd.params.newData.label ?? ''),
+          );
+        }
+      } else if (cmd instanceof ConnectNodesCommand) {
+        if (onEdgeDisconnect) {
+          onEdgeDisconnect(cmd.params.edge.id);
+        }
       } else if (cmd instanceof UpdateEdgeDataCommand && onEdgeLabelChange) {
         onEdgeLabelChange(
           cmd.params.edgeId,
@@ -1016,7 +1029,7 @@ function InfiniteCanvasContent({
       isMutatingGraphRef.current = false;
       setIsMutatingGraph(false);
     }
-  }, [onNodeRename, onEdgeLabelChange]);
+  }, [onNodeRename, onNodeMetadataUpdate, onEdgeDisconnect, onEdgeLabelChange]);
 
   const handleRedo = useCallback(async () => {
     if (isMutatingGraphRef.current) return;
@@ -1029,12 +1042,21 @@ function InfiniteCanvasContent({
       if ('applyCanvasUpdate' in cmd && typeof cmd.applyCanvasUpdate === 'function') {
         cmd.applyCanvasUpdate(setNodes, setEdges, 'execute');
       }
-      if (cmd instanceof UpdateNodeMetadataCommand && onNodeRename) {
-        onNodeRename(
-          cmd.params.nodeId,
-          String(cmd.params.newData.label ?? ''),
-          String(cmd.params.prevData.label ?? ''),
-        );
+      if (cmd instanceof UpdateNodeMetadataCommand) {
+        if (onNodeMetadataUpdate) {
+          onNodeMetadataUpdate(cmd.params.nodeId, cmd.params.newData);
+        }
+        if (onNodeRename) {
+          onNodeRename(
+            cmd.params.nodeId,
+            String(cmd.params.newData.label ?? ''),
+            String(cmd.params.prevData.label ?? ''),
+          );
+        }
+      } else if (cmd instanceof ConnectNodesCommand) {
+        if (onEdgeConnect) {
+          onEdgeConnect(cmd.params.edge);
+        }
       } else if (cmd instanceof UpdateEdgeDataCommand && onEdgeLabelChange) {
         onEdgeLabelChange(
           cmd.params.edgeId,
@@ -1048,7 +1070,7 @@ function InfiniteCanvasContent({
       isMutatingGraphRef.current = false;
       setIsMutatingGraph(false);
     }
-  }, [onNodeRename, onEdgeLabelChange]);
+  }, [onNodeRename, onNodeMetadataUpdate, onEdgeConnect, onEdgeLabelChange]);
 
   const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
 
@@ -2039,18 +2061,45 @@ function InfiniteCanvasContent({
       const customEvent = e as CustomEvent<{ offset?: { x: number; y: number } }>;
       void handleDuplicateSelection(customEvent.detail?.offset ?? { x: 30, y: 30 });
     };
+    const handleCenterNodeEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<{ nodeId: string }>;
+      const nodeId = customEvent.detail?.nodeId;
+      if (!nodeId) return;
+
+      setNodes((nds) =>
+        nds.map((n) => ({
+          ...n,
+          selected: n.id === nodeId,
+        })),
+      );
+      useCanvasStore.getState().setSelectedNodes([nodeId]);
+      if (onNodeSelect) {
+        onNodeSelect(nodeId);
+      }
+
+      const target = reactFlow.getNode(nodeId);
+      if (target) {
+        reactFlow.setCenter(
+          target.position.x + (target.measured?.width ?? 180) / 2,
+          target.position.y + (target.measured?.height ?? 80) / 2,
+          { zoom: 1.2, duration: 400 },
+        );
+      }
+    };
 
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     window.addEventListener('canvas:copy-selection', handleCopyEvent);
     window.addEventListener('canvas:paste-selection', handlePasteEvent);
     window.addEventListener('canvas:duplicate-selection', handleDuplicateEvent);
+    window.addEventListener('canvas:center-node', handleCenterNodeEvent);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('canvas:copy-selection', handleCopyEvent);
       window.removeEventListener('canvas:paste-selection', handlePasteEvent);
       window.removeEventListener('canvas:duplicate-selection', handleDuplicateEvent);
+      window.removeEventListener('canvas:center-node', handleCenterNodeEvent);
     };
   }, [
     reactFlow,
