@@ -101,10 +101,10 @@ export default function AppsPage({ params }: AppsPageProps) {
         </div>
         <div className="flex items-center gap-2">
           <Link
-            href={`/canvas/${workspaceId}/diagram-1`}
+            href="/studio"
             className="px-3.5 py-2 text-xs font-semibold rounded-md bg-blue-600 text-white hover:bg-blue-500 transition-colors inline-flex items-center gap-1.5"
           >
-            <span>🗺</span> Open Canvas
+            <span>🗺</span> Open Studio
           </Link>
           <button type="button" className="px-3.5 py-2 text-xs font-semibold rounded-md bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700 transition-colors">
             + Add Service
@@ -190,10 +190,10 @@ export default function AppsPage({ params }: AppsPageProps) {
                   </td>
                   <td className="px-4 py-4 text-right">
                     <Link
-                      href={`/canvas/${workspaceId}/diagram-1`}
+                      href="/studio"
                       className="text-xs text-blue-400 hover:text-blue-300 transition-colors font-medium"
                     >
-                      Inspect →
+                      Inspect in Studio →
                     </Link>
                   </td>
                 </tr>

@@ -10,6 +10,15 @@ const nextConfig = {
   experimental: {
     outputFileTracingRoot: path.join(rootDir, '../../'),
   },
+  async redirects() {
+    return [
+      {
+        source: '/canvas/:path*',
+        destination: '/studio',
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

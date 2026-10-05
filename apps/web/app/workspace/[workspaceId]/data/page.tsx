@@ -102,10 +102,10 @@ export default function DataPage({ params }: DataPageProps) {
         </div>
         <div className="flex items-center gap-2">
           <Link
-            href={`/canvas/${workspaceId}/diagram-1`}
+            href="/studio"
             className="px-3.5 py-2 text-xs font-semibold rounded-md bg-blue-600 text-white hover:bg-blue-500 transition-colors inline-flex items-center gap-1.5"
           >
-            <span>🗺</span> Open Canvas
+            <span>🗺</span> Open Studio
           </Link>
           <button type="button" className="px-3.5 py-2 text-xs font-semibold rounded-md bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700 transition-colors">
             + Add Store
@@ -201,10 +201,10 @@ export default function DataPage({ params }: DataPageProps) {
                 </div>
 
                 <Link
-                  href={`/canvas/${workspaceId}/diagram-1`}
+                  href="/studio"
                   className="px-3 py-1.5 rounded-lg bg-blue-600/10 text-blue-400 border border-blue-500/20 text-xs font-medium hover:bg-blue-600/20 transition-colors shrink-0"
                 >
-                  View on Canvas →
+                  View in Studio →
                 </Link>
               </div>
             </div>

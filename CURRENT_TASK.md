@@ -1,53 +1,44 @@
-# Current Task: F141 — Unify to one canvas
+# Current Task: F142 — Real C4 drill-down
 
 **Status**: NOT STARTED
 
 ## Description
 
-Sixth task of Phase 14 — UX Remediation (see
+Seventh task of Phase 14 — UX Remediation (see
 `.harness/phases/PHASE-14-UX-REMEDIATION.md`, derived from `docs/ux-review.html`).
 
-Collapse the four surfaces to one editor. Delete the hand-rolled SVG
-canvas and embed the studio React Flow editor in the workspace shell. Fix the
-duplicate zoom clusters and the colliding bottom-left panels.
+Make level switching real navigation over a parent/child hierarchy,
+not a breadcrumb relabel. Today `displayNodes` ignores `c4Level`
+(`app/studio/page.tsx:1169`) so the graph is identical at every level.
 
-Observed: `/canvas/[workspaceId]/[diagramId]` is a separate SVG canvas with its
-own select/connector/hand modes; the workspace overview embeds a second, weaker
-canvas; React Flow's native `<Controls>` (bottom-left) coexists with the custom
-pan/zoom toolbar (top-right) and the auto-layout menu overlaps the native
-controls.
-
-- Feature ID: F141
+- Feature ID: F142
 - Phase: 14 — UX Remediation
 - Priority: P0 · Effort: Medium
-- Dependencies: F137 (COMPLETE), F138 (COMPLETE), F139 (COMPLETE), F140 (COMPLETE)
+- Dependencies: F141 (COMPLETE)
 
 ## Acceptance Criteria
 
-- Exactly one canvas editor implementation remains in the repo (`InfiniteCanvas` / React Flow).
-- Hand-rolled `/canvas/*` SVG implementation removed or redirecting to the unified editor.
-- Workspace shell hosts the unified `InfiniteCanvas` editor.
-- One zoom/pan cluster (bottom-right); drop React Flow default `<Controls>`; layout menu has its own corner without overlapping.
-- No overlapping control clusters at desktop or phone width (tested down to 400px).
-- Entering the editor from dashboard, deep link, or share lands in the same UI.
+- Model/respect a containment hierarchy (system → container → component).
+- Switching level changes the visible graph: Context (L1) / Container (L2) / Component (L3) filters canvas to the relevant level.
+- Double-click-to-descend (or right-click context menu "Drill in") into a parent reveals its children; breadcrumb ascends back to parent level.
+- Objects without children degrade gracefully (no empty dead-ends).
 
 ## Files
 
-- `apps/web/app/canvas/[workspaceId]/[diagramId]/page.tsx` (remove / redirect)
-- `apps/web/components/canvas/infinite-canvas.tsx` (Controls/MiniMap/panels)
-- `apps/web/app/workspace/[workspaceId]/*`
+- `apps/web/app/studio/page.tsx` (`displayNodes`, `c4Level`, breadcrumb)
+- `apps/web/components/canvas/infinite-canvas.tsx` (double-click descend, drill in)
+- `packages/domain` (hierarchy/containment helpers)
 
 ## Test
 
-- Grep shows one canvas editor implementation in repo.
-- Workspace route renders the unified editor.
-- No panel overlap at 400px.
+- At L1 only systems show; double-click a system reveals its containers; breadcrumb returns to L1.
+- Drill-down navigates the containment hierarchy.
 
 ## Next Steps (Phase 14 order)
 
 F136 gate previews (COMPLETE) → F137 inline rename/edge labels (COMPLETE) →
 F138 context menus (COMPLETE) → F139 clipboard/duplicate/marquee (COMPLETE) →
-F140 IA cleanup (COMPLETE) → F141 one canvas → F142 real C4 drill-down →
+F140 IA cleanup (COMPLETE) → F141 one canvas (COMPLETE) → F142 real C4 drill-down →
 F143 ⌘K + total undo → F144 wire editor to model API → F145 real views.
 
 Full specs, success metrics, and before/after interaction budgets:

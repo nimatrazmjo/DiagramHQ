@@ -65,10 +65,10 @@ export default function SystemsPage({ params }: SystemsPageProps) {
         </div>
         <div className="flex items-center gap-2">
           <Link
-            href={`/canvas/${workspaceId}/diagram-1`}
+            href="/studio"
             className="px-3.5 py-2 text-xs font-semibold rounded-md bg-blue-600 text-white hover:bg-blue-500 transition-colors inline-flex items-center gap-1.5"
           >
-            <span>🗺</span> Open Canvas
+            <span>🗺</span> Open Studio
           </Link>
           <button
             type="button"
@@ -144,10 +144,10 @@ export default function SystemsPage({ params }: SystemsPageProps) {
                   <div className="text-xs text-slate-400">services</div>
                 </div>
                 <Link
-                  href={`/canvas/${workspaceId}/diagram-1`}
+                  href="/studio"
                   className="px-3 py-1.5 rounded-lg bg-blue-600/10 text-blue-400 border border-blue-500/20 text-xs font-medium hover:bg-blue-600/20 transition-colors"
                 >
-                  View on Canvas →
+                  View in Studio →
                 </Link>
               </div>
             </div>

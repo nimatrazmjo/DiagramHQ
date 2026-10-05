@@ -143,8 +143,8 @@ export default function WorkspaceOverviewPage({
           </span>
         </div>
 
-        <div className="h-[480px] w-full rounded-xl overflow-hidden border border-slate-800 bg-slate-950/80 shadow-2xl relative">
-          <InfiniteCanvas initialNodes={sampleNodes} initialEdges={sampleEdges} />
+        <div className="h-[520px] w-full rounded-xl overflow-hidden border border-slate-800 bg-slate-950/80 shadow-2xl relative">
+          <InfiniteCanvas initialNodes={sampleNodes} initialEdges={sampleEdges} showPalette showTemplatePicker />
         </div>
       </section>
 
