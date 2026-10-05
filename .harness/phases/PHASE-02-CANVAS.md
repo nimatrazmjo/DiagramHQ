@@ -1,6 +1,6 @@
 # Phase 02 — Canvas
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 ## Description
 The generic infinite-canvas primitives (render + interaction) the architecture model renders into. React Flow behind a CanvasRenderer interface (ADR-0002).
@@ -140,7 +140,7 @@ Test: minimap renders; focus mode isolates selection (screenshot).
 
 ### F109 — Command palette
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Cmd+K command palette.
 
@@ -155,7 +155,7 @@ Test: representative palette actions execute.
 
 ### F110 — Global search
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Search across the model.
 
@@ -168,7 +168,7 @@ Test: search returns matches; jump centers the node.
 
 ### F111 — Keyboard shortcuts
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Description: Full keymap.
 

@@ -8,6 +8,7 @@ export interface PaletteObjectItem {
   kind: string;
   technology?: string;
   description?: string;
+  tags?: string[];
   c4Level?: number;
 }
 
@@ -121,6 +122,8 @@ export function CommandPalette({
     const objectEntries: PaletteEntry[] = objects.map((obj) => {
       const subparts = [obj.kind];
       if (obj.technology) subparts.push(obj.technology);
+      if (obj.tags && obj.tags.length > 0) subparts.push(obj.tags.map((t) => `#${t}`).join(' '));
+      if (obj.description) subparts.push(obj.description);
       if (obj.c4Level) subparts.push(`L${obj.c4Level}`);
 
       return {
@@ -269,7 +272,7 @@ export function CommandPalette({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Type a command or search architecture objects... (Press Esc to close)"
+            placeholder="Type a command, search objects, tags, tech... (⌘K or /)"
             className="flex-1 bg-transparent text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-0"
             autoComplete="off"
             spellCheck="false"
@@ -283,16 +286,24 @@ export function CommandPalette({
               Clear
             </button>
           )}
-          <kbd className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-800 border border-slate-700 rounded-md">
-            ESC
-          </kbd>
+          <div className="hidden sm:flex items-center gap-1.5">
+            <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-800 border border-slate-700 rounded-md">
+              ⌘K
+            </kbd>
+            <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-800 border border-slate-700 rounded-md">
+              /
+            </kbd>
+            <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-800 border border-slate-700 rounded-md">
+              ESC
+            </kbd>
+          </div>
         </div>
 
         {/* Results List */}
         <div
           ref={listRef}
           data-testid="command-palette-results"
-          className="flex-1 overflow-y-auto p-2 divide-y divide-slate-800/40"
+          className="flex-1 overflow-y-auto p-2"
         >
           {filteredEntries.length === 0 ? (
             <div className="py-12 text-center text-slate-400 text-sm">
@@ -302,49 +313,62 @@ export function CommandPalette({
           ) : (
             filteredEntries.map((item, index) => {
               const isSelected = index === selectedIndex;
+              const isFirstInCategory =
+                index === 0 || filteredEntries[index - 1]?.category !== item.category;
+
               return (
-                <div
-                  key={item.id}
-                  data-index={index}
-                  data-testid={`command-item-${item.id}`}
-                  onClick={item.onSelect}
-                  onMouseEnter={() => setSelectedIndex(index)}
-                  className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors ${
-                    isSelected
-                      ? 'bg-blue-600/20 text-white border border-blue-500/30'
-                      : 'hover:bg-slate-800/60 text-slate-200 border border-transparent'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="text-xl shrink-0">{item.icon}</span>
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium truncate flex items-center gap-2">
-                        <span>{item.title}</span>
-                        {item.type === 'object' && (
-                          <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-slate-800 text-blue-300 border border-slate-700">
-                            Object
-                          </span>
+                <React.Fragment key={item.id}>
+                  {isFirstInCategory && (
+                    <div
+                      data-testid={`command-category-${item.category.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+                      className="px-3 pt-2.5 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400/90"
+                    >
+                      {item.category}
+                    </div>
+                  )}
+                  <div
+                    data-index={index}
+                    data-testid={`command-item-${item.id}`}
+                    data-category={item.category}
+                    onClick={item.onSelect}
+                    onMouseEnter={() => setSelectedIndex(index)}
+                    className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors ${
+                      isSelected
+                        ? 'bg-blue-600/20 text-white border border-blue-500/30'
+                        : 'hover:bg-slate-800/60 text-slate-200 border border-transparent'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="text-xl shrink-0">{item.icon}</span>
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium truncate flex items-center gap-2">
+                          <span>{item.title}</span>
+                          {item.type === 'object' && (
+                            <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-slate-800 text-blue-300 border border-slate-700">
+                              Object
+                            </span>
+                          )}
+                        </div>
+                        {item.subtitle && (
+                          <div className="text-xs text-slate-400 truncate">{item.subtitle}</div>
                         )}
                       </div>
-                      {item.subtitle && (
-                        <div className="text-xs text-slate-400 truncate">{item.subtitle}</div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0 ml-3">
+                      {item.shortcut && (
+                        <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-800/90 border border-slate-700 rounded">
+                          {item.shortcut}
+                        </kbd>
+                      )}
+                      {isSelected && (
+                        <span className="text-xs text-blue-400 flex items-center gap-1 font-mono">
+                          ↵ Select
+                        </span>
                       )}
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-2 shrink-0 ml-3">
-                    {item.shortcut && (
-                      <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-800/90 border border-slate-700 rounded">
-                        {item.shortcut}
-                      </kbd>
-                    )}
-                    {isSelected && (
-                      <span className="text-xs text-blue-400 flex items-center gap-1 font-mono">
-                        ↵ Select
-                      </span>
-                    )}
-                  </div>
-                </div>
+                </React.Fragment>
               );
             })
           )}

@@ -2,6 +2,33 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-05 — F109, F110, F111 — Command palette, Global search & Keyboard shortcuts (Phase 02 — Canvas)
+
+Status: COMPLETE
+
+Implemented:
+- Web layer (`apps/web/`):
+  - Command Palette & Global Search (`apps/web/components/shell/command-palette.tsx`):
+    - Added `tags?: string[]` support to `PaletteObjectItem` and indexed tags (`#tag`), technology, kind, and description in fuzzy search scoring.
+    - Added grouped category headers ("Architecture Objects", "Add Architecture Element", "Views & Levels", "Commands & Actions") with dedicated test IDs (`data-testid="command-category-${slug}"`).
+    - Added shortcut cue badges (`⌘K`, `/`, `ESC`) in search input bar.
+    - Maintained instant jump-to centering on canvas via `canvas:center-node` event.
+  - Studio Page (`apps/web/app/studio/page.tsx`):
+    - Extended `paletteActions` with `add-conn` ("Add Connection") and `ask-ai` ("Ask AI Copilot" stub).
+    - Added tags mapping to `paletteObjects` from canvas node data and metadata.
+    - Enhanced global keyboard shortcuts listener:
+      - `⌘K` or `/` opens/closes Command Palette & Global Search (with `isTextInput` guard).
+      - `1`, `2`, `3` switches C4 view levels (1 Context, 2 Containers, 3 Components) when not in text inputs and palette is closed.
+  - Keyboard shortcuts contract:
+    - Full keymap verified: `⌘K`, `/`, `Space` (pan), `Delete` / `Backspace` (delete selection), `⌘Z` / `⌘⇧Z` (undo/redo), `⌘C` / `⌘V` / `⌘D` (clipboard copy/paste/duplicate), `F` (fit view), and `1` / `2` / `3` (C4 view levels).
+  - Tests (`apps/web/palette-search-shortcuts.spec.tsx`):
+    - 12 automated unit and integration tests covering:
+      - F109: Representative palette creation actions executed and verified in command dispatcher history for undoability.
+      - F110: Multi-field search indexing across name, kind, technology, tags, description, and jump-to callback execution.
+      - F111: Full keymap execution tests and input-focus safety guards.
+- Verification: `pnpm verify ✓` (Prisma generate, domain build, typecheck, lint, 135 test suites / 710 tests passing, architecture check clean), `pnpm build ✓` (Next.js production build clean).
+- **Phase 02 — Canvas is 100% COMPLETE!**
+
 ## 2026-10-05 — F145 — Real views: reuse objects across views (Phase 14 — UX Remediation)
 
 Status: COMPLETE
