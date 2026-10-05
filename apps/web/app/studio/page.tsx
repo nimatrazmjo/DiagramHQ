@@ -98,6 +98,7 @@ import {
   ConnectNodesCommand,
   defaultCommandDispatcher,
 } from '../../lib/commands';
+import { mapCanvasKindToModelKind } from '../../lib/model/architecture-model-client';
 
 // F136 Preview Fixture: simulated peer presence (PREVIEW_REGISTRY.presence)
 const INITIAL_PEERS: PresencePeerBadge[] = [
@@ -606,6 +607,8 @@ export default function StudioPage(): JSX.Element {
     lastSavedAt,
     isLoggedIn,
     sessionUser,
+    architectureId,
+    viewId,
     saveNow,
     resetSavedDiagram,
   } = useDiagramAutosave({
@@ -616,6 +619,123 @@ export default function StudioPage(): JSX.Element {
     activePersona,
     onRestore: handleRestoreSavedDiagram,
   });
+
+  const handleBatchPersist = useCallback(
+    async (targetViewId: string, positions: Array<{ objectId: string; x: number; y: number }>) => {
+      try {
+        await fetch(`/views/${targetViewId}/objects/positions`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ positions }),
+        });
+      } catch {
+        // Handled silently for offline / guest mode
+      }
+    },
+    [],
+  );
+
+  const handleSinglePersist = useCallback(
+    async (targetViewId: string, objectId: string, position: { x: number; y: number }) => {
+      try {
+        await fetch(`/views/${targetViewId}/objects/positions`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            positions: [{ objectId, x: Math.round(position.x), y: Math.round(position.y) }],
+          }),
+        });
+      } catch {
+        // Handled silently for offline / guest mode
+      }
+    },
+    [],
+  );
+
+  const persistModelObject = useCallback(
+    async (node: CanvasNode) => {
+      if (!architectureId) return;
+      try {
+        const kind = mapCanvasKindToModelKind(node.data?.kind);
+        await fetch(`/architectures/${architectureId}/objects`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: node.id,
+            name: node.data?.label || node.id,
+            kind,
+            description: node.data?.description,
+            parentId: node.data?.parentId,
+            metadata: {
+              technology: node.data?.technology,
+              originalKind: node.data?.kind,
+              c4Level: node.data?.c4Level,
+            },
+          }),
+        });
+
+        if (viewId) {
+          await fetch(`/views/${viewId}/objects`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              objectId: node.id,
+              position: node.position,
+            }),
+          });
+        }
+      } catch (e) {
+        console.warn('Failed to persist model object:', e);
+      }
+    },
+    [architectureId, viewId],
+  );
+
+  const deleteModelObject = useCallback(
+    async (nodeId: string) => {
+      try {
+        await fetch(`/objects/${nodeId}`, { method: 'DELETE' });
+      } catch (e) {
+        console.warn('Failed to delete model object:', e);
+      }
+    },
+    [],
+  );
+
+  const persistModelConnection = useCallback(
+    async (edge: CanvasEdge) => {
+      if (!architectureId) return;
+      try {
+        await fetch(`/architectures/${architectureId}/connections`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: edge.id,
+            sourceObjectId: edge.source,
+            targetObjectId: edge.target,
+            label: edge.label || null,
+            kind: edge.data?.kind || 'sync',
+            description: edge.data?.description || null,
+          }),
+        });
+      } catch (e) {
+        console.warn('Failed to persist model connection:', e);
+      }
+    },
+    [architectureId],
+  );
+
+  const deleteModelConnection = useCallback(
+    async (edgeId: string) => {
+      try {
+        await fetch(`/connections/${edgeId}`, { method: 'DELETE' });
+      } catch (e) {
+        console.warn('Failed to delete model connection:', e);
+      }
+    },
+    [],
+  );
+
   const [isFlowPlaybackActive, setIsFlowPlaybackActive] = useState(false);
   const [playbackState, setPlaybackState] = useState<FlowPlaybackState>({
     flowId: 'studio-trace-flow',
@@ -1272,8 +1392,9 @@ export default function StudioPage(): JSX.Element {
     (edgeId: string) => {
       setCurrentEdges((prev) => prev.filter((e) => e.id !== edgeId));
       if (selectedEdgeId === edgeId) setSelectedEdgeId(null);
+      void deleteModelConnection(edgeId);
     },
-    [selectedEdgeId],
+    [selectedEdgeId, deleteModelConnection],
   );
 
   const handleDeleteNode = useCallback(
@@ -1281,8 +1402,9 @@ export default function StudioPage(): JSX.Element {
       setCurrentNodes((prev) => prev.filter((n) => n.id !== nodeId));
       setCurrentEdges((prev) => prev.filter((e) => e.source !== nodeId && e.target !== nodeId));
       if (selectedNodeId === nodeId) setSelectedNodeId(null);
+      void deleteModelObject(nodeId);
     },
-    [selectedNodeId],
+    [selectedNodeId, deleteModelObject],
   );
 
   const handleNodeDragStop = useCallback(
@@ -1316,13 +1438,21 @@ export default function StudioPage(): JSX.Element {
 
       const command = new ConnectNodesCommand({
         edge: newEdge,
+        viewId: viewId || undefined,
+        persistCreateFn: async (_vId, edge) => {
+          await persistModelConnection(edge);
+        },
+        persistDeleteFn: async (_vId, edgeId) => {
+          await deleteModelConnection(edgeId);
+        },
       });
 
       void defaultCommandDispatcher.dispatch(command);
 
       setCurrentEdges((prev) => [...prev, newEdge]);
+      void persistModelConnection(newEdge);
     },
-    [selectedNodeId],
+    [selectedNodeId, viewId, persistModelConnection, deleteModelConnection],
   );
 
   // Add node from Sidebar or Palette
@@ -1361,11 +1491,12 @@ export default function StudioPage(): JSX.Element {
       };
 
       setCurrentNodes((nds) => [...nds, newNode]);
+      void persistModelObject(newNode);
       setSelectedNodeId(id);
       setSelectedEdgeId(null);
       if (!isInspectorOpen) setIsInspectorOpen(true);
     },
-    [currentNodes.length, isInspectorOpen, c4Level, activeParentId],
+    [currentNodes.length, isInspectorOpen, c4Level, activeParentId, persistModelObject],
   );
 
   const handleDrillIn = useCallback(
@@ -2414,6 +2545,9 @@ export default function StudioPage(): JSX.Element {
         <div className="flex-1 h-full w-full relative">
           <InfiniteCanvas
             key={canvasKey}
+            viewId={viewId || 'default-view'}
+            persistFn={handleSinglePersist}
+            batchPersistFn={handleBatchPersist}
             initialNodes={displayNodes}
             initialEdges={displayEdges}
             onNodeSelect={handleNodeSelect}
@@ -2432,14 +2566,18 @@ export default function StudioPage(): JSX.Element {
                 },
               };
               setCurrentNodes((nds) => [...nds, enrichedNode]);
+              void persistModelObject(enrichedNode);
             }}
             onEdgeConnect={(newEdge) => {
               setCurrentEdges((eds) => [...eds, newEdge]);
+              void persistModelConnection(newEdge);
             }}
             onEdgeReconnect={(oldEdge, _connection, updatedEdge) => {
               setCurrentEdges((eds) =>
                 eds.map((e) => (e.id === oldEdge.id ? updatedEdge : e)),
               );
+              void deleteModelConnection(oldEdge.id);
+              void persistModelConnection(updatedEdge);
             }}
             onNodeDelete={handleDeleteNode}
             onNodeRename={(nodeId, newLabel) => {
@@ -2450,17 +2588,37 @@ export default function StudioPage(): JSX.Element {
                   return { ...n, data };
                 }),
               );
+              void fetch(`/objects/${nodeId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newLabel }),
+              }).catch(() => {});
             }}
             onNodeMetadataUpdate={(nodeId, data) => {
               setCurrentNodes((prev) =>
                 prev.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, ...data } } : n)),
               );
+              void fetch(`/objects/${nodeId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  name: data.label as string,
+                  description: data.description as string,
+                  metadata: { technology: data.technology },
+                }),
+              }).catch(() => {});
             }}
             onEdgeDisconnect={(edgeId) => {
               setCurrentEdges((prev) => prev.filter((e) => e.id !== edgeId));
+              void deleteModelConnection(edgeId);
             }}
             onEdgeLabelChange={(edgeId, newLabel) => {
               handleEdgeMetadataChange(edgeId, { description: newLabel });
+              void fetch(`/connections/${edgeId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ label: newLabel }),
+              }).catch(() => {});
             }}
           />
 

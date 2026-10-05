@@ -1,48 +1,46 @@
-# Current Task: F144 — Wire the editor to the model API
+# Current Task: F145 — Real views: reuse objects across views
 
 **Status**: NOT STARTED
 
 ## Description
 
-Ninth task of Phase 14 — UX Remediation (see
+Tenth and final task of Phase 14 — UX Remediation (see
 `.harness/phases/PHASE-14-UX-REMEDIATION.md`, derived from `docs/ux-review.html`).
 
-The decisive change. Objects persist as objects via the existing
-model API; the canvas becomes a view (membership + layout) over that model —
-not a JSON blob in `workspace.settings.studioDiagram`.
+Deliver the one thing that beats draw.io — one object, many views.
+Replace the perspective-overlay-only model (security/data/ownership just toggle
+badges on one canvas) with independent views, each with its own object
+membership and layout, over the shared model.
 
-- Feature ID: F144
+- Feature ID: F145
 - Phase: 14 — UX Remediation
-- Priority: P0 · Effort: High
-- Dependencies: F141 (COMPLETE), F142 (COMPLETE)
+- Priority: P1 · Effort: Medium
+- Dependencies: F144 (COMPLETE)
 
 ## Acceptance Criteria
 
-- Load/create an architecture + view for the editor session.
-- Create/update/delete objects and connections through `/architectures/:id/objects` and `/connections` (optimistic + rollback, as the move commands already do).
-- Positions persist per view via `/views/:viewId/objects/positions`.
-- Keep guest/local mode working for the no-login open.
-- A created object exists as a model object (visible via the model API), not only in a diagram blob.
-- Reopening loads from the model, not a blob.
-- Autosave status reflects real model writes.
+- Create/switch views; each stores selection + layout, never objects.
+- Add an existing object to another view in ≤ 2 interactions.
+- Removing an object from a view keeps it in the model (invariant already in domain).
+- Same object appears in ≥ 2 views; editing it once updates all views.
+- Remove-from-view ≠ delete-object (verified).
+- Per-view layout persists independently.
 
 ## Files
 
-- `apps/web/app/studio/page.tsx` (replace blob state with model-backed)
-- `apps/web/lib/model/architecture-model-client.ts`
-- `apps/web/app/api/diagrams/autosave/route.ts` (retire blob or migrate)
-- API: `apps/api/src/architectures/*`, `apps/api/src/views/*` (reuse)
+- `apps/web/app/studio/page.tsx` (view switcher → real views)
+- `apps/web/components/canvas/icepanel-sidebar.tsx` (Diagrams tab → real views)
+- API: `apps/api/src/views/*` (reuse `/views/:viewId/objects`, projection)
 
 ## Test
 
-- Create object in editor → GET `/architectures/:id/objects` returns it; reload restores from model; e2e covers create→reload.
+- Add object to a second view; edit its name once → both views reflect it;
+  remove from view A → still present in model and view B.
 
-## Next Steps (Phase 14 order)
+## Success Metric
 
-F136 gate previews (COMPLETE) → F137 inline rename/edge labels (COMPLETE) →
-F138 context menus (COMPLETE) → F139 clipboard/duplicate/marquee (COMPLETE) →
-F140 IA cleanup (COMPLETE) → F141 one canvas (COMPLETE) → F142 real C4 drill-down (COMPLETE) →
-F143 ⌘K + total undo (COMPLETE) → F144 wire editor to model API → F145 real views.
+- Reuse rate > 0 (% of objects in ≥ 2 views).
 
-Full specs, success metrics, and before/after interaction budgets:
-`.harness/phases/PHASE-14-UX-REMEDIATION.md` and `docs/ux-review.html`.
+## Next Steps
+
+Complete F145 to conclude Phase 14 — UX Remediation and finish all 145 roadmap features!

@@ -317,7 +317,7 @@ Success metric: find-component ≤ 2s; 0 non-undoable mutations.
 
 ### F144 — Wire the editor to the model API
 
-Status: NOT STARTED
+Status: COMPLETE
 
 Priority: P0 · Effort: High
 

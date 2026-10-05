@@ -2,6 +2,30 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-04 — F144 — Wire the editor to the model API (Phase 14 — UX Remediation)
+
+Status: COMPLETE
+
+Implemented:
+- Web layer (`apps/web/`):
+  - Model Proxy catch-all routes:
+    - Added `apps/web/lib/model/model-proxy.ts` supporting authenticated API forwarding via `signApiToken` and `fetchFromApi`, plus resilient in-memory server fallback (`inMemModelStore`) for tests and guest/offline usage.
+    - Added Next.js catch-all route handlers `apps/web/app/architectures/[...slug]/route.ts`, `apps/web/app/objects/[...slug]/route.ts`, `apps/web/app/connections/[...slug]/route.ts`, and `apps/web/app/views/[...slug]/route.ts`.
+  - Architecture Model Client (`apps/web/lib/model/architecture-model-client.ts`):
+    - Added bidirectional mapping functions: `mapCanvasKindToModelKind`, `mapModelKindToCanvasKind`, `mapCanvasNodeToModelObject`, `mapCanvasEdgeToModelConnection`, `mapModelObjectToCanvasNode`, `mapModelConnectionToCanvasEdge`.
+    - Added `loadFromModel(model, viewObjects)` projection creating canvas nodes with view layout positions and canvas edges from model connections.
+  - Autosave route (`apps/web/app/api/diagrams/autosave/route.ts`):
+    - Resolves/creates Architecture & View per workspace.
+    - Automatically migrates legacy `settings.studioDiagram` blobs into genuine model objects/connections and view object positions, and clears the legacy settings blob.
+    - Loads canvas graph directly from model API snapshots and view layouts.
+    - Batch persists coordinates via `/views/:viewId/objects/positions` and syncs objects/connections.
+  - Studio page (`apps/web/app/studio/page.tsx`):
+    - Wired `architectureId`, `viewId`, and persistence functions (`persistModelObject`, `deleteModelObject`, `persistModelConnection`, `deleteModelConnection`, `handleBatchPersist`, `handleSinglePersist`).
+    - Connected persistence functions to node/edge creation, deletion, connection, renaming, and metadata updates.
+  - Tests (`apps/web/editor-model-wiring.spec.tsx`):
+    - Added 9 automated tests covering bidirectional mapping, model proxy endpoints, autosave migration, batch position updates, and model-to-canvas projection.
+- Verification: `pnpm verify ✓` (`pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm check-architecture`), `pnpm build ✓`.
+
 ## 2026-10-04 — F143 — Command palette (⌘K) + total undo coverage (Phase 14 — UX Remediation)
 
 Status: COMPLETE
