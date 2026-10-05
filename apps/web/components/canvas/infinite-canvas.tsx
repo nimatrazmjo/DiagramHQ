@@ -367,9 +367,26 @@ function InfiniteCanvasContent({
     };
   }, []);
 
-  const handleNodeDoubleClick = useCallback((_event: React.MouseEvent, node: Node) => {
-    setEditingNodeId(node.id);
-  }, []);
+  const handleNodeDoubleClick = useCallback(
+    (_event: React.MouseEvent, node: Node) => {
+      // If drill-down handler is provided and node can be drilled into, descend (F142)
+      const isSystem =
+        node.type === 'system' ||
+        node.data?.kind === 'system' ||
+        node.data?.c4Level === 1 ||
+        node.data?.canDrillDown === true;
+      const isDrillableContainer =
+        (node.type === 'app' || node.data?.kind === 'application' || node.data?.c4Level === 2) &&
+        (node.data?.canDrillToComponents === true || node.data?.canDrillDown === true);
+
+      if (onDrillIn && (isSystem || isDrillableContainer)) {
+        onDrillIn(node.id);
+        return;
+      }
+      setEditingNodeId(node.id);
+    },
+    [onDrillIn],
+  );
 
   const handleEdgeDoubleClick = useCallback((_event: React.MouseEvent, edge: Edge) => {
     setEditingEdgeId(edge.id);
