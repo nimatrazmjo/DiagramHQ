@@ -366,7 +366,7 @@ export function PdfExportModal({
                     <span>
                       {customTitle} // {model.version.name}
                     </span>
-                    <span>DiagramHQ Architecture OS</span>
+                    <span>DiagramHQ</span>
                   </div>
 
                   {/* Simulated Page Body based on Page Index */}

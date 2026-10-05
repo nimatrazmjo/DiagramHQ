@@ -2,6 +2,26 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-04 — F140 — IA cleanup: hide plumbing, one brand, honest copy (Phase 14 — UX Remediation)
+
+Status: COMPLETE
+
+Implemented:
+- Web layer (`apps/web/`):
+  - `app/page.tsx`: Rewrote landing page hero, feature copy, and navigation to eliminate outdated "Phase 02" references. Replaced roadmap promise with live architecture intelligence capabilities and set primary CTA to "Open DiagramHQ Studio" (`/studio`).
+  - `app/dashboard/page.tsx`: Unified header branding to "DiagramHQ", added prominent "Open Studio" CTA button, and tucked internal database plumbing (raw user ID, organization slug, and organization ID) into a collapsible `<details data-testid="dev-session-details">` / `data-testid="dev-org-details"` developer affordance so 0 raw IDs/slugs appear in default dashboard view.
+  - `app/workspace/[workspaceId]/page.tsx`: Replaced raw workspace UUID header with human-friendly title ("Architecture model and diagram projections"), added "Open Studio" CTA, and moved the raw workspace ID into `<details data-testid="dev-workspace-details">`.
+  - `components/shell/left-navigator.tsx`: Updated navigator footer brand name from "Architecture OS" to "DiagramHQ".
+  - `app/workspace/[workspaceId]/layout.tsx`: Updated metadata title/description to "DiagramHQ Architecture Studio".
+  - `components/canvas/pdf-export-modal.tsx`: Updated running header on PDF exports to "DiagramHQ".
+  - `e2e/auth.spec.ts`: Updated heading assertions in authentication tests to match DiagramHQ.
+  - `ia-cleanup.spec.tsx`: Added 4 unit/integration tests verifying:
+    - Landing page copy is free of stale "Phase 02" promises and presents honest capabilities with `/studio` CTA.
+    - Dashboard page hides raw user ID and organization slugs/IDs behind dev details affordances and brands as DiagramHQ.
+    - Workspace page displays human-friendly architecture headers, dev details affordance, and Open Studio CTA.
+    - Left-navigator footer renders unified "DiagramHQ" brand.
+- Verification: `pnpm verify ✓` (`pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm check-architecture`), `pnpm build ✓`.
+
 ## 2026-10-04 — F139 — Clipboard, duplicate & default marquee-select (Phase 14 — UX Remediation)
 
 Status: COMPLETE

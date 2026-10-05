@@ -9,8 +9,8 @@ export default async function HomePage(): Promise<JSX.Element> {
       <div className="max-w-xl text-center bg-white p-8 rounded-lg shadow-md">
         <h1 className="text-3xl font-extrabold text-gray-900 mb-3">DiagramHQ</h1>
         <p className="text-gray-600 mb-6">
-          Model-first architecture intelligence. The foundation is live; the infinite canvas
-          arrives in Phase 02.
+          Model-first architecture intelligence. Build, visualize, and evolve system architectures
+          with an interactive infinite canvas, C4 modeling, and multi-view projections.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -19,7 +19,7 @@ export default async function HomePage(): Promise<JSX.Element> {
             className="py-2.5 px-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
           >
             <span>🎨</span>
-            <span>Launch Studio (No Login Needed)</span>
+            <span>Open DiagramHQ Studio</span>
           </Link>
           {session ? (
             <Link
