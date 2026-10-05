@@ -139,10 +139,10 @@ export default function ViewsPage({ params }: ViewsPageProps) {
                   </span>
                 </div>
                 <Link
-                  href={`/canvas/${workspaceId}/${view.id}`}
+                  href={`/studio?viewId=${view.id}`}
                   className="absolute inset-0 flex items-center justify-center bg-slate-900/80 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-xl"
                 >
-                  <span className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Open Canvas →</span>
+                  <span className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold">Open in Studio →</span>
                 </Link>
               </div>
 
@@ -166,10 +166,10 @@ export default function ViewsPage({ params }: ViewsPageProps) {
                     ))}
                   </div>
                   <Link
-                    href={`/canvas/${workspaceId}/${view.id}`}
+                    href={`/studio?viewId=${view.id}`}
                     className="text-xs text-blue-400 hover:text-blue-300 transition-colors font-medium"
                   >
-                    Open →
+                    Open in Studio →
                   </Link>
                 </div>
               </div>

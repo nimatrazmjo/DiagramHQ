@@ -2,6 +2,36 @@
  
  Every completed feature and every meaningful state change is recorded here, newest first. Each entry names a feature ID (or the tracking system). No vague entries. A feature appears here as COMPLETE only after verification. (Supersedes the earlier `state/claude-progress.md`, archived under `_archive/`.)
 
+## 2026-10-04 — F141 — Unify to one canvas (Phase 14 — UX Remediation)
+
+Status: COMPLETE
+
+Implemented:
+- Web layer (`apps/web/`):
+  - Removed hand-rolled SVG canvas: deleted `app/canvas/[workspaceId]/[diagramId]/page.tsx` and the `app/canvas/` directory. Exactly one canvas implementation (`InfiniteCanvas` / React Flow) remains in the codebase.
+  - `next.config.mjs`: Added Next.js server redirects routing any `/canvas/:path*` traffic permanently to `/studio`.
+  - Routed all workspace section links to `/studio`:
+    - `app/workspace/[workspaceId]/systems/page.tsx`: updated "Open Canvas" and "View on Canvas" links to point to `/studio`.
+    - `app/workspace/[workspaceId]/data/page.tsx`: updated "Open Canvas" and "View on Canvas" links to point to `/studio`.
+    - `app/workspace/[workspaceId]/apps/page.tsx`: updated "Open Canvas" and "Inspect" links to point to `/studio`.
+    - `app/workspace/[workspaceId]/views/page.tsx`: updated "Open Canvas" card overlay and footer links to point to `/studio?viewId=${view.id}`.
+  - `app/workspace/[workspaceId]/page.tsx`: Upgraded workspace overview canvas to host the full unified `InfiniteCanvas` with `showPalette` and `showTemplatePicker` enabled.
+  - `components/canvas/infinite-canvas.tsx`:
+    - Removed React Flow's native `<Controls>` component and unused import, eliminating bottom-left collision.
+    - Moved custom pan-zoom toolbar (`data-testid="pan-zoom-toolbar"`) to `Panel position="bottom-right"` (Figma convention) as the single unified pan/zoom cluster.
+    - Gave `LayoutMenu` (`data-testid="layout-menu"`) its own dedicated corner in `Panel position="bottom-left"`.
+    - Configured `<MiniMap>` with `position="bottom-right"` and `hidden sm:block` for clutter-free mobile viewports.
+    - Added responsive constraints (`max-w-[calc(100vw-110px)]` and `flex-wrap sm:flex-nowrap`) preventing any panel overlap at 400px mobile phone widths.
+    - Raised `AlignmentToolbar` (`mb-14 sm:mb-3`) so multi-selection tools float cleanly above bottom controls.
+  - `one-canvas.spec.tsx`: Added 6 unit and integration tests verifying:
+    - Hand-rolled SVG canvas file and directory are deleted.
+    - Next.js config contains `/canvas/:path*` redirect to `/studio`.
+    - Workspace sub-pages route canvas links to `/studio`.
+    - Workspace overview renders unified `InfiniteCanvas` with toolbar and palette.
+    - React Flow native `Controls` is removed.
+    - Single zoom cluster renders at bottom-right, layout menu renders at bottom-left, with responsive non-overlapping width bounds.
+- Verification: `pnpm verify ✓` (`pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm check-architecture`), `pnpm build ✓`.
+
 ## 2026-10-04 — F140 — IA cleanup: hide plumbing, one brand, honest copy (Phase 14 — UX Remediation)
 
 Status: COMPLETE

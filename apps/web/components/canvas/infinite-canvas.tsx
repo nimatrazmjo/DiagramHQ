@@ -5,7 +5,6 @@ import {
   ReactFlow,
   ReactFlowProvider,
   Background,
-  Controls,
   MiniMap,
   Panel,
   useReactFlow,
@@ -2209,14 +2208,11 @@ function InfiniteCanvasContent({
         fitView
       >
         <Background color="#334155" gap={20} size={1} />
-        <Controls
-          className="bg-slate-800 border-slate-700 text-slate-200"
-          showInteractive={false}
-        />
         {isMinimapVisible && (
           <div data-testid="minimap">
             <MiniMap
-              className="bg-slate-900 border border-slate-800 rounded shadow-md"
+              position="bottom-right"
+              className="bg-slate-900 border border-slate-800 rounded shadow-md hidden sm:block"
               nodeColor={getMiniMapNodeColor}
               nodeStrokeWidth={2}
               maskColor="rgba(15, 23, 42, 0.7)"
@@ -2284,11 +2280,11 @@ function InfiniteCanvasContent({
           <div data-testid="canvas-status-badge" className="hidden" aria-hidden="true" />
         )}
 
-        {/* Top-Right Pan & Zoom Controls Toolbar */}
-        <Panel position="top-right" className="m-3">
+        {/* Bottom-Right Unified Pan & Zoom Controls Toolbar (F141) */}
+        <Panel position="bottom-right" className="m-2 sm:m-3">
           <div
             data-testid="pan-zoom-toolbar"
-            className="flex items-center gap-1 p-1 rounded-md bg-slate-900/90 border border-slate-700/80 shadow-md backdrop-blur-sm text-xs text-slate-200"
+            className="flex flex-wrap sm:flex-nowrap items-center gap-1 p-1 rounded-md bg-slate-900/90 border border-slate-700/80 shadow-md backdrop-blur-sm text-xs text-slate-200 max-w-[calc(100vw-110px)] sm:max-w-none"
           >
             <button
               type="button"
@@ -2419,7 +2415,7 @@ function InfiniteCanvasContent({
 
         {/* Bottom-Center Alignment Toolbar — shown for multi-selection (F014) */}
         {selectedNodeIds.length > 1 && (
-          <Panel position="bottom-center" className="mb-3">
+          <Panel position="bottom-center" className="mb-14 sm:mb-3">
             <AlignmentToolbar
               onAlign={handleAlign}
               onDistribute={handleDistribute}
@@ -2431,9 +2427,9 @@ function InfiniteCanvasContent({
           </Panel>
         )}
 
-        {/* Bottom-Left Auto-Layout Menu — always available, whole-graph (F015) */}
+        {/* Bottom-Left Auto-Layout Menu — dedicated corner, whole-graph (F015, F141) */}
         {nodes.length > 1 && (
-          <Panel position="bottom-left" className="m-3">
+          <Panel position="bottom-left" className="m-2 sm:m-3">
             <LayoutMenu
               engines={listLayoutEngines()}
               onApply={handleApplyLayout}
