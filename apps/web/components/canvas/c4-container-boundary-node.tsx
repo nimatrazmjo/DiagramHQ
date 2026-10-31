@@ -1,6 +1,7 @@
 import React from 'react';
 import type { NodeProps } from '@xyflow/react';
 import type { C4ContainerBoundaryNodeData } from '@diagramhq/domain';
+import { DiagramNodeResizer } from './diagram-node-resizer';
 
 /**
  * C4ContainerBoundaryNode renders the enclosing container boundary in C4 Component Level 3 view.
@@ -17,10 +18,11 @@ export function C4ContainerBoundaryNode({ data, selected }: NodeProps): JSX.Elem
   return (
     <div
       data-testid="c4-container-boundary"
-      className={`w-full h-full p-4 rounded-2xl border-2 border-dashed border-emerald-500/40 bg-emerald-950/10 pointer-events-none transition-all ${
+      className={`w-full h-full min-w-[240px] min-h-[140px] p-4 rounded-2xl border-2 border-dashed border-emerald-500/40 bg-emerald-950/10 pointer-events-none transition-all ${
         selected ? 'ring-2 ring-emerald-400 border-emerald-400' : ''
       }`}
     >
+      <DiagramNodeResizer isVisible={selected} minWidth={240} minHeight={140} color="#10b981" />
       <div className="flex items-center gap-2 mb-1">
         <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/50">
           {`[Container Boundary: ${label}]`}

@@ -1693,6 +1693,31 @@ export default function StudioPage(): JSX.Element {
     [],
   );
 
+  const handleNodeResizeStop = useCallback(
+    (
+      nodeId: string,
+      dimensions: { width: number; height: number },
+      position?: { x: number; y: number },
+    ) => {
+      if (!Number.isFinite(dimensions?.width) || !Number.isFinite(dimensions?.height)) return;
+      setCurrentNodes((prev) =>
+        prev.map((n) =>
+          n.id === nodeId
+            ? {
+                ...n,
+                width: Math.round(dimensions.width),
+                height: Math.round(dimensions.height),
+                ...(position && Number.isFinite(position.x) && Number.isFinite(position.y)
+                  ? { position }
+                  : {}),
+              }
+            : n,
+        ),
+      );
+    },
+    [],
+  );
+
   // Connect two nodes from the Inspector (routed through CommandDispatcher for undoability, F143)
   const handleConnectNodesFromInspector = useCallback(
     (targetId: string, protocol?: string, description?: string) => {
@@ -2895,6 +2920,7 @@ export default function StudioPage(): JSX.Element {
             onNodeSelect={handleNodeSelect}
             onEdgeSelect={handleEdgeSelect}
             onNodeDragStop={handleNodeDragStop}
+            onNodeResizeStop={handleNodeResizeStop}
             onDrillIn={handleDrillIn}
             onAddToView={handleAddObjectToActiveView}
             showPalette

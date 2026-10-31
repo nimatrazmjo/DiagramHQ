@@ -9,6 +9,7 @@ import { TechnologyBadges } from './technology-badges';
 import { PersonaBadges } from './persona-badges';
 import { FlowBadges } from './flow-badges';
 import { EditableNodeLabel } from './editable-node-label';
+import { DiagramNodeResizer } from './diagram-node-resizer';
 
 
 function DatabaseIcon(): JSX.Element {
@@ -87,7 +88,7 @@ export function DatabaseNode({ id: _id, data, selected }: NodeProps): JSX.Elemen
   return (
     <div
       data-testid="database-node"
-      className={`min-w-[220px] max-w-[280px] p-3.5 rounded-xl border-2 shadow-xl backdrop-blur-sm transition-all duration-150 ${getThemeClasses()} ${
+      className={`w-full h-full min-w-[180px] min-h-[80px] p-3.5 rounded-xl border-2 shadow-xl backdrop-blur-sm transition-all duration-150 ${getThemeClasses()} ${
         nodeData.flowView && !nodeData.isInFlow
           ? 'opacity-35 border-slate-800'
           : nodeData.flowView && nodeData.isInFlow
@@ -97,6 +98,7 @@ export function DatabaseNode({ id: _id, data, selected }: NodeProps): JSX.Elemen
               : ''
       }`}
     >
+      <DiagramNodeResizer isVisible={selected} minWidth={160} minHeight={70} color="#a855f7" />
 
       <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-purple-400" />
       <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-purple-400" />

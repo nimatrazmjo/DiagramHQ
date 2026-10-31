@@ -9,6 +9,7 @@ import { TechnologyBadges } from './technology-badges';
 import { PersonaBadges } from './persona-badges';
 import { FlowBadges } from './flow-badges';
 import { EditableNodeLabel } from './editable-node-label';
+import { DiagramNodeResizer } from './diagram-node-resizer';
 
 
 function SystemIcon({ external }: { external?: boolean }): JSX.Element {
@@ -89,7 +90,7 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
     return (
       <div
         data-testid="external-system-node"
-        className={`min-w-[220px] max-w-[280px] rounded-xl p-3.5 shadow-lg bg-slate-900/80 border border-dashed transition-all ${
+        className={`w-full h-full min-w-[200px] min-h-[80px] rounded-xl p-3.5 shadow-lg bg-slate-900/80 border border-dashed transition-all ${
           nodeData.flowView && !nodeData.isInFlow
             ? 'opacity-35 border-slate-800'
             : nodeData.flowView && nodeData.isInFlow
@@ -99,6 +100,7 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
                 : 'border-slate-600 hover:border-slate-500'
         }`}
       >
+        <DiagramNodeResizer isVisible={selected} minWidth={180} minHeight={70} color="#94a3b8" />
 
         <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-slate-400" />
         <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-slate-400" />
@@ -185,7 +187,7 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
     <div
       data-testid="system-node"
       onDoubleClick={handleDoubleClick}
-      className={`min-w-[220px] max-w-[280px] rounded-xl p-3.5 shadow-lg bg-slate-900/95 border transition-all ${
+      className={`w-full h-full min-w-[200px] min-h-[80px] rounded-xl p-3.5 shadow-lg bg-slate-900/95 border transition-all ${
         nodeData.flowView && !nodeData.isInFlow
           ? 'opacity-35 border-slate-800'
           : nodeData.flowView && nodeData.isInFlow
@@ -197,6 +199,7 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
               : 'border-blue-500/50 hover:border-blue-400'
       }`}
     >
+      <DiagramNodeResizer isVisible={selected} minWidth={180} minHeight={70} color="#3b82f6" />
 
       <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-blue-400" />
       <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-blue-400" />

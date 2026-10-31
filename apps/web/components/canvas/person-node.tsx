@@ -3,6 +3,7 @@ import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { PersonNodeData } from '@diagramhq/domain';
 import { FlowBadges } from './flow-badges';
 import { EditableNodeLabel } from './editable-node-label';
+import { DiagramNodeResizer } from './diagram-node-resizer';
 
 
 import { getTechnologyIconPath } from '../../lib/icons';
@@ -63,7 +64,7 @@ export function PersonNode({ data, selected }: NodeProps): JSX.Element {
   return (
     <div
       data-testid="person-node"
-      className={`min-w-[220px] max-w-[280px] rounded-xl p-3.5 shadow-lg bg-slate-900/95 border transition-all ${
+      className={`w-full h-full min-w-[180px] min-h-[80px] rounded-xl p-3.5 shadow-lg bg-slate-900/95 border transition-all ${
         nodeData.flowView && !nodeData.isInFlow
           ? 'opacity-35 border-slate-800'
           : nodeData.flowView && nodeData.isInFlow
@@ -75,6 +76,7 @@ export function PersonNode({ data, selected }: NodeProps): JSX.Element {
               : 'border-pink-500/50 hover:border-pink-400'
       }`}
     >
+      <DiagramNodeResizer isVisible={selected} minWidth={160} minHeight={70} color="#ec4899" />
 
       {/* 4-way handles for seamless connection routing */}
       <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-pink-400" />

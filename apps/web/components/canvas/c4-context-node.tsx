@@ -2,6 +2,7 @@ import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { C4ContextElementKind, C4ContextNodeData } from '@diagramhq/domain';
 import { EditableNodeLabel } from './editable-node-label';
+import { DiagramNodeResizer } from './diagram-node-resizer';
 
 function PersonIcon(): JSX.Element {
   return (
@@ -81,12 +82,13 @@ export function C4ContextNode({ id, data, selected }: NodeProps): JSX.Element {
       <div
         data-testid="c4-person-node"
         onDoubleClick={handleDoubleClick}
-        className={`min-w-[200px] max-w-[260px] rounded-xl p-3 shadow-lg bg-slate-900/95 border transition-all ${
+        className={`w-full h-full min-w-[180px] min-h-[70px] rounded-xl p-3 shadow-lg bg-slate-900/95 border transition-all ${
           selected
             ? 'border-pink-500 ring-2 ring-pink-500/30 shadow-pink-500/20'
             : 'border-pink-500/40 hover:border-pink-400'
         }`}
       >
+        <DiagramNodeResizer isVisible={selected} minWidth={160} minHeight={60} color="#ec4899" />
         <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-pink-400" />
         <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-pink-400" />
         <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2 !h-2 !bg-pink-400" />
@@ -136,12 +138,13 @@ export function C4ContextNode({ id, data, selected }: NodeProps): JSX.Element {
       <div
         data-testid="c4-external-system-node"
         onDoubleClick={handleDoubleClick}
-        className={`min-w-[220px] max-w-[280px] rounded-lg p-3 shadow-lg bg-slate-900/60 border border-dashed transition-all ${
+        className={`w-full h-full min-w-[200px] min-h-[80px] rounded-lg p-3 shadow-lg bg-slate-900/60 border border-dashed transition-all ${
           selected
             ? 'border-slate-300 ring-2 ring-slate-400/30 shadow-slate-400/20'
             : 'border-slate-600 hover:border-slate-500'
         }`}
       >
+        <DiagramNodeResizer isVisible={selected} minWidth={180} minHeight={70} color="#94a3b8" />
         <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-slate-400" />
         <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-slate-400" />
         <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2 !h-2 !bg-slate-400" />
@@ -191,12 +194,13 @@ export function C4ContextNode({ id, data, selected }: NodeProps): JSX.Element {
     <div
       data-testid="c4-system-node"
       onDoubleClick={handleDoubleClick}
-      className={`min-w-[220px] max-w-[280px] rounded-lg p-3 shadow-lg bg-slate-900/95 border transition-all ${
+      className={`w-full h-full min-w-[200px] min-h-[80px] rounded-lg p-3 shadow-lg bg-slate-900/95 border transition-all ${
         selected
           ? 'border-blue-500 ring-2 ring-blue-500/30 shadow-blue-500/20'
           : 'border-blue-500/50 hover:border-blue-400'
       }`}
     >
+      <DiagramNodeResizer isVisible={selected} minWidth={180} minHeight={70} color="#3b82f6" />
       <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-blue-400" />
       <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-blue-400" />
       <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2 !h-2 !bg-blue-400" />

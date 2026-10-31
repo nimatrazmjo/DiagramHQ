@@ -4,6 +4,7 @@ import type { QueueNodeData } from '@diagramhq/domain';
 import { getTechnologyIconPath } from '../../lib/icons';
 import { FlowBadges } from './flow-badges';
 import { EditableNodeLabel } from './editable-node-label';
+import { DiagramNodeResizer } from './diagram-node-resizer';
 
 
 function QueueIcon(): JSX.Element {
@@ -80,7 +81,7 @@ export function QueueNode({ id: _id, data, selected }: NodeProps): JSX.Element {
   return (
     <div
       data-testid="queue-node"
-      className={`min-w-[220px] max-w-[280px] p-3.5 rounded-xl border-2 shadow-xl backdrop-blur-sm transition-all duration-150 ${getThemeClasses()} ${
+      className={`w-full h-full min-w-[180px] min-h-[80px] p-3.5 rounded-xl border-2 shadow-xl backdrop-blur-sm transition-all duration-150 ${getThemeClasses()} ${
         nodeData.flowView && !nodeData.isInFlow
           ? 'opacity-35 border-slate-800'
           : nodeData.flowView && nodeData.isInFlow
@@ -90,6 +91,7 @@ export function QueueNode({ id: _id, data, selected }: NodeProps): JSX.Element {
               : ''
       }`}
     >
+      <DiagramNodeResizer isVisible={selected} minWidth={160} minHeight={70} color="#f59e0b" />
 
       <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-amber-400" />
       <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-amber-400" />

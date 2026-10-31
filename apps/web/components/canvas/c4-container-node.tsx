@@ -2,6 +2,7 @@ import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { C4ContainerKind, C4ContainerNodeData } from '@diagramhq/domain';
 import { EditableNodeLabel } from './editable-node-label';
+import { DiagramNodeResizer } from './diagram-node-resizer';
 
 function WebAppIcon(): JSX.Element {
   return (
@@ -203,10 +204,11 @@ export function C4ContainerNode({ id, data, selected }: NodeProps): JSX.Element 
   return (
     <div
       data-testid={getTestId()}
-      className={`relative min-w-[240px] max-w-[300px] p-4 rounded-xl border-2 shadow-xl backdrop-blur-sm transition-all duration-150 ${getThemeClasses()} ${
+      className={`relative w-full h-full min-w-[200px] min-h-[80px] p-4 rounded-xl border-2 shadow-xl backdrop-blur-sm transition-all duration-150 ${getThemeClasses()} ${
         selected ? 'ring-2 ring-blue-400 ring-offset-2 ring-offset-slate-950 border-blue-400' : ''
       }`}
     >
+      <DiagramNodeResizer isVisible={selected} minWidth={180} minHeight={70} color="#3b82f6" />
       <Handle
         type="target"
         position={Position.Top}

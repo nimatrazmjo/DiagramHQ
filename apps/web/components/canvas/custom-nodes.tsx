@@ -13,6 +13,7 @@ import { DatabaseNode } from './database-node';
 import { QueueNode } from './queue-node';
 import { GroupNode } from './group-node';
 import { EditableNodeLabel } from './editable-node-label';
+import { DiagramNodeResizer } from './diagram-node-resizer';
 
 export { C4ContextNode } from './c4-context-node';
 export { C4ContainerNode } from './c4-container-node';
@@ -69,12 +70,13 @@ export function StoreNode({ id, data, selected }: NodeProps): JSX.Element {
   return (
     <div
       data-testid="store-node"
-      className={`min-w-[200px] max-w-[260px] rounded-lg p-3 shadow-lg bg-slate-900/95 border transition-all ${
+      className={`w-full h-full min-w-[180px] min-h-[70px] rounded-lg p-3 shadow-lg bg-slate-900/95 border transition-all ${
         selected
           ? 'border-purple-500 ring-2 ring-purple-500/30 shadow-purple-500/20'
           : 'border-purple-500/40 hover:border-purple-400'
       }`}
     >
+      <DiagramNodeResizer isVisible={selected} minWidth={160} minHeight={60} color="#c084fc" />
       <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-purple-400" />
       <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-purple-400" />
       <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2 !h-2 !bg-purple-400" />

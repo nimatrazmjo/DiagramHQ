@@ -102,6 +102,7 @@ export interface InfiniteCanvasProps {
   className?: string;
   viewId?: string;
   onNodeDragStop?: (nodeId: string, position: { x: number; y: number }) => void;
+  onNodeResizeStop?: (nodeId: string, dimensions: { width: number; height: number }, position?: { x: number; y: number }) => void;
   onCommandDispatched?: (command: Command) => void;
   persistFn?: (viewId: string, objectId: string, position: { x: number; y: number }) => Promise<void>;
   batchPersistFn?: (viewId: string, positions: Array<{ objectId: string; x: number; y: number }>) => Promise<void>;
@@ -306,6 +307,7 @@ function InfiniteCanvasContent({
   className = '',
   viewId,
   onNodeDragStop,
+  onNodeResizeStop,
   onCommandDispatched,
   persistFn,
   batchPersistFn,
@@ -1960,11 +1962,27 @@ function InfiniteCanvasContent({
             y: Number.isFinite(rawPos?.y) ? rawPos.y : 0,
           };
 
+          const width = Number.isFinite(flowNode.width)
+            ? flowNode.width
+            : Number.isFinite(existing.width)
+              ? existing.width
+              : undefined;
+          const height = Number.isFinite(flowNode.height)
+            ? flowNode.height
+            : Number.isFinite(existing.height)
+              ? existing.height
+              : undefined;
+
           return {
             ...existing,
             ...flowNode,
             selected: isSelected,
             position,
+            ...(width != null ? { width } : {}),
+            ...(height != null ? { height } : {}),
+            ...(width != null && height != null
+              ? { style: { ...(existing.style || {}), width: `${width}px`, height: `${height}px` } }
+              : {}),
             data: { ...existing.data, ...flowNode.data },
           };
         }
@@ -2131,8 +2149,68 @@ function InfiniteCanvasContent({
   ]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
-    setNodes((nds) => applyNodeChanges(changes, nds));
-  }, []);
+    setNodes((nds) => {
+      const nextNodes = applyNodeChanges(changes, nds);
+      let hasDimensionsChange = false;
+      for (const change of changes) {
+        if (change.type === 'dimensions' && change.dimensions) {
+          hasDimensionsChange = true;
+          break;
+        }
+      }
+      if (!hasDimensionsChange) return nextNodes;
+
+      return nextNodes.map((n) => {
+        const dimChange = changes.find(
+          (c) => c.type === 'dimensions' && c.id === n.id,
+        ) as Extract<NodeChange, { type: 'dimensions' }> | undefined;
+
+        if (dimChange?.dimensions && Number.isFinite(dimChange.dimensions.width) && Number.isFinite(dimChange.dimensions.height)) {
+          const w = Math.round(dimChange.dimensions.width);
+          const h = Math.round(dimChange.dimensions.height);
+          const currentStyle = (n as Node).style || {};
+          return {
+            ...n,
+            width: w,
+            height: h,
+            style: {
+              ...currentStyle,
+              width: `${w}px`,
+              height: `${h}px`,
+            },
+          };
+        }
+        return n;
+      });
+    });
+
+    if (onNodeResizeStop) {
+      for (const change of changes) {
+        if (change.type === 'dimensions' && change.resizing === false && change.dimensions) {
+          if (
+            Number.isFinite(change.dimensions.width) &&
+            Number.isFinite(change.dimensions.height)
+          ) {
+            const targetNode = reactFlow.getNode(change.id);
+            const pos =
+              targetNode &&
+              Number.isFinite(targetNode.position.x) &&
+              Number.isFinite(targetNode.position.y)
+                ? { x: targetNode.position.x, y: targetNode.position.y }
+                : undefined;
+            onNodeResizeStop(
+              change.id,
+              {
+                width: Math.round(change.dimensions.width),
+                height: Math.round(change.dimensions.height),
+              },
+              pos,
+            );
+          }
+        }
+      }
+    }
+  }, [reactFlow, onNodeResizeStop]);
 
   const onEdgesChange = useCallback((changes: EdgeChange[]) => {
     setEdges((eds) => applyEdgeChanges(changes, eds));

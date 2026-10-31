@@ -1,4 +1,5 @@
 export * from './canvas-renderer';
+export * from './diagram-node-resizer';
 export * from './custom-nodes';
 export * from './context-menu';
 export * from './infinite-canvas';

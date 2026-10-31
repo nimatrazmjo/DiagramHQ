@@ -231,4 +231,43 @@ test.describe('Canvas Drag-and-Drop, Node Creation & Connections', () => {
     expect(Math.abs(boxAfterDeselect.x - draggedBox.x)).toBeLessThan(5);
     expect(Math.abs(boxAfterDeselect.y - draggedBox.y)).toBeLessThan(5);
   });
+
+  test('resizes a selected node using resize controls on the canvas', async ({ page }) => {
+    const node = page.locator('.react-flow__node').first();
+    await expect(node).toBeVisible();
+
+    const initialBox = await node.boundingBox();
+    expect(initialBox).not.toBeNull();
+    if (!initialBox) return;
+
+    // Click node to select it
+    await node.click();
+    await page.waitForTimeout(300);
+
+    // Resize controls should be visible when selected
+    const resizeControl = page.locator('.react-flow__resize-control.bottom.right');
+    await expect(resizeControl).toBeVisible({ timeout: 5000 });
+
+    const handleBox = await resizeControl.boundingBox();
+    expect(handleBox).not.toBeNull();
+    if (!handleBox) return;
+
+    const handleCenterX = handleBox.x + handleBox.width / 2;
+    const handleCenterY = handleBox.y + handleBox.height / 2;
+
+    // Drag the bottom-right resize handle to expand the node
+    await page.mouse.move(handleCenterX, handleCenterY);
+    await page.mouse.down();
+    await page.mouse.move(handleCenterX + 120, handleCenterY + 80, { steps: 10 });
+    await page.mouse.up();
+    await page.waitForTimeout(500);
+
+    const resizedBox = await node.boundingBox();
+    expect(resizedBox).not.toBeNull();
+    if (!resizedBox) return;
+
+    // Verify node dimensions increased
+    expect(resizedBox.width).toBeGreaterThan(initialBox.width + 50);
+    expect(resizedBox.height).toBeGreaterThan(initialBox.height + 40);
+  });
 });

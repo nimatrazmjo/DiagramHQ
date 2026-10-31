@@ -9,6 +9,7 @@ import { TechnologyBadges } from './technology-badges';
 import { PersonaBadges } from './persona-badges';
 import { FlowBadges } from './flow-badges';
 import { EditableNodeLabel } from './editable-node-label';
+import { DiagramNodeResizer } from './diagram-node-resizer';
 
 
 function ControllerIcon(): JSX.Element {
@@ -197,7 +198,7 @@ export function ComponentNode({ id, data, selected }: NodeProps): JSX.Element {
   return (
     <div
       data-testid="component-node"
-      className={`min-w-[220px] max-w-[280px] p-3.5 rounded-xl border-2 shadow-xl backdrop-blur-sm transition-all duration-150 ${getThemeClasses()} ${
+      className={`w-full h-full min-w-[180px] min-h-[70px] p-3.5 rounded-xl border-2 shadow-xl backdrop-blur-sm transition-all duration-150 ${getThemeClasses()} ${
         nodeData.flowView && !nodeData.isInFlow
           ? 'opacity-35 border-slate-800'
           : nodeData.flowView && nodeData.isInFlow
@@ -207,6 +208,7 @@ export function ComponentNode({ id, data, selected }: NodeProps): JSX.Element {
               : ''
       }`}
     >
+      <DiagramNodeResizer isVisible={selected} minWidth={160} minHeight={60} color="#60a5fa" />
 
       {/* 4-way handles for routing */}
       <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-blue-400" />

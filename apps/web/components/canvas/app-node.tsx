@@ -9,6 +9,7 @@ import { TechnologyBadges } from './technology-badges';
 import { PersonaBadges } from './persona-badges';
 import { FlowBadges } from './flow-badges';
 import { EditableNodeLabel } from './editable-node-label';
+import { DiagramNodeResizer } from './diagram-node-resizer';
 
 
 function AppIcon(): JSX.Element {
@@ -72,7 +73,7 @@ export function AppNode({ id, data, selected }: NodeProps): JSX.Element {
     <div
       data-testid="app-node"
       onDoubleClick={handleDoubleClick}
-      className={`min-w-[220px] max-w-[280px] rounded-xl p-3.5 shadow-lg bg-slate-900/95 border transition-all ${
+      className={`w-full h-full min-w-[200px] min-h-[80px] rounded-xl p-3.5 shadow-lg bg-slate-900/95 border transition-all ${
         nodeData.flowView && !nodeData.isInFlow
           ? 'opacity-35 border-slate-800'
           : nodeData.flowView && nodeData.isInFlow
@@ -82,6 +83,7 @@ export function AppNode({ id, data, selected }: NodeProps): JSX.Element {
               : 'border-emerald-500/50 hover:border-emerald-400'
       }`}
     >
+      <DiagramNodeResizer isVisible={selected} minWidth={180} minHeight={70} color="#10b981" />
 
       {/* 4-way handles for routing */}
       <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-emerald-400" />

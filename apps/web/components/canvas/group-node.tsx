@@ -2,6 +2,7 @@ import React from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { GroupNodeData } from '@diagramhq/domain';
 import { EditableNodeLabel } from './editable-node-label';
+import { DiagramNodeResizer } from './diagram-node-resizer';
 
 function GroupIcon(): JSX.Element {
   return (
@@ -61,10 +62,11 @@ export function GroupNode({ id: _id, data, selected }: NodeProps): JSX.Element {
   return (
     <div
       data-testid="group-node"
-      className={`min-w-[300px] min-h-[200px] p-4 rounded-xl border-2 border-dashed shadow-sm transition-all duration-150 ${getThemeClasses()} ${
+      className={`w-full h-full min-w-[200px] min-h-[120px] p-4 rounded-xl border-2 border-dashed shadow-sm transition-all duration-150 ${getThemeClasses()} ${
         selected ? 'ring-2 ring-slate-400 ring-offset-2 ring-offset-slate-950 border-solid' : ''
       }`}
     >
+      <DiagramNodeResizer isVisible={selected} minWidth={180} minHeight={100} color="#94a3b8" />
       <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-slate-400" />
       <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-slate-400" />
       <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2 !h-2 !bg-slate-400" />
