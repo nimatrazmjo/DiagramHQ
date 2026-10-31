@@ -1485,6 +1485,11 @@ export default function StudioPage(): JSX.Element {
                 ...n,
                 width: Math.round(dimensions.width),
                 height: Math.round(dimensions.height),
+                style: {
+                  ...(n.style || {}),
+                  width: `${Math.round(dimensions.width)}px`,
+                  height: `${Math.round(dimensions.height)}px`,
+                },
                 ...(position && Number.isFinite(position.x) && Number.isFinite(position.y)
                   ? { position }
                   : {}),

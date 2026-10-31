@@ -33,6 +33,7 @@ export interface CanvasNode {
   data: CanvasNodeData;
   width?: number;
   height?: number;
+  style?: Record<string, string | number>;
   selected?: boolean;
   parentId?: string;
   zIndex?: number;

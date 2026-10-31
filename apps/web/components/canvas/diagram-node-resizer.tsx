@@ -18,7 +18,7 @@ export interface DiagramNodeResizerProps {
  */
 export function DiagramNodeResizer({
   isVisible = true,
-  minWidth = 160,
+  minWidth = 140,
   minHeight = 60,
   maxWidth,
   maxHeight,
@@ -36,8 +36,8 @@ export function DiagramNodeResizer({
       maxHeight={maxHeight}
       color={color}
       keepAspectRatio={keepAspectRatio}
-      lineClassName="!border-sky-400/80 !border-dashed"
-      handleClassName="!w-2.5 !h-2.5 !bg-white !border-2 !border-sky-500 !rounded-[2px] shadow-sm hover:!scale-125 transition-transform"
+      lineClassName="!border-sky-400 !border-solid"
+      handleClassName="!w-2.5 !h-2.5 !bg-white !border-0 !rounded-none shadow-md hover:!scale-125 transition-transform"
     />
   );
 }

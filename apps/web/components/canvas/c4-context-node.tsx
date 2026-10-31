@@ -82,53 +82,58 @@ export function C4ContextNode({ id, data, selected }: NodeProps): JSX.Element {
       <div
         data-testid="c4-person-node"
         onDoubleClick={handleDoubleClick}
-        className={`w-full h-full min-w-[180px] min-h-[70px] rounded-xl p-3 shadow-lg bg-slate-900/95 border transition-all ${
+        className={`w-full h-full min-w-[140px] min-h-[70px] rounded-2xl p-3 shadow-lg bg-slate-900/95 border transition-all flex flex-col justify-between relative select-none ${
           selected
-            ? 'border-pink-500 ring-2 ring-pink-500/30 shadow-pink-500/20'
-            : 'border-pink-500/40 hover:border-pink-400'
+            ? 'border-2 border-sky-400 ring-2 ring-pink-500/30 shadow-[0_0_15px_rgba(56,189,248,0.25)]'
+            : 'border border-pink-500/40 hover:border-pink-400'
         }`}
       >
-        <DiagramNodeResizer isVisible={selected} minWidth={160} minHeight={60} color="#ec4899" />
-        <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-pink-400" />
-        <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-pink-400" />
-        <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2 !h-2 !bg-pink-400" />
-        <Handle type="source" position={Position.Bottom} id="bottom-source" className="!w-2 !h-2 !bg-pink-400" />
-        <Handle type="target" position={Position.Left} id="left-target" className="!w-2 !h-2 !bg-pink-400" />
-        <Handle type="source" position={Position.Left} id="left-source" className="!w-2 !h-2 !bg-pink-400" />
-        <Handle type="target" position={Position.Right} id="right-target" className="!w-2 !h-2 !bg-pink-400" />
-        <Handle type="source" position={Position.Right} id="right-source" className="!w-2 !h-2 !bg-pink-400" />
+        <DiagramNodeResizer isVisible={selected} minWidth={140} minHeight={70} color="#38bdf8" />
+        <Handle type="target" position={Position.Top} id="top-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="source" position={Position.Top} id="top-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="source" position={Position.Bottom} id="bottom-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="target" position={Position.Left} id="left-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="source" position={Position.Left} id="left-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="target" position={Position.Right} id="right-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="source" position={Position.Right} id="right-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
 
-        <div className="flex items-center justify-between gap-2 mb-1.5">
-          <div className="flex items-center gap-1.5">
-            <div className="p-1 rounded-full bg-pink-500/10 border border-pink-500/20">
-              <PersonIcon />
-            </div>
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-pink-400 font-mono">
-              Person
-            </span>
+        {/* Top Bar */}
+        <div className="flex items-center justify-between w-full h-5">
+          <div className="p-1 rounded-full bg-pink-500/10 border border-pink-500/20">
+            <PersonIcon />
           </div>
           <span className="px-1.5 py-0.5 text-[9px] font-mono rounded bg-pink-500/20 text-pink-300 border border-pink-500/30">
             Actor
           </span>
         </div>
 
-        <EditableNodeLabel
-          nodeId={id}
-          label={label}
-          isEditing={Boolean(nodeData.isEditing)}
-          onCommit={(newLabel) => {
-            if (typeof nodeData.onRename === 'function') {
-              (nodeData.onRename as (val: string) => void)(newLabel);
-            }
-          }}
-          className="text-sm font-semibold text-slate-100 truncate"
-        />
+        {/* Center Body */}
+        <div className="flex-1 flex flex-col items-center justify-center text-center px-2 py-1 my-auto">
+          <EditableNodeLabel
+            nodeId={id}
+            label={label}
+            isEditing={Boolean(nodeData.isEditing)}
+            onCommit={(newLabel) => {
+              if (typeof nodeData.onRename === 'function') {
+                (nodeData.onRename as (val: string) => void)(newLabel);
+              }
+            }}
+            className="text-base sm:text-lg font-semibold text-slate-100 tracking-wide text-center truncate max-w-full"
+          />
+          {description && (
+            <div className="text-[11px] text-slate-400 mt-1 line-clamp-2 max-w-full leading-tight">
+              {description}
+            </div>
+          )}
+        </div>
 
-        {description && (
-          <div className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">
-            {description}
-          </div>
-        )}
+        {/* Bottom Bar */}
+        <div className="w-full flex items-center justify-center text-center pt-1">
+          <span className="text-[11px] font-mono text-slate-400 tracking-wider">
+            Person
+          </span>
+        </div>
       </div>
     );
   }
@@ -138,53 +143,58 @@ export function C4ContextNode({ id, data, selected }: NodeProps): JSX.Element {
       <div
         data-testid="c4-external-system-node"
         onDoubleClick={handleDoubleClick}
-        className={`w-full h-full min-w-[200px] min-h-[80px] rounded-lg p-3 shadow-lg bg-slate-900/60 border border-dashed transition-all ${
+        className={`w-full h-full min-w-[140px] min-h-[70px] rounded-2xl p-3 shadow-lg bg-slate-900/60 border border-dashed transition-all flex flex-col justify-between relative select-none ${
           selected
-            ? 'border-slate-300 ring-2 ring-slate-400/30 shadow-slate-400/20'
+            ? 'border-2 border-sky-400 ring-2 ring-slate-400/30 shadow-slate-400/20'
             : 'border-slate-600 hover:border-slate-500'
         }`}
       >
-        <DiagramNodeResizer isVisible={selected} minWidth={180} minHeight={70} color="#94a3b8" />
-        <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-slate-400" />
-        <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-slate-400" />
-        <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2 !h-2 !bg-slate-400" />
-        <Handle type="source" position={Position.Bottom} id="bottom-source" className="!w-2 !h-2 !bg-slate-400" />
-        <Handle type="target" position={Position.Left} id="left-target" className="!w-2 !h-2 !bg-slate-400" />
-        <Handle type="source" position={Position.Left} id="left-source" className="!w-2 !h-2 !bg-slate-400" />
-        <Handle type="target" position={Position.Right} id="right-target" className="!w-2 !h-2 !bg-slate-400" />
-        <Handle type="source" position={Position.Right} id="right-source" className="!w-2 !h-2 !bg-slate-400" />
+        <DiagramNodeResizer isVisible={selected} minWidth={140} minHeight={70} color="#38bdf8" />
+        <Handle type="target" position={Position.Top} id="top-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="source" position={Position.Top} id="top-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="source" position={Position.Bottom} id="bottom-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="target" position={Position.Left} id="left-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="source" position={Position.Left} id="left-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="target" position={Position.Right} id="right-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="source" position={Position.Right} id="right-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
 
-        <div className="flex items-center justify-between gap-2 mb-1.5">
-          <div className="flex items-center gap-1.5">
-            <div className="p-1 rounded bg-slate-800 border border-slate-700">
-              <SystemIcon external />
-            </div>
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 font-mono">
-              External System
-            </span>
+        {/* Top Bar */}
+        <div className="flex items-center justify-between w-full h-5">
+          <div className="p-1 rounded bg-slate-800 border border-slate-700">
+            <SystemIcon external />
           </div>
           <span className="px-1.5 py-0.5 text-[9px] font-mono rounded bg-slate-800 text-slate-400 border border-slate-700">
             Third-Party
           </span>
         </div>
 
-        <EditableNodeLabel
-          nodeId={id}
-          label={label}
-          isEditing={Boolean(nodeData.isEditing)}
-          onCommit={(newLabel) => {
-            if (typeof nodeData.onRename === 'function') {
-              (nodeData.onRename as (val: string) => void)(newLabel);
-            }
-          }}
-          className="text-sm font-semibold text-slate-300 truncate"
-        />
+        {/* Center Body */}
+        <div className="flex-1 flex flex-col items-center justify-center text-center px-2 py-1 my-auto">
+          <EditableNodeLabel
+            nodeId={id}
+            label={label}
+            isEditing={Boolean(nodeData.isEditing)}
+            onCommit={(newLabel) => {
+              if (typeof nodeData.onRename === 'function') {
+                (nodeData.onRename as (val: string) => void)(newLabel);
+              }
+            }}
+            className="text-base sm:text-lg font-semibold text-slate-300 tracking-wide text-center truncate max-w-full"
+          />
+          {description && (
+            <div className="text-[11px] text-slate-500 mt-1 line-clamp-2 max-w-full leading-relaxed">
+              {description}
+            </div>
+          )}
+        </div>
 
-        {description && (
-          <div className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-            {description}
-          </div>
-        )}
+        {/* Bottom Bar */}
+        <div className="w-full flex items-center justify-center text-center pt-1">
+          <span className="text-[11px] font-mono text-slate-400 tracking-wider">
+            External System
+          </span>
+        </div>
       </div>
     );
   }
@@ -194,68 +204,86 @@ export function C4ContextNode({ id, data, selected }: NodeProps): JSX.Element {
     <div
       data-testid="c4-system-node"
       onDoubleClick={handleDoubleClick}
-      className={`w-full h-full min-w-[200px] min-h-[80px] rounded-lg p-3 shadow-lg bg-slate-900/95 border transition-all ${
+      className={`w-full h-full min-w-[140px] min-h-[70px] rounded-2xl p-3 shadow-lg bg-slate-900/95 border transition-all flex flex-col justify-between relative select-none ${
         selected
-          ? 'border-blue-500 ring-2 ring-blue-500/30 shadow-blue-500/20'
-          : 'border-blue-500/50 hover:border-blue-400'
+          ? 'border-2 border-sky-400 ring-2 ring-blue-500/30 shadow-[0_0_15px_rgba(56,189,248,0.25)]'
+          : 'border border-blue-500/50 hover:border-blue-400'
       }`}
     >
-      <DiagramNodeResizer isVisible={selected} minWidth={180} minHeight={70} color="#3b82f6" />
-      <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-blue-400" />
-      <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-blue-400" />
-      <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2 !h-2 !bg-blue-400" />
-      <Handle type="source" position={Position.Bottom} id="bottom-source" className="!w-2 !h-2 !bg-blue-400" />
-      <Handle type="target" position={Position.Left} id="left-target" className="!w-2 !h-2 !bg-blue-400" />
-      <Handle type="source" position={Position.Left} id="left-source" className="!w-2 !h-2 !bg-blue-400" />
-      <Handle type="target" position={Position.Right} id="right-target" className="!w-2 !h-2 !bg-blue-400" />
-      <Handle type="source" position={Position.Right} id="right-source" className="!w-2 !h-2 !bg-blue-400" />
+      <DiagramNodeResizer isVisible={selected} minWidth={140} minHeight={70} color="#38bdf8" />
+      <Handle type="target" position={Position.Top} id="top-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="source" position={Position.Top} id="top-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="source" position={Position.Bottom} id="bottom-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="target" position={Position.Left} id="left-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="source" position={Position.Left} id="left-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="target" position={Position.Right} id="right-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="source" position={Position.Right} id="right-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
 
-      <div className="flex items-center justify-between gap-2 mb-1.5">
-        <div className="flex items-center gap-1.5">
-          <div className="p-1 rounded bg-blue-500/10 border border-blue-500/20">
-            <SystemIcon />
-          </div>
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-blue-400 font-mono">
-            System
-          </span>
-        </div>
+      {/* Top Bar: IcePanel Drill-down zoom icon top-left, badges top-right */}
+      <div className="flex items-center justify-between w-full h-5">
+        {canDrillDown ? (
+          <button
+            type="button"
+            data-testid="drill-down-btn"
+            onClick={handleDrillDown}
+            className="p-0.5 -ml-1 -mt-1 rounded text-slate-400 hover:text-sky-300 hover:bg-sky-500/20 transition-colors"
+            title="Drill down to C4 Container view (Level 2)"
+          >
+            <span className="sr-only">Containers</span>
+            {/* IcePanel magnifying glass with plus icon */}
+            <svg
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              <line x1="11" y1="8" x2="11" y2="14" />
+              <line x1="8" y1="11" x2="14" y2="11" />
+            </svg>
+          </button>
+        ) : (
+          <div className="w-4 h-4" />
+        )}
+
         <span className="px-1.5 py-0.5 text-[9px] font-mono rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
           C4 Level 1
         </span>
       </div>
 
-      <EditableNodeLabel
-        nodeId={id}
-        label={label}
-        isEditing={Boolean(nodeData.isEditing)}
-        onCommit={(newLabel) => {
-          if (typeof nodeData.onRename === 'function') {
-            (nodeData.onRename as (val: string) => void)(newLabel);
-          }
-        }}
-        className="text-sm font-semibold text-slate-100 truncate"
-      />
+      {/* Center Body: IcePanel Centered Object Label ("DHS") */}
+      <div className="flex-1 flex flex-col items-center justify-center text-center px-2 py-1 my-auto">
+        <EditableNodeLabel
+          nodeId={id}
+          label={label}
+          isEditing={Boolean(nodeData.isEditing)}
+          onCommit={(newLabel) => {
+            if (typeof nodeData.onRename === 'function') {
+              (nodeData.onRename as (val: string) => void)(newLabel);
+            }
+          }}
+          className="text-base sm:text-lg font-semibold text-slate-100 tracking-wide text-center truncate max-w-full"
+        />
 
-      {description && (
-        <div className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">
-          {description}
-        </div>
-      )}
+        {description && (
+          <div className="text-[11px] text-slate-400 mt-1 line-clamp-2 max-w-full leading-tight">
+            {description}
+          </div>
+        )}
+      </div>
 
-      {canDrillDown && (
-        <div className="mt-2.5 pt-2 border-t border-slate-800 flex justify-end">
-          <button
-            type="button"
-            data-testid="drill-down-btn"
-            onClick={handleDrillDown}
-            className="flex items-center gap-1 text-[11px] font-medium text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 px-2 py-1 rounded transition-colors"
-            title="Drill down to C4 Container view (Level 2)"
-          >
-            <span>Containers</span>
-            <span aria-hidden="true">↷</span>
-          </button>
-        </div>
-      )}
+      {/* Bottom Bar: Object Type ("System") */}
+      <div className="w-full flex items-center justify-center text-center pt-1">
+        <span className="text-[11px] font-mono text-slate-400 tracking-wider">
+          System
+        </span>
+      </div>
     </div>
   );
 }
