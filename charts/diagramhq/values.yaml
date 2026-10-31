@@ -1,0 +1,353 @@
+# Default values for DiagramHQ Helm Chart.
+# Declare variables to be passed into your templates.
+
+global:
+  customer: "DiagramHQ Customer"
+  environment: "production"
+  provider: "kubernetes"
+  airGapped: false
+  image:
+    registry: ""
+    pullPolicy: IfNotPresent
+    tag: ""
+  labels: {}
+
+# Top-level image defaults (can be overridden by global or per-service)
+image:
+  registry: ""
+  pullPolicy: IfNotPresent
+  tag: "1.0.0"
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# ==============================================================================
+# DiagramHQ Web Gateway (Next.js App Router frontend)
+# ==============================================================================
+web:
+  replicaCount: 2
+
+  image:
+    repository: diagramhq-web
+    pullPolicy: ""
+    tag: ""
+
+  imagePullSecrets: []
+
+  service:
+    type: ClusterIP
+    port: 3000
+
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - host: diagramhq.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
+      # - secretName: diagramhq-tls
+      #   hosts:
+      #     - diagramhq.example.com
+
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  livenessProbe:
+    httpGet:
+      path: /healthz
+      port: 3000
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    httpGet:
+      path: /healthz
+      port: 3000
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 2
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAnnotations: {}
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: false
+
+  # Additional custom environment variables
+  env: {}
+
+# ==============================================================================
+# DiagramHQ API Server (NestJS backend & Model Engine)
+# ==============================================================================
+api:
+  replicaCount: 2
+
+  image:
+    repository: diagramhq-api
+    pullPolicy: ""
+    tag: ""
+
+  imagePullSecrets: []
+
+  service:
+    type: ClusterIP
+    port: 4000
+
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+    hosts:
+      - host: api.diagramhq.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
+
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 4000
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 4000
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 2
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAnnotations: {}
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: false
+
+  # Additional custom environment variables
+  env: {}
+
+# ==============================================================================
+# Auth Configuration
+# ==============================================================================
+auth:
+  secret: "diagramhq-production-auth-secret-minimum-32-chars-change-me!"
+  existingSecret: ""
+  existingSecretKey: "auth-secret"
+  trustHost: true
+  nextAuthUrl: "" # If empty, defaults to ingress host or http://localhost:3000
+
+# ==============================================================================
+# Database Configuration (External or Managed PostgreSQL)
+# ==============================================================================
+database:
+  # Hostname or IP of PostgreSQL. If empty and postgresql.enabled=true, uses in-chart PostgreSQL.
+  host: ""
+  port: 5432
+  name: "diagramhq"
+  user: "diagramhq"
+  password: "diagramhq-db-password-change-me!"
+  sslMode: "disable" # disable, require, verify-full
+  existingSecret: ""
+  existingSecretPasswordKey: "password"
+  existingSecretDatabaseUrlKey: ""
+
+# ==============================================================================
+# PostgreSQL (Embedded in-chart deployment for standalone / air-gapped environments)
+# Set enabled to false when connecting to an external AWS RDS / Cloud SQL instance
+# ==============================================================================
+postgresql:
+  enabled: true
+  image:
+    registry: ""
+    repository: postgres
+    tag: "16-alpine"
+    pullPolicy: IfNotPresent
+  auth:
+    username: "diagramhq"
+    password: "diagramhq-db-password-change-me!"
+    database: "diagramhq"
+    existingSecret: ""
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+# ==============================================================================
+# Redis (Embedded in-chart deployment or external instance)
+# ==============================================================================
+redis:
+  enabled: true
+  host: ""
+  port: 6379
+  url: ""
+  image:
+    registry: ""
+    repository: redis
+    tag: "7-alpine"
+    pullPolicy: IfNotPresent
+  auth:
+    enabled: false
+    password: ""
+  persistence:
+    enabled: false
+    size: 2Gi
+    storageClass: ""
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# ==============================================================================
+# Object Storage (MinIO / S3 / GCS / Azure Blob)
+# ==============================================================================
+storage:
+  provider: "minio" # minio, s3_vpc_endpoint, gcs_internal, azure_blob_internal
+  endpoint: "" # e.g. http://minio:9000
+  bucket: "diagramhq-assets"
+  accessKey: ""
+  secretKey: ""
+  existingSecret: ""
+  existingSecretAccessKeyKey: "access-key"
+  existingSecretSecretKeyKey: "secret-key"
+  forcePathStyle: true
+  useSsl: false
+
+# Embedded MinIO deployment for standalone / air-gapped environments
+minio:
+  enabled: false
+  image:
+    registry: ""
+    repository: minio/minio
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  rootUser: "diagramhq_admin"
+  rootPassword: "diagramhq-minio-secret-password-change-me!"
+  persistence:
+    enabled: true
+    size: 20Gi
+    storageClass: ""
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+
+# ==============================================================================
+# Enterprise AI & License Configuration
+# ==============================================================================
+ai:
+  endpoint: "" # e.g. http://vllm.customer.internal:8000/v1
+  model: "" # e.g. mistral-7b-instruct
+
+license:
+  offlineKey: ""
+  existingSecret: ""
+  existingSecretKey: "offline-license-key"
+
+# ==============================================================================
+# Security & Air-Gapped Network Isolation Policies
+# ==============================================================================
+security:
+  networkPolicy:
+    enabled: false
+    ingress:
+      enabled: true
+    egress:
+      # Block external internet access; only allow internal VPC ranges
+      to: []
+      # - ipBlock: { cidr: "10.0.0.0/8" }
+      # - ipBlock: { cidr: "172.16.0.0/12" }
+
+# ==============================================================================
+# Database Migration Job (Prisma migration on install/upgrade)
+# ==============================================================================
+migration:
+  enabled: true
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "1"
+    "helm.sh/hook-delete-policy": before-hook-creation
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi

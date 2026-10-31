@@ -416,7 +416,9 @@ export class ArchitecturesService {
       }
     }
 
-    const objectId = createId(
+    const objectId =
+      dto.id ??
+      createId(
       dto.kind === 'system'
         ? 'sys'
         : dto.kind === 'application'

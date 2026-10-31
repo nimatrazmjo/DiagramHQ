@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "diagramhq.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "diagramhq.labels" . | nindent 4 }}
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
+  API_PORT: "4000"
+  WEB_PORT: "3000"
+  INTERNAL_API_URL: {{ printf "http://%s:4000" (include "diagramhq.api.fullname" .) | quote }}
+  API_INTERNAL_URL: {{ printf "http://%s:4000" (include "diagramhq.api.fullname" .) | quote }}
+  {{- if .Values.web.ingress.enabled }}
+  {{- $host := (index .Values.web.ingress.hosts 0).host }}
+  {{- $proto := ternary "https" "http" (gt (len .Values.web.ingress.tls) 0) }}
+  NEXTAUTH_URL: {{ default (printf "%s://%s" $proto $host) .Values.auth.nextAuthUrl | quote }}
+  NEXT_PUBLIC_API_URL: {{ default (printf "%s://%s" $proto $host) .Values.auth.nextAuthUrl | quote }}
+  {{- else }}
+  NEXTAUTH_URL: {{ default "http://localhost:3000" .Values.auth.nextAuthUrl | quote }}
+  NEXT_PUBLIC_API_URL: {{ default "http://localhost:3000" .Values.auth.nextAuthUrl | quote }}
+  {{- end }}
+  AUTH_TRUST_HOST: {{ .Values.auth.trustHost | default true | quote }}
+  NEXT_PUBLIC_AIR_GAPPED: {{ .Values.global.airGapped | default false | quote }}
+  POSTGRES_HOST: {{ include "diagramhq.database.host" . | quote }}
+  POSTGRES_PORT: {{ include "diagramhq.database.port" . | quote }}
+  POSTGRES_DB: {{ include "diagramhq.database.name" . | quote }}
+  POSTGRES_USER: {{ include "diagramhq.database.user" . | quote }}
+  POSTGRES_SSLMODE: {{ .Values.database.sslMode | default "disable" | quote }}
+  {{- if (include "diagramhq.storage.endpoint" .) }}
+  S3_ENDPOINT: {{ include "diagramhq.storage.endpoint" . | quote }}
+  {{- end }}
+  S3_BUCKET: {{ .Values.storage.bucket | default "diagramhq-assets" | quote }}
+  S3_FORCE_PATH_STYLE: {{ .Values.storage.forcePathStyle | default true | quote }}
+  {{- $aiEndpoint := .Values.ai.endpoint | default .Values.global.localAiEndpoint }}
+  {{- if $aiEndpoint }}
+  LOCAL_AI_ENDPOINT: {{ $aiEndpoint | quote }}
+  {{- end }}
+  {{- $aiModel := .Values.ai.model | default .Values.global.localAiModelName }}
+  {{- if $aiModel }}
+  LOCAL_AI_MODEL: {{ $aiModel | quote }}
+  {{- end }}

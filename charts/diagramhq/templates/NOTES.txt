@@ -1,0 +1,42 @@
+DiagramHQ Enterprise has been installed successfully!
+
+1. Get the Web Gateway application URL by running these commands:
+{{- if .Values.web.ingress.enabled }}
+{{- range $host := .Values.web.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.web.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else if contains "NodePort" .Values.web.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "diagramhq.web.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.web.service.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "diagramhq.web.fullname" . }}'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "diagramhq.web.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SERVICE_IP:{{ .Values.web.service.port }}
+{{- else if contains "ClusterIP" .Values.web.service.type }}
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "{{ include "diagramhq.web.selectorLabels" . | replace ": " "=" | replace "\n" "," }}" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:3000 to access DiagramHQ Studio"
+  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 3000:$CONTAINER_PORT
+{{- end }}
+
+2. Backend API Endpoint:
+{{- if .Values.api.ingress.enabled }}
+{{- range $host := .Values.api.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.api.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else }}
+  Internal Cluster Service: http://{{ include "diagramhq.api.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.api.service.port }}
+{{- end }}
+
+3. Air-Gapped Mode:
+  Air-Gapped Barrier: {{ .Values.global.airGapped | default false }}
+  Network Policy Egress Filtering: {{ .Values.security.networkPolicy.enabled | default false }}
+
+4. Verify Deployment Health:
+  helm test {{ .Release.Name }} --namespace {{ .Release.Namespace }}

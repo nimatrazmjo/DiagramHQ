@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "diagramhq.fullname" . }}-test-connection"
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "diagramhq.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  containers:
+    - name: wget
+      image: busybox:1.36
+      command: ['/bin/sh', '-c']
+      args:
+        - |
+          echo "Verifying DiagramHQ Web Gateway readiness probe..."
+          wget --spider -q -T 5 "http://{{ include "diagramhq.web.fullname" . }}:{{ .Values.web.service.port }}/healthz"
+          WEB_EXIT=$?
+          if [ $WEB_EXIT -ne 0 ]; then
+            echo "Web Gateway probe failed with exit code $WEB_EXIT"
+            exit 1
+          fi
+          echo "Web Gateway probe passed."
+
+          echo "Verifying DiagramHQ API Server readiness probe..."
+          wget --spider -q -T 5 "http://{{ include "diagramhq.api.fullname" . }}:{{ .Values.api.service.port }}/health"
+          API_EXIT=$?
+          if [ $API_EXIT -ne 0 ]; then
+            echo "API Server probe failed with exit code $API_EXIT"
+            exit 1
+          fi
+          echo "API Server probe passed."
+          echo "All DiagramHQ service probes healthy!"

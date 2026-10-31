@@ -1,0 +1,84 @@
+{{- if and .Values.postgresql.enabled (not .Values.database.host) }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "diagramhq.database.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "diagramhq.database.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "diagramhq.database.fullname" . }}
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "diagramhq.database.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "diagramhq.database.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: postgresql
+          image: {{ printf "%s%s:%s" (ternary (printf "%s/" (trimSuffix "/" .Values.postgresql.image.registry)) "" (not (empty .Values.postgresql.image.registry))) .Values.postgresql.image.repository .Values.postgresql.image.tag }}
+          imagePullPolicy: {{ .Values.postgresql.image.pullPolicy | default "IfNotPresent" }}
+          ports:
+            - name: postgresql
+              containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: {{ include "diagramhq.database.user" . | quote }}
+            - name: POSTGRES_DB
+              value: {{ include "diagramhq.database.name" . | quote }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.auth.existingSecret | default (printf "%s-secrets" (include "diagramhq.fullname" .)) }}
+                  key: database-password
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          resources:
+            {{- toYaml .Values.postgresql.resources | nindent 12 }}
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - exec pg_isready -U {{ include "diagramhq.database.user" . }} -d {{ include "diagramhq.database.name" . }} -h 127.0.0.1 -p 5432
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - exec pg_isready -U {{ include "diagramhq.database.user" . }} -d {{ include "diagramhq.database.name" . }} -h 127.0.0.1 -p 5432
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+  {{- if .Values.postgresql.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          {{- range .Values.postgresql.persistence.accessModes }}
+          - {{ . | quote }}
+          {{- end }}
+        {{- if .Values.postgresql.persistence.storageClass }}
+        storageClassName: {{ .Values.postgresql.persistence.storageClass | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.postgresql.persistence.size | quote }}
+  {{- else }}
+      volumes:
+        - name: data
+          emptyDir: {}
+  {{- end }}
+{{- end }}

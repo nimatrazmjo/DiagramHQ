@@ -1,0 +1,63 @@
+{{- if .Values.security.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "diagramhq.fullname" . }}-network-policy
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "diagramhq.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow traffic between pods in the DiagramHQ release
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Release.Name }}
+    # Allow external / ingress-controller traffic to Web Gateway
+    - from:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 3000
+    {{- if .Values.api.ingress.enabled }}
+    # If API ingress is explicitly enabled, allow external traffic to API port 4000
+    - from:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 4000
+    {{- end }}
+  egress:
+    # Allow internal communication within the DiagramHQ release
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ .Release.Name }}
+    # Allow DNS resolution (CoreDNS / Kube-DNS)
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    - ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allowed internal VPC ranges / egress targets from air-gapped configuration
+    {{- with .Values.security.networkPolicy.egress.to }}
+    - to:
+      {{- toYaml . | nindent 8 }}
+    {{- end }}
+{{- end }}

@@ -4,6 +4,7 @@ import {
   IsObject,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -52,6 +53,11 @@ export class UpdateArchitectureDto {
 }
 
 export class CreateModelObjectDto {
+  @IsOptional()
+  @IsString()
+  @Matches(/^[A-Za-z0-9_-]{1,64}$/)
+  id?: string;
+
   @IsString()
   @IsNotEmpty()
   @MinLength(1)

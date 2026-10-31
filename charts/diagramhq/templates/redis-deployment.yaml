@@ -1,0 +1,50 @@
+{{- if and .Values.redis.enabled (not .Values.redis.host) }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "diagramhq.redis.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "diagramhq.redis.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "diagramhq.redis.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "diagramhq.redis.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: redis
+          image: {{ printf "%s%s:%s" (ternary (printf "%s/" (trimSuffix "/" .Values.redis.image.registry)) "" (not (empty .Values.redis.image.registry))) .Values.redis.image.repository .Values.redis.image.tag }}
+          imagePullPolicy: {{ .Values.redis.image.pullPolicy | default "IfNotPresent" }}
+          ports:
+            - name: redis
+              containerPort: 6379
+          {{- if .Values.redis.auth.enabled }}
+          command:
+            - redis-server
+            - --requirepass
+            - $(REDIS_PASSWORD)
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.redis.auth.existingSecret | default (printf "%s-secrets" (include "diagramhq.fullname" .)) }}
+                  key: redis-password
+          {{- end }}
+          resources:
+            {{- toYaml .Values.redis.resources | nindent 12 }}
+          livenessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 5
+            periodSeconds: 5
+{{- end }}

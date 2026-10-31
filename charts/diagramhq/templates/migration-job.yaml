@@ -1,0 +1,58 @@
+{{- if .Values.migration.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "diagramhq.api.fullname" . }}-migration
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "diagramhq.api.labels" . | nindent 4 }}
+  {{- with .Values.migration.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        {{- include "diagramhq.api.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: migration
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: {{ include "diagramhq.serviceAccountName" . }}
+      {{- with .Values.api.imagePullSecrets | default .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: prisma-migrate
+          image: {{ include "diagramhq.api.image" . }}
+          imagePullPolicy: {{ .Values.api.image.pullPolicy | default .Values.image.pullPolicy | default "IfNotPresent" }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Applying database schema migrations..."
+              if [ -f "./node_modules/.bin/prisma" ]; then
+                ./node_modules/.bin/prisma migrate deploy --schema=./prisma/schema.prisma
+              else
+                node dist/main.js --migrate-only || true
+              fi
+              echo "Database migration complete."
+          env:
+            {{- if .Values.database.existingSecretDatabaseUrlKey }}
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.existingSecret }}
+                  key: {{ .Values.database.existingSecretDatabaseUrlKey }}
+            {{- else if not .Values.database.existingSecret }}
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ printf "%s-secrets" (include "diagramhq.fullname" .) }}
+                  key: database-url
+            {{- end }}
+          resources:
+            {{- toYaml .Values.migration.resources | nindent 12 }}
+{{- end }}
