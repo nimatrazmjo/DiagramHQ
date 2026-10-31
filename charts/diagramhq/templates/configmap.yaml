@@ -7,6 +7,7 @@ metadata:
     {{- include "diagramhq.labels" . | nindent 4 }}
 data:
   NODE_ENV: "production"
+  HOSTNAME: "0.0.0.0"
   PORT: "3000"
   API_PORT: "4000"
   WEB_PORT: "3000"

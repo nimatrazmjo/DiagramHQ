@@ -76,7 +76,7 @@ web:
 
   livenessProbe:
     httpGet:
-      path: /healthz
+      path: /
       port: 3000
     initialDelaySeconds: 15
     periodSeconds: 10
@@ -85,7 +85,7 @@ web:
 
   readinessProbe:
     httpGet:
-      path: /healthz
+      path: /
       port: 3000
     initialDelaySeconds: 10
     periodSeconds: 5
@@ -337,9 +337,10 @@ security:
 
 # ==============================================================================
 # Database Migration Job (Prisma migration on install/upgrade)
+# Disabled by default; enable when a custom migration runner or image is configured
 # ==============================================================================
 migration:
-  enabled: true
+  enabled: false
   annotations:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "1"

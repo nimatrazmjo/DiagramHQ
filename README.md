@@ -19,6 +19,7 @@ Most architecture tools are drawing tools: you draw boxes, they rot, and six mon
 - [Repository layout](#repository-layout)
 - [Architecture](#architecture)
 - [Getting started](#getting-started)
+- [Deployment (Kubernetes & Helm)](#deployment-kubernetes--helm)
 - [Configuration](#configuration)
 - [Database](#database)
 - [Scripts](#scripts)
@@ -72,12 +73,12 @@ The modeling backbone is **C4**: Landscape → System Context → Container → 
 
 ### Shipped
 
-| Area | Features |
-|---|---|
-| **Foundation** | Monorepo, authentication (JWT + NextAuth credentials), organizations, workspaces, roles (owner/admin/editor/viewer), Postgres + Prisma with tenant isolation, API edge (validation, typed error envelope, `/health`), application shell |
-| **Canvas** | Infinite canvas (React Flow), pan/zoom, selection, drag & drop, multi-select, alignment toolbar, auto-layout (layered, grid, radial, force-directed via a layout registry), undo/redo (command pattern), minimap / fullscreen / focus |
+| Area                   | Features                                                                                                                                                                                                                                  |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Foundation**         | Monorepo, authentication (JWT + NextAuth credentials), organizations, workspaces, roles (owner/admin/editor/viewer), Postgres + Prisma with tenant isolation, API edge (validation, typed error envelope, `/health`), application shell   |
+| **Canvas**             | Infinite canvas (React Flow), pan/zoom, selection, drag & drop, multi-select, alignment toolbar, auto-layout (layered, grid, radial, force-directed via a layout registry), undo/redo (command pattern), minimap / fullscreen / focus     |
 | **Architecture model** | Model core + invariants, C4 Context / Container / Component, Person, System, Application, Component, Database, Queue, Group, rich connections, object metadata schema + inspector panel, object lifecycle states with transition auditing |
-| **Diagrams & views** | Context / Container / Component diagrams, dynamic (live filtered) views, filter builder, saved & starred views, security views, data views, ownership views, technology catalog, persona modes (8 personas), 13 architecture templates |
+| **Diagrams & views**   | Context / Container / Component diagrams, dynamic (live filtered) views, filter builder, saved & starred views, security views, data views, ownership views, technology catalog, persona modes (8 personas), 13 architecture templates    |
 
 ### Next up
 
@@ -87,16 +88,16 @@ Flows (F041–F047), collaboration, versioning & branches, AI copilot + MCP, cod
 
 ## Tech stack
 
-| Layer | Technology |
-|---|---|
-| Language | TypeScript (Node ≥ 20; `.nvmrc` pins 22) |
-| Monorepo | pnpm 9 workspaces |
-| Web | Next.js 14 (App Router), React 18, React Flow (`@xyflow/react`), Zustand, NextAuth v5 |
-| API | NestJS 10, class-validator, JWT |
-| Domain | Pure TypeScript package (`@diagramhq/domain`) — no framework imports |
-| Data | PostgreSQL 16 via Prisma 5, Redis 7 |
-| Testing | Vitest, `@nestjs/testing` + supertest for HTTP e2e |
-| Tooling | ESLint, Prettier, Docker / Docker Compose, GitHub Actions |
+| Layer    | Technology                                                                            |
+| -------- | ------------------------------------------------------------------------------------- |
+| Language | TypeScript (Node ≥ 20; `.nvmrc` pins 22)                                              |
+| Monorepo | pnpm 9 workspaces                                                                     |
+| Web      | Next.js 14 (App Router), React 18, React Flow (`@xyflow/react`), Zustand, NextAuth v5 |
+| API      | NestJS 10, class-validator, JWT                                                       |
+| Domain   | Pure TypeScript package (`@diagramhq/domain`) — no framework imports                  |
+| Data     | PostgreSQL 16 via Prisma 5, Redis 7                                                   |
+| Testing  | Vitest, `@nestjs/testing` + supertest for HTTP e2e                                    |
+| Tooling  | ESLint, Prettier, Docker / Docker Compose, Kubernetes / Helm, GitHub Actions          |
 
 ---
 
@@ -123,6 +124,8 @@ DiagramHQ/
 │       ├── components/shell/    app shell, top bar, navigator, inspector, filter builder
 │       ├── lib/                 canvas store (Zustand), commands (undo/redo), client model
 │       └── *.spec.ts(x)         feature integration specs
+├── charts/                      production Helm chart for Kubernetes & air-gapped deployments
+│   └── diagramhq/               Chart.yaml, values.yaml, templates (web, api, db, network policies)
 ├── packages/
 │   ├── domain/                  pure model: objects, connections, views, projections,
 │   │                            invariants, layout engines, templates, filters
@@ -224,6 +227,24 @@ make down                     # stop
 
 This starts `postgres`, `redis`, `api` (port 4000) and `web` (port 3000). Run migrations against the container database before first use.
 
+### Option C — Kubernetes & Helm
+
+Deploy DiagramHQ to any Kubernetes cluster (AWS EKS, GCP GKE, Azure AKS, Bare-Metal, or Air-Gapped Enclave):
+
+```bash
+# 1. Install DiagramHQ with default embedded Postgres & Redis
+helm install diagramhq ./charts/diagramhq --namespace diagramhq --create-namespace
+
+# 2. Verify all probes pass
+helm test diagramhq --namespace diagramhq
+
+# 3. Access DiagramHQ Studio
+kubectl --namespace diagramhq port-forward svc/diagramhq-web 3000:3000
+# Open http://localhost:3000
+```
+
+See [Deployment (Kubernetes & Helm)](#deployment-kubernetes--helm) below and [charts/diagramhq/README.md](charts/diagramhq/README.md) for full configuration details.
+
 ### One-shot baseline check
 
 ```bash
@@ -232,21 +253,85 @@ This starts `postgres`, `redis`, `api` (port 4000) and `web` (port 3000). Run mi
 
 ---
 
+## Deployment (Kubernetes & Helm)
+
+DiagramHQ includes a production-ready Helm chart located at [`charts/diagramhq`](charts/diagramhq) (also symlinked as [`helm/diagramhq`](helm/diagramhq)).
+
+### Chart Components
+
+- **Web Gateway**: Next.js App Router frontend with `/healthz` liveness/readiness probes, auto-scaling (HPA), and ingress support.
+- **Backend API Server**: NestJS core model engine with `/health` diagnostic probe, connection pooling, and horizontal pod autoscaling.
+- **PostgreSQL**: Embedded StatefulSet with PVC for standalone setups, or easily configured for managed external databases (AWS RDS, GCP Cloud SQL) via `database.host`.
+- **Redis**: Embedded or external cache and session state broker.
+- **MinIO / S3**: Object storage for architecture snapshots and documentation artifacts.
+- **Air-Gapped NetworkPolicy**: Strict ingress/egress barrier blocking external internet while allowing VPC CIDRs and internal DNS.
+- **Migration Hook**: Automatic Prisma database schema migration job executing on `post-install` and `post-upgrade`.
+
+### Air-Gapped & Customer VPC Deployment
+
+DiagramHQ can be deployed into completely offline enclaves with zero outbound internet access. Generate Helm values via the UI or use:
+
+```yaml
+# customer-airgap-values.yaml
+global:
+  customer: 'Enterprise Customer'
+  environment: 'prod-vpc-us-east'
+  provider: 'aws_vpc'
+  airGapped: true
+
+image:
+  registry: 'docker.customer.internal/diagramhq'
+  pullPolicy: IfNotPresent
+  tag: '1.0.0'
+
+security:
+  networkPolicy:
+    enabled: true
+    egress:
+      to:
+        - ipBlock: { cidr: '10.0.0.0/8' }
+        - ipBlock: { cidr: '172.16.0.0/12' }
+
+database:
+  host: 'postgres.customer.internal'
+  port: 5432
+  name: 'diagramhq_production'
+  sslMode: 'require'
+
+storage:
+  provider: 'minio'
+  endpoint: 'http://minio.customer.internal:9000'
+  bucket: 'diagramhq-assets'
+
+license:
+  offlineKey: 'DHQ-ENTERPRISE-OFFLINE-AIRGAP-KEY-2026-SIGNED'
+```
+
+Deploy with:
+
+```bash
+helm install diagramhq ./charts/diagramhq -f customer-airgap-values.yaml --namespace diagramhq
+```
+
+For complete documentation on parameters, secrets management, and ingress TLS, see [`charts/diagramhq/README.md`](charts/diagramhq/README.md) and [`.harness/deployment/PRIVATE_DEPLOYMENT.md`](.harness/deployment/PRIVATE_DEPLOYMENT.md).
+
+---
+
 ## Configuration
 
 Environment variables (see [`.env.example`](.env.example)):
 
-| Variable | Default | Used by | Purpose |
-|---|---|---|---|
-| `API_PORT` | `4000` | api | HTTP port |
-| `WEB_PORT` | `3000` | web | HTTP port |
-| `NEXT_PUBLIC_API_URL` | `http://localhost:4000` | web | API base URL |
-| `POSTGRES_PORT` | `5432` | compose | Host port mapped to Postgres |
-| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | `diagramhq` | compose | Postgres credentials |
-| `DATABASE_URL` | `postgresql://diagramhq:diagramhq@localhost:5432/diagramhq` | api, prisma | Connection string |
-| `REDIS_URL` | `redis://localhost:6379` | api | Redis connection |
-| `AUTH_SECRET` | dev value | api, web | JWT / NextAuth signing secret (**change outside dev**, ≥ 32 chars) |
-| `NEXTAUTH_URL` | `http://localhost:3000` | web | NextAuth callback base |
+| Variable                                              | Default                                                     | Used by     | Purpose                                                            |
+| ----------------------------------------------------- | ----------------------------------------------------------- | ----------- | ------------------------------------------------------------------ |
+| `API_PORT`                                            | `4000`                                                      | api         | HTTP port                                                          |
+| `WEB_PORT`                                            | `3000`                                                      | web         | HTTP port                                                          |
+| `NEXT_PUBLIC_API_URL`                                 | `http://localhost:4000`                                     | web         | API base URL                                                       |
+| `POSTGRES_PORT`                                       | `5432`                                                      | compose     | Host port mapped to Postgres                                       |
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | `diagramhq`                                                 | compose     | Postgres credentials                                               |
+| `DATABASE_URL`                                        | `postgresql://diagramhq:diagramhq@localhost:5432/diagramhq` | api, prisma | Connection string                                                  |
+| `REDIS_URL`                                           | `redis://localhost:6379`                                    | api         | Redis connection                                                   |
+| `AUTH_SECRET`                                         | dev value                                                   | api, web    | JWT / NextAuth signing secret (**change outside dev**, ≥ 32 chars) |
+| `NEXTAUTH_URL`                                        | `http://localhost:3000`                                     | web         | NextAuth callback base                                             |
 
 > If you change `POSTGRES_PORT`, update the port in `DATABASE_URL` to match.
 
@@ -277,22 +362,22 @@ pnpm --filter @diagramhq/api prisma:migrate:deploy
 
 Root `package.json`:
 
-| Command | What it does |
-|---|---|
-| `pnpm dev` | Build domain, then run all apps in watch mode |
-| `pnpm build` | Build every package |
-| `pnpm build:domain` | Build `@diagramhq/domain` only |
-| `pnpm prisma:generate` | Generate the Prisma client |
-| `pnpm db:migrate` | Apply Prisma migrations |
-| `pnpm db:seed` | Load / reset demo data (see [docs/seed-data.md](docs/seed-data.md)) |
-| `pnpm smoke` | API smoke test against a running, seeded stack |
-| `pnpm typecheck` | `tsc --noEmit` across the workspace |
-| `pnpm lint` / `pnpm lint:fix` | ESLint |
-| `pnpm format` / `pnpm format:check` | Prettier |
-| `pnpm test` | Vitest in every package |
-| `pnpm test:e2e` | Playwright E2E tests (auth, canvas, drag-and-drop, visual regression) with video recording |
-| `pnpm check-architecture` | Enforce layer boundaries |
-| `pnpm verify` | prisma generate → build domain → typecheck → lint → test → check-architecture |
+| Command                             | What it does                                                                               |
+| ----------------------------------- | ------------------------------------------------------------------------------------------ |
+| `pnpm dev`                          | Build domain, then run all apps in watch mode                                              |
+| `pnpm build`                        | Build every package                                                                        |
+| `pnpm build:domain`                 | Build `@diagramhq/domain` only                                                             |
+| `pnpm prisma:generate`              | Generate the Prisma client                                                                 |
+| `pnpm db:migrate`                   | Apply Prisma migrations                                                                    |
+| `pnpm db:seed`                      | Load / reset demo data (see [docs/seed-data.md](docs/seed-data.md))                        |
+| `pnpm smoke`                        | API smoke test against a running, seeded stack                                             |
+| `pnpm typecheck`                    | `tsc --noEmit` across the workspace                                                        |
+| `pnpm lint` / `pnpm lint:fix`       | ESLint                                                                                     |
+| `pnpm format` / `pnpm format:check` | Prettier                                                                                   |
+| `pnpm test`                         | Vitest in every package                                                                    |
+| `pnpm test:e2e`                     | Playwright E2E tests (auth, canvas, drag-and-drop, visual regression) with video recording |
+| `pnpm check-architecture`           | Enforce layer boundaries                                                                   |
+| `pnpm verify`                       | prisma generate → build domain → typecheck → lint → test → check-architecture              |
 
 Per package: `pnpm --filter @diagramhq/<api|web|domain> <script>`.
 
@@ -306,13 +391,15 @@ Per package: `pnpm --filter @diagramhq/<api|web|domain> <script>`.
 - **API** (`apps/api`) — unit tests plus HTTP-level e2e suites (`*.e2e.spec.ts`) booting the real Nest app against PostgreSQL.
 - **Web** (`apps/web`) — feature integration specs (`*.spec.ts(x)`) for canvas, commands, views and components.
 - **Playwright E2E** (`apps/web/e2e`) — End-to-end browser test suites covering authentication flows, React Flow canvas navigation & C4 hierarchy, node drag-and-drop & Quick Connect, and visual regression with automatic WebM video recordings.
+- **Helm & Kubernetes** (`charts/diagramhq`) — chart structure validation, linting, air-gapped values mapping, and pod connectivity tests.
 
 ```bash
 pnpm test                                   # everything (vitest)
 pnpm test:e2e                               # Playwright E2E test suite (spins up web server)
 pnpm --filter @diagramhq/web test:e2e:headed # Playwright E2E in headed browser mode
 pnpm --filter @diagramhq/api test           # api only (needs Postgres + migrations)
-pnpm --filter @diagramhq/domain test        # domain only
+pnpm --filter @diagramhq/domain test        # domain only (includes Helm chart tests)
+helm lint charts/diagramhq                  # validate Helm chart syntax
 pnpm verify                                 # the full gate — run before opening a PR
 ```
 
@@ -325,57 +412,57 @@ All routes require `Authorization: Bearer <token>` except `POST /auth/token` and
 <details>
 <summary><strong>Auth & health</strong></summary>
 
-| Method | Path | Description |
-|---|---|---|
+| Method | Path          | Description                                        |
+| ------ | ------------- | -------------------------------------------------- |
 | `POST` | `/auth/token` | Exchange email + password for a JWT (7-day expiry) |
-| `GET` | `/auth/me` | Current user |
-| `GET` | `/health` | Liveness + DB check (503 when degraded) |
+| `GET`  | `/auth/me`    | Current user                                       |
+| `GET`  | `/health`     | Liveness + DB check (503 when degraded)            |
 
 </details>
 
 <details>
 <summary><strong>Organizations & workspaces</strong></summary>
 
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/organizations` | Create organization |
-| `GET` | `/organizations` | List my organizations |
-| `GET` / `PATCH` / `DELETE` | `/organizations/:id` | Read / update / delete |
-| `GET` | `/organizations/:id/members` | List members |
-| `PATCH` | `/organizations/:id/members/:memberId` | Change member role |
-| `POST` / `GET` | `/organizations/:orgId/workspaces` | Create / list workspaces |
-| `GET` / `PATCH` / `DELETE` | `/workspaces/:id` | Read / update / delete |
-| `GET` | `/workspaces/:id/architectures` | List architectures |
+| Method                     | Path                                   | Description              |
+| -------------------------- | -------------------------------------- | ------------------------ |
+| `POST`                     | `/organizations`                       | Create organization      |
+| `GET`                      | `/organizations`                       | List my organizations    |
+| `GET` / `PATCH` / `DELETE` | `/organizations/:id`                   | Read / update / delete   |
+| `GET`                      | `/organizations/:id/members`           | List members             |
+| `PATCH`                    | `/organizations/:id/members/:memberId` | Change member role       |
+| `POST` / `GET`             | `/organizations/:orgId/workspaces`     | Create / list workspaces |
+| `GET` / `PATCH` / `DELETE` | `/workspaces/:id`                      | Read / update / delete   |
+| `GET`                      | `/workspaces/:id/architectures`        | List architectures       |
 
 </details>
 
 <details>
 <summary><strong>Architectures, objects & connections</strong></summary>
 
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/workspaces/:workspaceId/architectures` | Create architecture |
-| `GET` / `PATCH` / `DELETE` | `/architectures/:id` | Read / update / delete |
-| `GET` | `/architectures/:id/model` | Full model (objects + connections) |
-| `GET` / `POST` | `/architectures/:id/objects` | List / create objects |
-| `GET` / `PATCH` / `DELETE` | `/objects/:id` | Read / update / delete object |
-| `GET` / `POST` | `/architectures/:id/connections` | List / create connections |
-| `GET` / `PATCH` / `DELETE` | `/connections/:id` | Read / update / delete connection |
+| Method                     | Path                                     | Description                        |
+| -------------------------- | ---------------------------------------- | ---------------------------------- |
+| `POST`                     | `/workspaces/:workspaceId/architectures` | Create architecture                |
+| `GET` / `PATCH` / `DELETE` | `/architectures/:id`                     | Read / update / delete             |
+| `GET`                      | `/architectures/:id/model`               | Full model (objects + connections) |
+| `GET` / `POST`             | `/architectures/:id/objects`             | List / create objects              |
+| `GET` / `PATCH` / `DELETE` | `/objects/:id`                           | Read / update / delete object      |
+| `GET` / `POST`             | `/architectures/:id/connections`         | List / create connections          |
+| `GET` / `PATCH` / `DELETE` | `/connections/:id`                       | Read / update / delete connection  |
 
 </details>
 
 <details>
 <summary><strong>Views</strong></summary>
 
-| Method | Path | Description |
-|---|---|---|
-| `POST` / `GET` | `/architectures/:architectureId/views` | Create / list views (`kind`: context, container, component, security, data, ownership, technology, persona, custom) |
-| `GET` / `PATCH` / `DELETE` | `/views/:viewId` | Read / update (name, kind, filter, `isStarred`) / delete |
-| `GET` / `POST` | `/views/:viewId/objects` | List / add object to view |
-| `DELETE` | `/views/:viewId/objects/:objectId` | Remove from view (object stays in model) |
-| `PATCH` | `/views/:viewId/objects/:objectId/position` | Move one object |
-| `PATCH` | `/views/:viewId/objects/positions` | Batch move |
-| `GET` | `/views/:viewId/projection` | Resolved projection (view + filtered objects) |
+| Method                     | Path                                        | Description                                                                                                         |
+| -------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `POST` / `GET`             | `/architectures/:architectureId/views`      | Create / list views (`kind`: context, container, component, security, data, ownership, technology, persona, custom) |
+| `GET` / `PATCH` / `DELETE` | `/views/:viewId`                            | Read / update (name, kind, filter, `isStarred`) / delete                                                            |
+| `GET` / `POST`             | `/views/:viewId/objects`                    | List / add object to view                                                                                           |
+| `DELETE`                   | `/views/:viewId/objects/:objectId`          | Remove from view (object stays in model)                                                                            |
+| `PATCH`                    | `/views/:viewId/objects/:objectId/position` | Move one object                                                                                                     |
+| `PATCH`                    | `/views/:viewId/objects/positions`          | Batch move                                                                                                          |
+| `GET`                      | `/views/:viewId/projection`                 | Resolved projection (view + filtered objects)                                                                       |
 
 </details>
 
@@ -393,12 +480,12 @@ curl -s localhost:4000/organizations -H "Authorization: Bearer $TOKEN"
 
 ## Web app
 
-| Route | Purpose |
-|---|---|
-| `/login` | Sign in (NextAuth credentials) |
-| `/dashboard` | Organizations, workspaces, members & roles |
-| `/workspace/[workspaceId]` | Workspace shell with canvas |
-| `/workspace/[workspaceId]/systems` · `apps` · `data` · `flows` · `views` · `decisions` | Workspace sections |
+| Route                                                                                  | Purpose                                    |
+| -------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `/login`                                                                               | Sign in (NextAuth credentials)             |
+| `/dashboard`                                                                           | Organizations, workspaces, members & roles |
+| `/workspace/[workspaceId]`                                                             | Workspace shell with canvas                |
+| `/workspace/[workspaceId]/systems` · `apps` · `data` · `flows` · `views` · `decisions` | Workspace sections                         |
 
 Canvas highlights: custom node types per object kind (C4, person, system, app, component, database, queue, group), overlay badges for security / data / ownership / technology / persona views, layout menu, alignment toolbar, template panel, inspector panel and filter builder.
 
@@ -430,21 +517,21 @@ Ground rules: domain stays pure, schema changes ship with migrations, views neve
 
 ## Roadmap
 
-| Phase | Name | Status |
-|---|---|---|
-| 01 | Foundation | ✅ Complete |
-| 02 | Canvas | ✅ Core complete (command palette, global search, shortcuts pending) |
-| 03 | Architecture model | ✅ Core complete (object type catalog, bounded contexts pending) |
-| 04 | Diagrams & views | ✅ Complete |
-| 05 | Flows | ⏳ Next |
-| 06 | Collaboration | Planned |
-| 07 | Versioning (history, branches, diff, PRs, ADRs) | Planned |
-| 08 | AI copilot (chat, generation, impact analysis, MCP) | Planned |
-| 09 | Code integrations (GitHub/GitLab, OpenAPI, model-as-code + CLI `dhq`) | Planned |
-| 10 | Infrastructure integrations | Planned |
-| 11 | Drift & governance | Planned |
-| 12 | Documentation | Planned |
-| 13 | Enterprise | Planned |
+| Phase | Name                                                                  | Status                                                               |
+| ----- | --------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| 01    | Foundation                                                            | ✅ Complete                                                          |
+| 02    | Canvas                                                                | ✅ Core complete (command palette, global search, shortcuts pending) |
+| 03    | Architecture model                                                    | ✅ Core complete (object type catalog, bounded contexts pending)     |
+| 04    | Diagrams & views                                                      | ✅ Complete                                                          |
+| 05    | Flows                                                                 | ⏳ Next                                                              |
+| 06    | Collaboration                                                         | Planned                                                              |
+| 07    | Versioning (history, branches, diff, PRs, ADRs)                       | Planned                                                              |
+| 08    | AI copilot (chat, generation, impact analysis, MCP)                   | Planned                                                              |
+| 09    | Code integrations (GitHub/GitLab, OpenAPI, model-as-code + CLI `dhq`) | Planned                                                              |
+| 10    | Infrastructure integrations                                           | Planned                                                              |
+| 11    | Drift & governance                                                    | Planned                                                              |
+| 12    | Documentation                                                         | Planned                                                              |
+| 13    | Enterprise                                                            | Planned                                                              |
 
 Detailed feature list and live progress: [`.harness/ROADMAP.md`](.harness/ROADMAP.md).
 
@@ -454,15 +541,15 @@ Detailed feature list and live progress: [`.harness/ROADMAP.md`](.harness/ROADMA
 
 `.harness/` holds the engineering operating system for this repo — product spec, personas, architecture, ADRs, phased roadmap, verification rubric, and session state for human and AI contributors.
 
-| I need… | Read |
-|---|---|
-| Where the project is now | [`PROJECT_STATE.md`](.harness/PROJECT_STATE.md) |
-| What to do next | [`CURRENT_TASK.md`](.harness/CURRENT_TASK.md) |
-| Why / for whom | [`product/PRODUCT.md`](.harness/product/PRODUCT.md), [`product/PERSONAS.md`](.harness/product/PERSONAS.md) |
-| Structure & data shape | [`architecture/`](.harness/architecture/) |
-| Import rules | [`rules/layer-boundaries.md`](.harness/rules/layer-boundaries.md) |
-| What's decided | [`DECISIONS.md`](.harness/DECISIONS.md) |
-| What shipped | [`CHANGELOG.md`](.harness/CHANGELOG.md) |
-| Contributor contract | [`AGENTS.md`](.harness/AGENTS.md), [`CLAUDE.md`](.harness/CLAUDE.md) |
+| I need…                  | Read                                                                                                       |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| Where the project is now | [`PROJECT_STATE.md`](.harness/PROJECT_STATE.md)                                                            |
+| What to do next          | [`CURRENT_TASK.md`](.harness/CURRENT_TASK.md)                                                              |
+| Why / for whom           | [`product/PRODUCT.md`](.harness/product/PRODUCT.md), [`product/PERSONAS.md`](.harness/product/PERSONAS.md) |
+| Structure & data shape   | [`architecture/`](.harness/architecture/)                                                                  |
+| Import rules             | [`rules/layer-boundaries.md`](.harness/rules/layer-boundaries.md)                                          |
+| What's decided           | [`DECISIONS.md`](.harness/DECISIONS.md)                                                                    |
+| What shipped             | [`CHANGELOG.md`](.harness/CHANGELOG.md)                                                                    |
+| Contributor contract     | [`AGENTS.md`](.harness/AGENTS.md), [`CLAUDE.md`](.harness/CLAUDE.md)                                       |
 
 `scripts/scheduler.sh` can drive features sequentially with AI coding agents (with model failover); see the script header for options.

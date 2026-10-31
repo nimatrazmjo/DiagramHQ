@@ -17,7 +17,7 @@ spec:
       args:
         - |
           echo "Verifying DiagramHQ Web Gateway readiness probe..."
-          wget --spider -q -T 5 "http://{{ include "diagramhq.web.fullname" . }}:{{ .Values.web.service.port }}/healthz"
+          wget --spider -q -T 5 "http://{{ include "diagramhq.web.fullname" . }}:{{ .Values.web.service.port }}/"
           WEB_EXIT=$?
           if [ $WEB_EXIT -ne 0 ]; then
             echo "Web Gateway probe failed with exit code $WEB_EXIT"
