@@ -10,7 +10,7 @@ test.describe('Studio Auto-Save & Edge/Arrow Reconnection', () => {
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
 
     // 2. Navigate to Studio
-    await page.goto('/studio');
+    await page.goto('/studio?harness=1');
     await expect(page.locator('.react-flow')).toBeVisible({ timeout: 15000 });
 
     // 3. Verify Cloud Studio mode badge & auto-save status indicator
@@ -75,7 +75,7 @@ test.describe('Studio Auto-Save & Edge/Arrow Reconnection', () => {
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
 
     // 2. Open Studio
-    await page.goto('/studio');
+    await page.goto('/studio?harness=1');
     await expect(page.locator('.react-flow')).toBeVisible({ timeout: 15000 });
 
     const nodes = page.locator('.react-flow__node');

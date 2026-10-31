@@ -1,6 +1,5 @@
 import React from 'react';
 import Link from 'next/link';
-import { projectViewModelToCanvas } from '@diagramhq/domain';
 import { InfiniteCanvas } from '../../../components/canvas';
 
 export interface WorkspaceOverviewPageProps {
@@ -14,72 +13,22 @@ export default function WorkspaceOverviewPage({
 }: WorkspaceOverviewPageProps): JSX.Element {
   const { workspaceId } = params;
 
-  const sampleObjects = [
-    {
-      id: 'sys-payment',
-      name: 'Payment Gateway System',
-      kind: 'system',
-      description: 'High-level payment processing and settlement boundary',
-    },
-    {
-      id: 'app-auth',
-      name: 'Auth Service App',
-      kind: 'application',
-      description: 'Authentication, token verification, and sessions',
-    },
-    {
-      id: 'store-pg',
-      name: 'Postgres Database Store',
-      kind: 'store',
-      description: 'Relational database for transactions and accounts',
-    },
-  ];
-
-  const sampleConnections = [
-    {
-      id: 'conn-auth-payment',
-      sourceId: 'app-auth',
-      targetId: 'sys-payment',
-      kind: 'sync',
-      description: 'Verify token before checkout',
-    },
-    {
-      id: 'conn-auth-store',
-      sourceId: 'app-auth',
-      targetId: 'store-pg',
-      kind: 'data',
-      description: 'Persist user sessions and credentials',
-    },
-  ];
-
-  const sampleViewObjects = [
-    { objectId: 'sys-payment', x: 80, y: 100 },
-    { objectId: 'app-auth', x: 420, y: 100 },
-    { objectId: 'store-pg', x: 420, y: 300 },
-  ];
-
-  const { nodes: sampleNodes, edges: sampleEdges } = projectViewModelToCanvas({
-    objects: sampleObjects,
-    connections: sampleConnections,
-    viewObjects: sampleViewObjects,
-  });
-
   const stats = [
     {
       label: 'Objects',
-      count: '3',
+      count: '0',
       description: 'Systems, Apps, and Data stores',
       href: `/workspace/${workspaceId}/systems`,
     },
     {
       label: 'Views',
-      count: '1',
+      count: '0',
       description: 'C4 and custom projections',
       href: `/workspace/${workspaceId}/views`,
     },
     {
       label: 'Connections',
-      count: '2',
+      count: '0',
       description: 'Dependencies and data flow relations',
       href: `/workspace/${workspaceId}/flows`,
     },
@@ -144,7 +93,7 @@ export default function WorkspaceOverviewPage({
         </div>
 
         <div className="h-[520px] w-full rounded-xl overflow-hidden border border-slate-800 bg-slate-950/80 shadow-2xl relative">
-          <InfiniteCanvas initialNodes={sampleNodes} initialEdges={sampleEdges} showPalette showTemplatePicker />
+          <InfiniteCanvas initialNodes={[]} initialEdges={[]} showPalette showTemplatePicker />
         </div>
       </section>
 

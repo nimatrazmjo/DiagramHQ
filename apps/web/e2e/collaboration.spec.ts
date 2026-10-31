@@ -14,7 +14,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Collaboration & Architecture Reviews Suite', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/studio');
+    await page.goto('/studio?harness=1');
     await expect(page.locator('.react-flow')).toBeVisible();
     await expect(page.locator('.react-flow__node').first()).toBeVisible();
   });

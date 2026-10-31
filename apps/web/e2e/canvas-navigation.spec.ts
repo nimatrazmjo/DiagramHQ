@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('React Flow Studio Canvas Navigation & C4 Hierarchy', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/studio');
+    await page.goto('/studio?harness=1');
     // Ensure React Flow canvas is mounted and stable
     await expect(page.locator('.react-flow')).toBeVisible({ timeout: 15000 });
   });

@@ -42,7 +42,7 @@ test.describe('Visual Regression & Layout Stability', () => {
   });
 
   test('Inspector panel renders on the right with appropriate width and sections', async ({ page }) => {
-    await page.goto('/studio');
+    await page.goto('/studio?harness=1');
     await expect(page.locator('.react-flow')).toBeVisible({ timeout: 15000 });
 
     const firstNode = page.locator('.react-flow__node').first();

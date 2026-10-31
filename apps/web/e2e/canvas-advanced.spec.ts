@@ -31,7 +31,7 @@ async function getCanvasNodePositions(page: Page) {
 
 test.describe('Advanced Canvas & Layouts Suite', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/studio');
+    await page.goto('/studio?harness=1');
     await expect(page.locator('.react-flow')).toBeVisible();
     await expect(page.locator('.react-flow__node').first()).toBeVisible();
   });

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Canvas Drag-and-Drop, Node Creation & Connections', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/studio');
+    await page.goto('/studio?harness=1');
     await expect(page.locator('.react-flow')).toBeVisible({ timeout: 15000 });
     // Wait for nodes to settle
     await expect(page.locator('.react-flow__node').first()).toBeVisible({ timeout: 10000 });
@@ -271,3 +271,19 @@ test.describe('Canvas Drag-and-Drop, Node Creation & Connections', () => {
     expect(resizedBox.height).toBeGreaterThan(initialBox.height + 40);
   });
 });
+
+test.describe('Clean Initial Canvas State', () => {
+  test('main studio page loads with a completely clean empty canvas and no pre-defined demo diagrams', async ({ page }) => {
+    await page.goto('/studio');
+    await expect(page.locator('.react-flow')).toBeVisible({ timeout: 15000 });
+
+    // The main studio page must have 0 pre-defined nodes by default
+    const count = await page.locator('.react-flow__node').count();
+    expect(count).toBe(0);
+
+    // Shows the ready canvas empty state helper
+    await expect(page.getByText('Canvas is ready')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Load Reference Architecture/i })).toBeVisible();
+  });
+});
+

@@ -108,7 +108,7 @@ test.describe('Flows, Sequence Tracing & Interactive Playback Suite', () => {
   });
 
   test('4. Studio canvas mounts FlowPlaybackToolbar with user journey context and step note', async ({ page }) => {
-    await page.goto('/studio');
+    await page.goto('/studio?harness=1');
 
     // Verify canvas rendered
     await expect(page.locator('.react-flow')).toBeVisible();
@@ -145,7 +145,7 @@ test.describe('Flows, Sequence Tracing & Interactive Playback Suite', () => {
   });
 
   test('5. Step forward, step previous, and boundary clamping update step descriptions', async ({ page }) => {
-    await page.goto('/studio');
+    await page.goto('/studio?harness=1');
     await page.locator('button[data-testid="toggle-flow-playback-btn"]').click();
 
     const nextBtn = page.locator('[data-testid="playback-next-btn"]');
@@ -182,7 +182,7 @@ test.describe('Flows, Sequence Tracing & Interactive Playback Suite', () => {
   });
 
   test('6. Play/pause auto-advance, speed multiplier, restart, and looping controls', async ({ page }) => {
-    await page.goto('/studio');
+    await page.goto('/studio?harness=1');
     await page.locator('button[data-testid="toggle-flow-playback-btn"]').click();
 
     const playBtn = page.locator('[data-testid="playback-play-btn"]');
