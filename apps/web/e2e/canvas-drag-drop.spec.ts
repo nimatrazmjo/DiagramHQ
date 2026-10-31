@@ -108,6 +108,13 @@ test.describe('Canvas Drag-and-Drop, Node Creation & Connections', () => {
 
     const currentCount = await page.locator('.react-flow__node').count();
 
+    // Switch to Properties tab in Inspector if needed
+    const propertiesTab = page.getByRole('button', { name: 'Properties' });
+    if (await propertiesTab.isVisible()) {
+      await propertiesTab.click();
+      await page.waitForTimeout(200);
+    }
+
     // Inspector should show Delete Object button for the newly selected node
     const deleteBtn = page.getByRole('button', { name: /Delete Object from Diagram/i });
     await expect(deleteBtn).toBeVisible();

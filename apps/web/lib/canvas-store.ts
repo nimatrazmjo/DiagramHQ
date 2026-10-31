@@ -6,6 +6,7 @@ export const MAX_ZOOM = 4.0;
 export const DEFAULT_ZOOM = 1.0;
 
 export function clampZoom(zoom: number): number {
+  if (!Number.isFinite(zoom)) return DEFAULT_ZOOM;
   return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, Math.round(zoom * 100) / 100));
 }
 
@@ -69,13 +70,31 @@ export const useCanvasStore = create<CanvasStoreState>((set, get) => ({
   setViewport: (viewport: CanvasViewport) =>
     set({
       viewport: {
-        x: viewport.x,
-        y: viewport.y,
+        x: Number.isFinite(viewport.x) ? viewport.x : 0,
+        y: Number.isFinite(viewport.y) ? viewport.y : 0,
         zoom: clampZoom(viewport.zoom),
       },
     }),
-  setSelectedNodes: (ids: string[]) => set({ selectedNodeIds: ids }),
-  setSelectedEdges: (ids: string[]) => set({ selectedEdgeIds: ids }),
+  setSelectedNodes: (ids: string[]) =>
+    set((state) => {
+      if (
+        state.selectedNodeIds.length === ids.length &&
+        state.selectedNodeIds.every((id, i) => id === ids[i])
+      ) {
+        return state;
+      }
+      return { selectedNodeIds: ids };
+    }),
+  setSelectedEdges: (ids: string[]) =>
+    set((state) => {
+      if (
+        state.selectedEdgeIds.length === ids.length &&
+        state.selectedEdgeIds.every((id, i) => id === ids[i])
+      ) {
+        return state;
+      }
+      return { selectedEdgeIds: ids };
+    }),
 
   selectNode: (id: string, multi = false) =>
     set((state) => {

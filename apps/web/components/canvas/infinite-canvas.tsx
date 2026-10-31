@@ -156,11 +156,17 @@ export function createNodeDragStopHandler({
       startPos ??
       (prevNode
         ? { x: prevNode.position.x, y: prevNode.position.y }
-        : { x: node.position.x, y: node.position.y });
+        : {
+            x: Number.isFinite(node.position?.x) ? node.position.x : 0,
+            y: Number.isFinite(node.position?.y) ? node.position.y : 0,
+          });
+
+    const rawX = Number.isFinite(node.position?.x) ? node.position.x : prevPosition.x;
+    const rawY = Number.isFinite(node.position?.y) ? node.position.y : prevPosition.y;
 
     const newPosition = snapToGridEnabled
-      ? snapToGrid({ x: node.position.x, y: node.position.y }, gridSize)
-      : { x: node.position.x, y: node.position.y };
+      ? snapToGrid({ x: rawX, y: rawY }, gridSize)
+      : { x: rawX, y: rawY };
 
     const command = new MoveNodeCommand({
       viewId,
@@ -243,15 +249,20 @@ export function getMiniMapNodeColor(node: Node): string {
 }
 
 function toFlowNode(node: CanvasNode): Node {
+  const x = Number.isFinite(node.position?.x) ? Number(node.position.x) : 0;
+  const y = Number.isFinite(node.position?.y) ? Number(node.position.y) : 0;
   return {
     id: node.id,
     type: node.type,
-    position: { x: node.position.x, y: node.position.y },
-    data: { ...node.data },
-    ...(node.width != null ? { width: node.width } : {}),
-    ...(node.height != null ? { height: node.height } : {}),
+    position: { x, y },
+    data: {
+      ...node.data,
+      ...(node.parentId ? { parentId: node.parentId } : {}),
+    },
+    draggable: true,
+    ...(node.width != null && Number.isFinite(node.width) ? { width: node.width } : {}),
+    ...(node.height != null && Number.isFinite(node.height) ? { height: node.height } : {}),
     ...(node.selected != null ? { selected: node.selected } : {}),
-    ...(node.parentId ? { parentId: node.parentId } : {}),
   };
 }
 
@@ -1936,12 +1947,18 @@ function InfiniteCanvasContent({
           const prevInitialPos = prevInitialPositionsRef.current.get(node.id);
           const positionChangedByParent =
             !prevInitialPos ||
-            prevInitialPos.x !== node.position.x ||
-            prevInitialPos.y !== node.position.y;
+            (Number.isFinite(node.position.x) &&
+              Number.isFinite(prevInitialPos.x) &&
+              Math.abs(prevInitialPos.x - node.position.x) > 0.001) ||
+            (Number.isFinite(node.position.y) &&
+              Number.isFinite(prevInitialPos.y) &&
+              Math.abs(prevInitialPos.y - node.position.y) > 0.001);
 
-          const position = positionChangedByParent
-            ? node.position
-            : (existing.position ?? node.position);
+          const rawPos = positionChangedByParent ? node.position : (existing.position ?? node.position);
+          const position = {
+            x: Number.isFinite(rawPos?.x) ? rawPos.x : 0,
+            y: Number.isFinite(rawPos?.y) ? rawPos.y : 0,
+          };
 
           return {
             ...existing,
@@ -2123,22 +2140,30 @@ function InfiniteCanvasContent({
 
   const onSelectionChange = useCallback(
     ({ nodes: selectedNodes, edges: selectedEdges }: OnSelectionChangeParams) => {
-      const selectedNodeIds = selectedNodes.map((n) => n.id);
-      const selectedEdgeIds = selectedEdges.map((e) => e.id);
+      const nextNodeIds = selectedNodes.map((n) => n.id);
+      const nextEdgeIds = selectedEdges.map((e) => e.id);
 
       // Prevent dropping selection if the user is currently editing an input or textarea
-      if (selectedNodeIds.length === 0 && selectedEdgeIds.length === 0 && isTextInput(document.activeElement)) {
+      if (nextNodeIds.length === 0 && nextEdgeIds.length === 0 && isTextInput(document.activeElement)) {
         return;
       }
 
-      useCanvasStore.getState().setSelectedNodes(selectedNodeIds);
-      useCanvasStore.getState().setSelectedEdges(selectedEdgeIds);
+      const curNodes = useCanvasStore.getState().selectedNodeIds;
+      const curEdges = useCanvasStore.getState().selectedEdgeIds;
+      const nodesChanged = curNodes.length !== nextNodeIds.length || curNodes.some((id, i) => id !== nextNodeIds[i]);
+      const edgesChanged = curEdges.length !== nextEdgeIds.length || curEdges.some((id, i) => id !== nextEdgeIds[i]);
 
-      if (onNodeSelect) {
-        onNodeSelect(selectedNodeIds[0] ?? null);
+      if (nodesChanged) {
+        useCanvasStore.getState().setSelectedNodes(nextNodeIds);
+        if (onNodeSelect) {
+          onNodeSelect(nextNodeIds[0] ?? null);
+        }
       }
-      if (onEdgeSelect) {
-        onEdgeSelect(selectedEdgeIds[0] ?? null);
+      if (edgesChanged) {
+        useCanvasStore.getState().setSelectedEdges(nextEdgeIds);
+        if (onEdgeSelect) {
+          onEdgeSelect(nextEdgeIds[0] ?? null);
+        }
       }
     },
     [onNodeSelect, onEdgeSelect]
@@ -2236,6 +2261,8 @@ function InfiniteCanvasContent({
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         defaultEdgeOptions={{ type: 'icepanel' }}
+        nodesDraggable={true}
+        elementsSelectable={true}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
