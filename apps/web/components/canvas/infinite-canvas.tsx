@@ -2715,12 +2715,90 @@ function InfiniteCanvasContent({
     handleDeleteSelected,
   ]);
 
-  const onNodesChange = useCallback((changes: NodeChange[]) => {
-    // Filter out internal dimensions and select changes to prevent measurement re-render loops
-    const relevantChanges = changes.filter((c) => c.type !== 'dimensions' && c.type !== 'select');
-    if (relevantChanges.length === 0) return;
-    setNodes((nds) => applyNodeChanges(relevantChanges, nds));
-  }, []);
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      // Filter out pure internal select events; allow dimensions, position, remove, etc.
+      const relevantChanges = changes.filter((c) => c.type !== 'select');
+      if (relevantChanges.length === 0) return;
+
+      setNodes((nds) => {
+        const nextNodes = applyNodeChanges(relevantChanges, nds);
+        const hasDimensionsChange = relevantChanges.some(
+          (c) => c.type === 'dimensions' && c.dimensions,
+        );
+        if (!hasDimensionsChange) return nextNodes;
+
+        return nextNodes.map((n) => {
+          const dimChange = relevantChanges.find(
+            (c) => c.type === 'dimensions' && c.id === n.id,
+          ) as Extract<NodeChange, { type: 'dimensions' }> | undefined;
+
+          if (
+            dimChange?.dimensions &&
+            Number.isFinite(dimChange.dimensions.width) &&
+            Number.isFinite(dimChange.dimensions.height)
+          ) {
+            const dynamicDims = calculateDynamicNodeDimensions(n.data, n.type);
+            const w = Math.max(Math.round(dimChange.dimensions.width), dynamicDims.minWidth);
+            const h = Math.max(Math.round(dimChange.dimensions.height), dynamicDims.minHeight);
+            const currentStyle = (n as Node).style || {};
+            if (
+              n.width === w &&
+              n.height === h &&
+              currentStyle.width === `${w}px` &&
+              currentStyle.height === `${h}px`
+            ) {
+              return n;
+            }
+            return {
+              ...n,
+              width: w,
+              height: h,
+              style: {
+                ...currentStyle,
+                width: `${w}px`,
+                height: `${h}px`,
+                minWidth: `${dynamicDims.minWidth}px`,
+                minHeight: `${dynamicDims.minHeight}px`,
+              },
+            };
+          }
+          return n;
+        });
+      });
+
+      if (onNodeResizeStop) {
+        for (const change of relevantChanges) {
+          if (change.type === 'dimensions' && change.resizing === false && change.dimensions) {
+            if (
+              Number.isFinite(change.dimensions.width) &&
+              Number.isFinite(change.dimensions.height)
+            ) {
+              const targetNode = reactFlow.getNode(change.id);
+              const dynamicDims = calculateDynamicNodeDimensions(targetNode?.data, targetNode?.type);
+              const clampedW = Math.max(Math.round(change.dimensions.width), dynamicDims.minWidth);
+              const clampedH = Math.max(Math.round(change.dimensions.height), dynamicDims.minHeight);
+              const pos =
+                targetNode &&
+                Number.isFinite(targetNode.position.x) &&
+                Number.isFinite(targetNode.position.y)
+                  ? { x: targetNode.position.x, y: targetNode.position.y }
+                  : undefined;
+              onNodeResizeStop(
+                change.id,
+                {
+                  width: clampedW,
+                  height: clampedH,
+                },
+                pos,
+              );
+            }
+          }
+        }
+      }
+    },
+    [reactFlow, onNodeResizeStop],
+  );
 
   const onEdgesChange = useCallback((changes: EdgeChange[]) => {
     setEdges((eds) => applyEdgeChanges(changes, eds));
