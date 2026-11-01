@@ -148,21 +148,54 @@ export function StoreNode({ id, data, selected }: NodeProps): JSX.Element {
   );
 }
 
+export function CustomNodeComponent(props: NodeProps): JSX.Element {
+  const kind = (props.data?.kind as string) || '';
+  switch (kind) {
+    case 'application':
+    case 'app':
+    case 'service':
+      return <AppNode {...props} />;
+    case 'database':
+    case 'db':
+      return <DatabaseNode {...props} />;
+    case 'store':
+      return <StoreNode {...props} />;
+    case 'component':
+      return <ComponentNode {...props} />;
+    case 'queue':
+      return <QueueNode {...props} />;
+    case 'actor':
+    case 'person':
+      return <PersonNode {...props} />;
+    case 'group':
+    case 'boundary':
+      return <GroupNode {...props} />;
+    case 'system':
+    default:
+      return <SystemNode {...props} />;
+  }
+}
+
 export const nodeTypes = {
   system: SystemNode,
   application: AppNode,
+  app: AppNode,
+  service: AppNode,
   store: StoreNode,
   component: ComponentNode,
   database: DatabaseNode,
+  db: DatabaseNode,
   queue: QueueNode,
   group: GroupNode,
   c4Context: C4ContextNode,
   actor: PersonNode,
   person: PersonNode,
   c4Container: C4ContainerNode,
+  container: C4ContainerNode,
   c4SystemBoundary: C4SystemBoundaryNode,
   c4Component: C4ComponentNode,
   c4ContainerBoundary: C4ContainerBoundaryNode,
+  customNode: CustomNodeComponent,
   default: SystemNode,
 };
 

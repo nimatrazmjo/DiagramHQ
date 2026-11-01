@@ -107,6 +107,27 @@ p {
 }
 
 /* ── IcePanel Exact Resize Controls & Connection Ports Styling ───────────── */
+/* Strip React Flow default node background, padding, and border */
+.react-flow {
+  --xy-node-background-color-default: transparent !important;
+  --xy-node-border-default: transparent !important;
+  --xy-node-color-default: inherit !important;
+}
+
+.react-flow__node,
+.react-flow__node-default,
+.react-flow__node-input,
+.react-flow__node-output,
+.react-flow__node-group {
+  background: transparent !important;
+  background-color: transparent !important;
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: inherit !important;
+  border-radius: 0 !important;
+}
+
 .react-flow__resize-control.handle {
   width: 9px !important;
   height: 9px !important;

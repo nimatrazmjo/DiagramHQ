@@ -202,7 +202,8 @@ test.describe('Canvas Drag-and-Drop, Node Creation & Connections', () => {
     expect(initialBox).not.toBeNull();
     if (!initialBox) return;
 
-    const startX = initialBox.x + initialBox.width / 2;
+    // Use a point on the right side of the node to avoid overlapping adjacent nodes
+    const startX = initialBox.x + initialBox.width * 0.8;
     const startY = initialBox.y + initialBox.height / 2;
 
     // Drag Frontend node
