@@ -28,7 +28,10 @@ describe('Dynamic Node Dimensions & Minimum Sizing', () => {
     positionAbsoluteX: 0,
     positionAbsoluteY: 0,
     dragging: false,
-  });
+    selectable: true,
+    deletable: true,
+    draggable: true,
+  } as unknown as NodeProps);
 
   describe('calculateDynamicNodeDimensions calculation', () => {
     it('calculates proper minimum height for External System with description (Billing Service case)', () => {

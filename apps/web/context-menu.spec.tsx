@@ -48,7 +48,7 @@ describe('F138 — Canvas Context Menus', () => {
       expect(html).toContain('data-testid="context-menu-item-delete"');
     });
 
-    it('renders edge context menu with Edit label, Reverse, and Delete', () => {
+    it('renders edge context menu with Edit label, Reverse, Duplicate, and Delete', () => {
       const mockEdge: Edge = {
         id: 'edge-auth-db',
         source: 'node-auth-1',
@@ -73,6 +73,7 @@ describe('F138 — Canvas Context Menus', () => {
       expect(html).toContain('gRPC stream');
       expect(html).toContain('data-testid="context-menu-item-edit-label"');
       expect(html).toContain('data-testid="context-menu-item-reverse"');
+      expect(html).toContain('data-testid="context-menu-item-duplicate-edge"');
       expect(html).toContain('data-testid="context-menu-item-delete-edge"');
     });
 

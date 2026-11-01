@@ -342,7 +342,8 @@ export default function StudioPage(): JSX.Element {
   const [activePersona, setActivePersona] = useState<PersonaMode | 'all'>('all');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
-  const [isInspectorOpen, setIsInspectorOpen] = useState(true);
+  const [isInspectorOpen, setIsInspectorOpen] = useState(false);
+  const isInspectorVisible = isInspectorOpen && Boolean(selectedNodeId || selectedEdgeId);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [canvasKey, setCanvasKey] = useState(1);
   const [currentNodes, setCurrentNodes] = useState<CanvasNode[]>(initialGraph.nodes);
@@ -398,6 +399,7 @@ export default function StudioPage(): JSX.Element {
       }
       setSelectedNodeId(null);
       setSelectedEdgeId(null);
+      setIsInspectorOpen(false);
       setCanvasKey((k) => k + 1);
     },
     [],
@@ -460,6 +462,7 @@ export default function StudioPage(): JSX.Element {
           });
           setSelectedNodeId(null);
           setSelectedEdgeId(null);
+          setIsInspectorOpen(false);
           setCanvasKey((k) => k + 1);
         }
       }
@@ -704,6 +707,7 @@ export default function StudioPage(): JSX.Element {
           setCurrentEdges(targetEdges);
           setSelectedNodeId(null);
           setSelectedEdgeId(null);
+          setIsInspectorOpen(false);
           setCanvasKey((k) => k + 1);
         }
       } catch (err) {
@@ -779,6 +783,7 @@ export default function StudioPage(): JSX.Element {
           const newNode = mapModelObjectToCanvasNode(existingObj, defaultPos);
           setCurrentNodes((prev) => [...prev, newNode]);
           setSelectedNodeId(objectId);
+          setIsInspectorOpen(true);
           setCanvasKey((k) => k + 1);
         }
       } catch (err) {
@@ -801,6 +806,7 @@ export default function StudioPage(): JSX.Element {
         setCurrentEdges((prev) => prev.filter((e) => e.source !== objectId && e.target !== objectId));
         if (selectedNodeId === objectId) {
           setSelectedNodeId(null);
+          setIsInspectorOpen(false);
         }
         setCanvasKey((k) => k + 1);
       } catch (err) {
@@ -1488,10 +1494,55 @@ export default function StudioPage(): JSX.Element {
   const handleDeleteEdge = useCallback(
     (edgeId: string) => {
       setCurrentEdges((prev) => prev.filter((e) => e.id !== edgeId));
-      if (selectedEdgeId === edgeId) setSelectedEdgeId(null);
+      if (selectedEdgeId === edgeId) {
+        setSelectedEdgeId(null);
+        setIsInspectorOpen(false);
+      }
       void deleteModelConnection(edgeId);
     },
     [selectedEdgeId, deleteModelConnection],
+  );
+
+  const handleDuplicateEdge = useCallback(
+    (edgeId: string) => {
+      const edge = currentEdges.find((e) => e.id === edgeId);
+      if (!edge) return;
+
+      const newEdgeId = `conn-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+      const duplicatedEdge: CanvasEdge = {
+        ...edge,
+        id: newEdgeId,
+        label: edge.label || 'Sends data to',
+        data: edge.data ? { ...edge.data } : undefined,
+      };
+
+      const command = new ConnectNodesCommand({
+        edge: duplicatedEdge,
+        viewId: effectiveViewId || undefined,
+        persistCreateFn: async (_vId, e) => {
+          await persistModelConnection(e);
+        },
+        persistDeleteFn: async (_vId, eId) => {
+          await deleteModelConnection(eId);
+        },
+      });
+
+      void defaultCommandDispatcher.dispatch(command);
+      setCurrentEdges((prev) => [...prev, duplicatedEdge]);
+      setSelectedEdgeId(newEdgeId);
+      setSelectedNodeId(null);
+      setIsInspectorOpen(true);
+      void persistModelConnection(duplicatedEdge);
+
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('canvas:select-edge', {
+            detail: { edgeId: newEdgeId },
+          }),
+        );
+      }
+    },
+    [currentEdges, effectiveViewId, persistModelConnection, deleteModelConnection],
   );
 
   const handleDeleteNode = useCallback(
@@ -1499,7 +1550,10 @@ export default function StudioPage(): JSX.Element {
       setCurrentNodes((prev) => prev.filter((n) => n.id !== nodeId));
       setCurrentEdges((prev) => prev.filter((e) => e.source !== nodeId && e.target !== nodeId));
       setAllModelObjects((prev) => prev.filter((o) => o.id !== nodeId));
-      if (selectedNodeId === nodeId) setSelectedNodeId(null);
+      if (selectedNodeId === nodeId) {
+        setSelectedNodeId(null);
+        setIsInspectorOpen(false);
+      }
       void deleteModelObject(nodeId);
     },
     [selectedNodeId, deleteModelObject],
@@ -1780,6 +1834,7 @@ export default function StudioPage(): JSX.Element {
         setParentHistory([{ id: nodeId, name: targetName, level: 1 }]);
         setSelectedNodeId(null);
         setSelectedEdgeId(null);
+        setIsInspectorOpen(false);
         setCanvasKey((k) => k + 1);
       } else if (currentLvl === 2) {
         // Descend into Component level (L3)
@@ -1795,6 +1850,7 @@ export default function StudioPage(): JSX.Element {
         });
         setSelectedNodeId(null);
         setSelectedEdgeId(null);
+        setIsInspectorOpen(false);
         setCanvasKey((k) => k + 1);
       }
     },
@@ -1808,6 +1864,7 @@ export default function StudioPage(): JSX.Element {
       setCurrentEdges([]);
       setSelectedNodeId(null);
       setSelectedEdgeId(null);
+      setIsInspectorOpen(false);
       setCanvasKey((k) => k + 1);
       void resetSavedDiagram();
     }
@@ -1841,6 +1898,7 @@ export default function StudioPage(): JSX.Element {
           setCurrentEdges(parsed.edges);
           setSelectedNodeId(null);
           setSelectedEdgeId(null);
+          setIsInspectorOpen(false);
           setCanvasKey((k) => k + 1);
         } else {
           alert('Invalid diagram format: nodes and edges must be arrays.');
@@ -2070,6 +2128,7 @@ export default function StudioPage(): JSX.Element {
           });
           setSelectedNodeId(null);
           setSelectedEdgeId(null);
+          setIsInspectorOpen(false);
           setCanvasKey((k) => k + 1);
         },
       },
@@ -2835,9 +2894,13 @@ export default function StudioPage(): JSX.Element {
 
           <button
             type="button"
-            onClick={() => setIsInspectorOpen((prev) => !prev)}
+            onClick={() => {
+              if (selectedNodeId || selectedEdgeId) {
+                setIsInspectorOpen((prev) => !prev);
+              }
+            }}
             className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-              isInspectorOpen
+              isInspectorVisible
                 ? 'bg-blue-600/20 text-blue-300 border-blue-500/40'
                 : 'bg-slate-800 text-slate-400 border-slate-700'
             }`}
@@ -3037,7 +3100,8 @@ export default function StudioPage(): JSX.Element {
 
         {/* Right Inspector Sidebar */}
         <InspectorPanel
-          isOpen={isInspectorOpen}
+          isOpen={isInspectorVisible}
+          hideWhenClosed={true}
           onToggle={() => setIsInspectorOpen((prev) => !prev)}
           objectId={selectedNode?.id}
           objectName={
@@ -3057,6 +3121,7 @@ export default function StudioPage(): JSX.Element {
           selectedEdge={selectedEdgeData}
           onEdgeChange={handleEdgeMetadataChange}
           onDeleteEdge={handleDeleteEdge}
+          onDuplicateEdge={handleDuplicateEdge}
           allNodes={allNodesForInspector}
           incomingConnections={incomingConnectionsForSelectedNode}
           outgoingConnections={outgoingConnectionsForSelectedNode}

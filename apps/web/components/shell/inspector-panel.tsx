@@ -18,6 +18,7 @@ export interface InspectorItem {
 
 export interface InspectorPanelProps {
   isOpen?: boolean;
+  hideWhenClosed?: boolean;
   onToggle?: () => void;
   children?: React.ReactNode;
   selectedItem?: InspectorItem | null;
@@ -44,6 +45,7 @@ export interface InspectorPanelProps {
   } | null;
   onEdgeChange?: (edgeId: string, updates: { label?: string; protocol?: string; description?: string }) => void;
   onDeleteEdge?: (edgeId: string) => void;
+  onDuplicateEdge?: (edgeId: string) => void;
 
   // Inter-object connections for selected object
   allNodes?: Array<{ id: string; label: string; kind?: string; icon?: string }>;
@@ -73,6 +75,7 @@ const COMMON_TECH_TAGS = [
 export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
   const {
     isOpen = true,
+    hideWhenClosed = false,
     onToggle,
     selectedItem,
     objectId = selectedItem?.id,
@@ -86,6 +89,7 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
     selectedEdge,
     onEdgeChange,
     onDeleteEdge,
+    onDuplicateEdge,
     allNodes = [],
     incomingConnections = [],
     outgoingConnections = [],
@@ -104,14 +108,23 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
   if (!isOpen) {
     return (
       <aside
+        data-testid="inspector-panel"
         aria-label="Inspector collapsed strip"
-        className="w-9 bg-slate-900 border-l border-slate-800 flex flex-col items-center pt-3 select-none"
+        className={
+          hideWhenClosed
+            ? 'hidden'
+            : 'w-9 bg-slate-900 border-l border-slate-800 flex flex-col items-center pt-3 select-none'
+        }
       >
         <button
           type="button"
           aria-label="Expand inspector panel"
           onClick={onToggle}
-          className="text-slate-400 hover:text-slate-200 transition-colors p-1"
+          className={
+            hideWhenClosed
+              ? 'hidden'
+              : 'text-slate-400 hover:text-slate-200 transition-colors p-1'
+          }
         >
           ▶
         </button>
@@ -256,15 +269,31 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
               />
             </div>
 
-            {onDeleteEdge && (
-              <div className="pt-4 border-t border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => onDeleteEdge(selectedEdge.id)}
-                  className="w-full py-1.5 px-3 rounded-lg bg-red-950/40 hover:bg-red-900/60 border border-red-700/60 text-red-300 hover:text-white text-xs font-medium transition-colors"
-                >
-                  🗑️ Delete Connection
-                </button>
+            {(onDuplicateEdge || onDeleteEdge) && (
+              <div className="pt-4 border-t border-slate-800 flex flex-col gap-2">
+                {onDuplicateEdge && (
+                  <button
+                    type="button"
+                    data-testid="inspector-duplicate-edge"
+                    onClick={() => onDuplicateEdge(selectedEdge.id)}
+                    className="w-full py-1.5 px-3 rounded-lg bg-sky-950/40 hover:bg-sky-900/60 border border-sky-700/60 text-sky-300 hover:text-white text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                    </svg>
+                    Duplicate Connection
+                  </button>
+                )}
+                {onDeleteEdge && (
+                  <button
+                    type="button"
+                    onClick={() => onDeleteEdge(selectedEdge.id)}
+                    className="w-full py-1.5 px-3 rounded-lg bg-red-950/40 hover:bg-red-900/60 border border-red-700/60 text-red-300 hover:text-white text-xs font-medium transition-colors"
+                  >
+                    🗑️ Delete Connection
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -664,16 +693,29 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
                                 {c.description && <span>: {c.description}</span>}
                               </div>
                             </div>
-                            {onDeleteEdge && (
-                              <button
-                                type="button"
-                                onClick={() => onDeleteEdge(c.id)}
-                                title="Remove connection"
-                                className="text-slate-400 hover:text-red-400 p-1"
-                              >
-                                🗑️
-                              </button>
-                            )}
+                            <div className="flex items-center gap-1">
+                              {onDuplicateEdge && (
+                                <button
+                                  type="button"
+                                  data-testid="inspector-duplicate-outgoing-conn"
+                                  onClick={() => onDuplicateEdge(c.id)}
+                                  title="Duplicate connection"
+                                  className="text-slate-400 hover:text-sky-400 p-1"
+                                >
+                                  ⧉
+                                </button>
+                              )}
+                              {onDeleteEdge && (
+                                <button
+                                  type="button"
+                                  onClick={() => onDeleteEdge(c.id)}
+                                  title="Remove connection"
+                                  className="text-slate-400 hover:text-red-400 p-1"
+                                >
+                                  🗑️
+                                </button>
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -703,16 +745,29 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
                                 {c.description && <span>: {c.description}</span>}
                               </div>
                             </div>
-                            {onDeleteEdge && (
-                              <button
-                                type="button"
-                                onClick={() => onDeleteEdge(c.id)}
-                                title="Remove connection"
-                                className="text-slate-400 hover:text-red-400 p-1"
-                              >
-                                🗑️
-                              </button>
-                            )}
+                            <div className="flex items-center gap-1">
+                              {onDuplicateEdge && (
+                                <button
+                                  type="button"
+                                  data-testid="inspector-duplicate-incoming-conn"
+                                  onClick={() => onDuplicateEdge(c.id)}
+                                  title="Duplicate connection"
+                                  className="text-slate-400 hover:text-sky-400 p-1"
+                                >
+                                  ⧉
+                                </button>
+                              )}
+                              {onDeleteEdge && (
+                                <button
+                                  type="button"
+                                  onClick={() => onDeleteEdge(c.id)}
+                                  title="Remove connection"
+                                  className="text-slate-400 hover:text-red-400 p-1"
+                                >
+                                  🗑️
+                                </button>
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>

@@ -157,7 +157,7 @@ describe('F137 — Inline Rename & Edge Labels', () => {
       );
 
       expect(html).toContain('data-testid="edge-pill-badge"');
-      expect(html).toContain('title="Double-click to edit label"');
+      expect(html).toContain('double-click to edit label');
       expect(html).toContain('gRPC stream');
       expect(html).not.toContain('data-testid="inline-edge-label-input"');
     });

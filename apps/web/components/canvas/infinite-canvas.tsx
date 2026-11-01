@@ -1776,6 +1776,63 @@ function InfiniteCanvasContent({
     [onCommandDispatched, onEdgeReconnect],
   );
 
+  const handleContextDuplicateEdge = useCallback(
+    async (edge: Edge) => {
+      const newEdgeId = `conn-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+      const label = typeof edge.label === 'string' ? edge.label : 'Sends data to';
+      const canvasEdge: CanvasEdge = {
+        id: newEdgeId,
+        source: edge.source,
+        target: edge.target,
+        sourceHandle: edge.sourceHandle ?? undefined,
+        targetHandle: edge.targetHandle ?? undefined,
+        type: 'icepanel',
+        label,
+        data: {
+          ...(edge.data || {}),
+          label,
+        },
+      };
+
+      const command = new ConnectNodesCommand({
+        viewId,
+        edge: canvasEdge,
+      });
+
+      if (onCommandDispatched) {
+        onCommandDispatched(command);
+      }
+      await defaultCommandDispatcher.dispatch(command);
+
+      const flowEdge: Edge = {
+        id: newEdgeId,
+        source: edge.source,
+        target: edge.target,
+        sourceHandle: edge.sourceHandle,
+        targetHandle: edge.targetHandle,
+        type: 'icepanel',
+        label,
+        selected: true,
+        data: canvasEdge.data,
+      };
+
+      setEdges((eds) => [...eds.map((e) => ({ ...e, selected: false })), flowEdge]);
+      useCanvasStore.getState().setSelectedEdges([newEdgeId]);
+      useCanvasStore.getState().setSelectedNodes([]);
+
+      if (onEdgeConnect) {
+        onEdgeConnect(canvasEdge);
+      }
+      if (onEdgeSelect) {
+        onEdgeSelect(newEdgeId);
+      }
+      if (onNodeSelect) {
+        onNodeSelect(null);
+      }
+    },
+    [viewId, onCommandDispatched, onEdgeConnect, onEdgeSelect, onNodeSelect],
+  );
+
   const handleContextDeleteEdge = useCallback(
     async (edge: Edge) => {
       const delCommand = new DeleteEdgeCommand({ edge });
@@ -1920,6 +1977,73 @@ function InfiniteCanvasContent({
   const handleDuplicateSelection = useCallback(
     async (offset = { x: 30, y: 30 }) => {
       const curSelectedNodeIds = useCanvasStore.getState().selectedNodeIds;
+      const curSelectedEdgeIds = useCanvasStore.getState().selectedEdgeIds;
+
+      // Duplicate selected edge(s) if only edge(s) are selected
+      if (curSelectedNodeIds.length === 0 && curSelectedEdgeIds.length > 0) {
+        const edgesToDup = edges.filter((e) => curSelectedEdgeIds.includes(e.id));
+        if (edgesToDup.length === 0) return;
+
+        const newCanvasEdges: CanvasEdge[] = [];
+        const newFlowEdges: Edge[] = [];
+
+        for (const edge of edgesToDup) {
+          const newEdgeId = `conn-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+          const label = typeof edge.label === 'string' ? edge.label : 'Sends data to';
+          const canvasEdge: CanvasEdge = {
+            id: newEdgeId,
+            source: edge.source,
+            target: edge.target,
+            sourceHandle: edge.sourceHandle ?? undefined,
+            targetHandle: edge.targetHandle ?? undefined,
+            type: 'icepanel',
+            label,
+            data: {
+              ...(edge.data || {}),
+              label,
+            },
+          };
+          newCanvasEdges.push(canvasEdge);
+          newFlowEdges.push({
+            id: newEdgeId,
+            source: edge.source,
+            target: edge.target,
+            sourceHandle: edge.sourceHandle,
+            targetHandle: edge.targetHandle,
+            type: 'icepanel',
+            label,
+            selected: true,
+            data: canvasEdge.data,
+          });
+        }
+
+        const command = new DuplicateSelectionCommand({
+          viewId,
+          nodes: [],
+          edges: newCanvasEdges,
+        });
+
+        if (onCommandDispatched) {
+          onCommandDispatched(command);
+        }
+        await defaultCommandDispatcher.dispatch(command);
+
+        setEdges((eds) => [...eds.map((e) => ({ ...e, selected: false })), ...newFlowEdges]);
+        useCanvasStore.getState().setSelectedEdges(newFlowEdges.map((e) => e.id));
+        useCanvasStore.getState().setSelectedNodes([]);
+
+        for (const ne of newCanvasEdges) {
+          if (onEdgeConnect) onEdgeConnect(ne);
+        }
+        if (newFlowEdges[0] && onEdgeSelect) {
+          onEdgeSelect(newFlowEdges[0].id);
+        }
+        if (onNodeSelect) {
+          onNodeSelect(null);
+        }
+        return;
+      }
+
       if (curSelectedNodeIds.length === 0) return;
 
       const selectedNodes = nodes.filter((n) => curSelectedNodeIds.includes(n.id));
@@ -2504,6 +2628,9 @@ function InfiniteCanvasContent({
           if (onNodeSelect) {
             onNodeSelect(null);
           }
+          if (onEdgeSelect) {
+            onEdgeSelect(null);
+          }
         } else if (useCanvasStore.getState().isFocusMode) {
           useCanvasStore.getState().setIsFocusMode(false);
         }
@@ -2524,6 +2651,15 @@ function InfiniteCanvasContent({
     const handleDuplicateEvent = (e: Event) => {
       const customEvent = e as CustomEvent<{ offset?: { x: number; y: number } }>;
       void handleDuplicateSelection(customEvent.detail?.offset ?? { x: 30, y: 30 });
+    };
+    const handleDuplicateEdgeEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<{ edgeId: string }>;
+      const edgeId = customEvent.detail?.edgeId;
+      if (!edgeId) return;
+      const targetEdge = edgesRef.current.find((edge) => edge.id === edgeId);
+      if (targetEdge) {
+        void handleContextDuplicateEdge(targetEdge);
+      }
     };
     const handleCenterNodeEvent = (e: Event) => {
       const customEvent = e as CustomEvent<{ nodeId: string }>;
@@ -2556,6 +2692,7 @@ function InfiniteCanvasContent({
     window.addEventListener('canvas:copy-selection', handleCopyEvent);
     window.addEventListener('canvas:paste-selection', handlePasteEvent);
     window.addEventListener('canvas:duplicate-selection', handleDuplicateEvent);
+    window.addEventListener('canvas:duplicate-edge', handleDuplicateEdgeEvent);
     window.addEventListener('canvas:center-node', handleCenterNodeEvent);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
@@ -2563,6 +2700,7 @@ function InfiniteCanvasContent({
       window.removeEventListener('canvas:copy-selection', handleCopyEvent);
       window.removeEventListener('canvas:paste-selection', handlePasteEvent);
       window.removeEventListener('canvas:duplicate-selection', handleDuplicateEvent);
+      window.removeEventListener('canvas:duplicate-edge', handleDuplicateEdgeEvent);
       window.removeEventListener('canvas:center-node', handleCenterNodeEvent);
     };
   }, [
@@ -2578,82 +2716,11 @@ function InfiniteCanvasContent({
   ]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
-    setNodes((nds) => {
-      const nextNodes = applyNodeChanges(changes, nds);
-      let hasDimensionsChange = false;
-      for (const change of changes) {
-        if (change.type === 'dimensions' && change.dimensions) {
-          hasDimensionsChange = true;
-          break;
-        }
-      }
-      if (!hasDimensionsChange) return nextNodes;
-
-      return nextNodes.map((n) => {
-        const dimChange = changes.find(
-          (c) => c.type === 'dimensions' && c.id === n.id,
-        ) as Extract<NodeChange, { type: 'dimensions' }> | undefined;
-
-        if (dimChange?.dimensions && Number.isFinite(dimChange.dimensions.width) && Number.isFinite(dimChange.dimensions.height)) {
-          const dynamicDims = calculateDynamicNodeDimensions(n.data, n.type);
-          const w = Math.max(Math.round(dimChange.dimensions.width), dynamicDims.minWidth);
-          const h = Math.max(Math.round(dimChange.dimensions.height), dynamicDims.minHeight);
-          const currentStyle = (n as Node).style || {};
-          if (
-            n.width === w &&
-            n.height === h &&
-            currentStyle.width === `${w}px` &&
-            currentStyle.height === `${h}px`
-          ) {
-            return n;
-          }
-          return {
-            ...n,
-            width: w,
-            height: h,
-            style: {
-              ...currentStyle,
-              width: `${w}px`,
-              height: `${h}px`,
-              minWidth: `${dynamicDims.minWidth}px`,
-              minHeight: `${dynamicDims.minHeight}px`,
-            },
-          };
-        }
-        return n;
-      });
-    });
-
-    if (onNodeResizeStop) {
-      for (const change of changes) {
-        if (change.type === 'dimensions' && change.resizing === false && change.dimensions) {
-          if (
-            Number.isFinite(change.dimensions.width) &&
-            Number.isFinite(change.dimensions.height)
-          ) {
-            const targetNode = reactFlow.getNode(change.id);
-            const dynamicDims = calculateDynamicNodeDimensions(targetNode?.data, targetNode?.type);
-            const clampedW = Math.max(Math.round(change.dimensions.width), dynamicDims.minWidth);
-            const clampedH = Math.max(Math.round(change.dimensions.height), dynamicDims.minHeight);
-            const pos =
-              targetNode &&
-              Number.isFinite(targetNode.position.x) &&
-              Number.isFinite(targetNode.position.y)
-                ? { x: targetNode.position.x, y: targetNode.position.y }
-                : undefined;
-            onNodeResizeStop(
-              change.id,
-              {
-                width: clampedW,
-                height: clampedH,
-              },
-              pos,
-            );
-          }
-        }
-      }
-    }
-  }, [reactFlow, onNodeResizeStop]);
+    // Filter out internal dimensions and select changes to prevent measurement re-render loops
+    const relevantChanges = changes.filter((c) => c.type !== 'dimensions' && c.type !== 'select');
+    if (relevantChanges.length === 0) return;
+    setNodes((nds) => applyNodeChanges(relevantChanges, nds));
+  }, []);
 
   const onEdgesChange = useCallback((changes: EdgeChange[]) => {
     setEdges((eds) => applyEdgeChanges(changes, eds));
@@ -2669,18 +2736,24 @@ function InfiniteCanvasContent({
         return;
       }
 
+      // If selection is controlled by parent props, do not allow internal unselection sweeps
+      // to deselect the active node (pane clicks handle deselection cleanly via onPaneClick).
+      if (propSelectedNodeIdsRef.current !== undefined && nextNodeIds.length === 0 && nextEdgeIds.length === 0) {
+        return;
+      }
+
       const curNodes = propSelectedNodeIdsRef.current ?? useCanvasStore.getState().selectedNodeIds;
       const curEdges = propSelectedEdgeIdsRef.current ?? useCanvasStore.getState().selectedEdgeIds;
       const nodesChanged = curNodes.length !== nextNodeIds.length || curNodes.some((id, i) => id !== nextNodeIds[i]);
       const edgesChanged = curEdges.length !== nextEdgeIds.length || curEdges.some((id, i) => id !== nextEdgeIds[i]);
 
-      if (nodesChanged) {
+      if (nodesChanged && nextNodeIds.length > 0) {
         useCanvasStore.getState().setSelectedNodes(nextNodeIds);
         if (onNodeSelectRef.current) {
           onNodeSelectRef.current(nextNodeIds[0] ?? null);
         }
       }
-      if (nextEdgeIds.length > 0 && edgesChanged) {
+      if (edgesChanged && nextEdgeIds.length > 0) {
         useCanvasStore.getState().setSelectedEdges(nextEdgeIds);
         if (onEdgeSelectRef.current) {
           onEdgeSelectRef.current(nextEdgeIds[0] ?? null);
@@ -3088,6 +3161,7 @@ function InfiniteCanvasContent({
         onDrillIn={handleContextDrillIn}
         onEditEdgeLabel={handleContextEditEdgeLabel}
         onReverseEdge={handleContextReverseEdge}
+        onDuplicateEdge={handleContextDuplicateEdge}
         onDeleteEdge={handleContextDeleteEdge}
         onAddObject={handleContextAddObject}
         onPaste={handleContextPaste}

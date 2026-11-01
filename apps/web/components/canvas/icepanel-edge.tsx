@@ -225,6 +225,8 @@ export function IcePanelEdge({
         targetY: defaultTargetY,
         targetPosition: defaultTargetPosition,
         offset: 24,
+        labelOffsetX: 0,
+        labelOffsetY: 0,
       };
     }
 
@@ -288,33 +290,71 @@ export function IcePanelEdge({
     const tgtIndex = Math.max(0, targetGroup.findIndex((e) => e.id === id));
     const tgtCount = targetGroup.length;
 
+    // Duplicate connection deconfliction: detect all edges connecting between this exact pair of nodes
+    const pairEdges = allEdges
+      .filter(
+        (e) =>
+          (e.source === source && e.target === target) ||
+          (e.source === target && e.target === source),
+      )
+      .sort((a, b) => a.id.localeCompare(b.id));
+    const pairIndex = Math.max(0, pairEdges.findIndex((e) => e.id === id));
+    const pairCount = pairEdges.length;
+
     // Apply anchor spacing across node perimeter so edges don't exit from the exact same pixel
-    if (srcCount > 1) {
-      const spreadStep = 18;
-      const offset = (srcIndex - (srcCount - 1) / 2) * spreadStep;
+    if (pairCount > 1) {
+      const spreadStep = 24;
+      const offset = (pairIndex - (pairCount - 1) / 2) * spreadStep;
       if (computedSourcePos === Position.Top || computedSourcePos === Position.Bottom) {
         const maxOffset = sourceBox.width / 2 - 20;
         sx += Math.max(-maxOffset, Math.min(maxOffset, offset));
+        tx += Math.max(-maxOffset, Math.min(maxOffset, offset));
       } else {
         const maxOffset = sourceBox.height / 2 - 16;
         sy += Math.max(-maxOffset, Math.min(maxOffset, offset));
-      }
-    }
-
-    if (tgtCount > 1) {
-      const spreadStep = 18;
-      const offset = (tgtIndex - (tgtCount - 1) / 2) * spreadStep;
-      if (computedTargetPos === Position.Top || computedTargetPos === Position.Bottom) {
-        const maxOffset = targetBox.width / 2 - 20;
-        tx += Math.max(-maxOffset, Math.min(maxOffset, offset));
-      } else {
-        const maxOffset = targetBox.height / 2 - 16;
         ty += Math.max(-maxOffset, Math.min(maxOffset, offset));
+      }
+    } else {
+      if (srcCount > 1) {
+        const spreadStep = 18;
+        const offset = (srcIndex - (srcCount - 1) / 2) * spreadStep;
+        if (computedSourcePos === Position.Top || computedSourcePos === Position.Bottom) {
+          const maxOffset = sourceBox.width / 2 - 20;
+          sx += Math.max(-maxOffset, Math.min(maxOffset, offset));
+        } else {
+          const maxOffset = sourceBox.height / 2 - 16;
+          sy += Math.max(-maxOffset, Math.min(maxOffset, offset));
+        }
+      }
+
+      if (tgtCount > 1) {
+        const spreadStep = 18;
+        const offset = (tgtIndex - (tgtCount - 1) / 2) * spreadStep;
+        if (computedTargetPos === Position.Top || computedTargetPos === Position.Bottom) {
+          const maxOffset = targetBox.width / 2 - 20;
+          tx += Math.max(-maxOffset, Math.min(maxOffset, offset));
+        } else {
+          const maxOffset = targetBox.height / 2 - 16;
+          ty += Math.max(-maxOffset, Math.min(maxOffset, offset));
+        }
       }
     }
 
     // Stagger orthogonal step offsets so parallel lines never overlap
-    const pathOffset = 24 + srcIndex * 16;
+    const pathOffset = pairCount > 1 ? 24 + pairIndex * 24 : 24 + srcIndex * 16;
+
+    let labelOffsetX = 0;
+    let labelOffsetY = 0;
+    if (pairCount > 1) {
+      const isHorizontal =
+        computedSourcePos === Position.Left || computedSourcePos === Position.Right;
+      const spread = pairIndex - (pairCount - 1) / 2;
+      if (isHorizontal) {
+        labelOffsetY = spread * 28;
+      } else {
+        labelOffsetX = spread * 40;
+      }
+    }
 
     return {
       sourceX: sx,
@@ -324,6 +364,8 @@ export function IcePanelEdge({
       targetY: ty,
       targetPosition: computedTargetPos,
       offset: pathOffset,
+      labelOffsetX,
+      labelOffsetY,
     };
   }, [
     source,
@@ -429,7 +471,7 @@ export function IcePanelEdge({
           <div
             style={{
               position: 'absolute',
-              transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+              transform: `translate(-50%, -50%) translate(${labelX + (routeGeometry.labelOffsetX || 0)}px,${labelY + (routeGeometry.labelOffsetY || 0)}px)`,
               pointerEvents: 'all',
             }}
             className="nopan nodrag z-40"
@@ -457,7 +499,7 @@ export function IcePanelEdge({
             <div
               style={{
                 position: 'absolute',
-                transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+                transform: `translate(-50%, -50%) translate(${labelX + (routeGeometry.labelOffsetX || 0)}px,${labelY + (routeGeometry.labelOffsetY || 0)}px)`,
                 pointerEvents: 'all',
               }}
               data-testid={isFlowView ? 'flow-edge-badge' : 'edge-pill-badge'}

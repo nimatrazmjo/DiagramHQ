@@ -35,4 +35,40 @@ describe('InspectorPanel', () => {
     expect(html).toContain('Alice');
     expect(html).toContain('Node.js');
   });
+
+  it('renders Duplicate Connection button when selectedEdge and onDuplicateEdge are present', () => {
+    const html = renderToString(
+      <InspectorPanel
+        selectedEdge={{
+          id: 'conn-1',
+          source: 'node-1',
+          target: 'node-2',
+          sourceName: 'Service A',
+          targetName: 'Service B',
+          label: 'HTTPS',
+        }}
+        onDuplicateEdge={() => {}}
+      />
+    );
+    expect(html).toContain('data-testid="inspector-duplicate-edge"');
+    expect(html).toContain('Duplicate Connection');
+  });
+
+  it('renders duplicate connection affordances in object connections tab', () => {
+    const html = renderToString(
+      <InspectorPanel
+        objectId="node-1"
+        initialTab="connections"
+        outgoingConnections={[
+          { id: 'conn-1', targetId: 'node-2', targetName: 'Service B', protocol: 'HTTPS' },
+        ]}
+        incomingConnections={[
+          { id: 'conn-2', sourceId: 'node-3', sourceName: 'Service C', protocol: 'gRPC' },
+        ]}
+        onDuplicateEdge={() => {}}
+      />
+    );
+    expect(html).toContain('data-testid="inspector-duplicate-outgoing-conn"');
+    expect(html).toContain('data-testid="inspector-duplicate-incoming-conn"');
+  });
 });

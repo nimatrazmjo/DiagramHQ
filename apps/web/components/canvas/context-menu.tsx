@@ -31,6 +31,7 @@ export interface CanvasContextMenuProps {
   // Edge actions
   onEditEdgeLabel?: (edge: Edge) => void;
   onReverseEdge?: (edge: Edge) => void;
+  onDuplicateEdge?: (edge: Edge) => void;
   onDeleteEdge?: (edge: Edge) => void;
 
   // Pane actions
@@ -68,6 +69,7 @@ export function CanvasContextMenu({
   onDrillIn,
   onEditEdgeLabel,
   onReverseEdge,
+  onDuplicateEdge,
   onDeleteEdge,
   onAddObject,
   onPaste,
@@ -338,6 +340,26 @@ export function CanvasContextMenu({
               </svg>
               Reverse direction
             </span>
+          </button>
+
+          {/* Duplicate connection */}
+          <button
+            type="button"
+            data-testid="context-menu-item-duplicate-edge"
+            className="flex items-center justify-between px-3 py-1.5 hover:bg-slate-800/80 hover:text-white transition-colors text-left"
+            onClick={() => {
+              onClose();
+              if (onDuplicateEdge && menu.edge) onDuplicateEdge(menu.edge);
+            }}
+          >
+            <span className="flex items-center gap-2">
+              <svg className="w-3.5 h-3.5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+              </svg>
+              Duplicate connection
+            </span>
+            <span className="text-[10px] text-slate-400 font-mono">⌘D</span>
           </button>
 
           <div className="my-1 border-t border-slate-800" />

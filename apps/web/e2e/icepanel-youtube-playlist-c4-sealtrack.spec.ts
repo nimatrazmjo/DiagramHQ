@@ -160,7 +160,11 @@ test.describe('IcePanel C4 Model YouTube Playlist - Seal Track Architecture Suit
     // Select target "Seal Track"
     const targetSelect = inspector.locator('form select');
     await expect(targetSelect).toBeVisible();
-    await targetSelect.selectOption({ label: /Seal Track/i });
+    const sealTrackOption = targetSelect.locator('option:has-text("Seal Track")');
+    const optionVal = await sealTrackOption.getAttribute('value');
+    if (optionVal) {
+      await targetSelect.selectOption(optionVal);
+    }
 
     // Enter protocol and description
     const protocolInput = inspector.locator('input[placeholder*="Protocol"]');
@@ -454,7 +458,7 @@ test.describe('IcePanel C4 Model YouTube Playlist - Seal Track Architecture Suit
 
     // Deselect and re-select to verify retention
     const canvas = page.locator('.react-flow__pane');
-    await canvas.click({ position: { x: 50, y: 50 } });
+    await canvas.click({ position: { x: 400, y: 400 } });
 
     await apiNode.click();
     await docsTab.click();
