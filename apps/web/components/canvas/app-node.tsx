@@ -11,7 +11,6 @@ import { FlowBadges } from './flow-badges';
 import { EditableNodeLabel } from './editable-node-label';
 import { DiagramNodeResizer } from './diagram-node-resizer';
 import { useDynamicNodeDimensions } from './node-dimension-utils';
-import { QuickInsertHandle } from './quick-insert-handle';
 
 
 function AppIcon(): JSX.Element {
@@ -127,7 +126,6 @@ export function AppNode({ id, data, selected }: NodeProps): JSX.Element {
       <Handle type="source" position={Position.Left} id="left-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
       <Handle type="target" position={Position.Right} id="right-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
       <Handle type="source" position={Position.Right} id="right-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-      <QuickInsertHandle nodeId={id} selected={selected} />
 
       {/* Top bar: Zoom icon on left, brand/port on right */}
       <div className="flex items-center justify-between w-full h-5">

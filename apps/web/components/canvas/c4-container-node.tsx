@@ -3,7 +3,6 @@ import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { C4ContainerKind, C4ContainerNodeData } from '@diagramhq/domain';
 import { EditableNodeLabel } from './editable-node-label';
 import { DiagramNodeResizer } from './diagram-node-resizer';
-import { QuickInsertHandle } from './quick-insert-handle';
 import { useDynamicNodeDimensions } from './node-dimension-utils';
 
 function WebAppIcon(): JSX.Element {
@@ -257,7 +256,6 @@ export function C4ContainerNode({ id, data, selected }: NodeProps): JSX.Element 
         position={Position.Right}
         className="w-3 h-3 bg-blue-500 border-2 border-slate-900 rounded-full"
       />
-      <QuickInsertHandle nodeId={id} selected={selected} color="#3b82f6" />
 
       {/* Header Badge */}
       <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-white/10">

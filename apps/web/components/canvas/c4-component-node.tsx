@@ -3,7 +3,6 @@ import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { C4CodeMappingStub, C4ComponentKind, C4ComponentNodeData } from '@diagramhq/domain';
 import { EditableNodeLabel } from './editable-node-label';
 import { DiagramNodeResizer } from './diagram-node-resizer';
-import { QuickInsertHandle } from './quick-insert-handle';
 import { useDynamicNodeDimensions } from './node-dimension-utils';
 
 function ControllerIcon(): JSX.Element {
@@ -221,7 +220,6 @@ export function C4ComponentNode({ id, data, selected }: NodeProps): JSX.Element 
         position={Position.Right}
         className="w-2.5 h-2.5 bg-blue-500 border-2 border-slate-900 rounded-full"
       />
-      <QuickInsertHandle nodeId={id} selected={selected} color="#60a5fa" />
 
       {/* Header Badge */}
       <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-white/10">

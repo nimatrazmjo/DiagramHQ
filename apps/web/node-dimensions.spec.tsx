@@ -183,8 +183,8 @@ describe('Dynamic Node Dimensions & Minimum Sizing', () => {
     });
   });
 
-  describe('QuickInsertHandle (+) auto-insert and connect', () => {
-    it('renders quick-insert-handle on SystemNode', () => {
+  describe('Connection handles without redundant (+) quick-insert handles', () => {
+    it('does not render plus icon on SystemNode and retains standard handles', () => {
       const props = createTestNodeProps(
         'sys-dhs',
         {
@@ -195,12 +195,12 @@ describe('Dynamic Node Dimensions & Minimum Sizing', () => {
       );
 
       const html = renderWithFlow(React.createElement(SystemNode, props));
-      expect(html).toContain('data-testid="quick-insert-handle"');
-      expect(html).toContain('data-testid="quick-insert-btn"');
-      expect(html).toContain('Insert same object and connect');
+      expect(html).not.toContain('data-testid="quick-insert-btn"');
+      expect(html).toContain('right-source');
+      expect(html).toContain('left-source');
     });
 
-    it('renders quick-insert-handle on C4ContextNode', () => {
+    it('does not render plus icon on C4ContextNode and retains standard handles', () => {
       const props = createTestNodeProps(
         'c4-dhs',
         {
@@ -211,8 +211,9 @@ describe('Dynamic Node Dimensions & Minimum Sizing', () => {
       );
 
       const html = renderWithFlow(React.createElement(C4ContextNode, props));
-      expect(html).toContain('data-testid="quick-insert-handle"');
-      expect(html).toContain('data-testid="quick-insert-btn"');
+      expect(html).not.toContain('data-testid="quick-insert-btn"');
+      expect(html).toContain('right-source');
+      expect(html).toContain('left-source');
     });
   });
 });

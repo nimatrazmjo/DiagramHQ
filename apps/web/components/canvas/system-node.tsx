@@ -11,7 +11,6 @@ import { FlowBadges } from './flow-badges';
 import { EditableNodeLabel } from './editable-node-label';
 import { DiagramNodeResizer } from './diagram-node-resizer';
 import { useDynamicNodeDimensions } from './node-dimension-utils';
-import { QuickInsertHandle } from './quick-insert-handle';
 
 
 function SystemIcon({ external }: { external?: boolean }): JSX.Element {
@@ -142,7 +141,6 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
         <Handle type="target" position={Position.Left} id="left-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
         <Handle type="source" position={Position.Right} id="right-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
         <Handle type="target" position={Position.Right} id="right-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <QuickInsertHandle nodeId={id} selected={selected} />
 
         {/* Top Bar */}
         <div className="flex items-center justify-between w-full h-5">
@@ -244,7 +242,6 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
       <Handle type="target" position={Position.Left} id="left-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
       <Handle type="source" position={Position.Right} id="right-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
       <Handle type="target" position={Position.Right} id="right-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-      <QuickInsertHandle nodeId={id} selected={selected} />
 
       {/* Top Bar: IcePanel Drill-down zoom icon top-left, badges top-right */}
       <div className="flex items-center justify-between w-full h-5">

@@ -11,7 +11,6 @@ import { FlowBadges } from './flow-badges';
 import { EditableNodeLabel } from './editable-node-label';
 import { DiagramNodeResizer } from './diagram-node-resizer';
 import { useDynamicNodeDimensions } from './node-dimension-utils';
-import { QuickInsertHandle } from './quick-insert-handle';
 
 
 function ControllerIcon(): JSX.Element {
@@ -247,7 +246,6 @@ export function ComponentNode({ id, data, selected }: NodeProps): JSX.Element {
       <Handle type="source" position={Position.Left} id="left-source" className="!w-2 !h-2 !bg-blue-400" />
       <Handle type="target" position={Position.Right} id="right-target" className="!w-2 !h-2 !bg-blue-400" />
       <Handle type="source" position={Position.Right} id="right-source" className="!w-2 !h-2 !bg-blue-400" />
-      <QuickInsertHandle nodeId={id} selected={selected} color="#60a5fa" />
 
       {/* Header Badge */}
       <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-white/10">

@@ -15,7 +15,6 @@ import { GroupNode } from './group-node';
 import { EditableNodeLabel } from './editable-node-label';
 import { DiagramNodeResizer } from './diagram-node-resizer';
 import { useDynamicNodeDimensions } from './node-dimension-utils';
-import { QuickInsertHandle } from './quick-insert-handle';
 
 export { C4ContextNode } from './c4-context-node';
 export { C4ContainerNode } from './c4-container-node';
@@ -112,7 +111,6 @@ export function StoreNode({ id, data, selected }: NodeProps): JSX.Element {
       <Handle type="source" position={Position.Left} id="left-source" className="!w-2 !h-2 !bg-purple-400" />
       <Handle type="target" position={Position.Right} id="right-target" className="!w-2 !h-2 !bg-purple-400" />
       <Handle type="source" position={Position.Right} id="right-source" className="!w-2 !h-2 !bg-purple-400" />
-      <QuickInsertHandle nodeId={id} selected={selected} color="#c084fc" />
 
       <div className="flex items-center justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-1.5">
