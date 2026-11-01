@@ -282,6 +282,8 @@ function toFlowNode(node: CanvasNode): Node {
       ...(node.style || {}),
       minWidth: `${dynamicDims.minWidth}px`,
       minHeight: `${dynamicDims.minHeight}px`,
+      ...(width != null ? { width: `${width}px` } : {}),
+      ...(height != null ? { height: `${height}px` } : {}),
     },
   };
 }

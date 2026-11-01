@@ -114,6 +114,12 @@ p {
   --xy-node-color-default: inherit !important;
 }
 
+/* Ensure the React Flow node wrapper extends to fit the object and has no offset */
+.react-flow__node {
+  box-sizing: border-box !important;
+}
+
+/* Reset default React Flow padding and hardcoded 150px width so wrapper extends to fit object */
 .react-flow__node,
 .react-flow__node-default,
 .react-flow__node-input,
@@ -126,6 +132,8 @@ p {
   box-shadow: none !important;
   color: inherit !important;
   border-radius: 0 !important;
+  box-sizing: border-box !important;
+  width: auto;
 }
 
 .react-flow__resize-control.handle {
