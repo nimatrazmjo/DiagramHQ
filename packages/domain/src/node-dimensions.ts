@@ -114,9 +114,19 @@ export function calculateDynamicNodeDimensions(
   // Internal breathing room between flex sections
   const verticalSpacing = 8;
 
-  const minHeight = Math.round(
+  const isGroupOrBoundary =
+    nodeType === 'group' ||
+    nodeType === 'boundary' ||
+    nodeType === 'c4SystemBoundary' ||
+    nodeType === 'c4ContainerBoundary' ||
+    input.kind === 'group' ||
+    input.kind === 'boundary';
+
+  const baseMinHeight = isGroupOrBoundary ? 140 : 0;
+  const calculatedHeight = Math.round(
     paddingY + headerHeight + labelHeight + descHeight + footerHeight + badgesHeight + verticalSpacing,
   );
+  const minHeight = Math.max(baseMinHeight, calculatedHeight);
 
   // Width requirements:
   // 1. Header: icon (20px) + gap (8px) + badge text + padding
@@ -131,8 +141,9 @@ export function calculateDynamicNodeDimensions(
   const longestWordLen = words.reduce((max, w) => Math.max(max, w.length), 0);
   const wordNeededWidth = Math.round(longestWordLen * effectiveLabelFontSize * 0.65 + paddingX + 16);
 
-  // 3. Minimum base width
-  const minWidth = Math.max(160, headerNeededWidth, wordNeededWidth);
+  // 3. Minimum base width: Groups and boundaries default to 240px min-width
+  const baseMinWidth = isGroupOrBoundary ? 240 : 160;
+  const minWidth = Math.max(baseMinWidth, headerNeededWidth, wordNeededWidth);
 
   return {
     minWidth: Math.round(minWidth),

@@ -1509,6 +1509,7 @@ function InfiniteCanvasContent({
           description: '',
           status: 'active',
         },
+        ...(kind === 'group' ? { width: 320, height: 200 } : {}),
       };
 
       const command = new CreateNodeCommand({

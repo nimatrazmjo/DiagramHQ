@@ -120,6 +120,11 @@ p {
 }
 
 /* Reset default React Flow padding and hardcoded 150px width so wrapper extends to fit object */
+.react-flow .react-flow__node,
+.react-flow .react-flow__node-default,
+.react-flow .react-flow__node-input,
+.react-flow .react-flow__node-output,
+.react-flow .react-flow__node-group,
 .react-flow__node,
 .react-flow__node-default,
 .react-flow__node-input,
@@ -134,6 +139,18 @@ p {
   border-radius: 0 !important;
   box-sizing: border-box !important;
   width: auto;
+}
+
+.react-flow .react-flow__node-default,
+.react-flow .react-flow__node-input,
+.react-flow .react-flow__node-output,
+.react-flow .react-flow__node-group,
+.react-flow__node.react-flow__node-default,
+.react-flow__node.react-flow__node-input,
+.react-flow__node.react-flow__node-output,
+.react-flow__node.react-flow__node-group {
+  width: auto;
+  min-width: unset;
 }
 
 .react-flow__resize-control.handle {
