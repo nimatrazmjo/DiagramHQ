@@ -11,6 +11,7 @@ export interface EditableNodeLabelProps {
   className?: string;
   inputClassName?: string;
   placeholder?: string;
+  style?: React.CSSProperties;
 }
 
 /**
@@ -28,6 +29,7 @@ export function EditableNodeLabel({
   className = 'text-sm font-semibold text-slate-100 truncate',
   inputClassName = 'w-full bg-slate-950/90 border border-sky-400 rounded px-1.5 py-0.5 text-sm font-semibold text-white focus:outline-none focus:ring-1 focus:ring-sky-400 shadow-inner',
   placeholder = 'Object name...',
+  style,
 }: EditableNodeLabelProps): JSX.Element {
   const [isLocalEditing, setIsLocalEditing] = useState(false);
   const [draftValue, setDraftValue] = useState(label);
@@ -105,6 +107,7 @@ export function EditableNodeLabel({
         onClick={(e) => e.stopPropagation()}
         onDoubleClick={(e) => e.stopPropagation()}
         onMouseDown={(e) => e.stopPropagation()}
+        style={style}
         className={`nodrag nopan ${inputClassName}`}
       />
     );
@@ -116,6 +119,7 @@ export function EditableNodeLabel({
       data-node-id={nodeId}
       onDoubleClick={handleStartEditing}
       title="Double-click to rename"
+      style={style}
       className={`cursor-text select-text ${className}`}
     >
       {label}

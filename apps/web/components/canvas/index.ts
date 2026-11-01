@@ -84,3 +84,6 @@ export * from './mermaid-modal';
 export * from './plantuml-modal';
 export * from './pdf-export-modal';
 export * from './svg-export-modal';
+export * from './node-dimension-utils';
+export * from './quick-insert-handle';
+export * from './quick-connect-popover';

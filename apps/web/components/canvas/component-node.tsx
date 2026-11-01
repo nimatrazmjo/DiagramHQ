@@ -10,6 +10,8 @@ import { PersonaBadges } from './persona-badges';
 import { FlowBadges } from './flow-badges';
 import { EditableNodeLabel } from './editable-node-label';
 import { DiagramNodeResizer } from './diagram-node-resizer';
+import { useDynamicNodeDimensions } from './node-dimension-utils';
+import { QuickInsertHandle } from './quick-insert-handle';
 
 
 function ControllerIcon(): JSX.Element {
@@ -195,10 +197,36 @@ export function ComponentNode({ id, data, selected }: NodeProps): JSX.Element {
     getTechnologyIconPath(technology) ||
     getTechnologyIconPath(label);
 
+  const fontSize =
+    (nodeData.fontSize as number) ||
+    (nodeData.labelFontSize as number) ||
+    ((nodeData.style as Record<string, unknown>)?.fontSize as number);
+
+  const { cardRef, minHeight, minWidth } = useDynamicNodeDimensions(
+    {
+      label,
+      description,
+      technology,
+      kind: componentKind,
+      fontSize,
+      hasHeader: true,
+      hasFooter: true,
+      paddingY: 28,
+    },
+    'component',
+    id,
+  );
+
   return (
     <div
+      ref={cardRef}
       data-testid="component-node"
-      className={`w-full h-full min-w-[180px] min-h-[70px] p-3.5 rounded-xl border-2 shadow-xl backdrop-blur-sm transition-all duration-150 ${getThemeClasses()} ${
+      style={{
+        minHeight: `${minHeight}px`,
+        minWidth: `${minWidth}px`,
+        ...(nodeData.style as React.CSSProperties),
+      }}
+      className={`group w-full h-full min-w-[180px] min-h-[70px] p-3.5 rounded-xl border-2 shadow-xl backdrop-blur-sm transition-all duration-150 ${getThemeClasses()} ${
         nodeData.flowView && !nodeData.isInFlow
           ? 'opacity-35 border-slate-800'
           : nodeData.flowView && nodeData.isInFlow
@@ -208,7 +236,7 @@ export function ComponentNode({ id, data, selected }: NodeProps): JSX.Element {
               : ''
       }`}
     >
-      <DiagramNodeResizer isVisible={selected} minWidth={160} minHeight={60} color="#60a5fa" />
+      <DiagramNodeResizer isVisible={selected} minWidth={minWidth} minHeight={minHeight} color="#60a5fa" />
 
       {/* 4-way handles for routing */}
       <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-blue-400" />
@@ -219,6 +247,7 @@ export function ComponentNode({ id, data, selected }: NodeProps): JSX.Element {
       <Handle type="source" position={Position.Left} id="left-source" className="!w-2 !h-2 !bg-blue-400" />
       <Handle type="target" position={Position.Right} id="right-target" className="!w-2 !h-2 !bg-blue-400" />
       <Handle type="source" position={Position.Right} id="right-source" className="!w-2 !h-2 !bg-blue-400" />
+      <QuickInsertHandle nodeId={id} selected={selected} color="#60a5fa" />
 
       {/* Header Badge */}
       <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-white/10">
@@ -250,6 +279,7 @@ export function ComponentNode({ id, data, selected }: NodeProps): JSX.Element {
             (nodeData.onRename as (val: string) => void)(newLabel);
           }
         }}
+        style={fontSize ? { fontSize: `${fontSize}px` } : undefined}
         className="font-semibold text-sm leading-tight text-white mb-1 truncate"
       />
 

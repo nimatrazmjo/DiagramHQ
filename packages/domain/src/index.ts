@@ -113,3 +113,4 @@ export * from './billing-plans';
 export * from './marketplace';
 export * from './mobile';
 export * from './icepanel-boutique';
+export * from './node-dimensions';

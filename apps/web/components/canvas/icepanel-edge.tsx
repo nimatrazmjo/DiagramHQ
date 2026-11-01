@@ -461,7 +461,17 @@ export function IcePanelEdge({
                 pointerEvents: 'all',
               }}
               data-testid={isFlowView ? 'flow-edge-badge' : 'edge-pill-badge'}
-              title="Double-click to edit label"
+              title="Click to select, double-click to edit label"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(
+                    new CustomEvent('canvas:select-edge', {
+                      detail: { edgeId: id },
+                    }),
+                  );
+                }
+              }}
               onDoubleClick={(e) => {
                 e.stopPropagation();
                 setIsLocalEditing(true);

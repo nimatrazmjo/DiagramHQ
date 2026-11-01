@@ -42,7 +42,7 @@ export interface InspectorPanelProps {
     protocol?: string;
     description?: string;
   } | null;
-  onEdgeChange?: (edgeId: string, updates: { protocol?: string; description?: string }) => void;
+  onEdgeChange?: (edgeId: string, updates: { label?: string; protocol?: string; description?: string }) => void;
   onDeleteEdge?: (edgeId: string) => void;
 
   // Inter-object connections for selected object
@@ -213,6 +213,27 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
           </div>
 
           <div className="p-4 flex flex-col gap-4">
+            <div>
+              <label className="block text-xs font-medium text-slate-400 mb-1">Label</label>
+              <input
+                type="text"
+                data-testid="inspector-edge-label"
+                value={selectedEdge.label ?? ''}
+                placeholder="Sends data to"
+                onChange={(e) => onEdgeChange?.(selectedEdge.id, { label: e.target.value })}
+                className="w-full px-2.5 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-sky-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-400 mb-1">Direction</label>
+              <div className="flex gap-2 text-xs">
+                <span className="px-2.5 py-1 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40 font-medium">
+                  Outgoing ➔
+                </span>
+              </div>
+            </div>
+
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-1">Protocol / Technology</label>
               <input

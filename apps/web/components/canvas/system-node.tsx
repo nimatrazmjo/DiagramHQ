@@ -10,6 +10,8 @@ import { PersonaBadges } from './persona-badges';
 import { FlowBadges } from './flow-badges';
 import { EditableNodeLabel } from './editable-node-label';
 import { DiagramNodeResizer } from './diagram-node-resizer';
+import { useDynamicNodeDimensions } from './node-dimension-utils';
+import { QuickInsertHandle } from './quick-insert-handle';
 
 
 function SystemIcon({ external }: { external?: boolean }): JSX.Element {
@@ -86,11 +88,41 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
     (nodeData.icon as string) ||
     getTechnologyIconPath(label || domain || systemType);
 
+  const fontSize =
+    (nodeData.fontSize as number) ||
+    (nodeData.labelFontSize as number) ||
+    ((nodeData.style as Record<string, unknown>)?.fontSize as number);
+
+  const { cardRef, minHeight, minWidth } = useDynamicNodeDimensions(
+    {
+      label,
+      description,
+      systemType,
+      domain,
+      fontSize,
+      hasHeader: true,
+      hasFooter: true,
+      badgesCount: [
+        nodeData.technologyView && Array.isArray(nodeData.technologies) && (nodeData.technologies as unknown[]).length > 0,
+        nodeData.flowView && nodeData.isInFlow,
+        Boolean(nodeData.securityTier || nodeData.complianceLevel),
+      ].filter(Boolean).length,
+    },
+    'system',
+    id,
+  );
+
   if (isExternal) {
     return (
       <div
+        ref={cardRef}
         data-testid="external-system-node"
-        className={`w-full h-full min-w-[140px] min-h-[70px] rounded-2xl p-3 shadow-lg bg-slate-900/80 border border-dashed transition-all flex flex-col justify-between relative select-none ${
+        style={{
+          minHeight: `${minHeight}px`,
+          minWidth: `${minWidth}px`,
+          ...(nodeData.style as React.CSSProperties),
+        }}
+        className={`group w-full h-full min-w-[140px] min-h-[70px] rounded-2xl p-3 shadow-lg bg-slate-900/80 border border-dashed transition-all flex flex-col justify-between relative select-none ${
           nodeData.flowView && !nodeData.isInFlow
             ? 'opacity-35 border-slate-800'
             : nodeData.flowView && nodeData.isInFlow
@@ -100,16 +132,17 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
                 : 'border-slate-600 hover:border-slate-500'
         }`}
       >
-        <DiagramNodeResizer isVisible={selected} minWidth={140} minHeight={70} color="#38bdf8" />
+        <DiagramNodeResizer isVisible={selected} minWidth={minWidth} minHeight={minHeight} color="#38bdf8" />
 
-        <Handle type="target" position={Position.Top} id="top-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <Handle type="source" position={Position.Top} id="top-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <Handle type="source" position={Position.Bottom} id="bottom-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <Handle type="target" position={Position.Left} id="left-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <Handle type="source" position={Position.Left} id="left-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <Handle type="target" position={Position.Right} id="right-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <Handle type="source" position={Position.Right} id="right-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="source" position={Position.Top} id="top-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="target" position={Position.Top} id="top-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="source" position={Position.Bottom} id="bottom-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="target" position={Position.Bottom} id="bottom-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="source" position={Position.Left} id="left-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="target" position={Position.Left} id="left-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="source" position={Position.Right} id="right-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="target" position={Position.Right} id="right-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <QuickInsertHandle nodeId={id} selected={selected} />
 
         {/* Top Bar */}
         <div className="flex items-center justify-between w-full h-5">
@@ -136,10 +169,14 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
                 (nodeData.onRename as (val: string) => void)(newLabel);
               }
             }}
+            style={fontSize ? { fontSize: `${fontSize}px` } : undefined}
             className="text-base sm:text-lg font-semibold text-slate-200 tracking-wide text-center truncate max-w-full"
           />
           {description && (
-            <div className="text-[11px] text-slate-400 mt-1 line-clamp-2 max-w-full leading-tight">
+            <div
+              style={nodeData.descriptionFontSize ? { fontSize: `${nodeData.descriptionFontSize}px` } : undefined}
+              className="text-[11px] text-slate-400 mt-1 line-clamp-3 max-w-full leading-tight"
+            >
               {description}
             </div>
           )}
@@ -176,9 +213,15 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
   // Internal Software System
   return (
     <div
+      ref={cardRef}
       data-testid="system-node"
       onDoubleClick={handleDoubleClick}
-      className={`w-full h-full min-w-[140px] min-h-[70px] rounded-2xl p-3 shadow-lg bg-slate-900/95 border transition-all flex flex-col justify-between relative select-none ${
+      style={{
+        minHeight: `${minHeight}px`,
+        minWidth: `${minWidth}px`,
+        ...(nodeData.style as React.CSSProperties),
+      }}
+      className={`group w-full h-full min-w-[140px] min-h-[70px] rounded-2xl p-3 shadow-lg bg-slate-900/95 border transition-all flex flex-col justify-between relative select-none ${
         nodeData.flowView && !nodeData.isInFlow
           ? 'opacity-35 border-slate-800'
           : nodeData.flowView && nodeData.isInFlow
@@ -190,17 +233,18 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
               : 'border border-slate-700/80 hover:border-slate-500'
       }`}
     >
-      <DiagramNodeResizer isVisible={selected} minWidth={140} minHeight={70} color="#38bdf8" />
+      <DiagramNodeResizer isVisible={selected} minWidth={minWidth} minHeight={minHeight} color="#38bdf8" />
 
       {/* 4 Connection Ports at Edge Midpoints */}
-      <Handle type="target" position={Position.Top} id="top-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-      <Handle type="source" position={Position.Top} id="top-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-      <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-      <Handle type="source" position={Position.Bottom} id="bottom-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-      <Handle type="target" position={Position.Left} id="left-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-      <Handle type="source" position={Position.Left} id="left-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-      <Handle type="target" position={Position.Right} id="right-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-      <Handle type="source" position={Position.Right} id="right-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="source" position={Position.Top} id="top-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="target" position={Position.Top} id="top-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="source" position={Position.Bottom} id="bottom-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="target" position={Position.Bottom} id="bottom-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="source" position={Position.Left} id="left-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="target" position={Position.Left} id="left-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="source" position={Position.Right} id="right-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="target" position={Position.Right} id="right-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <QuickInsertHandle nodeId={id} selected={selected} />
 
       {/* Top Bar: IcePanel Drill-down zoom icon top-left, badges top-right */}
       <div className="flex items-center justify-between w-full h-5">
@@ -258,10 +302,14 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
               (nodeData.onRename as (val: string) => void)(newLabel);
             }
           }}
+          style={fontSize ? { fontSize: `${fontSize}px` } : undefined}
           className="text-base sm:text-lg font-semibold text-white tracking-wide text-center truncate max-w-full"
         />
         {description && (
-          <div className="text-[11px] text-slate-400 mt-1 line-clamp-2 max-w-full leading-tight">
+          <div
+            style={nodeData.descriptionFontSize ? { fontSize: `${nodeData.descriptionFontSize}px` } : undefined}
+            className="text-[11px] text-slate-400 mt-1 line-clamp-3 max-w-full leading-tight"
+          >
             {description}
           </div>
         )}

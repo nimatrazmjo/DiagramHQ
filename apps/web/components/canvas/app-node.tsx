@@ -10,6 +10,8 @@ import { PersonaBadges } from './persona-badges';
 import { FlowBadges } from './flow-badges';
 import { EditableNodeLabel } from './editable-node-label';
 import { DiagramNodeResizer } from './diagram-node-resizer';
+import { useDynamicNodeDimensions } from './node-dimension-utils';
+import { QuickInsertHandle } from './quick-insert-handle';
 
 
 function AppIcon(): JSX.Element {
@@ -69,11 +71,42 @@ export function AppNode({ id, data, selected }: NodeProps): JSX.Element {
     (nodeData.icon as string) ||
     getTechnologyIconPath(technology || runtime || label);
 
+  const fontSize =
+    (nodeData.fontSize as number) ||
+    (nodeData.labelFontSize as number) ||
+    ((nodeData.style as Record<string, unknown>)?.fontSize as number);
+
+  const { cardRef, minHeight, minWidth } = useDynamicNodeDimensions(
+    {
+      label,
+      description,
+      technology,
+      runtime,
+      status,
+      port,
+      fontSize,
+      hasHeader: true,
+      hasFooter: true,
+      badgesCount: [
+        nodeData.technologyView && Array.isArray(nodeData.technologies) && (nodeData.technologies as unknown[]).length > 0,
+        nodeData.flowView && nodeData.isInFlow,
+      ].filter(Boolean).length,
+    },
+    'app',
+    id,
+  );
+
   return (
     <div
+      ref={cardRef}
       data-testid="app-node"
       onDoubleClick={handleDoubleClick}
-      className={`w-full h-full min-w-[140px] min-h-[70px] rounded-2xl p-3 shadow-lg bg-slate-900/95 border transition-all flex flex-col justify-between relative select-none ${
+      style={{
+        minHeight: `${minHeight}px`,
+        minWidth: `${minWidth}px`,
+        ...(nodeData.style as React.CSSProperties),
+      }}
+      className={`group w-full h-full min-w-[140px] min-h-[70px] rounded-2xl p-3 shadow-lg bg-slate-900/95 border transition-all flex flex-col justify-between relative select-none ${
         nodeData.flowView && !nodeData.isInFlow
           ? 'opacity-35 border-slate-800'
           : nodeData.flowView && nodeData.isInFlow
@@ -83,7 +116,7 @@ export function AppNode({ id, data, selected }: NodeProps): JSX.Element {
               : 'border border-emerald-500/40 hover:border-emerald-400'
       }`}
     >
-      <DiagramNodeResizer isVisible={selected} minWidth={140} minHeight={70} color="#38bdf8" />
+      <DiagramNodeResizer isVisible={selected} minWidth={minWidth} minHeight={minHeight} color="#38bdf8" />
 
       {/* 4-way handles for routing */}
       <Handle type="target" position={Position.Top} id="top-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
@@ -94,6 +127,7 @@ export function AppNode({ id, data, selected }: NodeProps): JSX.Element {
       <Handle type="source" position={Position.Left} id="left-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
       <Handle type="target" position={Position.Right} id="right-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
       <Handle type="source" position={Position.Right} id="right-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <QuickInsertHandle nodeId={id} selected={selected} />
 
       {/* Top bar: Zoom icon on left, brand/port on right */}
       <div className="flex items-center justify-between w-full h-5">
@@ -156,11 +190,15 @@ export function AppNode({ id, data, selected }: NodeProps): JSX.Element {
               (nodeData.onRename as (val: string) => void)(newLabel);
             }
           }}
+          style={fontSize ? { fontSize: `${fontSize}px` } : undefined}
           className="text-base sm:text-lg font-semibold text-slate-100 tracking-wide text-center truncate max-w-full"
         />
 
         {description && (
-          <div className="text-[11px] text-slate-400 mt-1 line-clamp-2 max-w-full leading-tight">
+          <div
+            style={nodeData.descriptionFontSize ? { fontSize: `${nodeData.descriptionFontSize}px` } : undefined}
+            className="text-[11px] text-slate-400 mt-1 line-clamp-3 max-w-full leading-tight"
+          >
             {description}
           </div>
         )}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   type CanvasNode,
@@ -56,6 +56,7 @@ import {
   createIcePanelBoutiqueModel,
   createShareLink,
   generateShareLinkUrl,
+  calculateDynamicNodeDimensions,
 } from '@diagramhq/domain';
 import { createTestHarnessGraph } from '../../lib/test-harness-graph';
 import {
@@ -326,6 +327,8 @@ const SAMPLE_FULL_SNAPSHOT: FullArchitectureSnapshot = {
   },
 };
 
+const EMPTY_STRING_ARRAY: string[] = [];
+
 export default function StudioPage(): JSX.Element {
   // Canvas starts completely clean and empty by default (no pre-loaded demo/starter architecture)
   const [initialGraph] = useState<{ nodes: CanvasNode[]; edges: CanvasEdge[] }>(() => ({
@@ -350,6 +353,11 @@ export default function StudioPage(): JSX.Element {
   const [parentHistory, setParentHistory] = useState<Array<{ id: string; name: string; level: 1 | 2 | 3 }>>([]);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
+  const currentNodesRef = useRef(currentNodes);
+  currentNodesRef.current = currentNodes;
+  const c4LevelRef = useRef(c4Level);
+  c4LevelRef.current = c4Level;
+
   const handleAscendTo = useCallback(
     (targetLevel: 1 | 2 | 3, parentId: string | null = null) => {
       if (targetLevel === 1) {
@@ -361,11 +369,32 @@ export default function StudioPage(): JSX.Element {
         setC4Level(2);
         setActiveView('container');
         setActiveParentId(parentId);
-        setParentHistory((prev) => prev.filter((p) => p.level === 1));
+        setParentHistory((prev) => {
+          const existingL1 = prev.find((p) => p.level === 1);
+          if (existingL1) return [existingL1];
+          if (parentId) {
+            const pNode = currentNodesRef.current.find((n) => n.id === parentId);
+            const pName = (pNode?.data?.label as string) || (pNode?.data?.name as string) || 'System';
+            return [{ id: parentId, name: pName, level: 1 as const }];
+          }
+          return [];
+        });
       } else if (targetLevel === 3) {
         setC4Level(3);
         setActiveView('all');
         setActiveParentId(parentId);
+        setParentHistory((prev) => {
+          const l1 = prev.find((p) => p.level === 1);
+          if (parentId) {
+            const pNode = currentNodesRef.current.find((n) => n.id === parentId);
+            const pName = (pNode?.data?.label as string) || (pNode?.data?.name as string) || 'App';
+            return [
+              ...(l1 ? [l1] : []),
+              { id: parentId, name: pName, level: 2 as const },
+            ];
+          }
+          return prev;
+        });
       }
       setSelectedNodeId(null);
       setSelectedEdgeId(null);
@@ -406,17 +435,29 @@ export default function StudioPage(): JSX.Element {
           handleAscendTo(1, null);
         } else if (e.key === '2') {
           e.preventDefault();
-          const defaultParent = parentHistory.find((p) => p.level === 1)?.id ?? 'sys-saas';
+          const targetSystem =
+            (selectedNodeId ? currentNodesRef.current.find((n) => n.id === selectedNodeId && getNodeC4Level(n) === 1) : null) ??
+            currentNodesRef.current.find((n) => getNodeC4Level(n) === 1);
+          const defaultParent = parentHistory.find((p) => p.level === 1)?.id ?? targetSystem?.id ?? null;
           handleAscendTo(2, defaultParent);
         } else if (e.key === '3') {
           e.preventDefault();
+          const targetApp =
+            (selectedNodeId ? currentNodesRef.current.find((n) => n.id === selectedNodeId && getNodeC4Level(n) === 2) : null) ??
+            currentNodesRef.current.find((n) => getNodeC4Level(n) === 2);
+          const defaultApp = targetApp?.id ?? 'app-auth';
+          const l1System = currentNodesRef.current.find((n) => getNodeC4Level(n) === 1);
           setC4Level(3);
           setActiveView('all');
-          setActiveParentId('app-auth');
-          setParentHistory([
-            { id: 'sys-saas', name: 'SaaS Platform', level: 1 },
-            { id: 'app-auth', name: 'Auth Service', level: 2 },
-          ]);
+          setActiveParentId(defaultApp);
+          setParentHistory((prev) => {
+            const l1 = prev.find((p) => p.level === 1) ?? (l1System ? { id: l1System.id, name: (l1System.data?.label as string) || 'System', level: 1 as const } : null);
+            const l2 = targetApp ? { id: targetApp.id, name: (targetApp.data?.label as string) || 'App', level: 2 as const } : { id: 'app-auth', name: 'Auth Service', level: 2 as const };
+            return [
+              ...(l1 ? [l1] : []),
+              l2,
+            ];
+          });
           setSelectedNodeId(null);
           setSelectedEdgeId(null);
           setCanvasKey((k) => k + 1);
@@ -837,7 +878,7 @@ export default function StudioPage(): JSX.Element {
       target: edge.target,
       sourceName: (sourceNode?.data?.label as string) || edge.source,
       targetName: (targetNode?.data?.label as string) || edge.target,
-      label: edge.label,
+      label: edge.label || 'Sends data to',
       protocol,
       description,
     };
@@ -1342,22 +1383,21 @@ export default function StudioPage(): JSX.Element {
     (nodeId: string | null) => {
       setSelectedNodeId((prev) => (prev === nodeId ? prev : nodeId));
       if (nodeId) {
-        setSelectedEdgeId((prev) => (prev === null ? null : null));
-        if (!isInspectorOpen) setIsInspectorOpen(true);
-        const node = currentNodes.find((n) => n.id === nodeId);
+        setSelectedEdgeId(null);
+        setIsInspectorOpen(true);
+        const node = currentNodesRef.current.find((n) => n.id === nodeId);
         if (node) {
           const nodeLvl = getNodeC4Level(node);
-          if (nodeLvl !== c4Level) {
+          if (nodeLvl !== c4LevelRef.current) {
             setC4Level(nodeLvl);
             if (node.data?.parentId) {
               setActiveParentId(node.data.parentId as string);
             }
-            setCanvasKey((k) => k + 1);
           }
         }
       }
     },
-    [isInspectorOpen, currentNodes, c4Level],
+    [],
   );
 
   const handleEdgeSelect = useCallback(
@@ -1365,10 +1405,10 @@ export default function StudioPage(): JSX.Element {
       setSelectedEdgeId((prev) => (prev === edgeId ? prev : edgeId));
       if (edgeId) {
         setSelectedNodeId(null);
-        if (!isInspectorOpen) setIsInspectorOpen(true);
+        setIsInspectorOpen(true);
       }
     },
-    [isInspectorOpen],
+    [],
   );
 
   const handleMetadataChange = useCallback(
@@ -1425,15 +1465,19 @@ export default function StudioPage(): JSX.Element {
   );
 
   const handleEdgeMetadataChange = useCallback(
-    (edgeId: string, updates: { protocol?: string; description?: string }) => {
+    (edgeId: string, updates: { label?: string; protocol?: string; description?: string }) => {
       setCurrentEdges((prev) =>
         prev.map((e) => {
           if (e.id !== edgeId) return e;
           const data = { ...(e.data || {}), ...updates };
-          const label =
-            updates.protocol && updates.description
-              ? `${updates.protocol}: ${updates.description}`
-              : updates.protocol || updates.description || e.label;
+          let label = e.label;
+          if (updates.label !== undefined) {
+            label = updates.label;
+          } else if (updates.protocol && updates.description) {
+            label = `${updates.protocol}: ${updates.description}`;
+          } else if (updates.protocol || updates.description) {
+            label = updates.protocol || updates.description;
+          }
           return { ...e, label, data };
         }),
       );
@@ -1461,6 +1505,116 @@ export default function StudioPage(): JSX.Element {
     [selectedNodeId, deleteModelObject],
   );
 
+  const handleNodeCreate = useCallback(
+    (newNode: CanvasNode) => {
+      const nodeLevel = getNodeC4Level(newNode);
+      const sameLevel = nodeLevel === c4Level;
+      const enrichedNode: CanvasNode = {
+        ...newNode,
+        data: {
+          ...newNode.data,
+          c4Level: nodeLevel,
+          parentId:
+            newNode.data?.parentId ??
+            (sameLevel ? activeParentId || undefined : undefined),
+        },
+      };
+      if (!sameLevel) {
+        setC4Level(nodeLevel);
+        setActiveParentId(null);
+        setParentHistory([]);
+      }
+      setCurrentNodes((nds) => [...nds, enrichedNode]);
+      setAllModelObjects((prev) => [
+        ...prev,
+        mapCanvasNodeToModelObject(enrichedNode, architectureId || 'arch-default', 'ver-default'),
+      ]);
+      void persistModelObject(enrichedNode);
+    },
+    [c4Level, activeParentId, architectureId, persistModelObject],
+  );
+
+  const handleEdgeConnect = useCallback(
+    (newEdge: CanvasEdge) => {
+      setCurrentEdges((eds) => [...eds, newEdge]);
+      void persistModelConnection(newEdge);
+    },
+    [persistModelConnection],
+  );
+
+  const handleEdgeReconnect = useCallback(
+    (oldEdge: unknown, _connection: unknown, updatedEdge: unknown) => {
+      const oldEdgeId = (oldEdge as { id: string }).id;
+      setCurrentEdges((eds) =>
+        eds.map((e) => (e.id === oldEdgeId ? (updatedEdge as CanvasEdge) : e)),
+      );
+      void deleteModelConnection(oldEdgeId);
+      void persistModelConnection(updatedEdge as CanvasEdge);
+    },
+    [deleteModelConnection, persistModelConnection],
+  );
+
+  const handleNodeRename = useCallback(
+    (nodeId: string, newLabel: string) => {
+      setCurrentNodes((prev) =>
+        prev.map((n) => {
+          if (n.id !== nodeId) return n;
+          const data = { ...n.data, label: newLabel, name: newLabel };
+          return { ...n, data };
+        }),
+      );
+      setAllModelObjects((prev) =>
+        prev.map((o) => (o.id === nodeId ? { ...o, name: newLabel } : o)),
+      );
+      void fetch(`/objects/${nodeId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newLabel }),
+      });
+    },
+    [],
+  );
+
+  const handleNodeMetadataUpdate = useCallback(
+    (nodeId: string, data: Record<string, unknown>) => {
+      setCurrentNodes((prev) =>
+        prev.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, ...data } } : n)),
+      );
+      setAllModelObjects((prev) =>
+        prev.map((o) => {
+          if (o.id !== nodeId) return o;
+          return {
+            ...o,
+            name: (data.label as string) || (data.name as string) || o.name,
+            description:
+              data.description !== undefined ? (data.description as string) : o.description,
+            metadata: {
+              ...o.metadata,
+              technology:
+                data.technology !== undefined ? (data.technology as string) : o.metadata?.technology,
+            },
+          };
+        }),
+      );
+      void fetch(`/objects/${nodeId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      }).catch(() => {});
+    },
+    [],
+  );
+
+  const selectedNodeIdsProp = useMemo(
+    () => (selectedNodeId ? [selectedNodeId] : EMPTY_STRING_ARRAY),
+    [selectedNodeId],
+  );
+
+  const selectedEdgeIdsProp = useMemo(
+    () => (selectedEdgeId ? [selectedEdgeId] : EMPTY_STRING_ARRAY),
+    [selectedEdgeId],
+  );
+
   const handleNodeDragStop = useCallback(
     (nodeId: string, position: { x: number; y: number }) => {
       if (!Number.isFinite(position?.x) || !Number.isFinite(position?.y)) return;
@@ -1479,23 +1633,27 @@ export default function StudioPage(): JSX.Element {
     ) => {
       if (!Number.isFinite(dimensions?.width) || !Number.isFinite(dimensions?.height)) return;
       setCurrentNodes((prev) =>
-        prev.map((n) =>
-          n.id === nodeId
-            ? {
-                ...n,
-                width: Math.round(dimensions.width),
-                height: Math.round(dimensions.height),
-                style: {
-                  ...(n.style || {}),
-                  width: `${Math.round(dimensions.width)}px`,
-                  height: `${Math.round(dimensions.height)}px`,
-                },
-                ...(position && Number.isFinite(position.x) && Number.isFinite(position.y)
-                  ? { position }
-                  : {}),
-              }
-            : n,
-        ),
+        prev.map((n) => {
+          if (n.id !== nodeId) return n;
+          const dynamicDims = calculateDynamicNodeDimensions(n.data, n.type);
+          const finalW = Math.max(Math.round(dimensions.width), dynamicDims.minWidth);
+          const finalH = Math.max(Math.round(dimensions.height), dynamicDims.minHeight);
+          return {
+            ...n,
+            width: finalW,
+            height: finalH,
+            style: {
+              ...(n.style || {}),
+              width: `${finalW}px`,
+              height: `${finalH}px`,
+              minWidth: `${dynamicDims.minWidth}px`,
+              minHeight: `${dynamicDims.minHeight}px`,
+            },
+            ...(position && Number.isFinite(position.x) && Number.isFinite(position.y)
+              ? { position }
+              : {}),
+          };
+        }),
       );
     },
     [],
@@ -1557,7 +1715,10 @@ export default function StudioPage(): JSX.Element {
       };
 
       const label = customData?.label || defaultLabels[kind] || 'New Object';
-      const offset = (currentNodes.length % 6) * 40;
+      const colIndex = currentNodes.length % 3;
+      const rowIndex = Math.floor(currentNodes.length / 3);
+      const posX = 100 + colIndex * 280;
+      const posY = 100 + rowIndex * 180;
 
       const nodeLevel = getNodeC4Level({
         id,
@@ -1575,7 +1736,7 @@ export default function StudioPage(): JSX.Element {
       const newNode: CanvasNode = {
         id,
         type: kind,
-        position: { x: 280 + offset, y: 160 + offset },
+        position: { x: posX, y: posY },
         data: {
           label,
           kind,
@@ -1876,7 +2037,10 @@ export default function StudioPage(): JSX.Element {
         icon: '2️⃣',
         shortcut: '2',
         onExecute: () => {
-          const defaultParent = parentHistory.find((p) => p.level === 1)?.id ?? 'sys-saas';
+          const targetSystem =
+            (selectedNodeId ? currentNodes.find((n) => n.id === selectedNodeId && getNodeC4Level(n) === 1) : null) ??
+            currentNodes.find((n) => getNodeC4Level(n) === 1);
+          const defaultParent = parentHistory.find((p) => p.level === 1)?.id ?? targetSystem?.id ?? null;
           handleAscendTo(2, defaultParent);
         },
       },
@@ -1888,13 +2052,22 @@ export default function StudioPage(): JSX.Element {
         icon: '3️⃣',
         shortcut: '3',
         onExecute: () => {
+          const targetApp =
+            (selectedNodeId ? currentNodes.find((n) => n.id === selectedNodeId && getNodeC4Level(n) === 2) : null) ??
+            currentNodes.find((n) => getNodeC4Level(n) === 2);
+          const defaultApp = targetApp?.id ?? 'app-auth';
+          const l1System = currentNodes.find((n) => getNodeC4Level(n) === 1);
           setC4Level(3);
           setActiveView('all');
-          setActiveParentId('app-auth');
-          setParentHistory([
-            { id: 'sys-saas', name: 'SaaS Platform', level: 1 },
-            { id: 'app-auth', name: 'Auth Service', level: 2 },
-          ]);
+          setActiveParentId(defaultApp);
+          setParentHistory((prev) => {
+            const l1 = prev.find((p) => p.level === 1) ?? (l1System ? { id: l1System.id, name: (l1System.data?.label as string) || 'System', level: 1 as const } : null);
+            const l2 = targetApp ? { id: targetApp.id, name: (targetApp.data?.label as string) || 'App', level: 2 as const } : { id: 'app-auth', name: 'Auth Service', level: 2 as const };
+            return [
+              ...(l1 ? [l1] : []),
+              l2,
+            ];
+          });
           setSelectedNodeId(null);
           setSelectedEdgeId(null);
           setCanvasKey((k) => k + 1);
@@ -2203,7 +2376,10 @@ export default function StudioPage(): JSX.Element {
               type="button"
               data-testid="c4-level-2-btn"
               onClick={() => {
-                const defaultParent = parentHistory.find((p) => p.level === 1)?.id ?? 'sys-saas';
+                const targetSystem =
+                  (selectedNodeId ? currentNodes.find((n) => n.id === selectedNodeId && getNodeC4Level(n) === 1) : null) ??
+                  currentNodes.find((n) => getNodeC4Level(n) === 1);
+                const defaultParent = parentHistory.find((p) => p.level === 1)?.id ?? targetSystem?.id ?? null;
                 handleAscendTo(2, defaultParent);
               }}
               title="Level 2: Containers & Applications (Services, DBs, Queues)"
@@ -2219,13 +2395,22 @@ export default function StudioPage(): JSX.Element {
               type="button"
               data-testid="c4-level-3-btn"
               onClick={() => {
+                const targetApp =
+                  (selectedNodeId ? currentNodes.find((n) => n.id === selectedNodeId && getNodeC4Level(n) === 2) : null) ??
+                  currentNodes.find((n) => getNodeC4Level(n) === 2);
+                const defaultApp = targetApp?.id ?? 'app-auth';
+                const l1System = currentNodes.find((n) => getNodeC4Level(n) === 1);
                 setC4Level(3);
                 setActiveView('all');
-                setActiveParentId('app-auth');
-                setParentHistory([
-                  { id: 'sys-saas', name: 'SaaS Platform', level: 1 },
-                  { id: 'app-auth', name: 'Auth Service', level: 2 },
-                ]);
+                setActiveParentId(defaultApp);
+                setParentHistory((prev) => {
+                  const l1 = prev.find((p) => p.level === 1) ?? (l1System ? { id: l1System.id, name: (l1System.data?.label as string) || 'System', level: 1 as const } : null);
+                  const l2 = targetApp ? { id: targetApp.id, name: (targetApp.data?.label as string) || 'App', level: 2 as const } : { id: 'app-auth', name: 'Auth Service', level: 2 as const };
+                  return [
+                    ...(l1 ? [l1] : []),
+                    l2,
+                  ];
+                });
                 setSelectedNodeId(null);
                 setSelectedEdgeId(null);
                 setCanvasKey((k) => k + 1);
@@ -2674,16 +2859,28 @@ export default function StudioPage(): JSX.Element {
             if (lvl === 1) {
               handleAscendTo(1, null);
             } else if (lvl === 2) {
-              const defaultParent = parentHistory.find((p) => p.level === 1)?.id ?? 'sys-saas';
+              const targetSystem =
+                (selectedNodeId ? currentNodes.find((n) => n.id === selectedNodeId && getNodeC4Level(n) === 1) : null) ??
+                currentNodes.find((n) => getNodeC4Level(n) === 1);
+              const defaultParent = parentHistory.find((p) => p.level === 1)?.id ?? targetSystem?.id ?? null;
               handleAscendTo(2, defaultParent);
             } else {
+              const targetApp =
+                (selectedNodeId ? currentNodes.find((n) => n.id === selectedNodeId && getNodeC4Level(n) === 2) : null) ??
+                currentNodes.find((n) => getNodeC4Level(n) === 2);
+              const defaultApp = targetApp?.id ?? 'app-auth';
+              const l1System = currentNodes.find((n) => getNodeC4Level(n) === 1);
               setC4Level(3);
               setActiveView('all');
-              setActiveParentId('app-auth');
-              setParentHistory([
-                { id: 'sys-saas', name: 'SaaS Platform', level: 1 },
-                { id: 'app-auth', name: 'Auth Service', level: 2 },
-              ]);
+              setActiveParentId(defaultApp);
+              setParentHistory((prev) => {
+                const l1 = prev.find((p) => p.level === 1) ?? (l1System ? { id: l1System.id, name: (l1System.data?.label as string) || 'System', level: 1 as const } : null);
+                const l2 = targetApp ? { id: targetApp.id, name: (targetApp.data?.label as string) || 'App', level: 2 as const } : { id: 'app-auth', name: 'Auth Service', level: 2 as const };
+                return [
+                  ...(l1 ? [l1] : []),
+                  l2,
+                ];
+              });
               setSelectedNodeId(null);
               setSelectedEdgeId(null);
               setCanvasKey((k) => k + 1);
@@ -2712,6 +2909,9 @@ export default function StudioPage(): JSX.Element {
             batchPersistFn={handleBatchPersist}
             initialNodes={displayNodes}
             initialEdges={displayEdges}
+            selectedNodeIds={selectedNodeIdsProp}
+            selectedEdgeIds={selectedEdgeIdsProp}
+            allModelObjects={allModelObjects}
             onNodeSelect={handleNodeSelect}
             onEdgeSelect={handleEdgeSelect}
             onNodeDragStop={handleNodeDragStop}
@@ -2720,91 +2920,12 @@ export default function StudioPage(): JSX.Element {
             onAddToView={handleAddObjectToActiveView}
             showPalette
             showTemplatePicker
-            onNodeCreate={(newNode) => {
-              const nodeLevel = getNodeC4Level(newNode);
-              const sameLevel = nodeLevel === c4Level;
-              const enrichedNode: CanvasNode = {
-                ...newNode,
-                data: {
-                  ...newNode.data,
-                  c4Level: nodeLevel,
-                  parentId:
-                    newNode.data?.parentId ??
-                    (sameLevel ? activeParentId || undefined : undefined),
-                },
-              };
-              // Keep new node visible: switch to its C4 level
-              if (!sameLevel) {
-                setC4Level(nodeLevel);
-                setActiveParentId(null);
-                setParentHistory([]);
-              }
-              setCurrentNodes((nds) => [...nds, enrichedNode]);
-              setAllModelObjects((prev) => [
-                ...prev,
-                mapCanvasNodeToModelObject(enrichedNode, architectureId || 'arch-default', 'ver-default'),
-              ]);
-              void persistModelObject(enrichedNode);
-            }}
-            onEdgeConnect={(newEdge) => {
-              setCurrentEdges((eds) => [...eds, newEdge]);
-              void persistModelConnection(newEdge);
-            }}
-            onEdgeReconnect={(oldEdge, _connection, updatedEdge) => {
-              setCurrentEdges((eds) =>
-                eds.map((e) => (e.id === oldEdge.id ? updatedEdge : e)),
-              );
-              void deleteModelConnection(oldEdge.id);
-              void persistModelConnection(updatedEdge);
-            }}
+            onNodeCreate={handleNodeCreate}
+            onEdgeConnect={handleEdgeConnect}
+            onEdgeReconnect={handleEdgeReconnect}
             onNodeDelete={handleDeleteNode}
-            onNodeRename={(nodeId, newLabel) => {
-              setCurrentNodes((prev) =>
-                prev.map((n) => {
-                  if (n.id !== nodeId) return n;
-                  const data = { ...n.data, label: newLabel, name: newLabel };
-                  return { ...n, data };
-                }),
-              );
-              setAllModelObjects((prev) =>
-                prev.map((o) => (o.id === nodeId ? { ...o, name: newLabel } : o)),
-              );
-              void fetch(`/objects/${nodeId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: newLabel }),
-              }).catch(() => {});
-            }}
-            onNodeMetadataUpdate={(nodeId, data) => {
-              setCurrentNodes((prev) =>
-                prev.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, ...data } } : n)),
-              );
-              setAllModelObjects((prev) =>
-                prev.map((o) => {
-                  if (o.id !== nodeId) return o;
-                  return {
-                    ...o,
-                    name: (data.label as string) || (data.name as string) || o.name,
-                    description:
-                      data.description !== undefined ? (data.description as string) : o.description,
-                    metadata: {
-                      ...o.metadata,
-                      technology:
-                        data.technology !== undefined ? (data.technology as string) : o.metadata?.technology,
-                    },
-                  };
-                }),
-              );
-              void fetch(`/objects/${nodeId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  name: data.label as string,
-                  description: data.description as string,
-                  metadata: { technology: data.technology },
-                }),
-              }).catch(() => {});
-            }}
+            onNodeRename={handleNodeRename}
+            onNodeMetadataUpdate={handleNodeMetadataUpdate}
             onEdgeDisconnect={(edgeId) => {
               setCurrentEdges((prev) => prev.filter((e) => e.id !== edgeId));
               void deleteModelConnection(edgeId);

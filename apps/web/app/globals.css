@@ -154,4 +154,25 @@ p {
   background-color: #7dd3fc !important;
 }
 
+/* Handle interaction layers for bidirectional 4-way ports */
+.react-flow--connecting .react-flow__handle-target {
+  z-index: 60 !important;
+  pointer-events: auto !important;
+  transform: scale(1.3) !important;
+}
+
+.react-flow--connecting .react-flow__handle-source {
+  z-index: 10 !important;
+  pointer-events: none !important;
+}
+
+.react-flow:not(.react-flow--connecting) .react-flow__handle-source {
+  z-index: 50 !important;
+  pointer-events: auto !important;
+}
+
+.react-flow:not(.react-flow--connecting) .react-flow__handle-target {
+  z-index: 20 !important;
+}
+
 

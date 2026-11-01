@@ -3,6 +3,7 @@ import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { C4CodeMappingStub, C4ComponentKind, C4ComponentNodeData } from '@diagramhq/domain';
 import { EditableNodeLabel } from './editable-node-label';
 import { DiagramNodeResizer } from './diagram-node-resizer';
+import { useDynamicNodeDimensions } from './node-dimension-utils';
 
 function ControllerIcon(): JSX.Element {
   return (
@@ -165,14 +166,40 @@ export function C4ComponentNode({ id, data, selected }: NodeProps): JSX.Element 
     }
   };
 
+  const fontSize =
+    (nodeData.fontSize as number) ||
+    (nodeData.labelFontSize as number) ||
+    ((nodeData.style as Record<string, unknown>)?.fontSize as number);
+
+  const { cardRef, minHeight, minWidth } = useDynamicNodeDimensions(
+    {
+      label,
+      description,
+      technology,
+      kind: componentKind,
+      fontSize,
+      hasHeader: true,
+      hasFooter: true,
+      paddingY: 28,
+    },
+    'c4Component',
+    id,
+  );
+
   return (
     <div
+      ref={cardRef}
       data-testid={getTestId()}
+      style={{
+        minHeight: `${minHeight}px`,
+        minWidth: `${minWidth}px`,
+        ...(nodeData.style as React.CSSProperties),
+      }}
       className={`relative w-full h-full min-w-[180px] min-h-[70px] p-3.5 rounded-xl border-2 shadow-xl backdrop-blur-sm transition-all duration-150 ${getThemeClasses()} ${
         selected ? 'ring-2 ring-blue-400 ring-offset-2 ring-offset-slate-950 border-blue-400' : ''
       }`}
     >
-      <DiagramNodeResizer isVisible={selected} minWidth={160} minHeight={60} color="#60a5fa" />
+      <DiagramNodeResizer isVisible={selected} minWidth={minWidth} minHeight={minHeight} color="#60a5fa" />
       <Handle
         type="target"
         position={Position.Top}
@@ -217,6 +244,7 @@ export function C4ComponentNode({ id, data, selected }: NodeProps): JSX.Element 
             (nodeData.onRename as (val: string) => void)(newLabel);
           }
         }}
+        style={fontSize ? { fontSize: `${fontSize}px` } : undefined}
         className="font-semibold text-sm leading-tight text-white mb-1 truncate"
       />
 

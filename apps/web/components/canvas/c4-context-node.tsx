@@ -3,6 +3,8 @@ import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { C4ContextElementKind, C4ContextNodeData } from '@diagramhq/domain';
 import { EditableNodeLabel } from './editable-node-label';
 import { DiagramNodeResizer } from './diagram-node-resizer';
+import { useDynamicNodeDimensions } from './node-dimension-utils';
+import { QuickInsertHandle } from './quick-insert-handle';
 
 function PersonIcon(): JSX.Element {
   return (
@@ -58,6 +60,24 @@ export function C4ContextNode({ id, data, selected }: NodeProps): JSX.Element {
   const canDrillDown = Boolean(nodeData.canDrillDown ?? (!isPerson && !isExternal));
   const systemId = (nodeData.systemId as string) ?? id;
 
+  const fontSize =
+    (nodeData.fontSize as number) ||
+    (nodeData.labelFontSize as number) ||
+    ((nodeData.style as Record<string, unknown>)?.fontSize as number);
+
+  const { cardRef, minHeight, minWidth } = useDynamicNodeDimensions(
+    {
+      label,
+      description,
+      systemType: isExternal ? 'Third-Party' : isPerson ? 'Actor' : undefined,
+      fontSize,
+      hasHeader: true,
+      hasFooter: true,
+    },
+    'c4Context',
+    id,
+  );
+
   const handleDrillDown = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (typeof nodeData.onDrillDown === 'function') {
@@ -80,23 +100,30 @@ export function C4ContextNode({ id, data, selected }: NodeProps): JSX.Element {
   if (isPerson) {
     return (
       <div
+        ref={cardRef}
         data-testid="c4-person-node"
         onDoubleClick={handleDoubleClick}
-        className={`w-full h-full min-w-[140px] min-h-[70px] rounded-2xl p-3 shadow-lg bg-slate-900/95 border transition-all flex flex-col justify-between relative select-none ${
+        style={{
+          minHeight: `${minHeight}px`,
+          minWidth: `${minWidth}px`,
+          ...(nodeData.style as React.CSSProperties),
+        }}
+        className={`group w-full h-full min-w-[140px] min-h-[70px] rounded-2xl p-3 shadow-lg bg-slate-900/95 border transition-all flex flex-col justify-between relative select-none ${
           selected
             ? 'border-2 border-sky-400 ring-2 ring-pink-500/30 shadow-[0_0_15px_rgba(56,189,248,0.25)]'
             : 'border border-pink-500/40 hover:border-pink-400'
         }`}
       >
-        <DiagramNodeResizer isVisible={selected} minWidth={140} minHeight={70} color="#38bdf8" />
-        <Handle type="target" position={Position.Top} id="top-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <Handle type="source" position={Position.Top} id="top-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <Handle type="source" position={Position.Bottom} id="bottom-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <Handle type="target" position={Position.Left} id="left-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <Handle type="source" position={Position.Left} id="left-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <Handle type="target" position={Position.Right} id="right-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <Handle type="source" position={Position.Right} id="right-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <DiagramNodeResizer isVisible={selected} minWidth={minWidth} minHeight={minHeight} color="#38bdf8" />
+        <Handle type="source" position={Position.Top} id="top-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="target" position={Position.Top} id="top-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="source" position={Position.Bottom} id="bottom-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="target" position={Position.Bottom} id="bottom-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="source" position={Position.Left} id="left-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="target" position={Position.Left} id="left-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="source" position={Position.Right} id="right-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="target" position={Position.Right} id="right-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <QuickInsertHandle nodeId={id} selected={selected} />
 
         {/* Top Bar */}
         <div className="flex items-center justify-between w-full h-5">
@@ -119,10 +146,14 @@ export function C4ContextNode({ id, data, selected }: NodeProps): JSX.Element {
                 (nodeData.onRename as (val: string) => void)(newLabel);
               }
             }}
+            style={fontSize ? { fontSize: `${fontSize}px` } : undefined}
             className="text-base sm:text-lg font-semibold text-slate-100 tracking-wide text-center truncate max-w-full"
           />
           {description && (
-            <div className="text-[11px] text-slate-400 mt-1 line-clamp-2 max-w-full leading-tight">
+            <div
+              style={nodeData.descriptionFontSize ? { fontSize: `${nodeData.descriptionFontSize}px` } : undefined}
+              className="text-[11px] text-slate-400 mt-1 line-clamp-3 max-w-full leading-tight"
+            >
               {description}
             </div>
           )}
@@ -141,23 +172,30 @@ export function C4ContextNode({ id, data, selected }: NodeProps): JSX.Element {
   if (isExternal) {
     return (
       <div
+        ref={cardRef}
         data-testid="c4-external-system-node"
         onDoubleClick={handleDoubleClick}
-        className={`w-full h-full min-w-[140px] min-h-[70px] rounded-2xl p-3 shadow-lg bg-slate-900/60 border border-dashed transition-all flex flex-col justify-between relative select-none ${
+        style={{
+          minHeight: `${minHeight}px`,
+          minWidth: `${minWidth}px`,
+          ...(nodeData.style as React.CSSProperties),
+        }}
+        className={`group w-full h-full min-w-[140px] min-h-[70px] rounded-2xl p-3 shadow-lg bg-slate-900/60 border border-dashed transition-all flex flex-col justify-between relative select-none ${
           selected
             ? 'border-2 border-sky-400 ring-2 ring-slate-400/30 shadow-slate-400/20'
             : 'border-slate-600 hover:border-slate-500'
         }`}
       >
-        <DiagramNodeResizer isVisible={selected} minWidth={140} minHeight={70} color="#38bdf8" />
-        <Handle type="target" position={Position.Top} id="top-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <Handle type="source" position={Position.Top} id="top-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <Handle type="source" position={Position.Bottom} id="bottom-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <Handle type="target" position={Position.Left} id="left-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <Handle type="source" position={Position.Left} id="left-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <Handle type="target" position={Position.Right} id="right-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-        <Handle type="source" position={Position.Right} id="right-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <DiagramNodeResizer isVisible={selected} minWidth={minWidth} minHeight={minHeight} color="#38bdf8" />
+        <Handle type="source" position={Position.Top} id="top-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="target" position={Position.Top} id="top-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="source" position={Position.Bottom} id="bottom-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="target" position={Position.Bottom} id="bottom-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="source" position={Position.Left} id="left-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="target" position={Position.Left} id="left-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="source" position={Position.Right} id="right-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <Handle type="target" position={Position.Right} id="right-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+        <QuickInsertHandle nodeId={id} selected={selected} />
 
         {/* Top Bar */}
         <div className="flex items-center justify-between w-full h-5">
@@ -180,10 +218,14 @@ export function C4ContextNode({ id, data, selected }: NodeProps): JSX.Element {
                 (nodeData.onRename as (val: string) => void)(newLabel);
               }
             }}
+            style={fontSize ? { fontSize: `${fontSize}px` } : undefined}
             className="text-base sm:text-lg font-semibold text-slate-300 tracking-wide text-center truncate max-w-full"
           />
           {description && (
-            <div className="text-[11px] text-slate-500 mt-1 line-clamp-2 max-w-full leading-relaxed">
+            <div
+              style={nodeData.descriptionFontSize ? { fontSize: `${nodeData.descriptionFontSize}px` } : undefined}
+              className="text-[11px] text-slate-500 mt-1 line-clamp-3 max-w-full leading-relaxed"
+            >
               {description}
             </div>
           )}
@@ -202,23 +244,30 @@ export function C4ContextNode({ id, data, selected }: NodeProps): JSX.Element {
   // Internal Software System
   return (
     <div
+      ref={cardRef}
       data-testid="c4-system-node"
       onDoubleClick={handleDoubleClick}
-      className={`w-full h-full min-w-[140px] min-h-[70px] rounded-2xl p-3 shadow-lg bg-slate-900/95 border transition-all flex flex-col justify-between relative select-none ${
+      style={{
+        minHeight: `${minHeight}px`,
+        minWidth: `${minWidth}px`,
+        ...(nodeData.style as React.CSSProperties),
+      }}
+      className={`group w-full h-full min-w-[140px] min-h-[70px] rounded-2xl p-3 shadow-lg bg-slate-900/95 border transition-all flex flex-col justify-between relative select-none ${
         selected
           ? 'border-2 border-sky-400 ring-2 ring-blue-500/30 shadow-[0_0_15px_rgba(56,189,248,0.25)]'
           : 'border border-blue-500/50 hover:border-blue-400'
       }`}
     >
-      <DiagramNodeResizer isVisible={selected} minWidth={140} minHeight={70} color="#38bdf8" />
-      <Handle type="target" position={Position.Top} id="top-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-      <Handle type="source" position={Position.Top} id="top-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-      <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-      <Handle type="source" position={Position.Bottom} id="bottom-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-      <Handle type="target" position={Position.Left} id="left-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-      <Handle type="source" position={Position.Left} id="left-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-      <Handle type="target" position={Position.Right} id="right-target" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
-      <Handle type="source" position={Position.Right} id="right-source" className="!w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <DiagramNodeResizer isVisible={selected} minWidth={minWidth} minHeight={minHeight} color="#38bdf8" />
+      <Handle type="source" position={Position.Top} id="top-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="target" position={Position.Top} id="top-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="source" position={Position.Bottom} id="bottom-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="target" position={Position.Bottom} id="bottom-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="source" position={Position.Left} id="left-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="target" position={Position.Left} id="left-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="source" position={Position.Right} id="right-source" className="source !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <Handle type="target" position={Position.Right} id="right-target" className="target !w-2.5 !h-2.5 !bg-sky-400 !border-2 !border-slate-950 !rounded-full shadow-sm" />
+      <QuickInsertHandle nodeId={id} selected={selected} />
 
       {/* Top Bar: IcePanel Drill-down zoom icon top-left, badges top-right */}
       <div className="flex items-center justify-between w-full h-5">
@@ -268,11 +317,15 @@ export function C4ContextNode({ id, data, selected }: NodeProps): JSX.Element {
               (nodeData.onRename as (val: string) => void)(newLabel);
             }
           }}
+          style={fontSize ? { fontSize: `${fontSize}px` } : undefined}
           className="text-base sm:text-lg font-semibold text-slate-100 tracking-wide text-center truncate max-w-full"
         />
 
         {description && (
-          <div className="text-[11px] text-slate-400 mt-1 line-clamp-2 max-w-full leading-tight">
+          <div
+            style={nodeData.descriptionFontSize ? { fontSize: `${nodeData.descriptionFontSize}px` } : undefined}
+            className="text-[11px] text-slate-400 mt-1 line-clamp-3 max-w-full leading-tight"
+          >
             {description}
           </div>
         )}

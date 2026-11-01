@@ -3,6 +3,7 @@ import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { C4ContainerKind, C4ContainerNodeData } from '@diagramhq/domain';
 import { EditableNodeLabel } from './editable-node-label';
 import { DiagramNodeResizer } from './diagram-node-resizer';
+import { useDynamicNodeDimensions } from './node-dimension-utils';
 
 function WebAppIcon(): JSX.Element {
   return (
@@ -201,14 +202,40 @@ export function C4ContainerNode({ id, data, selected }: NodeProps): JSX.Element 
     }
   };
 
+  const fontSize =
+    (nodeData.fontSize as number) ||
+    (nodeData.labelFontSize as number) ||
+    ((nodeData.style as Record<string, unknown>)?.fontSize as number);
+
+  const { cardRef, minHeight, minWidth } = useDynamicNodeDimensions(
+    {
+      label,
+      description,
+      technology,
+      kind: containerKind,
+      fontSize,
+      hasHeader: true,
+      hasFooter: true,
+      paddingY: 32,
+    },
+    'c4Container',
+    id,
+  );
+
   return (
     <div
+      ref={cardRef}
       data-testid={getTestId()}
+      style={{
+        minHeight: `${minHeight}px`,
+        minWidth: `${minWidth}px`,
+        ...(nodeData.style as React.CSSProperties),
+      }}
       className={`relative w-full h-full min-w-[200px] min-h-[80px] p-4 rounded-xl border-2 shadow-xl backdrop-blur-sm transition-all duration-150 ${getThemeClasses()} ${
         selected ? 'ring-2 ring-blue-400 ring-offset-2 ring-offset-slate-950 border-blue-400' : ''
       }`}
     >
-      <DiagramNodeResizer isVisible={selected} minWidth={180} minHeight={70} color="#3b82f6" />
+      <DiagramNodeResizer isVisible={selected} minWidth={minWidth} minHeight={minHeight} color="#3b82f6" />
       <Handle
         type="target"
         position={Position.Top}
@@ -253,6 +280,7 @@ export function C4ContainerNode({ id, data, selected }: NodeProps): JSX.Element 
             (nodeData.onRename as (val: string) => void)(newLabel);
           }
         }}
+        style={fontSize ? { fontSize: `${fontSize}px` } : undefined}
         className="font-semibold text-sm leading-tight text-white mb-1 truncate"
       />
 

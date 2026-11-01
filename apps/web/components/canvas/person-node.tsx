@@ -4,6 +4,7 @@ import type { PersonNodeData } from '@diagramhq/domain';
 import { FlowBadges } from './flow-badges';
 import { EditableNodeLabel } from './editable-node-label';
 import { DiagramNodeResizer } from './diagram-node-resizer';
+import { useDynamicNodeDimensions } from './node-dimension-utils';
 
 
 import { getTechnologyIconPath } from '../../lib/icons';
@@ -48,7 +49,7 @@ function MailIcon(): JSX.Element {
  * PersonNode renders a human actor / user persona (F022).
  * Displays role, department, external status badge, email, and description.
  */
-export function PersonNode({ data, selected }: NodeProps): JSX.Element {
+export function PersonNode({ id, data, selected }: NodeProps): JSX.Element {
   const nodeData = (data ?? {}) as unknown as PersonNodeData;
   const label = typeof nodeData.label === 'string' ? nodeData.label : 'Person';
   const role = typeof nodeData.role === 'string' && nodeData.role.length > 0 ? nodeData.role : undefined;
@@ -61,9 +62,34 @@ export function PersonNode({ data, selected }: NodeProps): JSX.Element {
     getTechnologyIconPath(role) ||
     getTechnologyIconPath(label);
 
+  const fontSize =
+    (nodeData.fontSize as number) ||
+    (nodeData.labelFontSize as number) ||
+    ((nodeData.style as Record<string, unknown>)?.fontSize as number);
+
+  const { cardRef, minHeight, minWidth } = useDynamicNodeDimensions(
+    {
+      label,
+      description,
+      status: role,
+      fontSize,
+      hasHeader: true,
+      hasFooter: true,
+      paddingY: 28,
+    },
+    'person',
+    id,
+  );
+
   return (
     <div
+      ref={cardRef}
       data-testid="person-node"
+      style={{
+        minHeight: `${minHeight}px`,
+        minWidth: `${minWidth}px`,
+        ...(nodeData.style as React.CSSProperties),
+      }}
       className={`w-full h-full min-w-[180px] min-h-[80px] rounded-xl p-3.5 shadow-lg bg-slate-900/95 border transition-all ${
         nodeData.flowView && !nodeData.isInFlow
           ? 'opacity-35 border-slate-800'
@@ -76,17 +102,17 @@ export function PersonNode({ data, selected }: NodeProps): JSX.Element {
               : 'border-pink-500/50 hover:border-pink-400'
       }`}
     >
-      <DiagramNodeResizer isVisible={selected} minWidth={160} minHeight={70} color="#ec4899" />
+      <DiagramNodeResizer isVisible={selected} minWidth={minWidth} minHeight={minHeight} color="#ec4899" />
 
       {/* 4-way handles for seamless connection routing */}
-      <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-pink-400" />
-      <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-pink-400" />
-      <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2 !h-2 !bg-pink-400" />
-      <Handle type="source" position={Position.Bottom} id="bottom-source" className="!w-2 !h-2 !bg-pink-400" />
-      <Handle type="target" position={Position.Left} id="left-target" className="!w-2 !h-2 !bg-pink-400" />
-      <Handle type="source" position={Position.Left} id="left-source" className="!w-2 !h-2 !bg-pink-400" />
-      <Handle type="target" position={Position.Right} id="right-target" className="!w-2 !h-2 !bg-pink-400" />
-      <Handle type="source" position={Position.Right} id="right-source" className="!w-2 !h-2 !bg-pink-400" />
+      <Handle type="source" position={Position.Top} id="top-source" className="source !w-2 !h-2 !bg-pink-400" />
+      <Handle type="target" position={Position.Top} id="top-target" className="target !w-2 !h-2 !bg-pink-400" />
+      <Handle type="source" position={Position.Bottom} id="bottom-source" className="source !w-2 !h-2 !bg-pink-400" />
+      <Handle type="target" position={Position.Bottom} id="bottom-target" className="target !w-2 !h-2 !bg-pink-400" />
+      <Handle type="source" position={Position.Left} id="left-source" className="source !w-2 !h-2 !bg-pink-400" />
+      <Handle type="target" position={Position.Left} id="left-target" className="target !w-2 !h-2 !bg-pink-400" />
+      <Handle type="source" position={Position.Right} id="right-source" className="source !w-2 !h-2 !bg-pink-400" />
+      <Handle type="target" position={Position.Right} id="right-target" className="target !w-2 !h-2 !bg-pink-400" />
 
       {/* Header bar */}
       <div className="flex items-center justify-between gap-2 mb-2">
@@ -115,7 +141,7 @@ export function PersonNode({ data, selected }: NodeProps): JSX.Element {
 
       {/* Label / Name */}
       <EditableNodeLabel
-        nodeId={nodeData.id as string}
+        nodeId={(nodeData.id as string) ?? id}
         label={label}
         isEditing={Boolean(nodeData.isEditing)}
         onCommit={(newLabel) => {
@@ -123,6 +149,7 @@ export function PersonNode({ data, selected }: NodeProps): JSX.Element {
             (nodeData.onRename as (val: string) => void)(newLabel);
           }
         }}
+        style={fontSize ? { fontSize: `${fontSize}px` } : undefined}
         className="text-sm font-semibold text-slate-100 truncate"
       />
 

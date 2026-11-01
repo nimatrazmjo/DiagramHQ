@@ -14,6 +14,8 @@ import { QueueNode } from './queue-node';
 import { GroupNode } from './group-node';
 import { EditableNodeLabel } from './editable-node-label';
 import { DiagramNodeResizer } from './diagram-node-resizer';
+import { useDynamicNodeDimensions } from './node-dimension-utils';
+import { QuickInsertHandle } from './quick-insert-handle';
 
 export { C4ContextNode } from './c4-context-node';
 export { C4ContainerNode } from './c4-container-node';
@@ -67,16 +69,41 @@ export function StoreNode({ id, data, selected }: NodeProps): JSX.Element {
   const kind = typeof nodeData.kind === 'string' ? nodeData.kind : 'store';
   const description = typeof nodeData.description === 'string' ? nodeData.description : undefined;
 
+  const fontSize =
+    (nodeData.fontSize as number) ||
+    (nodeData.labelFontSize as number) ||
+    ((nodeData.style as Record<string, unknown>)?.fontSize as number);
+
+  const { cardRef, minHeight, minWidth } = useDynamicNodeDimensions(
+    {
+      label,
+      description,
+      kind,
+      fontSize,
+      hasHeader: true,
+      hasFooter: false,
+      paddingY: 24,
+    },
+    'store',
+    id,
+  );
+
   return (
     <div
+      ref={cardRef}
       data-testid="store-node"
-      className={`w-full h-full min-w-[180px] min-h-[70px] rounded-lg p-3 shadow-lg bg-slate-900/95 border transition-all ${
+      style={{
+        minHeight: `${minHeight}px`,
+        minWidth: `${minWidth}px`,
+        ...(nodeData.style as React.CSSProperties),
+      }}
+      className={`group w-full h-full min-w-[180px] min-h-[70px] rounded-lg p-3 shadow-lg bg-slate-900/95 border transition-all ${
         selected
           ? 'border-purple-500 ring-2 ring-purple-500/30 shadow-purple-500/20'
           : 'border-purple-500/40 hover:border-purple-400'
       }`}
     >
-      <DiagramNodeResizer isVisible={selected} minWidth={160} minHeight={60} color="#c084fc" />
+      <DiagramNodeResizer isVisible={selected} minWidth={minWidth} minHeight={minHeight} color="#c084fc" />
       <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-purple-400" />
       <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-purple-400" />
       <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2 !h-2 !bg-purple-400" />
@@ -85,6 +112,7 @@ export function StoreNode({ id, data, selected }: NodeProps): JSX.Element {
       <Handle type="source" position={Position.Left} id="left-source" className="!w-2 !h-2 !bg-purple-400" />
       <Handle type="target" position={Position.Right} id="right-target" className="!w-2 !h-2 !bg-purple-400" />
       <Handle type="source" position={Position.Right} id="right-source" className="!w-2 !h-2 !bg-purple-400" />
+      <QuickInsertHandle nodeId={id} selected={selected} color="#c084fc" />
 
       <div className="flex items-center justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-1.5">
@@ -109,6 +137,7 @@ export function StoreNode({ id, data, selected }: NodeProps): JSX.Element {
             (nodeData.onRename as (val: string) => void)(newLabel);
           }
         }}
+        style={fontSize ? { fontSize: `${fontSize}px` } : undefined}
         className="text-sm font-semibold text-slate-100 truncate"
       />
 

@@ -75,18 +75,22 @@ import {
   getCanvasClipboard,
 } from '../../lib/canvas-clipboard';
 import { nodeTypes } from './custom-nodes';
+import { calculateDynamicNodeDimensions } from './node-dimension-utils';
 import { IcePanelEdge } from './icepanel-edge';
 import { AlignmentToolbar } from './alignment-toolbar';
 import { LayoutMenu } from './layout-menu';
 import { ShapePalette, type ShapeKind } from './shape-palette';
 import { TemplatePanel } from './template-panel';
 import { CanvasContextMenu, type ContextMenuState } from './context-menu';
+import { QuickConnectPopover } from './quick-connect-popover';
 
 const edgeTypes = {
   icepanel: IcePanelEdge,
   default: IcePanelEdge,
   smoothstep: IcePanelEdge,
 };
+
+const DEFAULT_EDGE_OPTIONS = { type: 'icepanel' };
 
 export interface InfiniteCanvasProps {
   initialNodes?: CanvasNode[];
@@ -120,6 +124,7 @@ export interface InfiniteCanvasProps {
   onEdgeLabelChange?: (edgeId: string, newLabel: string, prevLabel: string) => void;
   onDrillIn?: (nodeId: string) => void;
   onAddToView?: (nodeId: string) => void;
+  allModelObjects?: Array<{ id: string; name: string; kind?: string; domain?: string; icon?: string }>;
 }
 
 export interface NodeDragStopHandlerOptions {
@@ -252,6 +257,15 @@ export function getMiniMapNodeColor(node: Node): string {
 function toFlowNode(node: CanvasNode): Node {
   const x = Number.isFinite(node.position?.x) ? Number(node.position.x) : 0;
   const y = Number.isFinite(node.position?.y) ? Number(node.position.y) : 0;
+  const dynamicDims = calculateDynamicNodeDimensions(node.data, node.type);
+  const width =
+    node.width != null && Number.isFinite(node.width)
+      ? Math.max(node.width, dynamicDims.minWidth)
+      : undefined;
+  const height =
+    node.height != null && Number.isFinite(node.height)
+      ? Math.max(node.height, dynamicDims.minHeight)
+      : undefined;
   return {
     id: node.id,
     type: node.type,
@@ -261,9 +275,14 @@ function toFlowNode(node: CanvasNode): Node {
       ...(node.parentId ? { parentId: node.parentId } : {}),
     },
     draggable: true,
-    ...(node.width != null && Number.isFinite(node.width) ? { width: node.width } : {}),
-    ...(node.height != null && Number.isFinite(node.height) ? { height: node.height } : {}),
+    ...(width != null ? { width } : {}),
+    ...(height != null ? { height } : {}),
     ...(node.selected != null ? { selected: node.selected } : {}),
+    style: {
+      ...(node.style || {}),
+      minWidth: `${dynamicDims.minWidth}px`,
+      minHeight: `${dynamicDims.minHeight}px`,
+    },
   };
 }
 
@@ -325,6 +344,7 @@ function InfiniteCanvasContent({
   onEdgeLabelChange,
   onDrillIn,
   onAddToView,
+  allModelObjects,
 }: InfiniteCanvasProps): JSX.Element {
   const [nodes, setNodes] = useState<Node[]>(() => initialNodes.map(toFlowNode));
   const [edges, setEdges] = useState<Edge[]>(() => initialEdges.map(toFlowEdge));
@@ -350,6 +370,15 @@ function InfiniteCanvasContent({
   const currentZoom = useCanvasStore((s) => s.viewport.zoom);
   const reactFlow = useReactFlow();
 
+  const onNodeSelectRef = React.useRef(onNodeSelect);
+  onNodeSelectRef.current = onNodeSelect;
+  const onEdgeSelectRef = React.useRef(onEdgeSelect);
+  onEdgeSelectRef.current = onEdgeSelect;
+  const propSelectedNodeIdsRef = React.useRef(propSelectedNodeIds);
+  propSelectedNodeIdsRef.current = propSelectedNodeIds;
+  const propSelectedEdgeIdsRef = React.useRef(propSelectedEdgeIds);
+  propSelectedEdgeIdsRef.current = propSelectedEdgeIds;
+
   const prevInitialPositionsRef = React.useRef<Map<string, { x: number; y: number }>>(
     new Map(initialNodes.map((n) => [n.id, { x: n.position.x, y: n.position.y }])),
   );
@@ -357,6 +386,40 @@ function InfiniteCanvasContent({
   const containerRef = React.useRef<HTMLDivElement>(null);
   const mouseCanvasPosRef = React.useRef<{ x: number; y: number } | null>(null);
   const isAltDragRef = React.useRef<boolean>(false);
+
+  const connectStartRef = React.useRef<{
+    nodeId: string | null;
+    handleId: string | null;
+    handleType: string | null;
+  } | null>(null);
+  const connectionMadeRef = React.useRef(false);
+
+  const [quickConnectPopover, setQuickConnectPopover] = useState<{
+    isOpen: boolean;
+    sourceNodeId: string;
+    sourceHandleId?: string | null;
+    screenPosition: { x: number; y: number };
+    flowPosition: { x: number; y: number };
+  } | null>(null);
+
+  const availableExistingObjects = React.useMemo(() => {
+    if (allModelObjects && allModelObjects.length > 0) {
+      return allModelObjects.map((m) => ({
+        id: m.id,
+        name: m.name,
+        kind: m.kind,
+        domain: m.domain,
+        icon: m.icon,
+      }));
+    }
+    return nodes.map((n) => ({
+      id: n.id,
+      name: String(n.data?.label || n.data?.name || n.id),
+      kind: (n.data?.kind as string) || n.type,
+      domain: (n.data?.domain as string) || undefined,
+      icon: (n.data?.icon as string) || undefined,
+    }));
+  }, [allModelObjects, nodes]);
 
   const handleToggleFullscreen = useCallback(() => {
     if (typeof document === 'undefined') return;
@@ -471,6 +534,259 @@ function InfiniteCanvasContent({
     [edges, onCommandDispatched, onEdgeLabelChange],
   );
 
+  const nodesRef = React.useRef(nodes);
+  nodesRef.current = nodes;
+  const edgesRef = React.useRef(edges);
+  edgesRef.current = edges;
+
+  const handleQuickConnectSelectNew = useCallback(
+    (kind: 'system' | 'actor' | 'group', customLabel?: string) => {
+      if (!quickConnectPopover) return;
+      const { sourceNodeId, sourceHandleId, flowPosition } = quickConnectPopover;
+      setQuickConnectPopover(null);
+
+      const sourceNode = nodesRef.current.find((n) => n.id === sourceNodeId);
+      if (!sourceNode) return;
+
+      const nodeType = kind === 'actor' ? 'person' : kind;
+      const defaultLabels: Record<string, string> = {
+        system: 'System',
+        actor: 'Actor',
+        group: 'Group',
+      };
+      const resolvedLabel = customLabel?.trim() || defaultLabels[kind] || 'System';
+
+      const newId = `${nodeType}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+      const newCanvasNode: CanvasNode = {
+        id: newId,
+        type: nodeType,
+        position: { x: Math.round(flowPosition.x), y: Math.round(flowPosition.y) },
+        data: {
+          label: resolvedLabel,
+          name: resolvedLabel,
+          kind: nodeType,
+          description: '',
+          status: 'active',
+          c4Level: 1,
+        },
+      };
+
+      const resolvedSourceHandle = (sourceHandleId || 'right-source').replace('-target', '-source');
+      const resolvedTargetHandle = 'left-target';
+
+      const newEdgeId = `edge-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+      const newCanvasEdge: CanvasEdge = {
+        id: newEdgeId,
+        source: sourceNode.id,
+        target: newId,
+        sourceHandle: resolvedSourceHandle,
+        targetHandle: resolvedTargetHandle,
+        type: 'icepanel',
+        label: 'Sends data to',
+        data: {
+          sourceHandle: resolvedSourceHandle,
+          targetHandle: resolvedTargetHandle,
+          routing: 'manual',
+          label: 'Sends data to',
+        },
+      };
+
+      const createNodeCmd = new CreateNodeCommand({
+        viewId,
+        node: newCanvasNode,
+      });
+      const connectCmd = new ConnectNodesCommand({
+        viewId,
+        edge: newCanvasEdge,
+      });
+
+      if (onCommandDispatched) {
+        onCommandDispatched(createNodeCmd);
+        onCommandDispatched(connectCmd);
+      }
+      void defaultCommandDispatcher.dispatch(createNodeCmd);
+      void defaultCommandDispatcher.dispatch(connectCmd);
+
+      const flowNode: Node = {
+        ...toFlowNode(newCanvasNode),
+        selected: false,
+      };
+      const flowEdge: Edge = {
+        id: newEdgeId,
+        source: sourceNode.id,
+        target: newId,
+        sourceHandle: resolvedSourceHandle,
+        targetHandle: resolvedTargetHandle,
+        type: 'icepanel',
+        label: 'Sends data to',
+        selected: true,
+        data: newCanvasEdge.data,
+      };
+
+      setNodes((nds) => [...nds.map((n) => ({ ...n, selected: false })), flowNode]);
+      setEdges((eds) => [...eds.map((e) => ({ ...e, selected: false })), flowEdge]);
+
+      useCanvasStore.getState().setSelectedEdges([newEdgeId]);
+      useCanvasStore.getState().setSelectedNodes([]);
+
+      if (onNodeCreate) {
+        onNodeCreate(newCanvasNode);
+      }
+      if (onEdgeConnect) {
+        onEdgeConnect(newCanvasEdge);
+      }
+
+      if (onEdgeSelect) {
+        onEdgeSelect(newEdgeId);
+      }
+      if (onNodeSelect) {
+        onNodeSelect(null);
+      }
+    },
+    [quickConnectPopover, viewId, onCommandDispatched, onNodeCreate, onEdgeConnect, onEdgeSelect, onNodeSelect],
+  );
+
+  const handleQuickConnectSelectExisting = useCallback(
+    (objectId: string) => {
+      if (!quickConnectPopover) return;
+      const { sourceNodeId, sourceHandleId, flowPosition } = quickConnectPopover;
+      setQuickConnectPopover(null);
+
+      const sourceNode = nodesRef.current.find((n) => n.id === sourceNodeId);
+      if (!sourceNode) return;
+
+      const existingOnCanvas = nodesRef.current.find((n) => n.id === objectId);
+      const targetId = objectId;
+
+      if (!existingOnCanvas && allModelObjects) {
+        const modelObj = allModelObjects.find((m) => m.id === objectId);
+        if (modelObj) {
+          const kind = modelObj.kind || 'system';
+          const nodeType = kind === 'actor' ? 'person' : kind;
+          const newCanvasNode: CanvasNode = {
+            id: modelObj.id,
+            type: nodeType,
+            position: { x: Math.round(flowPosition.x), y: Math.round(flowPosition.y) },
+            data: {
+              label: modelObj.name,
+              name: modelObj.name,
+              kind: nodeType,
+              description: (modelObj as { description?: string })?.description || '',
+              status: 'active',
+              domain: modelObj.domain,
+            },
+          };
+          const createNodeCmd = new CreateNodeCommand({ viewId, node: newCanvasNode });
+          if (onCommandDispatched) onCommandDispatched(createNodeCmd);
+          void defaultCommandDispatcher.dispatch(createNodeCmd);
+          setNodes((nds) => [...nds, toFlowNode(newCanvasNode)]);
+          if (onNodeCreate) onNodeCreate(newCanvasNode);
+        }
+      }
+
+      const resolvedSourceHandle = (sourceHandleId || 'right-source').replace('-target', '-source');
+      const resolvedTargetHandle = 'left-target';
+
+      const newEdgeId = `edge-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+      const newCanvasEdge: CanvasEdge = {
+        id: newEdgeId,
+        source: sourceNode.id,
+        target: targetId,
+        sourceHandle: resolvedSourceHandle,
+        targetHandle: resolvedTargetHandle,
+        type: 'icepanel',
+        label: 'Sends data to',
+        data: {
+          sourceHandle: resolvedSourceHandle,
+          targetHandle: resolvedTargetHandle,
+          routing: 'manual',
+          label: 'Sends data to',
+        },
+      };
+
+      const connectCmd = new ConnectNodesCommand({ viewId, edge: newCanvasEdge });
+      if (onCommandDispatched) onCommandDispatched(connectCmd);
+      void defaultCommandDispatcher.dispatch(connectCmd);
+
+      const flowEdge: Edge = {
+        id: newEdgeId,
+        source: sourceNode.id,
+        target: targetId,
+        sourceHandle: sourceHandleId || 'right-source',
+        targetHandle: 'left-target',
+        type: 'icepanel',
+        label: 'Sends data to',
+        selected: true,
+        data: newCanvasEdge.data,
+      };
+
+      setNodes((nds) => nds.map((n) => ({ ...n, selected: false })));
+      setEdges((eds) => [...eds.map((e) => ({ ...e, selected: false })), flowEdge]);
+
+      useCanvasStore.getState().setSelectedEdges([newEdgeId]);
+      useCanvasStore.getState().setSelectedNodes([]);
+
+      if (onEdgeConnect) onEdgeConnect(newCanvasEdge);
+      if (onEdgeSelect) onEdgeSelect(newEdgeId);
+      if (onNodeSelect) onNodeSelect(null);
+    },
+    [quickConnectPopover, allModelObjects, viewId, onCommandDispatched, onNodeCreate, onEdgeConnect, onEdgeSelect, onNodeSelect],
+  );
+
+  const handleQuickConnectInsert = useCallback(
+    (sourceNodeId: string, direction: 'right' | 'bottom' | 'top' | 'left' = 'right') => {
+      const sourceNode = nodesRef.current.find((n) => n.id === sourceNodeId);
+      if (!sourceNode) return;
+
+      const sourceData = (sourceNode.data ?? {}) as Record<string, unknown>;
+      const nodeType = sourceNode.type || 'system';
+      const dynamicDims = calculateDynamicNodeDimensions(sourceData, nodeType);
+      const sourceWidth =
+        typeof sourceNode.width === 'number' && Number.isFinite(sourceNode.width)
+          ? sourceNode.width
+          : dynamicDims.minWidth;
+      const sourceHeight =
+        typeof sourceNode.height === 'number' && Number.isFinite(sourceNode.height)
+          ? sourceNode.height
+          : dynamicDims.minHeight;
+
+      const gap = 120;
+      let newX = sourceNode.position.x + sourceWidth + gap;
+      let newY = sourceNode.position.y;
+      let handleId: string | null = 'right-source';
+
+      if (direction === 'bottom') {
+        newX = sourceNode.position.x;
+        newY = sourceNode.position.y + sourceHeight + gap;
+        handleId = 'bottom-source';
+      } else if (direction === 'left') {
+        newX = sourceNode.position.x - sourceWidth - gap;
+        newY = sourceNode.position.y;
+        handleId = 'left-source';
+      } else if (direction === 'top') {
+        newX = sourceNode.position.x;
+        newY = sourceNode.position.y - sourceHeight - gap;
+        handleId = 'top-source';
+      }
+
+      let screenPos = { x: 500, y: 300 };
+      try {
+        screenPos = reactFlow.flowToScreenPosition({ x: newX, y: newY });
+      } catch {
+        // Fallback
+      }
+
+      setQuickConnectPopover({
+        isOpen: true,
+        sourceNodeId,
+        sourceHandleId: handleId,
+        screenPosition: screenPos,
+        flowPosition: { x: newX, y: newY },
+      });
+    },
+    [reactFlow],
+  );
+
   useEffect(() => {
     const onNodeRenameEvent = (e: Event) => {
       const detail = (e as CustomEvent<{ nodeId: string; newLabel: string; prevLabel: string }>).detail;
@@ -486,13 +802,40 @@ function InfiniteCanvasContent({
       }
     };
 
+    const onQuickInsertEvent = (e: Event) => {
+      const detail = (e as CustomEvent<{ sourceNodeId: string; direction?: 'right' | 'bottom' | 'top' | 'left' }>).detail;
+      if (detail?.sourceNodeId) {
+        handleQuickConnectInsert(detail.sourceNodeId, detail.direction);
+      }
+    };
+
+    const onSelectEdgeEvent = (e: Event) => {
+      const detail = (e as CustomEvent<{ edgeId: string }>).detail;
+      if (detail?.edgeId) {
+        useCanvasStore.getState().setSelectedEdges([detail.edgeId]);
+        useCanvasStore.getState().setSelectedNodes([]);
+        if (onEdgeSelect) onEdgeSelect(detail.edgeId);
+        if (onNodeSelect) onNodeSelect(null);
+      }
+    };
+
     window.addEventListener('canvas:node-rename', onNodeRenameEvent);
     window.addEventListener('canvas:edge-label-change', onEdgeLabelChangeEvent);
+    window.addEventListener('canvas:quick-connect-insert', onQuickInsertEvent);
+    window.addEventListener('canvas:select-edge', onSelectEdgeEvent);
     return () => {
       window.removeEventListener('canvas:node-rename', onNodeRenameEvent);
       window.removeEventListener('canvas:edge-label-change', onEdgeLabelChangeEvent);
+      window.removeEventListener('canvas:quick-connect-insert', onQuickInsertEvent);
+      window.removeEventListener('canvas:select-edge', onSelectEdgeEvent);
     };
-  }, [handleCommitNodeRename, handleCommitEdgeLabel]);
+  }, [handleCommitNodeRename, handleCommitEdgeLabel, handleQuickConnectInsert, onEdgeSelect, onNodeSelect]);
+
+  const handleCommitNodeRenameRef = React.useRef(handleCommitNodeRename);
+  handleCommitNodeRenameRef.current = handleCommitNodeRename;
+
+  const handleCommitEdgeLabelRef = React.useRef(handleCommitEdgeLabel);
+  handleCommitEdgeLabelRef.current = handleCommitEdgeLabel;
 
   // In Focus Mode (F017), unselected nodes and unconnected edges are visually dimmed
   // so the user can isolate the selected architecture component or sub-graph.
@@ -501,48 +844,78 @@ function InfiniteCanvasContent({
     return nodes.map((n) => {
       const isSelected = selectedSet.has(n.id);
       const isEditing = editingNodeId === n.id;
+      const dynamicDims = calculateDynamicNodeDimensions(n.data, n.type);
+      const width =
+        n.width != null && Number.isFinite(n.width)
+          ? Math.max(n.width, dynamicDims.minWidth)
+          : undefined;
+      const height =
+        n.height != null && Number.isFinite(n.height)
+          ? Math.max(n.height, dynamicDims.minHeight)
+          : undefined;
+
       const baseNode =
         isFocusMode && selectedNodeIds.length > 0
           ? {
               ...n,
+              ...(width != null ? { width } : {}),
+              ...(height != null ? { height } : {}),
               style: {
                 ...n.style,
+                minWidth: `${dynamicDims.minWidth}px`,
+                minHeight: `${dynamicDims.minHeight}px`,
                 opacity: isSelected ? 1 : 0.15,
                 filter: isSelected ? 'none' : 'grayscale(100%)',
                 transition: 'opacity 0.2s ease, filter 0.2s ease',
               },
             }
-          : n;
+          : {
+              ...n,
+              ...(width != null ? { width } : {}),
+              ...(height != null ? { height } : {}),
+              style: {
+                ...n.style,
+                minWidth: `${dynamicDims.minWidth}px`,
+                minHeight: `${dynamicDims.minHeight}px`,
+              },
+            };
 
       return {
         ...baseNode,
+        selected: isSelected,
         data: {
           ...baseNode.data,
           isEditing,
           onStartEdit: () => setEditingNodeId(n.id),
           onRename: (newLabel: string) =>
-            handleCommitNodeRename(n.id, newLabel, String(n.data?.label || '')),
+            handleCommitNodeRenameRef.current(n.id, newLabel, String(n.data?.label || '')),
         },
       };
     });
-  }, [nodes, isFocusMode, selectedNodeIds, editingNodeId, handleCommitNodeRename]);
+  }, [nodes, isFocusMode, selectedNodeIds, editingNodeId]);
 
   const displayedEdges = React.useMemo(() => {
-    const selectedSet = new Set(selectedNodeIds);
+    const selectedNodeSet = new Set(selectedNodeIds);
+    const selectedEdgeSet = new Set(selectedEdgeIds);
     return edges.map((e) => {
-      const isConnected = selectedSet.has(e.source) || selectedSet.has(e.target);
+      const isConnected = selectedNodeSet.has(e.source) || selectedNodeSet.has(e.target);
+      const isSelected = selectedEdgeSet.has(e.id);
       const isEditing = editingEdgeId === e.id;
       const baseEdge =
         isFocusMode && selectedNodeIds.length > 0
           ? {
               ...e,
+              selected: isSelected,
               style: {
                 ...e.style,
                 opacity: isConnected ? 1 : 0.08,
                 transition: 'opacity 0.2s ease',
               },
             }
-          : e;
+          : {
+              ...e,
+              selected: isSelected,
+            };
 
       return {
         ...baseEdge,
@@ -552,7 +925,7 @@ function InfiniteCanvasContent({
           onStartEdit: () => setEditingEdgeId(e.id),
           onCancelEdit: () => setEditingEdgeId(null),
           onLabelChange: (newLabel: string) =>
-            handleCommitEdgeLabel(
+            handleCommitEdgeLabelRef.current(
               e.id,
               newLabel,
               String(e.data?.description || e.label || ''),
@@ -560,19 +933,19 @@ function InfiniteCanvasContent({
         },
       };
     });
-  }, [edges, isFocusMode, selectedNodeIds, editingEdgeId, handleCommitEdgeLabel]);
+  }, [edges, isFocusMode, selectedNodeIds, selectedEdgeIds, editingEdgeId]);
 
   const dragStartPositions = React.useRef<Map<string, { x: number; y: number }>>(new Map());
 
   const handleNodeDragStart = useCallback((event: unknown, node: Node) => {
     const isAlt = Boolean((event as React.MouseEvent)?.altKey);
     isAltDragRef.current = isAlt;
-    const currentInState = nodes.find((n) => n.id === node.id);
+    const currentInState = nodesRef.current.find((n) => n.id === node.id);
     dragStartPositions.current.set(node.id, {
       x: currentInState ? currentInState.position.x : node.position.x,
       y: currentInState ? currentInState.position.y : node.position.y,
     });
-  }, [nodes]);
+  }, []);
 
   const handleNodeDragStop = useCallback((event: unknown, node: Node) => {
     const isAlt = isAltDragRef.current || Boolean((event as React.MouseEvent)?.altKey);
@@ -630,7 +1003,7 @@ function InfiniteCanvasContent({
     }
 
     const handler = createNodeDragStopHandler({
-      getNodes: () => nodes,
+      getNodes: () => nodesRef.current,
       viewId,
       persistFn,
       onCommandDispatched,
@@ -644,7 +1017,7 @@ function InfiniteCanvasContent({
       snapToGridEnabled: isSnapToGridEnabled,
     });
     return handler(event, node);
-  }, [nodes, viewId, persistFn, onCommandDispatched, onNodeDragStop, isSnapToGridEnabled, onNodeSelect, onNodeCreate]);
+  }, [viewId, persistFn, onCommandDispatched, onNodeDragStop, isSnapToGridEnabled, onNodeSelect, onNodeCreate]);
 
   /** Group drag stop: fired when a multi-selection is dragged and released. */
   const handleSelectionDragStop: SelectionDragHandler = useCallback(
@@ -687,7 +1060,7 @@ function InfiniteCanvasContent({
         });
 
         const draggedIdSet = new Set(draggedNodes.map((n) => n.id));
-        const internalEdges = edges.filter(
+        const internalEdges = edgesRef.current.filter(
           (e) => draggedIdSet.has(e.source) && draggedIdSet.has(e.target),
         );
 
@@ -797,7 +1170,7 @@ function InfiniteCanvasContent({
         );
       });
     },
-    [nodes, edges, viewId, batchPersistFn, onCommandDispatched, onNodeDragStop, isSnapToGridEnabled, onNodeSelect, onNodeCreate],
+    [viewId, batchPersistFn, onCommandDispatched, onNodeDragStop, isSnapToGridEnabled, onNodeSelect, onNodeCreate],
   );
 
   // Shared guard across every whole-graph position mutation (align,
@@ -1704,9 +2077,18 @@ function InfiniteCanvasContent({
     handleApplyLayout('layered');
   }, [handleApplyLayout]);
 
+  const onConnectStart = useCallback(
+    (_: MouseEvent | TouchEvent, params: { nodeId: string | null; handleId: string | null; handleType: 'source' | 'target' | null }) => {
+      connectStartRef.current = params;
+      connectionMadeRef.current = false;
+    },
+    [],
+  );
+
   const onConnect = useCallback(
     (connection: Connection) => {
       if (!connection.source || !connection.target) return;
+      connectionMadeRef.current = true;
       const edgeId = `conn-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
       const hasSpecificHandle = Boolean(connection.sourceHandle || connection.targetHandle);
       const canvasEdge: CanvasEdge = {
@@ -1716,11 +2098,12 @@ function InfiniteCanvasContent({
         sourceHandle: connection.sourceHandle ?? undefined,
         targetHandle: connection.targetHandle ?? undefined,
         type: 'icepanel',
-        label: '',
+        label: 'Sends data to',
         data: {
           sourceHandle: connection.sourceHandle ?? undefined,
           targetHandle: connection.targetHandle ?? undefined,
           routing: hasSpecificHandle ? 'manual' : 'auto',
+          label: 'Sends data to',
         },
       };
 
@@ -1743,7 +2126,7 @@ function InfiniteCanvasContent({
           sourceHandle: connection.sourceHandle,
           targetHandle: connection.targetHandle,
           type: 'icepanel',
-          label: '',
+          label: 'Sends data to',
           data: canvasEdge.data,
         },
       ]);
@@ -1751,8 +2134,51 @@ function InfiniteCanvasContent({
       if (onEdgeConnect) {
         onEdgeConnect(canvasEdge);
       }
+
+      useCanvasStore.getState().setSelectedEdges([edgeId]);
+      useCanvasStore.getState().setSelectedNodes([]);
+      if (onEdgeSelect) {
+        onEdgeSelect(edgeId);
+      }
+      if (onNodeSelect) {
+        onNodeSelect(null);
+      }
     },
-    [viewId, onCommandDispatched, onEdgeConnect],
+    [viewId, onCommandDispatched, onEdgeConnect, onEdgeSelect, onNodeSelect],
+  );
+
+  const onConnectEnd = useCallback(
+    (event: MouseEvent | TouchEvent) => {
+      const startParams = connectStartRef.current;
+      const made = connectionMadeRef.current;
+      connectStartRef.current = null;
+      connectionMadeRef.current = false;
+
+      if (made || !startParams?.nodeId) {
+        return;
+      }
+
+      const clientX = 'clientX' in event ? event.clientX : event.touches?.[0]?.clientX ?? 0;
+      const clientY = 'clientY' in event ? event.clientY : event.touches?.[0]?.clientY ?? 0;
+
+      if (!clientX && !clientY) return;
+
+      let flowPos = { x: 0, y: 0 };
+      try {
+        flowPos = reactFlow.screenToFlowPosition({ x: clientX, y: clientY });
+      } catch {
+        flowPos = { x: clientX, y: clientY };
+      }
+
+      setQuickConnectPopover({
+        isOpen: true,
+        sourceNodeId: startParams.nodeId,
+        sourceHandleId: startParams.handleId,
+        screenPosition: { x: clientX, y: clientY },
+        flowPosition: flowPos,
+      });
+    },
+    [reactFlow],
   );
 
   const handleContextAddConnection = useCallback(
@@ -1936,86 +2362,89 @@ function InfiniteCanvasContent({
     setNodes((currentNodes) => {
       const currentMap = new Map(currentNodes.map((n) => [n.id, n]));
       const newInitialMap = new Map<string, { x: number; y: number }>();
+      let hasRealChange = currentNodes.length !== initialNodes.length;
 
       const updatedNodes = initialNodes.map((node) => {
         newInitialMap.set(node.id, { x: node.position.x, y: node.position.y });
         const existing = currentMap.get(node.id);
         const flowNode = toFlowNode(node);
-        if (existing) {
-          const isSelected =
-            node.selected ??
-            (propSelectedNodeIds ? propSelectedNodeIds.includes(node.id) : existing.selected);
-
-          const prevInitialPos = prevInitialPositionsRef.current.get(node.id);
-          const positionChangedByParent =
-            !prevInitialPos ||
-            (Number.isFinite(node.position.x) &&
-              Number.isFinite(prevInitialPos.x) &&
-              Math.abs(prevInitialPos.x - node.position.x) > 0.001) ||
-            (Number.isFinite(node.position.y) &&
-              Number.isFinite(prevInitialPos.y) &&
-              Math.abs(prevInitialPos.y - node.position.y) > 0.001);
-
-          const rawPos = positionChangedByParent ? node.position : (existing.position ?? node.position);
-          const position = {
-            x: Number.isFinite(rawPos?.x) ? rawPos.x : 0,
-            y: Number.isFinite(rawPos?.y) ? rawPos.y : 0,
-          };
-
-          const width = Number.isFinite(flowNode.width)
-            ? flowNode.width
-            : Number.isFinite(existing.width)
-              ? existing.width
-              : undefined;
-          const height = Number.isFinite(flowNode.height)
-            ? flowNode.height
-            : Number.isFinite(existing.height)
-              ? existing.height
-              : undefined;
-
-          return {
-            ...existing,
-            ...flowNode,
-            selected: isSelected,
-            position,
-            ...(width != null ? { width } : {}),
-            ...(height != null ? { height } : {}),
-            ...(width != null && height != null
-              ? { style: { ...(existing.style || {}), width: `${width}px`, height: `${height}px` } }
-              : {}),
-            data: { ...existing.data, ...flowNode.data },
-          };
+        if (!existing) {
+          hasRealChange = true;
+          return flowNode;
         }
-        return flowNode;
+
+        const prevInitialPos = prevInitialPositionsRef.current.get(node.id);
+        const positionChangedByParent =
+          prevInitialPos !== undefined &&
+          ((Number.isFinite(node.position.x) &&
+            Number.isFinite(prevInitialPos.x) &&
+            Math.abs(prevInitialPos.x - node.position.x) > 0.001) ||
+           (Number.isFinite(node.position.y) &&
+            Number.isFinite(prevInitialPos.y) &&
+            Math.abs(prevInitialPos.y - node.position.y) > 0.001));
+
+        if (positionChangedByParent) {
+          hasRealChange = true;
+        }
+
+        const rawPos = positionChangedByParent ? node.position : (existing.position ?? node.position);
+        const position = {
+          x: Number.isFinite(rawPos?.x) ? rawPos.x : 0,
+          y: Number.isFinite(rawPos?.y) ? rawPos.y : 0,
+        };
+
+        const existingLabel = (existing.data?.label as string) ?? '';
+        const nodeLabel = (node.data?.label as string) ?? '';
+        if (existingLabel !== nodeLabel) {
+          hasRealChange = true;
+        }
+
+        return {
+          ...existing,
+          position,
+          data: { ...existing.data, ...node.data },
+        };
       });
 
       prevInitialPositionsRef.current = newInitialMap;
+      if (!hasRealChange) {
+        return currentNodes;
+      }
       return updatedNodes;
     });
-  }, [initialNodes, propSelectedNodeIds]);
+  }, [initialNodes]);
 
   useEffect(() => {
     setEdges((currentEdges) => {
       const currentMap = new Map(currentEdges.map((e) => [e.id, e]));
-      return initialEdges.map((edge) => {
+      let hasRealChange = currentEdges.length !== initialEdges.length;
+
+      const updatedEdges = initialEdges.map((edge) => {
         const existing = currentMap.get(edge.id);
         const flowEdge = toFlowEdge(edge);
-        if (existing) {
-          const isSelected =
-            edge.selected ??
-            (propSelectedEdgeIds ? propSelectedEdgeIds.includes(edge.id) : existing.selected);
-
-          return {
-            ...existing,
-            ...flowEdge,
-            selected: isSelected,
-            data: { ...existing.data, ...flowEdge.data },
-          };
+        if (!existing) {
+          hasRealChange = true;
+          return flowEdge;
         }
-        return flowEdge;
+
+        if (existing.label !== edge.label) {
+          hasRealChange = true;
+        }
+
+        return {
+          ...existing,
+          ...flowEdge,
+          label: edge.label,
+          data: { ...existing.data, ...flowEdge.data, label: edge.label },
+        };
       });
+
+      if (!hasRealChange) {
+        return currentEdges;
+      }
+      return updatedEdges;
     });
-  }, [initialEdges, propSelectedEdgeIds]);
+  }, [initialEdges]);
 
   // Keyboard shortcut listener: Space for pan, 'F' for fit-to-content, Escape for clearing selection, Delete/Backspace for removal
   useEffect(() => {
@@ -2166,9 +2595,18 @@ function InfiniteCanvasContent({
         ) as Extract<NodeChange, { type: 'dimensions' }> | undefined;
 
         if (dimChange?.dimensions && Number.isFinite(dimChange.dimensions.width) && Number.isFinite(dimChange.dimensions.height)) {
-          const w = Math.round(dimChange.dimensions.width);
-          const h = Math.round(dimChange.dimensions.height);
+          const dynamicDims = calculateDynamicNodeDimensions(n.data, n.type);
+          const w = Math.max(Math.round(dimChange.dimensions.width), dynamicDims.minWidth);
+          const h = Math.max(Math.round(dimChange.dimensions.height), dynamicDims.minHeight);
           const currentStyle = (n as Node).style || {};
+          if (
+            n.width === w &&
+            n.height === h &&
+            currentStyle.width === `${w}px` &&
+            currentStyle.height === `${h}px`
+          ) {
+            return n;
+          }
           return {
             ...n,
             width: w,
@@ -2177,6 +2615,8 @@ function InfiniteCanvasContent({
               ...currentStyle,
               width: `${w}px`,
               height: `${h}px`,
+              minWidth: `${dynamicDims.minWidth}px`,
+              minHeight: `${dynamicDims.minHeight}px`,
             },
           };
         }
@@ -2192,6 +2632,9 @@ function InfiniteCanvasContent({
             Number.isFinite(change.dimensions.height)
           ) {
             const targetNode = reactFlow.getNode(change.id);
+            const dynamicDims = calculateDynamicNodeDimensions(targetNode?.data, targetNode?.type);
+            const clampedW = Math.max(Math.round(change.dimensions.width), dynamicDims.minWidth);
+            const clampedH = Math.max(Math.round(change.dimensions.height), dynamicDims.minHeight);
             const pos =
               targetNode &&
               Number.isFinite(targetNode.position.x) &&
@@ -2201,8 +2644,8 @@ function InfiniteCanvasContent({
             onNodeResizeStop(
               change.id,
               {
-                width: Math.round(change.dimensions.width),
-                height: Math.round(change.dimensions.height),
+                width: clampedW,
+                height: clampedH,
               },
               pos,
             );
@@ -2226,35 +2669,55 @@ function InfiniteCanvasContent({
         return;
       }
 
-      const curNodes = useCanvasStore.getState().selectedNodeIds;
-      const curEdges = useCanvasStore.getState().selectedEdgeIds;
+      const curNodes = propSelectedNodeIdsRef.current ?? useCanvasStore.getState().selectedNodeIds;
+      const curEdges = propSelectedEdgeIdsRef.current ?? useCanvasStore.getState().selectedEdgeIds;
       const nodesChanged = curNodes.length !== nextNodeIds.length || curNodes.some((id, i) => id !== nextNodeIds[i]);
       const edgesChanged = curEdges.length !== nextEdgeIds.length || curEdges.some((id, i) => id !== nextEdgeIds[i]);
 
       if (nodesChanged) {
         useCanvasStore.getState().setSelectedNodes(nextNodeIds);
-        if (onNodeSelect) {
-          onNodeSelect(nextNodeIds[0] ?? null);
+        if (onNodeSelectRef.current) {
+          onNodeSelectRef.current(nextNodeIds[0] ?? null);
         }
       }
-      if (edgesChanged) {
+      if (nextEdgeIds.length > 0 && edgesChanged) {
         useCanvasStore.getState().setSelectedEdges(nextEdgeIds);
-        if (onEdgeSelect) {
-          onEdgeSelect(nextEdgeIds[0] ?? null);
+        if (onEdgeSelectRef.current) {
+          onEdgeSelectRef.current(nextEdgeIds[0] ?? null);
         }
       }
     },
-    [onNodeSelect, onEdgeSelect]
+    []
+  );
+
+  const handleNodeClick = useCallback(
+    (_event: React.MouseEvent, node: Node) => {
+      setContextMenu(null);
+      useCanvasStore.getState().setSelectedNodes([node.id]);
+      useCanvasStore.getState().setSelectedEdges([]);
+      if (onNodeSelectRef.current) {
+        onNodeSelectRef.current(node.id);
+      }
+      if (onEdgeSelectRef.current) {
+        onEdgeSelectRef.current(null);
+      }
+    },
+    []
   );
 
   const handleEdgeClick = useCallback(
     (_event: React.MouseEvent, edge: Edge) => {
       setContextMenu(null);
-      if (onEdgeSelect) {
-        onEdgeSelect(edge.id);
+      useCanvasStore.getState().setSelectedEdges([edge.id]);
+      useCanvasStore.getState().setSelectedNodes([]);
+      if (onEdgeSelectRef.current) {
+        onEdgeSelectRef.current(edge.id);
+      }
+      if (onNodeSelectRef.current) {
+        onNodeSelectRef.current(null);
       }
     },
-    [onEdgeSelect]
+    []
   );
 
   const onMoveEnd = useCallback((_event: unknown, viewport: Viewport) => {
@@ -2293,13 +2756,13 @@ function InfiniteCanvasContent({
     useCanvasStore.getState().clearSelection();
     setNodes((nds) => nds.map((n) => ({ ...n, selected: false })));
     setEdges((eds) => eds.map((e) => ({ ...e, selected: false })));
-    if (onNodeSelect) {
-      onNodeSelect(null);
+    if (onNodeSelectRef.current) {
+      onNodeSelectRef.current(null);
     }
-    if (onEdgeSelect) {
-      onEdgeSelect(null);
+    if (onEdgeSelectRef.current) {
+      onEdgeSelectRef.current(null);
     }
-  }, [onNodeSelect, onEdgeSelect]);
+  }, []);
 
   return (
     <div
@@ -2338,14 +2801,17 @@ function InfiniteCanvasContent({
         edges={displayedEdges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
-        defaultEdgeOptions={{ type: 'icepanel' }}
+        defaultEdgeOptions={DEFAULT_EDGE_OPTIONS}
         nodesDraggable={true}
         elementsSelectable={true}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onConnectStart={onConnectStart}
+        onConnectEnd={onConnectEnd}
         onReconnect={onReconnect}
         edgesReconnectable={true}
+        onNodeClick={handleNodeClick}
         onEdgeClick={handleEdgeClick}
         onNodeDoubleClick={handleNodeDoubleClick}
         onEdgeDoubleClick={handleEdgeDoubleClick}
@@ -2648,6 +3114,18 @@ function InfiniteCanvasContent({
             />
           </div>
         </div>
+      )}
+      {/* Interactive Quick-Connect Popover matching IcePanel */}
+      {quickConnectPopover?.isOpen && (
+        <QuickConnectPopover
+          isOpen={quickConnectPopover.isOpen}
+          position={quickConnectPopover.screenPosition}
+          sourceNodeId={quickConnectPopover.sourceNodeId}
+          existingObjects={availableExistingObjects}
+          onSelectNewObject={handleQuickConnectSelectNew}
+          onSelectExistingObject={handleQuickConnectSelectExisting}
+          onClose={() => setQuickConnectPopover(null)}
+        />
       )}
     </div>
   );
