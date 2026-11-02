@@ -333,6 +333,18 @@ const SAMPLE_FULL_SNAPSHOT: FullArchitectureSnapshot = {
 
 const EMPTY_STRING_ARRAY: string[] = [];
 
+const DEFAULT_VIEWS: View[] = [
+  {
+    id: 'view-1' as ViewId,
+    architectureId: 'arch-studio-init' as ArchitectureId,
+    name: 'System Context',
+    kind: 'context',
+    filter: {},
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+];
+
 export default function StudioPage(): JSX.Element {
   // Canvas starts completely clean and empty by default (no pre-loaded demo/starter architecture)
   const [initialGraph] = useState<{ nodes: CanvasNode[]; edges: CanvasEdge[] }>(() => ({
@@ -388,6 +400,7 @@ export default function StudioPage(): JSX.Element {
         setActiveView('context');
         setActiveParentId(null);
         setParentHistory([]);
+        setActiveViewId('view-1');
       } else if (targetLevel === 2) {
         setC4Level(2);
         setActiveView('container');
@@ -569,12 +582,44 @@ export default function StudioPage(): JSX.Element {
     [],
   );
 
-  // Real Views State & Synchronization (F145)
-  const [views, setViews] = useState<View[]>([]);
-  const [activeViewId, setActiveViewId] = useState<string | null>(null);
+  // Real Views State & Synchronization (F145 & Phase D)
+  const [views, setViews] = useState<View[]>(DEFAULT_VIEWS);
+  const [activeViewId, setActiveViewId] = useState<string | null>('view-1');
+  const [isDiagramsMenuOpen, setIsDiagramsMenuOpen] = useState(false);
+  const diagramsMenuRef = useRef<HTMLDivElement>(null);
   const [allModelObjects, setAllModelObjects] = useState<ModelObject[]>([]);
 
   const effectiveViewId = activeViewId || viewId || (views.length > 0 && views[0] ? views[0].id : null);
+
+  useEffect(() => {
+    if (!isDiagramsMenuOpen) return;
+    const handleOutside = (e: MouseEvent) => {
+      if (diagramsMenuRef.current && !diagramsMenuRef.current.contains(e.target as Node)) {
+        setIsDiagramsMenuOpen(false);
+      }
+    };
+    document.addEventListener('pointerdown', handleOutside);
+    return () => document.removeEventListener('pointerdown', handleOutside);
+  }, [isDiagramsMenuOpen]);
+
+  useEffect(() => {
+    if (currentNodes.length > 0) {
+      setAllModelObjects((prev) => {
+        const existingIds = new Set<string>(prev.map((o) => String(o.id)));
+        const missing = currentNodes
+          .filter((n) => !existingIds.has(String(n.id)))
+          .map((n) =>
+            mapCanvasNodeToModelObject(
+              n,
+              architectureId || 'arch-studio-init',
+              'ver-default',
+            ),
+          );
+        if (missing.length === 0) return prev;
+        return [...prev, ...missing];
+      });
+    }
+  }, [currentNodes, architectureId]);
 
   useEffect(() => {
     if (!architectureId) return;
@@ -582,9 +627,9 @@ export default function StudioPage(): JSX.Element {
     fetch(`/architectures/${architectureId}/views`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data && Array.isArray(data.views)) {
+        if (data && Array.isArray(data.views) && data.views.length > 0) {
           setViews(data.views);
-          if (!activeViewId && data.views.length > 0) {
+          if (!activeViewId) {
             setActiveViewId(data.views[0].id);
           }
         }
@@ -701,7 +746,28 @@ export default function StudioPage(): JSX.Element {
 
       setActiveViewId(targetViewId);
 
-      // 2. Fetch target view's objects & layout
+      // 2. Sync C4 level & breadcrumbs according to view kind
+      const targetView = views.find((v) => v.id === targetViewId);
+      if (targetView) {
+        if (targetView.kind === 'context' || targetView.level === 1) {
+          setC4Level(1);
+          setActiveView('context');
+          setActiveParentId(null);
+          setParentHistory([]);
+        } else if (targetView.kind === 'container' || targetView.level === 2) {
+          setC4Level(2);
+          setActiveView('container');
+          const pId = targetView.filter?.parentId;
+          setActiveParentId(typeof pId === 'string' ? pId : null);
+        } else if (targetView.kind === 'component' || targetView.level === 3) {
+          setC4Level(3);
+          setActiveView('all');
+          const pId = targetView.filter?.parentId;
+          setActiveParentId(typeof pId === 'string' ? pId : null);
+        }
+      }
+
+      // 3. Fetch target view's objects & layout
       try {
         const res = await fetch(`/views/${targetViewId}/objects`);
         if (res.ok) {
@@ -736,12 +802,27 @@ export default function StudioPage(): JSX.Element {
         console.warn('Failed to switch view:', err);
       }
     },
-    [effectiveViewId, currentNodes, currentEdges, allModelObjects, handleBatchPersist],
+    [effectiveViewId, currentNodes, currentEdges, allModelObjects, views, handleBatchPersist],
   );
 
   const handleCreateView = useCallback(
     async (input: { name: string; kind?: string; level?: number; description?: string }) => {
-      if (!architectureId) return;
+      const fallbackView: View = {
+        id: `vw-${Date.now()}` as ViewId,
+        architectureId: (architectureId || 'arch-studio-init') as ArchitectureId,
+        name: input.name,
+        kind: (input.kind || 'context') as any,
+        level: input.level || 1,
+        filter: {},
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      if (!architectureId) {
+        setViews((prev) => [...prev, fallbackView]);
+        await handleSelectView(fallbackView.id);
+        return;
+      }
       try {
         const res = await fetch(`/architectures/${architectureId}/views`, {
           method: 'POST',
@@ -753,10 +834,15 @@ export default function StudioPage(): JSX.Element {
           if (data.view) {
             setViews((prev) => [...prev, data.view]);
             await handleSelectView(data.view.id);
+            return;
           }
         }
+        setViews((prev) => [...prev, fallbackView]);
+        await handleSelectView(fallbackView.id);
       } catch (err) {
-        console.warn('Failed to create view:', err);
+        console.warn('Failed to create view, creating locally:', err);
+        setViews((prev) => [...prev, fallbackView]);
+        await handleSelectView(fallbackView.id);
       }
     },
     [architectureId, handleSelectView],
@@ -1917,7 +2003,28 @@ export default function StudioPage(): JSX.Element {
         targetNode.id;
 
       if (currentLvl === 1) {
-        // Descend into Container level (L2)
+        // Descend into Container level (L2) & register child diagram
+        const childKind = 'container';
+        const childViewName = `${targetName} (Containers)`;
+        const childViewId = `vw-container-${nodeId}` as ViewId;
+
+        setViews((prev) => {
+          if (prev.some((v) => v.id === childViewId)) return prev;
+          return [
+            ...prev,
+            {
+              id: childViewId,
+              architectureId: (architectureId || 'arch-studio-init') as ArchitectureId,
+              name: childViewName,
+              kind: childKind as any,
+              level: 2,
+              filter: { parentId: nodeId },
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          ];
+        });
+        setActiveViewId(childViewId);
         setC4Level(2);
         setActiveView('container');
         setActiveParentId(nodeId);
@@ -1927,7 +2034,28 @@ export default function StudioPage(): JSX.Element {
         setIsInspectorOpen(false);
         setCanvasKey((k) => k + 1);
       } else if (currentLvl === 2) {
-        // Descend into Component level (L3)
+        // Descend into Component level (L3) & register child diagram
+        const childKind = 'component';
+        const childViewName = `${targetName} (Components)`;
+        const childViewId = `vw-component-${nodeId}` as ViewId;
+
+        setViews((prev) => {
+          if (prev.some((v) => v.id === childViewId)) return prev;
+          return [
+            ...prev,
+            {
+              id: childViewId,
+              architectureId: (architectureId || 'arch-studio-init') as ArchitectureId,
+              name: childViewName,
+              kind: childKind as any,
+              level: 3,
+              filter: { parentId: nodeId },
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          ];
+        });
+        setActiveViewId(childViewId);
         setC4Level(3);
         setActiveView('all');
         setActiveParentId(nodeId);
@@ -1944,7 +2072,7 @@ export default function StudioPage(): JSX.Element {
         setCanvasKey((k) => k + 1);
       }
     },
-    [currentNodes],
+    [currentNodes, architectureId],
   );
 
 
@@ -2440,6 +2568,82 @@ export default function StudioPage(): JSX.Element {
             data-testid="studio-breadcrumb"
             className="flex items-center gap-1.5 text-xs text-[#8b9196] font-medium"
           >
+            {/* Diagrams popover button */}
+            <div ref={diagramsMenuRef} className="relative">
+              <button
+                type="button"
+                data-testid="breadcrumb-diagrams-btn"
+                onClick={() => setIsDiagramsMenuOpen((prev) => !prev)}
+                className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-white/[0.04] hover:bg-white/[0.08] text-slate-200 hover:text-white transition-colors border border-white/[0.06] text-xs font-medium"
+                title="Select Architecture Diagram"
+              >
+                <span>📐 Diagrams ({views.length || 1})</span>
+                <span className="text-[10px] text-white/50">▾</span>
+              </button>
+
+              {isDiagramsMenuOpen && (
+                <div
+                  data-testid="breadcrumb-diagrams-popover"
+                  className="absolute left-0 top-full mt-1.5 w-64 bg-[#15181c] border border-white/[0.12] rounded-xl shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 backdrop-blur-md"
+                >
+                  <div className="flex items-center justify-between px-2 py-1 mb-1 border-b border-white/[0.06]">
+                    <span className="text-[11px] font-semibold text-[#8b9196] uppercase tracking-wider">
+                      Diagrams ({views.length || 1})
+                    </span>
+                    <button
+                      type="button"
+                      data-testid="breadcrumb-create-diagram-btn"
+                      onClick={() => {
+                        const newName = `New Diagram ${views.length + 1}`;
+                        void handleCreateView({
+                          name: newName,
+                          kind: c4Level === 1 ? 'context' : c4Level === 2 ? 'container' : 'component',
+                          level: c4Level,
+                        });
+                        setIsDiagramsMenuOpen(false);
+                      }}
+                      className="text-[11px] font-medium text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                    >
+                      + New diagram
+                    </button>
+                  </div>
+                  <div className="max-h-60 overflow-y-auto space-y-0.5">
+                    {(views.length > 0 ? views : DEFAULT_VIEWS).map((v) => {
+                      const isActive = effectiveViewId ? effectiveViewId === v.id : v.kind === 'context';
+                      return (
+                        <button
+                          key={v.id}
+                          type="button"
+                          data-testid={`breadcrumb-diagram-item-${v.id}`}
+                          onClick={() => {
+                            void handleSelectView(v.id);
+                            setIsDiagramsMenuOpen(false);
+                          }}
+                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs transition-colors ${
+                            isActive
+                              ? 'bg-blue-600/20 text-white font-medium border border-blue-500/30'
+                              : 'text-slate-300 hover:bg-white/[0.06] hover:text-white border border-transparent'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            {isActive ? (
+                              <span className="text-blue-400 text-xs">✓</span>
+                            ) : (
+                              <span className="w-3" />
+                            )}
+                            <span className="truncate">{v.name}</span>
+                          </div>
+                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/[0.06] text-[#8b9196] shrink-0">
+                            {v.kind || 'diagram'}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <span className="text-white/20">/</span>
             <button
               type="button"
@@ -2832,10 +3036,36 @@ export default function StudioPage(): JSX.Element {
           allModelObjects={allModelObjects}
           onAddObjectToActiveView={handleAddObjectToActiveView}
           onRemoveObjectFromActiveView={handleRemoveObjectFromActiveView}
+          activeTab={studioViewMode === 'model' ? 'model' : 'diagrams'}
+          onTabChange={(tab) => setStudioViewMode(tab === 'model' ? 'model' : 'diagram')}
         />
 
         {/* Full-bleed Infinite Canvas with IcePanel Phase B Chrome */}
         <div className="flex-1 h-full w-full relative">
+          {/* Phase D: Model View Mode Overlay Banner */}
+          {studioViewMode === 'model' && (
+            <div
+              data-testid="model-view-banner"
+              className="absolute top-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 px-4 py-2 rounded-xl bg-[#15181c]/95 border border-blue-500/40 shadow-2xl backdrop-blur-md text-xs text-slate-200 animate-in fade-in slide-in-from-top-2"
+            >
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                <span className="font-semibold text-white">📦 Model View:</span>
+                <span className="text-[#8b9196]">
+                  Showing all {allModelObjects.length || currentNodes.length} architecture objects across diagrams. Switch to 📐 Diagram to draw views.
+                </span>
+              </div>
+              <button
+                type="button"
+                data-testid="model-view-back-btn"
+                onClick={() => setStudioViewMode('diagram')}
+                className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors shadow-sm"
+              >
+                Back to Diagram
+              </button>
+            </div>
+          )}
+
           {/* Phase B: Viewport perimeter dashed orange frame on Draft branches */}
           <CanvasDraftFrame
             isDraft={isDraft}
@@ -3040,11 +3270,7 @@ export default function StudioPage(): JSX.Element {
           onOpenIconPicker={() => setIsIconPickerOpen(true)}
           onDeleteNode={handleDeleteNode}
           onDrillDown={(nodeId) => {
-            const node = currentNodes.find((n) => n.id === nodeId);
-            const level = node ? getNodeC4Level(node) : c4Level;
-            if (level < 3) {
-              handleAscendTo((level + 1) as 1 | 2 | 3, nodeId);
-            }
+            handleDrillIn(nodeId);
           }}
           selectedEdge={selectedEdgeData}
           onEdgeChange={handleEdgeMetadataChange}

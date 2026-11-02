@@ -980,6 +980,7 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
                       {onDrillDown && (
                         <button
                           type="button"
+                          data-testid="inspector-drill-down-btn"
                           onClick={() => onDrillDown(objectId)}
                           className="text-[#2BB5E8] hover:underline text-[11px] font-medium"
                         >
