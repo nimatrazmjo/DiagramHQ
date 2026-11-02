@@ -999,6 +999,7 @@ export default function StudioPage(): JSX.Element {
       shape: (edgeData.shape as string) || 'square',
       via: (edgeData.via as string) || '',
       direction: (edgeData.direction as string) || 'outgoing',
+      labelPosition: typeof edgeData.labelPosition === 'number' ? edgeData.labelPosition : 50,
       tags: (edgeData.tags as string[]) || [],
       technology: (edgeData.technology as string) || protocol || '',
       links: (edgeData.links as string[]) || [],
@@ -1639,6 +1640,7 @@ export default function StudioPage(): JSX.Element {
         shape?: string;
         via?: string;
         direction?: string;
+        labelPosition?: number;
         tags?: string[];
         technology?: string;
         links?: string[];

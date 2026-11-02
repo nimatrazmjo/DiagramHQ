@@ -5,6 +5,7 @@ import {
   BaseEdge,
   EdgeLabelRenderer,
   getSmoothStepPath,
+  getBezierPath,
   Position,
   useInternalNode,
   useEdges,
@@ -385,16 +386,41 @@ export function IcePanelEdge({
     edgeData.routing,
   ]);
 
-  const [edgePath, labelX, labelY] = getSmoothStepPath({
-    sourceX: routeGeometry.sourceX,
-    sourceY: routeGeometry.sourceY,
-    sourcePosition: routeGeometry.sourcePosition,
-    targetX: routeGeometry.targetX,
-    targetY: routeGeometry.targetY,
-    targetPosition: routeGeometry.targetPosition,
-    borderRadius: 16,
-    offset: routeGeometry.offset,
-  });
+  const isCurved =
+    edgeData.shape === 'curved' || edgeData.routing === 'curved';
+  const isSquare = edgeData.shape === 'square';
+
+  const [rawEdgePath, defaultLabelX, defaultLabelY] = isCurved
+    ? getBezierPath({
+        sourceX: routeGeometry.sourceX,
+        sourceY: routeGeometry.sourceY,
+        sourcePosition: routeGeometry.sourcePosition,
+        targetX: routeGeometry.targetX,
+        targetY: routeGeometry.targetY,
+        targetPosition: routeGeometry.targetPosition,
+      })
+    : getSmoothStepPath({
+        sourceX: routeGeometry.sourceX,
+        sourceY: routeGeometry.sourceY,
+        sourcePosition: routeGeometry.sourcePosition,
+        targetX: routeGeometry.targetX,
+        targetY: routeGeometry.targetY,
+        targetPosition: routeGeometry.targetPosition,
+        borderRadius: isSquare ? 0 : 16,
+        offset: routeGeometry.offset,
+      });
+
+  const edgePath = rawEdgePath;
+
+  const labelPosFactor =
+    typeof edgeData.labelPosition === 'number'
+      ? Math.max(0, Math.min(100, edgeData.labelPosition)) / 100
+      : 0.5;
+
+  const labelX =
+    defaultLabelX + (labelPosFactor - 0.5) * (routeGeometry.targetX - routeGeometry.sourceX) * 0.7;
+  const labelY =
+    defaultLabelY + (labelPosFactor - 0.5) * (routeGeometry.targetY - routeGeometry.sourceY) * 0.7;
 
   let strokeColor = selected ? '#38bdf8' : (style.stroke as string) || '#64748b';
   let strokeWidth = selected ? 2.5 : (style.strokeWidth as number) || 1.75;

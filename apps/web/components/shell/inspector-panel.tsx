@@ -47,6 +47,7 @@ export interface InspectorPanelProps {
     shape?: string;
     via?: string;
     direction?: string;
+    labelPosition?: number;
     tags?: string[];
     technology?: string;
     links?: string[];
@@ -61,6 +62,7 @@ export interface InspectorPanelProps {
       shape?: string;
       via?: string;
       direction?: string;
+      labelPosition?: number;
       tags?: string[];
       technology?: string;
       links?: string[];
@@ -182,6 +184,40 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
     const q = techSearchQuery.toLowerCase();
     return COMMON_TECH_CHOICES.filter((c) => c.toLowerCase().includes(q));
   }, [techSearchQuery]);
+
+  // Connection Inspector tag & link inputs
+  const [edgeTagInput, setEdgeTagInput] = useState('');
+  const [edgeLinkInput, setEdgeLinkInput] = useState('');
+
+  const handleAddEdgeTag = (tag: string) => {
+    const trimmed = tag.trim();
+    if (!trimmed || !selectedEdge || !onEdgeChange) return;
+    const existing = selectedEdge.tags || [];
+    if (existing.includes(trimmed)) return;
+    onEdgeChange(selectedEdge.id, { tags: [...existing, trimmed] });
+    setEdgeTagInput('');
+  };
+
+  const handleRemoveEdgeTag = (tagToRemove: string) => {
+    if (!selectedEdge || !onEdgeChange) return;
+    const next = (selectedEdge.tags || []).filter((t) => t !== tagToRemove);
+    onEdgeChange(selectedEdge.id, { tags: next });
+  };
+
+  const handleAddEdgeLink = (link: string) => {
+    const trimmed = link.trim();
+    if (!trimmed || !selectedEdge || !onEdgeChange) return;
+    const existing = selectedEdge.links || [];
+    if (existing.includes(trimmed)) return;
+    onEdgeChange(selectedEdge.id, { links: [...existing, trimmed] });
+    setEdgeLinkInput('');
+  };
+
+  const handleRemoveEdgeLink = (linkToRemove: string) => {
+    if (!selectedEdge || !onEdgeChange) return;
+    const next = (selectedEdge.links || []).filter((l) => l !== linkToRemove);
+    onEdgeChange(selectedEdge.id, { links: next });
+  };
 
   const handleFieldChange = (field: string, value: unknown) => {
     if (onMetadataChange) {
@@ -471,6 +507,7 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
               </div>
               <button
                 type="button"
+                data-testid="inspector-edge-flip-btn"
                 onClick={() => {
                   if (onEdgeChange) {
                     onEdgeChange(selectedEdge.id, {
@@ -505,6 +542,7 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
               <span className="text-[11px] text-[#8b9196] font-medium">Status</span>
               <button
                 type="button"
+                data-testid="inspector-edge-status-btn"
                 onClick={() => {
                   const next = selectedEdge.status === 'future' ? 'live' : 'future';
                   onEdgeChange?.(selectedEdge.id, { status: next });
@@ -532,6 +570,7 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
                   <button
                     key={dir}
                     type="button"
+                    data-testid={`inspector-edge-direction-${dir}`}
                     onClick={() => onEdgeChange?.(selectedEdge.id, { direction: dir })}
                     className={`py-1 rounded capitalize text-center font-medium transition-colors ${
                       (selectedEdge.direction || 'outgoing') === dir
@@ -553,6 +592,7 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
                   <button
                     key={shape}
                     type="button"
+                    data-testid={`inspector-edge-shape-${shape}`}
                     onClick={() => onEdgeChange?.(selectedEdge.id, { shape })}
                     className={`py-1 rounded capitalize text-center font-medium transition-colors ${
                       (selectedEdge.shape || 'square') === shape
@@ -566,11 +606,29 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
               </div>
             </div>
 
+            {/* Label position slider */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[11px] font-medium text-[#8b9196]">Label Position</label>
+                <span className="text-[10px] text-white font-mono">{selectedEdge.labelPosition ?? 50}%</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={selectedEdge.labelPosition ?? 50}
+                data-testid="inspector-edge-label-position"
+                onChange={(e) => onEdgeChange?.(selectedEdge.id, { labelPosition: Number(e.target.value) })}
+                className="w-full accent-[#2BB5E8] cursor-pointer"
+              />
+            </div>
+
             {/* Via (intermediate hop) */}
             <div>
               <label className="block text-[11px] font-medium text-[#8b9196] mb-1">Via (Intermediate Hop)</label>
               <input
                 type="text"
+                data-testid="inspector-edge-via"
                 value={selectedEdge.via || ''}
                 placeholder="e.g. API Gateway, Ingress, Envoy..."
                 onChange={(e) => onEdgeChange?.(selectedEdge.id, { via: e.target.value })}
@@ -583,11 +641,120 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
               <label className="block text-[11px] font-medium text-[#8b9196] mb-1">Protocol / Technology</label>
               <input
                 type="text"
-                value={selectedEdge.protocol || ''}
+                data-testid="inspector-edge-technology"
+                value={selectedEdge.protocol || selectedEdge.technology || ''}
                 placeholder="e.g. HTTPS, gRPC, PostgreSQL, Kafka..."
-                onChange={(e) => onEdgeChange?.(selectedEdge.id, { protocol: e.target.value })}
+                onChange={(e) => onEdgeChange?.(selectedEdge.id, { protocol: e.target.value, technology: e.target.value })}
                 className="w-full px-2.5 py-1.5 bg-[#1b1f24] border border-white/[0.1] rounded-lg text-xs text-white focus:outline-none focus:border-[#2BB5E8]"
               />
+            </div>
+
+            {/* Diagrams */}
+            <div className="flex items-center justify-between py-1 border-b border-white/[0.04]">
+              <span className="text-[#8b9196] font-medium">Diagrams</span>
+              <span className="text-[#e7e9ea] text-[11px] font-medium">In 1 diagram</span>
+            </div>
+
+            {/* Flows */}
+            <div className="flex items-center justify-between py-1 border-b border-white/[0.04]">
+              <span className="text-[#8b9196] font-medium">Flows</span>
+              <span className="text-[#8b9196] text-[11px]">In 0 flows</span>
+            </div>
+
+            {/* Tags (with chips) */}
+            <div className="py-1 border-b border-white/[0.04]">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[#8b9196] font-medium">Tags</span>
+                <span className="text-[10px] text-[#8b9196] font-mono">{(selectedEdge.tags || []).length} tags</span>
+              </div>
+              <div className="flex flex-wrap gap-1 mb-1.5">
+                {(selectedEdge.tags || []).map((t) => (
+                  <span
+                    key={t}
+                    className="flex items-center gap-1 px-2 py-0.5 rounded text-[11px] bg-white/[0.06] text-[#e7e9ea] border border-white/[0.1]"
+                  >
+                    <span>{t}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveEdgeTag(t)}
+                      className="text-slate-400 hover:text-white text-[10px] ml-0.5"
+                    >
+                      ✕
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <div className="flex gap-1.5">
+                <input
+                  type="text"
+                  data-testid="inspector-edge-tags"
+                  placeholder="Add connection tag..."
+                  value={edgeTagInput}
+                  onChange={(e) => setEdgeTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddEdgeTag(edgeTagInput);
+                    }
+                  }}
+                  className="flex-1 px-2 py-1 bg-[#1b1f24] border border-white/[0.08] rounded text-xs text-white focus:outline-none focus:border-[#2BB5E8]"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleAddEdgeTag(edgeTagInput)}
+                  className="px-2.5 py-1 bg-white/[0.08] hover:bg-white/[0.12] text-white rounded text-xs font-medium"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+
+            {/* Links */}
+            <div className="py-1 border-b border-white/[0.04]">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[#8b9196] font-medium">Links</span>
+                <span className="text-[10px] text-[#8b9196] font-mono">{(selectedEdge.links || []).length} links</span>
+              </div>
+              <div className="space-y-1 mb-1.5">
+                {(selectedEdge.links || []).map((l) => (
+                  <div
+                    key={l}
+                    className="flex items-center justify-between px-2 py-1 rounded bg-[#1b1f24] border border-white/[0.06] text-[11px]"
+                  >
+                    <span className="truncate text-[#2BB5E8]">{l}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveEdgeLink(l)}
+                      className="text-slate-400 hover:text-white text-[10px] ml-1 shrink-0"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-1.5">
+                <input
+                  type="text"
+                  data-testid="inspector-edge-links"
+                  placeholder="Paste URL..."
+                  value={edgeLinkInput}
+                  onChange={(e) => setEdgeLinkInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddEdgeLink(edgeLinkInput);
+                    }
+                  }}
+                  className="flex-1 px-2 py-1 bg-[#1b1f24] border border-white/[0.08] rounded text-xs text-white focus:outline-none focus:border-[#2BB5E8]"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleAddEdgeLink(edgeLinkInput)}
+                  className="px-2.5 py-1 bg-white/[0.08] hover:bg-white/[0.12] text-white rounded text-xs font-medium"
+                >
+                  Add
+                </button>
+              </div>
             </div>
 
             {/* Action / Description */}
@@ -595,6 +762,7 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
               <label className="block text-[11px] font-medium text-[#8b9196] mb-1">Action / Description</label>
               <textarea
                 rows={3}
+                data-testid="inspector-edge-description"
                 value={selectedEdge.description || selectedEdge.label || ''}
                 placeholder="e.g. Queries customer records and order history..."
                 onChange={(e) => onEdgeChange?.(selectedEdge.id, { description: e.target.value })}
@@ -619,6 +787,7 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
                 {onDeleteEdge && (
                   <button
                     type="button"
+                    data-testid="inspector-delete-edge"
                     onClick={() => onDeleteEdge(selectedEdge.id)}
                     className="w-full py-1.5 px-3 rounded-lg bg-red-950/40 hover:bg-red-900/60 border border-red-700/60 text-red-300 hover:text-white text-xs font-medium transition-colors"
                   >
