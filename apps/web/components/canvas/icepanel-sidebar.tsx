@@ -319,6 +319,7 @@ export function IcePanelSidebar({
               {searchQuery && (
                 <button
                   type="button"
+                  aria-label="Clear search"
                   onClick={() => setSearchQuery('')}
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 hover:text-white"
                 >
@@ -347,6 +348,7 @@ export function IcePanelSidebar({
                   <span>New Model Object</span>
                   <button
                     type="button"
+                    aria-label="Cancel creating object"
                     onClick={() => setIsCreatingObject(false)}
                     className="text-slate-400 hover:text-white"
                   >
@@ -506,6 +508,7 @@ export function IcePanelSidebar({
                                     {onRemoveObjectFromActiveView && (
                                       <button
                                         type="button"
+                                        aria-label={`Remove ${label} from view`}
                                         data-testid={`remove-from-view-${item.id}`}
                                         title="Remove from this view (keeps in model)"
                                         onClick={(e) => {

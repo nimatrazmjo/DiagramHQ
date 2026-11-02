@@ -87,3 +87,7 @@ export * from './svg-export-modal';
 export * from './node-dimension-utils';
 export * from './quick-insert-handle';
 export * from './quick-connect-popover';
+export * from './studio-top-bar';
+export * from './canvas-draft-frame';
+export * from './studio-left-rail';
+export * from './studio-filter-bar';

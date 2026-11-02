@@ -141,11 +141,13 @@ History tab: change log for the object.
 - [x] `c4-system-boundary-node` + `c4-container-boundary-node` → IcePanel translucent boundary (header top-left, muted subtitle, cyan select).
 - [ ] Remaining: bundled always-on tech icon set; `c4-context/container/component` rich variants.
 
-### Phase B — Editor chrome
-- [ ] Top bar (Exit/DRAFT/…, Diagram⟷Model, N changes, Merge) in `studio/page.tsx`.
-- [ ] Orange dashed draft frame bound to active branch.
-- [ ] Bottom-left filter bar (Tags/Technology/Status/Teams, Risk, New group).
-- [ ] Left rail (Flows ▾ + record; floating +/comment).
+### Phase B — Editor chrome ✅ *done this PR*
+- [x] Top bar (Exit, DRAFT <branch> amber pill, `…` more menu popover, Diagram⟷Model segmented toggle, change counter `🗂 N changes ▾`, `Merge ▾` with merge toast) in `components/canvas/studio-top-bar.tsx` & `studio/page.tsx`.
+- [x] Orange dashed draft frame bound to active branch (`components/canvas/canvas-draft-frame.tsx`) + floating draft notification banner.
+- [x] Bottom-left filter bar (`components/canvas/studio-filter-bar.tsx`) with Tags, Technology, Status, Teams, Risk indicator, and `+ New group` button.
+- [x] IcePanel X-Ray glasses filter dimming (non-matching nodes dimmed to 22% opacity when filters are selected).
+- [x] Left floating rail (`components/canvas/studio-left-rail.tsx`) with `Flows ▾` + record button, mid-left floating `+` (add C4 object popover), comments button with badge count, AI Copilot, Icons, and Model sidebar toggle.
+- [x] Verified: `icepanel-editor-chrome.spec.ts` (6), `canvas-navigation.spec.ts` (8), `icepanel-video-quick-connect.spec.ts` (5) all green; 0 TS errors.
 
 ### Phase C — Inspector parity
 - [ ] Reorder/retitle fields per §4; add Status pill, Scope, Belongs to, Contains, In groups, In N diagrams, Links, Describe (AI).

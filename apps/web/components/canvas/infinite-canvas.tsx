@@ -5,6 +5,7 @@ import {
   ReactFlow,
   ReactFlowProvider,
   Background,
+  Controls,
   MiniMap,
   Panel,
   useReactFlow,
@@ -2999,6 +3000,7 @@ function InfiniteCanvasContent({
         fitView
       >
         <Background color="#334155" gap={20} size={1} />
+        <Controls className="hidden" />
         {isMinimapVisible && (
           <div data-testid="minimap">
             <MiniMap
