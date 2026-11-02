@@ -88,6 +88,7 @@ import {
   type PresencePeerBadge,
 } from '../../components/canvas';
 import { InspectorPanel } from '../../components/shell/inspector-panel';
+import { ModelViewLayout } from '../../components/model';
 import { useDiagramAutosave, type SavedDiagramData } from '../../hooks/use-diagram-autosave';
 import { PreviewAffordance } from '../../lib/preview-flags';
 import {
@@ -3084,46 +3085,6 @@ export default function StudioPage(): JSX.Element {
             </div>
           )}
 
-          {/* Phase B: Viewport perimeter dashed orange frame on Draft branches */}
-          <CanvasDraftFrame
-            isDraft={isDraft}
-            branchName={currentBranch.name}
-            changeCount={changeCount}
-            onMerge={handleMergeDraft}
-            onSwitchToMain={() => handleSelectBranch(defaultMainBranch.id)}
-          />
-
-          {/* Phase B: Floating Left Rail (Flows ▾ + record; floating +/comment/copilot/icons/sidebar) */}
-          <StudioLeftRail
-            onToggleSidebar={() => setIsSidebarOpen((v) => !v)}
-            isSidebarOpen={isSidebarOpen}
-            onAddNode={handleAddNode}
-            onCreateGroup={handleCreateGroup}
-            onToggleComments={() => setIsCommentsOpen((v) => !v)}
-            unresolvedCommentCount={unresolvedCommentCount}
-            onToggleAiCopilot={() => setIsAiCopilotOpen((v) => !v)}
-            onOpenIconCatalog={() => setIsIconPickerOpen(true)}
-            onToggleFlowTrace={() => {
-              setIsFlowPlaybackActive((prev) => !prev);
-              setPlaybackState((prev) => ({ ...prev, currentStepIndex: 0, isPlaying: false }));
-            }}
-            isFlowPlaybackActive={isFlowPlaybackActive}
-          />
-
-          {/* Phase B: Floating Bottom Filter Bar (Tags/Tech/Status/Teams/Risk/New Group) */}
-          <StudioFilterBar
-            selectedTag={selectedFilterTag}
-            onSelectTag={setSelectedFilterTag}
-            selectedTechnology={selectedFilterTech}
-            onSelectTechnology={setSelectedFilterTech}
-            statusFilter={selectedFilterStatus}
-            onSelectStatusFilter={setSelectedFilterStatus}
-            selectedTeam={selectedFilterTeam}
-            onSelectTeam={setSelectedFilterTeam}
-            riskCount={0}
-            onCreateGroup={handleCreateGroup}
-          />
-
           {/* Floating Toast Notification Banner */}
           {toastMessage && (
             <div
@@ -3136,6 +3097,68 @@ export default function StudioPage(): JSX.Element {
               </div>
             </div>
           )}
+
+          {studioViewMode === 'model' ? (
+            <div className="w-full h-full pt-14">
+              <ModelViewLayout
+                initialSection="technologies"
+                nodes={currentNodes}
+                edges={currentEdges}
+                allModelObjects={allModelObjects}
+                onSelectNode={(nodeId) => {
+                  setStudioViewMode('diagram');
+                  setSelectedNodeId(nodeId);
+                  setIsInspectorOpen(true);
+                }}
+                onSwitchToDiagram={() => setStudioViewMode('diagram')}
+                onTriggerFlowPlay={() => {
+                  setStudioViewMode('diagram');
+                  setIsFlowPlaybackActive(true);
+                  setPlaybackState((prev) => ({ ...prev, currentStepIndex: 0, isPlaying: true }));
+                }}
+              />
+            </div>
+          ) : (
+            <>
+              {/* Phase B: Viewport perimeter dashed orange frame on Draft branches */}
+              <CanvasDraftFrame
+                isDraft={isDraft}
+                branchName={currentBranch.name}
+                changeCount={changeCount}
+                onMerge={handleMergeDraft}
+                onSwitchToMain={() => handleSelectBranch(defaultMainBranch.id)}
+              />
+
+              {/* Phase B: Floating Left Rail (Flows ▾ + record; floating +/comment/copilot/icons/sidebar) */}
+              <StudioLeftRail
+                onToggleSidebar={() => setIsSidebarOpen((v) => !v)}
+                isSidebarOpen={isSidebarOpen}
+                onAddNode={handleAddNode}
+                onCreateGroup={handleCreateGroup}
+                onToggleComments={() => setIsCommentsOpen((v) => !v)}
+                unresolvedCommentCount={unresolvedCommentCount}
+                onToggleAiCopilot={() => setIsAiCopilotOpen((v) => !v)}
+                onOpenIconCatalog={() => setIsIconPickerOpen(true)}
+                onToggleFlowTrace={() => {
+                  setIsFlowPlaybackActive((prev) => !prev);
+                  setPlaybackState((prev) => ({ ...prev, currentStepIndex: 0, isPlaying: false }));
+                }}
+                isFlowPlaybackActive={isFlowPlaybackActive}
+              />
+
+              {/* Phase B: Floating Bottom Filter Bar (Tags/Tech/Status/Teams/Risk/New Group) */}
+              <StudioFilterBar
+                selectedTag={selectedFilterTag}
+                onSelectTag={setSelectedFilterTag}
+                selectedTechnology={selectedFilterTech}
+                onSelectTechnology={setSelectedFilterTech}
+                statusFilter={selectedFilterStatus}
+                onSelectStatusFilter={setSelectedFilterStatus}
+                selectedTeam={selectedFilterTeam}
+                onSelectTeam={setSelectedFilterTeam}
+                riskCount={0}
+                onCreateGroup={handleCreateGroup}
+              />
 
           <InfiniteCanvas
             key={canvasKey}
@@ -3267,6 +3290,8 @@ export default function StudioPage(): JSX.Element {
               onSpeedChange={(speed) => setPlaybackState((s) => ({ ...s, speedMultiplier: speed }))}
               onToggleLoop={() => setPlaybackState((s) => ({ ...s, isLooping: !s.isLooping }))}
             />
+          )}
+            </>
           )}
         </div>
 
