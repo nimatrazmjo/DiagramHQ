@@ -521,16 +521,19 @@ export function IcePanelEdge({
                   (edgeData.onStartEdit as () => void)();
                 }
               }}
-              className={`nopan nodrag flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-sans border backdrop-blur-md shadow-lg select-none cursor-pointer transition-all ${
+              className={`nopan nodrag flex items-center gap-1.5 pl-1.5 pr-2.5 py-0.5 rounded-md text-[11px] font-sans border select-none cursor-pointer transition-colors ${
                 isFlowView && isInFlow
                   ? isActiveStep
                     ? 'bg-cyan-950/95 border-cyan-400 text-cyan-200 ring-2 ring-cyan-500/50 shadow-cyan-500/30 scale-110 animate-pulse'
                     : 'bg-sky-950/95 border-sky-400 text-sky-200 ring-2 ring-sky-500/40 shadow-sky-500/20 scale-105'
                   : selected
-                  ? 'bg-slate-900 border-sky-400 text-sky-200 ring-2 ring-sky-500/40 shadow-sky-500/20 scale-105'
-                  : 'bg-slate-900/95 border-slate-700/80 text-slate-300 hover:border-slate-500 hover:text-white hover:scale-102'
+                  ? 'bg-[#1f2328] border-[#2BB5E8] text-[#e7e9ea]'
+                  : 'bg-[#1f2328] border-white/10 text-[#c6cacd] hover:border-white/25'
               }`}
             >
+              {!(isFlowView && isInFlow) && (
+                <span aria-hidden="true" className="inline-block w-2 h-2 rounded-full bg-[#8b5cf6] flex-shrink-0" />
+              )}
               {isFlowView && isInFlow && flowStepNumber && (
                 <span
                   data-testid="badge-flow-step-number"
@@ -540,12 +543,12 @@ export function IcePanelEdge({
                 </span>
               )}
               {protocol && (
-                <span className="px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 font-mono text-[9px] font-semibold uppercase tracking-wider">
+                <span className="px-1.5 py-0.2 rounded bg-white/5 text-[#9aa0a6] border border-white/10 font-mono text-[9px] font-semibold uppercase tracking-wider">
                   {protocol}
                 </span>
               )}
               {(flowStepNote || description || label) && (
-                <span className="truncate max-w-[160px] text-slate-200 font-medium">
+                <span className="truncate max-w-[180px] font-medium">
                   {flowStepNote || description || label}
                 </span>
               )}

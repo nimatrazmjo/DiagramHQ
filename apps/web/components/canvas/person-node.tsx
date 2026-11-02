@@ -1,197 +1,57 @@
 import React from 'react';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { type NodeProps } from '@xyflow/react';
 import type { PersonNodeData } from '@diagramhq/domain';
-import { FlowBadges } from './flow-badges';
-import { EditableNodeLabel } from './editable-node-label';
-import { DiagramNodeResizer } from './diagram-node-resizer';
-import { useDynamicNodeDimensions } from './node-dimension-utils';
-
-
 import { getTechnologyIconPath } from '../../lib/icons';
-
-function PersonAvatarIcon(): JSX.Element {
-  return (
-    <svg
-      className="w-4 h-4 text-pink-400 flex-shrink-0"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="7" r="4" />
-      <path d="M5.5 21a8.38 8.38 0 0 1 13 0" />
-    </svg>
-  );
-}
-
-function MailIcon(): JSX.Element {
-  return (
-    <svg
-      className="w-3 h-3 text-slate-400 flex-shrink-0"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <rect width="20" height="16" x="2" y="4" rx="2" />
-      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-    </svg>
-  );
-}
+import { FlowBadges } from './flow-badges';
+import { useDynamicNodeDimensions } from './node-dimension-utils';
+import { IcePanelNodeShell } from './icepanel-node-shell';
 
 /**
- * PersonNode renders a human actor / user persona (F022).
- * Displays role, department, external status badge, email, and description.
+ * PersonNode — IcePanel "Actor" object (human / external user).
  */
 export function PersonNode({ id, data, selected }: NodeProps): JSX.Element {
   const nodeData = (data ?? {}) as unknown as PersonNodeData;
-  const label = typeof nodeData.label === 'string' ? nodeData.label : 'Person';
-  const role = typeof nodeData.role === 'string' && nodeData.role.length > 0 ? nodeData.role : undefined;
-  const department = typeof nodeData.department === 'string' && nodeData.department.length > 0 ? nodeData.department : undefined;
-  const email = typeof nodeData.email === 'string' && nodeData.email.length > 0 ? nodeData.email : undefined;
+  const label = typeof nodeData.label === 'string' ? nodeData.label : 'Actor';
+  const role = typeof nodeData.role === 'string' && nodeData.role.length > 0 ? (nodeData.role as string) : undefined;
   const description = typeof nodeData.description === 'string' && nodeData.description.length > 0 ? nodeData.description : undefined;
   const isExternal = Boolean(nodeData.external);
-  const brandIcon =
-    (nodeData.icon as string) ||
-    getTechnologyIconPath(role) ||
-    getTechnologyIconPath(label);
-
-  const fontSize =
-    (nodeData.fontSize as number) ||
-    (nodeData.labelFontSize as number) ||
-    ((nodeData.style as Record<string, unknown>)?.fontSize as number);
+  const status = nodeData.status as string | undefined;
+  const brandIcon = (nodeData.icon as string) || getTechnologyIconPath(role) || getTechnologyIconPath(label);
+  const fontSize = (nodeData.fontSize as number) || (nodeData.labelFontSize as number) || ((nodeData.style as Record<string, unknown>)?.fontSize as number);
 
   const { cardRef, minHeight, minWidth } = useDynamicNodeDimensions(
-    {
-      label,
-      description,
-      status: role,
-      fontSize,
-      hasHeader: true,
-      hasFooter: true,
-      paddingY: 28,
-    },
+    { label, description, status: role, fontSize, hasHeader: true, hasFooter: true, paddingY: 28 },
     'person',
     id,
   );
 
   return (
-    <div
-      ref={cardRef}
-      data-testid="person-node"
-      style={{
-        minHeight: `${minHeight}px`,
-        minWidth: `${minWidth}px`,
-        ...(nodeData.style as React.CSSProperties),
-      }}
-      className={`w-full h-full min-w-[180px] min-h-[80px] rounded-xl p-3.5 shadow-lg bg-slate-900/95 border transition-all ${
-        nodeData.flowView && !nodeData.isInFlow
-          ? 'opacity-35 border-slate-800'
-          : nodeData.flowView && nodeData.isInFlow
-            ? 'border-sky-400 ring-2 ring-sky-500/50 shadow-sky-500/30'
-            : selected
-              ? 'border-pink-500 ring-2 ring-pink-500/30 shadow-pink-500/20'
-              : isExternal
-              ? 'border-pink-500/30 border-dashed hover:border-pink-400'
-              : 'border-pink-500/50 hover:border-pink-400'
-      }`}
-    >
-      <DiagramNodeResizer isVisible={selected} minWidth={minWidth} minHeight={minHeight} color="#ec4899" />
-
-      {/* 4-way handles for seamless connection routing */}
-      <Handle type="source" position={Position.Top} id="top-source" className="source !w-2 !h-2 !bg-pink-400" />
-      <Handle type="target" position={Position.Top} id="top-target" className="target !w-2 !h-2 !bg-pink-400" />
-      <Handle type="source" position={Position.Bottom} id="bottom-source" className="source !w-2 !h-2 !bg-pink-400" />
-      <Handle type="target" position={Position.Bottom} id="bottom-target" className="target !w-2 !h-2 !bg-pink-400" />
-      <Handle type="source" position={Position.Left} id="left-source" className="source !w-2 !h-2 !bg-pink-400" />
-      <Handle type="target" position={Position.Left} id="left-target" className="target !w-2 !h-2 !bg-pink-400" />
-      <Handle type="source" position={Position.Right} id="right-source" className="source !w-2 !h-2 !bg-pink-400" />
-      <Handle type="target" position={Position.Right} id="right-target" className="target !w-2 !h-2 !bg-pink-400" />
-
-      {/* Header bar */}
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <div className="flex items-center gap-1.5">
-          <div className="w-6 h-6 rounded bg-pink-500/10 border border-pink-500/20 flex items-center justify-center p-1 shrink-0">
-            {brandIcon ? (
-              <img src={brandIcon} alt="" className="w-full h-full object-contain" />
-            ) : (
-              <PersonAvatarIcon />
-            )}
-          </div>
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-pink-400 font-mono">
-            Person
-          </span>
-        </div>
-        <span
-          className={`px-1.5 py-0.5 text-[9px] font-mono rounded border ${
-            isExternal
-              ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-              : 'bg-pink-500/20 text-pink-300 border-pink-500/30'
-          }`}
-        >
-          {isExternal ? 'External Actor' : 'Actor'}
-        </span>
-      </div>
-
-      {/* Label / Name */}
-      <EditableNodeLabel
-        nodeId={(nodeData.id as string) ?? id}
-        label={label}
-        isEditing={Boolean(nodeData.isEditing)}
-        onCommit={(newLabel) => {
-          if (typeof nodeData.onRename === 'function') {
-            (nodeData.onRename as (val: string) => void)(newLabel);
-          }
-        }}
-        style={fontSize ? { fontSize: `${fontSize}px` } : undefined}
-        className="text-sm font-semibold text-slate-100 truncate"
-      />
-
-      {/* Role & Department */}
-      {(role || department) && (
-        <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-          {role && (
-            <span className="text-[11px] font-medium text-pink-300/90 bg-pink-950/40 px-1.5 py-0.5 rounded border border-pink-900/50">
-              {`[Role: ${role}]`}
-            </span>
-          )}
-          {department && (
-            <span className="text-[11px] text-slate-400 bg-slate-800/60 px-1.5 py-0.5 rounded border border-slate-700/50">
-              {`[Dept: ${department}]`}
-            </span>
-          )}
-        </div>
-      )}
-
-      {/* Email */}
-      {email && (
-        <div className="flex items-center gap-1 mt-1.5 text-xs text-slate-400">
-          <MailIcon />
-          <span className="truncate">{email}</span>
-        </div>
-      )}
-
-      {/* Description */}
-      {description && (
-        <div className="text-xs text-slate-400 mt-2 line-clamp-2 leading-relaxed border-t border-slate-800/80 pt-1.5">
-          {description}
-        </div>
-      )}
-
-      {/* Flow Visualization Overlay */}
-      <FlowBadges
-        flowView={nodeData.flowView as boolean | undefined}
-        isInFlow={nodeData.isInFlow as boolean | undefined}
-        flowStepNumbers={nodeData.flowStepNumbers as number[] | undefined}
-        isActiveStepParticipant={nodeData.isActiveStepParticipant as boolean | undefined}
-      />
-    </div>
-
+    <IcePanelNodeShell
+      nodeId={(nodeData.id as string) ?? id}
+      testId="person-node"
+      variant="actor"
+      title={label}
+      subtitle={isExternal ? 'External actor' : 'Actor'}
+      iconPath={brandIcon || undefined}
+      selected={selected}
+      isEditing={Boolean(nodeData.isEditing)}
+      onRename={(next) => (typeof nodeData.onRename === 'function' ? (nodeData.onRename as (v: string) => void)(next) : undefined)}
+      status={status}
+      minWidth={minWidth}
+      minHeight={minHeight}
+      cardRef={cardRef}
+      style={nodeData.style as React.CSSProperties}
+      fontSize={fontSize}
+      dim={Boolean(nodeData.flowView && !nodeData.isInFlow)}
+      highlight={Boolean(nodeData.flowView && nodeData.isInFlow)}
+      overlays={
+        <FlowBadges
+          flowView={nodeData.flowView as boolean | undefined}
+          isInFlow={nodeData.isInFlow as boolean | undefined}
+          flowStepNumbers={nodeData.flowStepNumbers as number[] | undefined}
+          isActiveStepParticipant={nodeData.isActiveStepParticipant as boolean | undefined}
+        />
+      }
+    />
   );
 }
