@@ -69,7 +69,7 @@ export function DatabaseNode({ id, data, selected }: NodeProps): JSX.Element {
       iconPath={brandIcon}
       fallbackGlyph={<DatabaseGlyph />}
       selected={selected}
-      isEditing={Boolean(nodeData.isEditing)}
+      isEditing={nodeData.isEditing as boolean | undefined}
       onRename={(next) => (typeof nodeData.onRename === 'function' ? (nodeData.onRename as (v: string) => void)(next) : undefined)}
       status={status}
       minWidth={minWidth}

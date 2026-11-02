@@ -69,7 +69,7 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
       iconPath={brandIcon}
       fallbackGlyph={<SystemGlyph />}
       selected={selected}
-      isEditing={Boolean(nodeData.isEditing)}
+      isEditing={nodeData.isEditing as boolean | undefined}
       onRename={(next) => (typeof nodeData.onRename === 'function' ? (nodeData.onRename as (v: string) => void)(next) : undefined)}
       onDrill={canDrillDown ? handleDrillDown : undefined}
       drillTestId="system-drill-down-btn"

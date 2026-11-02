@@ -118,7 +118,7 @@ export function IcePanelNodeShell(props: IcePanelNodeShellProps): JSX.Element {
     <EditableNodeLabel
       nodeId={nodeId}
       label={title}
-      isEditing={Boolean(isEditing)}
+      isEditing={isEditing}
       onCommit={(next) => onRename?.(next)}
       style={fontSize ? { fontSize: `${fontSize}px` } : undefined}
       className="font-semibold text-[#e7e9ea] tracking-[0.01em] text-center leading-tight break-words line-clamp-2 max-w-full text-[15px]"
@@ -207,7 +207,7 @@ export function IcePanelNodeShell(props: IcePanelNodeShellProps): JSX.Element {
         {drill}
         {statusDot}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-3 pt-3 pointer-events-none">
-          <div className={`flex items-center justify-center gap-2 max-w-full ${isEditing ? "pointer-events-auto" : "pointer-events-none"}`}>
+          <div className="flex items-center justify-center gap-2 max-w-full pointer-events-auto">
             <Logo iconPath={iconPath} fallbackGlyph={fallbackGlyph} size={26} />
             {titleEl}
           </div>
@@ -269,7 +269,7 @@ export function IcePanelNodeShell(props: IcePanelNodeShellProps): JSX.Element {
       {drill}
       {statusDot}
       <div className="absolute inset-0 flex items-center justify-center px-3 pb-4 pt-3 pointer-events-none">
-        <div className={`flex items-center justify-center gap-2.5 max-w-full ${isEditing ? "pointer-events-auto" : "pointer-events-none"}`}>
+        <div className="flex items-center justify-center gap-2.5 max-w-full pointer-events-auto">
           <Logo iconPath={iconPath} fallbackGlyph={fallbackGlyph} size={26} />
           {titleEl}
         </div>

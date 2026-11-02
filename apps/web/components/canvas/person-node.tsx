@@ -34,7 +34,7 @@ export function PersonNode({ id, data, selected }: NodeProps): JSX.Element {
       subtitle={isExternal ? 'External actor' : 'Actor'}
       iconPath={brandIcon || undefined}
       selected={selected}
-      isEditing={Boolean(nodeData.isEditing)}
+      isEditing={nodeData.isEditing as boolean | undefined}
       onRename={(next) => (typeof nodeData.onRename === 'function' ? (nodeData.onRename as (v: string) => void)(next) : undefined)}
       status={status}
       minWidth={minWidth}

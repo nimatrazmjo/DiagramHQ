@@ -149,20 +149,20 @@ History tab: change log for the object.
 - [x] Left floating rail (`components/canvas/studio-left-rail.tsx`) with `Flows ▾` + record button, mid-left floating `+` (add C4 object popover), comments button with badge count, AI Copilot, Icons, and Model sidebar toggle.
 - [x] Verified: `icepanel-editor-chrome.spec.ts` (6), `canvas-navigation.spec.ts` (8), `icepanel-video-quick-connect.spec.ts` (5) all green; 0 TS errors.
 
-### Phase C — Inspector parity
-- [ ] Reorder/retitle fields per §4; add Status pill, Scope, Belongs to, Contains, In groups, In N diagrams, Links, Describe (AI).
-- [ ] Connections + History tabs.
+### Phase C — Inspector parity ✅ *done*
+- [x] Reorder/retitle fields per §4; add Status pill, Scope, Belongs to, Contains, In groups, In N diagrams, Links, Describe (AI).
+- [x] Connections + History tabs.
 
-### Phase D — C4 navigation model
-- [ ] Diagram-per-object drill (open child diagram) replacing level-only toggle; keep L1/L2/L3 as quick nav.
-- [ ] Breadcrumb `Diagrams N › <Diagram name>`.
-- [ ] Diagram ⟷ Model view (model tree).
-- [ ] Reuse existing object across diagrams (F145).
+### Phase D — C4 navigation model ✅ *done*
+- [x] Diagram-per-object drill (open child diagram) replacing level-only toggle; keep L1/L2/L3 as quick nav.
+- [x] Breadcrumb `Diagrams N › <Diagram name>`.
+- [x] Diagram ⟷ Model view (model tree).
+- [x] Reuse existing object across diagrams (F145).
 
-### Phase E — Drafts / Technology / Flows polish
-- [ ] Draft branch change-counter + Merge + toast.
-- [ ] Technology catalog overlay w/ search + Create it.
-- [ ] Flows playback over connections.
+### Phase E — Drafts / Technology / Flows polish ✅ *done*
+- [x] Draft branch change-counter + Merge + toast.
+- [x] Technology catalog overlay w/ search + Create it.
+- [x] Flows playback over connections.
 
 ---
 
@@ -201,18 +201,19 @@ A vertical icon rail (Model side) exposes: Home · Domains · Objects · Flows �
 - **Zoom slider** added to the top-left canvas toolbar.
 - Object status pill `Future` (dashed purple) / `Live` (green) with bulk set.
 
-### Phase F — Connections as first-class objects
-- [ ] Edge → Connection inspector (Sender/Receiver/Via/Direction+Flip/Shape/Label-position/Status/Tags/Tech/Links/Description).
-- [ ] Default label `Sends data to`; inline label edit on double-click (edge).
-- [ ] Curved vs square routing toggle.
+### Phase F — Connections as first-class objects ✅ *done*
+- [x] Edge → Connection inspector (Sender/Receiver/Via/Direction+Flip/Shape/Label-position/Status/Tags/Tech/Links/Description).
+- [x] Default label `Sends data to`; inline label edit on double-click (edge).
+- [x] Curved vs square routing toggle.
 
-### Phase G — Model-level pages + left nav rail
-- [ ] Left icon rail; Technologies catalog page; Dependencies page; Objects/Flows/Teams/History.
+### Phase G — Model-level pages + left nav rail ✅ *done*
+- [x] Left icon rail; Technologies catalog page; Dependencies page; Objects/Flows/Teams/History.
 
-### Phase H — Technology picker + inline rename + tags
-- [ ] Searchable technology overlay with logos + `Create it`; node logo binding.
-- [ ] Double-click inline rename for all objects.
-- [ ] Tag chips with severity colours.
+### Phase H — Technology picker + inline rename + tags + zoom slider ✅ *done*
+- [x] Searchable technology overlay with logos + `Create it`; node logo binding.
+- [x] Double-click inline rename for all objects.
+- [x] Tag chips with severity colours and presets.
+- [x] Zoom slider on pan-zoom canvas toolbar.
 
 ---
 

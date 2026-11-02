@@ -668,21 +668,36 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
                 <span className="text-[10px] text-[#8b9196] font-mono">{(selectedEdge.tags || []).length} tags</span>
               </div>
               <div className="flex flex-wrap gap-1 mb-1.5">
-                {(selectedEdge.tags || []).map((t) => (
-                  <span
-                    key={t}
-                    className="flex items-center gap-1 px-2 py-0.5 rounded text-[11px] bg-white/[0.06] text-[#e7e9ea] border border-white/[0.1]"
-                  >
-                    <span>{t}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveEdgeTag(t)}
-                      className="text-slate-400 hover:text-white text-[10px] ml-0.5"
+                {(selectedEdge.tags || []).map((t) => {
+                  const isHigh = t.includes('High') || t.includes('Critical') || t.includes('⚠');
+                  const isMedium = t.includes('Medium') || t.includes('Moderate') || t.includes('Warning');
+                  const isLow = t.includes('Low') || t.includes('Info');
+
+                  const colorClasses = isHigh
+                    ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                    : isMedium
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                      : isLow
+                        ? 'bg-sky-500/20 text-sky-300 border-sky-500/40'
+                        : 'bg-white/[0.06] text-[#e7e9ea] border-white/[0.1]';
+
+                  return (
+                    <span
+                      key={t}
+                      className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] border font-medium ${colorClasses}`}
                     >
-                      ✕
-                    </button>
-                  </span>
-                ))}
+                      {isHigh && !t.includes('⚠') && <span>⚠</span>}
+                      <span>{t}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveEdgeTag(t)}
+                        className="text-slate-400 hover:text-white text-[10px] ml-0.5"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  );
+                })}
               </div>
               <div className="flex gap-1.5">
                 <input
@@ -705,6 +720,25 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
                   className="px-2.5 py-1 bg-white/[0.08] hover:bg-white/[0.12] text-white rounded text-xs font-medium"
                 >
                   Add
+                </button>
+              </div>
+              {/* Quick severity tag presets */}
+              <div className="flex flex-wrap gap-1 mt-1.5">
+                <button
+                  type="button"
+                  data-testid="edge-tag-preset-high"
+                  onClick={() => handleAddEdgeTag('⚠ High')}
+                  className="text-[10px] px-1.5 py-0.2 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 font-medium transition-colors"
+                >
+                  + ⚠ High
+                </button>
+                <button
+                  type="button"
+                  data-testid="edge-tag-preset-medium"
+                  onClick={() => handleAddEdgeTag('Medium')}
+                  className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 font-medium transition-colors"
+                >
+                  + Medium
                 </button>
               </div>
             </div>
@@ -1247,16 +1281,24 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
 
                     <div className="flex flex-wrap gap-1 mb-1.5">
                       {currentTags.map((tag) => {
-                        const isHigh = tag.includes('High') || tag.includes('Critical');
+                        const isHigh = tag.includes('High') || tag.includes('Critical') || tag.includes('⚠');
+                        const isMedium = tag.includes('Medium') || tag.includes('Moderate') || tag.includes('Warning');
+                        const isLow = tag.includes('Low') || tag.includes('Info');
+
+                        const colorClasses = isHigh
+                          ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                          : isMedium
+                            ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                            : isLow
+                              ? 'bg-sky-500/20 text-sky-300 border-sky-500/40'
+                              : 'bg-white/[0.06] text-[#e7e9ea] border-white/[0.1]';
+
                         return (
                           <span
                             key={tag}
-                            className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] border ${
-                              isHigh
-                                ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
-                                : 'bg-white/[0.06] text-[#e7e9ea] border-white/[0.1]'
-                            }`}
+                            className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] border font-medium ${colorClasses}`}
                           >
+                            {isHigh && !tag.includes('⚠') && <span>⚠</span>}
                             <span>{tag}</span>
                             <button
                               type="button"
@@ -1291,6 +1333,34 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
                         className="px-2.5 py-1 bg-white/[0.08] hover:bg-white/[0.12] text-white rounded text-xs font-medium"
                       >
                         Add
+                      </button>
+                    </div>
+
+                    {/* Quick severity tag presets */}
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      <button
+                        type="button"
+                        data-testid="tag-preset-high"
+                        onClick={() => handleAddTag('⚠ High')}
+                        className="text-[10px] px-1.5 py-0.2 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 font-medium transition-colors"
+                      >
+                        + ⚠ High
+                      </button>
+                      <button
+                        type="button"
+                        data-testid="tag-preset-medium"
+                        onClick={() => handleAddTag('Medium')}
+                        className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 font-medium transition-colors"
+                      >
+                        + Medium
+                      </button>
+                      <button
+                        type="button"
+                        data-testid="tag-preset-low"
+                        onClick={() => handleAddTag('Low')}
+                        className="text-[10px] px-1.5 py-0.2 rounded bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/30 font-medium transition-colors"
+                      >
+                        + Low
                       </button>
                     </div>
                   </div>

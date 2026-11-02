@@ -64,7 +64,7 @@ export function AppNode({ id, data, selected }: NodeProps): JSX.Element {
       iconPath={brandIcon}
       fallbackGlyph={<AppGlyph />}
       selected={selected}
-      isEditing={Boolean(nodeData.isEditing)}
+      isEditing={nodeData.isEditing as boolean | undefined}
       onRename={(next) => (typeof nodeData.onRename === 'function' ? (nodeData.onRename as (v: string) => void)(next) : undefined)}
       onDrill={canDrillDown ? handleDrillDown : undefined}
       drillTestId="app-drill-down-btn"
