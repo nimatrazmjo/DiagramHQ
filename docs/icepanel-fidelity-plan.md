@@ -138,7 +138,8 @@ History tab: change log for the object.
 - [x] `icepanel-edge` → dark pill with connection dot, subtle protocol badge.
 - [x] Status dot driven by `nodeData.status` (`future` dashed purple / `live` green).
 - [x] Verified: quick-connect (5), canvas-drag-drop (10), youtube-playlist (6), walkthrough (1) all green; 0 TS errors.
-- [ ] Remaining: `c4-*-boundary-node` container shell; always-on tech icon set.
+- [x] `c4-system-boundary-node` + `c4-container-boundary-node` → IcePanel translucent boundary (header top-left, muted subtitle, cyan select).
+- [ ] Remaining: bundled always-on tech icon set; `c4-context/container/component` rich variants.
 
 ### Phase B — Editor chrome
 - [ ] Top bar (Exit/DRAFT/…, Diagram⟷Model, N changes, Merge) in `studio/page.tsx`.
@@ -167,6 +168,49 @@ History tab: change log for the object.
 - `infinite-canvas.tsx` is 115KB and registers node types + inspector wiring; node rewrites must keep the same `data` contract and `data-testid`s so existing e2e keeps passing.
 - Keep per-viewer-only state (localStorage) out of model truth.
 - Don't regress the 145-feature roadmap panels; this work is confined to studio canvas chrome + nodes + inspector.
+
+---
+
+## 8. Video 2 — additional scope (continued review)
+
+Second recording (`how icepanel works second vedios.mov`) continues the same
+Allegheny County model and surfaces features beyond video 1:
+
+### 8.1 Nested groups / boundaries
+- Groups nest: **AKS** (Azure Kubernetes group) wraps **Frontend** (`Group: Front Door & CDN` → Colab, Allegheny GO) and **Backend** (Traffic Control, Postgres SQL, AitTaxi).
+- A group auto-resizes to wrap its children; dragging a child in/out re-parents it.
+- `New group` (bottom bar) or select-then-group; group carries its own name, tech, status.
+- Visual: translucent rounded rect, UPPERCASE/normal header top-left, `Group: <tech>` subtitle. ✅ node styling shipped (`group-node`, both `c4-*-boundary-node`); ❌ the *create/nest/auto-wrap* behaviour is studio wiring (Phase D).
+
+### 8.2 Connections are first-class objects
+Selecting an edge opens a **Connection inspector** with: Sender · Receiver · **Via** (intermediate object) · Status (Future/Live) · **Direction** (Outgoing/Incoming + **Flip**) · **Shape** (Square/Curved) · **Label** position slider · Diagrams · Flows · Tags · Technology · Links · Description. Labels like `Get/Post`, `Sends data to`, `always send data`.
+→ New **Phase F** below.
+
+### 8.3 Technology assignment + catalog
+- Node technology set from a searchable **Technology choices** overlay (logos, eye=visibility, `…` menu, `Create it`); node logo updates (e.g. Azure `A`, `dj` Django, `.NET core`).
+- Model → **Technologies** page: table of Name · Description · Website · Assigned-to count · Access (Public); `Manage technologies`; "Total technologies: N".
+
+### 8.4 Model-level pages via left nav rail
+A vertical icon rail (Model side) exposes: Home · Domains · Objects · Flows · Connections · **Dependencies** · Teams · **Technologies** · History. **Dependencies** page = Incoming / Object-of-focus / Outgoing with search + domain filter.
+
+### 8.5 Misc
+- **Inline rename**: double-click an object → edit title in place.
+- **Tags with severity**: e.g. red `⚠ High` tag in the inspector Tags row.
+- **Zoom slider** added to the top-left canvas toolbar.
+- Object status pill `Future` (dashed purple) / `Live` (green) with bulk set.
+
+### Phase F — Connections as first-class objects
+- [ ] Edge → Connection inspector (Sender/Receiver/Via/Direction+Flip/Shape/Label-position/Status/Tags/Tech/Links/Description).
+- [ ] Default label `Sends data to`; inline label edit on double-click (edge).
+- [ ] Curved vs square routing toggle.
+
+### Phase G — Model-level pages + left nav rail
+- [ ] Left icon rail; Technologies catalog page; Dependencies page; Objects/Flows/Teams/History.
+
+### Phase H — Technology picker + inline rename + tags
+- [ ] Searchable technology overlay with logos + `Create it`; node logo binding.
+- [ ] Double-click inline rename for all objects.
+- [ ] Tag chips with severity colours.
 
 ---
 

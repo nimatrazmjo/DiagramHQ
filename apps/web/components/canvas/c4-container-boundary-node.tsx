@@ -2,42 +2,42 @@ import React from 'react';
 import type { NodeProps } from '@xyflow/react';
 import type { C4ContainerBoundaryNodeData } from '@diagramhq/domain';
 import { DiagramNodeResizer } from './diagram-node-resizer';
+import { getTechnologyIconPath } from '../../lib/icons';
+
+function ZoomGlyph(): JSX.Element {
+  return (
+    <svg className="w-[18px] h-[18px] text-[#6b7280]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  );
+}
 
 /**
- * C4ContainerBoundaryNode renders the enclosing container boundary in C4 Component Level 3 view.
- * It frames the components showing that they reside within a specific parent container / application.
+ * C4ContainerBoundaryNode — the translucent container/app boundary that frames
+ * the components on the Component (L3) diagram. IcePanel styling: header
+ * top-left (zoom glyph · logo · name), muted subtitle bottom-centre.
  */
 export function C4ContainerBoundaryNode({ data, selected }: NodeProps): JSX.Element {
   const nodeData = (data ?? {}) as unknown as C4ContainerBoundaryNodeData;
   const label = typeof nodeData.label === 'string' ? nodeData.label : 'Container';
-  const technology = typeof nodeData.technology === 'string' && nodeData.technology.trim()
-    ? nodeData.technology
-    : undefined;
-  const description = typeof nodeData.description === 'string' ? nodeData.description : undefined;
+  const technology = typeof nodeData.technology === 'string' && nodeData.technology.trim() ? nodeData.technology : undefined;
+  const icon = ((nodeData as Record<string, unknown>).icon as string) || getTechnologyIconPath(technology || label) || undefined;
+  const subtitle = technology ? `App: ${technology}` : 'App';
 
   return (
     <div
       data-testid="c4-container-boundary"
-      className={`w-full h-full min-w-[240px] min-h-[140px] p-4 rounded-2xl border-2 border-dashed border-emerald-500/40 bg-emerald-950/10 pointer-events-none transition-all ${
-        selected ? 'ring-2 ring-emerald-400 border-emerald-400' : ''
-      }`}
+      style={selected ? { borderColor: '#2BB5E8', boxShadow: '0 0 0 1px #2BB5E8' } : undefined}
+      className="w-full h-full min-w-[240px] min-h-[140px] rounded-[10px] border border-white/10 bg-white/[0.015] pointer-events-none relative transition-colors"
     >
-      <DiagramNodeResizer isVisible={selected} minWidth={240} minHeight={140} color="#10b981" />
-      <div className="flex items-center gap-2 mb-1">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/50">
-          {`[Container Boundary: ${label}]`}
-        </span>
-        {technology && (
-          <span className="text-[10px] font-mono text-emerald-300/80 bg-white/5 px-1.5 py-0.5 rounded border border-white/10">
-            {`[${technology}]`}
-          </span>
-        )}
+      <DiagramNodeResizer isVisible={selected} minWidth={240} minHeight={140} color="#2BB5E8" />
+      <div className="absolute top-2 left-2 flex items-center gap-2 max-w-[90%]">
+        <ZoomGlyph />
+        {icon ? <img src={icon} alt="" width={16} height={16} className="object-contain" /> : null}
+        <span className="truncate text-[13px] font-semibold text-[#e7e9ea]">{label}</span>
       </div>
-      {description && (
-        <p className="text-xs text-slate-400/80 italic max-w-md">
-          {description}
-        </p>
-      )}
+      <div className="absolute bottom-2 left-0 right-0 text-center text-[11px] text-[#8b9196]">{subtitle}</div>
     </div>
   );
 }
