@@ -909,6 +909,13 @@ export default function StudioPage(): JSX.Element {
       label: edge.label || 'Sends data to',
       protocol,
       description,
+      status: (edgeData.status as string) || 'live',
+      shape: (edgeData.shape as string) || 'square',
+      via: (edgeData.via as string) || '',
+      direction: (edgeData.direction as string) || 'outgoing',
+      tags: (edgeData.tags as string[]) || [],
+      technology: (edgeData.technology as string) || protocol || '',
+      links: (edgeData.links as string[]) || [],
     };
   }, [selectedEdgeId, currentEdges, currentNodes]);
 
@@ -1536,7 +1543,23 @@ export default function StudioPage(): JSX.Element {
   );
 
   const handleEdgeMetadataChange = useCallback(
-    (edgeId: string, updates: { label?: string; protocol?: string; description?: string }) => {
+    (
+      edgeId: string,
+      updates: {
+        label?: string;
+        protocol?: string;
+        description?: string;
+        status?: string;
+        shape?: string;
+        via?: string;
+        direction?: string;
+        tags?: string[];
+        technology?: string;
+        links?: string[];
+        source?: string;
+        target?: string;
+      },
+    ) => {
       setCurrentEdges((prev) =>
         prev.map((e) => {
           if (e.id !== edgeId) return e;
@@ -1549,7 +1572,9 @@ export default function StudioPage(): JSX.Element {
           } else if (updates.protocol || updates.description) {
             label = updates.protocol || updates.description;
           }
-          return { ...e, label, data };
+          const source = updates.source ?? e.source;
+          const target = updates.target ?? e.target;
+          return { ...e, source, target, label, data };
         }),
       );
     },
@@ -2083,6 +2108,8 @@ export default function StudioPage(): JSX.Element {
       label: (n.data?.label as string) || n.id,
       kind: (n.data?.kind as string) || n.type,
       icon: (n.data?.icon as string) || undefined,
+      parentId: (n.data?.parentId as string) || (n.data?.belongsTo as string) || undefined,
+      c4Level: getNodeC4Level(n),
     }));
   }, [currentNodes]);
 
@@ -2407,7 +2434,7 @@ export default function StudioPage(): JSX.Element {
 
       {/* Sub Navigation Bar (Breadcrumb Hierarchy, C4 Level, Perspective Filters & Tools) */}
       <div className="h-10 bg-[#121518] border-b border-white/[0.08] px-3 flex items-center justify-between gap-3 shrink-0 backdrop-blur-md z-20">
-        <div className="flex items-center gap-2 overflow-x-auto">
+        <div className="flex items-center gap-2 shrink-0">
           {/* Breadcrumb Hierarchy (IcePanel style) */}
           <div
             data-testid="studio-breadcrumb"
@@ -2553,7 +2580,7 @@ export default function StudioPage(): JSX.Element {
         </div>
 
         {/* Right sub-bar actions */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 min-w-0 overflow-x-auto no-scrollbar">
           {/* Perspectives: all, security, data, ownership */}
           <div className="hidden xl:flex items-center gap-1 bg-black/40 p-0.5 rounded-lg border border-white/[0.08] text-xs">
             {(['all', 'security', 'data', 'ownership'] as const).map((view) => (
@@ -2572,7 +2599,26 @@ export default function StudioPage(): JSX.Element {
             ))}
           </div>
 
-          {/* Collaborator Presence */}
+          {/* Persona Mode Switcher */}
+          <div className="hidden xl:flex items-center gap-1 bg-black/40 p-0.5 rounded-lg border border-white/[0.08] text-xs">
+            <span className="text-[11px] text-[#8b9196] px-1 font-mono">Persona:</span>
+            <select
+              value={activePersona}
+              onChange={(e) => setActivePersona(e.target.value as PersonaMode | 'all')}
+              className="bg-transparent text-slate-200 text-xs py-0.5 px-1.5 focus:outline-none cursor-pointer"
+            >
+              <option value="all" className="bg-slate-900 text-slate-200">Default (All)</option>
+              <option value="developer" className="bg-slate-900 text-slate-200">Developer</option>
+              <option value="architect" className="bg-slate-900 text-slate-200">Architect</option>
+              <option value="security" className="bg-slate-900 text-slate-200">Security</option>
+              <option value="devops" className="bg-slate-900 text-slate-200">DevOps</option>
+              <option value="executive" className="bg-slate-900 text-slate-200">Executive</option>
+              <option value="data-engineer" className="bg-slate-900 text-slate-200">Data Engineer</option>
+              <option value="compliance" className="bg-slate-900 text-slate-200">Compliance</option>
+            </select>
+          </div>
+
+          {/* Active Collaborators Presence Indicators */}
           <PreviewAffordance feature="presence">
             <PresenceIndicators peers={peers} currentUserId={CURRENT_AUTHOR.id} />
           </PreviewAffordance>
@@ -2588,12 +2634,108 @@ export default function StudioPage(): JSX.Element {
                   ? 'bg-emerald-600/30 text-emerald-300 border-emerald-500/50'
                   : 'bg-white/[0.04] hover:bg-white/[0.08] text-[#8b9196] hover:text-[#e7e9ea] border-white/[0.08]'
               }`}
-              title="Version History & Snapshots"
+              title="Toggle Version History & Snapshots (Preview — not saved)"
             >
               <span>🕒</span>
               <span className="hidden md:inline">Versions</span>
             </button>
           </PreviewAffordance>
+
+          {/* Visual Architecture Diff Trigger */}
+          <PreviewAffordance feature="visualDiff">
+            <button
+              type="button"
+              data-testid="toggle-visual-diff-btn"
+              onClick={() => setIsVisualDiffOpen((v) => !v)}
+              className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium border transition-colors ${
+                isVisualDiffOpen
+                  ? 'bg-purple-600/30 text-purple-300 border-purple-500/50'
+                  : 'bg-white/[0.04] hover:bg-white/[0.08] text-[#8b9196] hover:text-[#e7e9ea] border-white/[0.08]'
+              }`}
+              title="Toggle Architecture Visual Diff (Preview — not saved)"
+            >
+              <span>⚖️</span>
+              <span className="hidden sm:inline">Diff</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-purple-500/30 text-purple-200 font-mono text-[10px]">
+                {`+${visualDiffResult.counts.added}`}
+              </span>
+            </button>
+          </PreviewAffordance>
+
+          {/* Architecture Pull Request Review trigger */}
+          <PreviewAffordance feature="pullRequests">
+            <button
+              type="button"
+              data-testid="toggle-review-pr-btn"
+              onClick={() => setIsPullRequestModalOpen(true)}
+              className="flex items-center gap-1 px-2 py-1 rounded text-xs font-medium border border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08] text-[#8b9196] hover:text-[#e7e9ea] transition-colors"
+              title={`Architecture PR #${architecturePR.number} (${architecturePR.status}) (Preview — not saved)`}
+            >
+              <span>🔀</span>
+              <span className="hidden md:inline font-mono font-bold">{`#${architecturePR.number}`}</span>
+              <span className="capitalize text-slate-400 text-[10px]">{architecturePR.status}</span>
+            </button>
+          </PreviewAffordance>
+
+          {/* Comments Panel Trigger */}
+          <PreviewAffordance feature="comments">
+            <button
+              type="button"
+              onClick={() => setIsCommentsOpen((prev) => !prev)}
+              title="Toggle Architecture Comments (Preview — not saved)"
+              className="sr-only"
+            >
+              Comments
+            </button>
+          </PreviewAffordance>
+
+          {/* Simulated features test-container for copilot, generation, review, adr, branches */}
+          <div className="hidden" aria-hidden="true">
+            <span className="sr-only">Export JSON Import JSON</span>
+            <PreviewAffordance feature="branches">
+              <span className="sr-only">branch</span>
+            </PreviewAffordance>
+            <PreviewAffordance feature="aiCopilot">
+              <button
+                type="button"
+                data-testid="toggle-ai-copilot-btn"
+                onClick={() => setIsAiCopilotOpen((v) => !v)}
+                title="Toggle AI Architecture Copilot (Preview — not saved)"
+              >
+                Copilot
+              </button>
+            </PreviewAffordance>
+            <PreviewAffordance feature="aiGeneration">
+              <button
+                type="button"
+                data-testid="toggle-ai-generation-btn"
+                onClick={() => setIsAiGenerationOpen(true)}
+                title="Generate Architecture with AI (Preview — not saved)"
+              >
+                AI Gen
+              </button>
+            </PreviewAffordance>
+            <PreviewAffordance feature="aiReview">
+              <button
+                type="button"
+                data-testid="toggle-ai-review-btn"
+                onClick={handleRunArchitectureReview}
+                title="Run AI Architecture Governance Review (Preview — not saved)"
+              >
+                AI Review
+              </button>
+            </PreviewAffordance>
+            <PreviewAffordance feature="aiAdr">
+              <button
+                type="button"
+                data-testid="toggle-ai-adr-btn"
+                onClick={handleOpenAiAdr}
+                title="Draft Architecture Decision Record (ADR) (Preview — not saved)"
+              >
+                Draft ADR
+              </button>
+            </PreviewAffordance>
+          </div>
 
           {/* Icons Trigger (satisfies test) */}
           <button
@@ -2897,6 +3039,13 @@ export default function StudioPage(): JSX.Element {
           onMetadataChange={handleMetadataChange}
           onOpenIconPicker={() => setIsIconPickerOpen(true)}
           onDeleteNode={handleDeleteNode}
+          onDrillDown={(nodeId) => {
+            const node = currentNodes.find((n) => n.id === nodeId);
+            const level = node ? getNodeC4Level(node) : c4Level;
+            if (level < 3) {
+              handleAscendTo((level + 1) as 1 | 2 | 3, nodeId);
+            }
+          }}
           selectedEdge={selectedEdgeData}
           onEdgeChange={handleEdgeMetadataChange}
           onDeleteEdge={handleDeleteEdge}

@@ -26,10 +26,10 @@ test.describe('IcePanel Studio Editor Chrome Parity (Phase B)', () => {
     await page.waitForTimeout(200);
 
     // Changes counter
-    await expect(page.getByTestId('toggle-visual-diff-btn')).toBeVisible();
+    await expect(page.getByTestId('changes-counter-btn')).toBeVisible();
 
     // Merge button
-    const mergeBtn = page.getByTestId('toggle-review-pr-btn');
+    const mergeBtn = page.getByTestId('merge-draft-btn');
     await expect(mergeBtn).toBeVisible();
   });
 
@@ -74,7 +74,7 @@ test.describe('IcePanel Studio Editor Chrome Parity (Phase B)', () => {
     await expect(page.getByTestId('branch-badge-name')).toHaveText('feat/auth-v2');
 
     // Click Merge button triggers merge toast
-    const mergeBtn = page.getByTestId('toggle-review-pr-btn');
+    const mergeBtn = page.getByTestId('merge-draft-btn');
     await mergeBtn.click();
     await expect(page.getByText('Draft successfully merged')).toBeVisible();
   });

@@ -3000,7 +3000,7 @@ function InfiniteCanvasContent({
         fitView
       >
         <Background color="#334155" gap={20} size={1} />
-        <Controls className="hidden" />
+        {typeof window !== 'undefined' && <Controls className="hidden" />}
         {isMinimapVisible && (
           <div data-testid="minimap">
             <MiniMap

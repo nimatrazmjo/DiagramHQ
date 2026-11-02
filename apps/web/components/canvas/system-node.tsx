@@ -35,6 +35,8 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
   const canDrillDown = Boolean(nodeData.canDrillDown ?? !isExternal);
   const systemId = (nodeData.systemId as string) ?? id;
   const status = nodeData.status as string | undefined;
+  const domain = typeof nodeData.domain === 'string' && nodeData.domain.length > 0 ? nodeData.domain : undefined;
+  const systemType = typeof nodeData.systemType === 'string' && nodeData.systemType.length > 0 ? nodeData.systemType : undefined;
 
   const handleDrillDown = () => {
     if (typeof nodeData.onDrillDown === 'function') {
@@ -53,7 +55,9 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
     id,
   );
 
-  const subtitle = isExternal ? 'External system' : technology ? `System  ${technology}` : 'System';
+  const critical = Boolean(nodeData.critical || (nodeData as Record<string, unknown>).criticality === 'tier-0');
+
+  const subtitle = isExternal ? 'External System' : technology ? `System: ${technology}` : 'System';
 
   return (
     <IcePanelNodeShell
@@ -70,6 +74,7 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
       onDrill={canDrillDown ? handleDrillDown : undefined}
       drillTestId="system-drill-down-btn"
       status={status}
+      dashed={isExternal}
       minWidth={minWidth}
       minHeight={minHeight}
       cardRef={cardRef}
@@ -80,6 +85,13 @@ export function SystemNode({ id, data, selected }: NodeProps): JSX.Element {
       onDoubleClick={canDrillDown ? handleDrillDown : undefined}
       overlays={
         <>
+          <span className="sr-only">
+            {isExternal ? (systemType ? `[${systemType}]` : '') : 'Internal'}
+            {!isExternal && systemType ? `[Type: ${systemType}]` : ''}
+            {domain ? `[Domain: ${domain}]` : ''}
+            {critical ? '[Tier 0]' : ''}
+            {description ? description : ''}
+          </span>
           <SecurityBadges {...(nodeData as unknown as React.ComponentProps<typeof SecurityBadges>)} />
           <DataBadges {...(nodeData as unknown as React.ComponentProps<typeof DataBadges>)} />
           <OwnershipBadges {...(nodeData as unknown as React.ComponentProps<typeof OwnershipBadges>)} />

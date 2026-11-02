@@ -28,9 +28,9 @@ test.describe('Studio Inspector Visibility on Selection and Background Click', (
     // With a node selected, the right inspector panel MUST be visible
     await expect(inspector).toBeVisible();
 
-    // 3. User clicks on empty canvas background / pane (below the nodes at y=600)
+    // 3. User clicks on empty canvas background / pane (below the nodes)
     const canvasPane = page.locator('.react-flow__pane');
-    await canvasPane.click({ position: { x: 100, y: 600 } });
+    await canvasPane.click({ position: { x: 400, y: 450 } });
 
     // When background is clicked, the right menu MUST hide
     await expect(inspector).toBeHidden();
@@ -55,7 +55,7 @@ test.describe('Studio Inspector Visibility on Selection and Background Click', (
       await expect(inspector).toBeVisible();
 
       // Click on background again
-      await canvasPane.click({ position: { x: 100, y: 600 } });
+      await canvasPane.click({ position: { x: 400, y: 450 } });
       await expect(inspector).toBeHidden();
     }
   });

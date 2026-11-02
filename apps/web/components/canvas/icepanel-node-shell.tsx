@@ -53,6 +53,8 @@ export interface IcePanelNodeShellProps {
   /** Uppercase header label (groups). Falsey → normal case title in header. */
   boundaryUppercase?: boolean;
   fontSize?: number;
+  className?: string;
+  dashed?: boolean;
   onDoubleClick?: (e: React.MouseEvent) => void;
   children?: React.ReactNode;
 }
@@ -109,7 +111,7 @@ export function IcePanelNodeShell(props: IcePanelNodeShellProps): JSX.Element {
     nodeId, testId, variant, title, subtitle, iconPath, fallbackGlyph,
     selected, isEditing, onRename, onDrill, drillTestId, status,
     minWidth, minHeight, cardRef, style, dim, highlight, overlays,
-    boundaryUppercase, fontSize, onDoubleClick, children,
+    boundaryUppercase, fontSize, className = '', dashed, onDoubleClick, children,
   } = props;
 
   const titleEl = (
@@ -257,8 +259,10 @@ export function IcePanelNodeShell(props: IcePanelNodeShellProps): JSX.Element {
       onDoubleClick={onDoubleClick}
       style={{ minWidth, minHeight, ...borderStyle, ...style, opacity: dim ? 0.35 : 1 }}
       className={`group w-full h-full rounded-lg border bg-[#15181c] relative select-none transition-colors ${
-        selected ? '' : 'border-white/10 hover:border-white/20 hover:bg-[#1b1f24]'
-      }`}
+        dashed ? 'border-dashed' : ''
+      } ${
+        selected ? 'ring-2 ring-blue-500/30' : 'border-white/10 hover:border-white/20 hover:bg-[#1b1f24]'
+      } ${className}`}
     >
       <DiagramNodeResizer isVisible={Boolean(selected)} minWidth={minWidth} minHeight={minHeight} color={SELECT} />
       <Handles />
