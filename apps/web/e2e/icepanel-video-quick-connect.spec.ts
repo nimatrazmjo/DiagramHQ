@@ -29,7 +29,7 @@ test.describe('IcePanel Interactive Connection & Quick-Insert Suite (Video Repro
     // 2. Drag from right handle 200px to the right onto empty canvas
     const startX = rightHandleBox.x + rightHandleBox.width / 2;
     const startY = rightHandleBox.y + rightHandleBox.height / 2;
-    const dropX = startX + 220;
+    const dropX = startX + 300;
     const dropY = startY;
 
     await page.mouse.move(startX, startY);
@@ -68,7 +68,7 @@ test.describe('IcePanel Interactive Connection & Quick-Insert Suite (Video Repro
 
     await page.mouse.move(startX, startY);
     await page.mouse.down();
-    await page.mouse.move(startX + 240, startY, { steps: 8 });
+    await page.mouse.move(startX + 300, startY, { steps: 8 });
     await page.mouse.up();
     await page.waitForTimeout(400);
 

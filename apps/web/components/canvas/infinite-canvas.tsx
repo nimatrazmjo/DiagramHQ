@@ -5,6 +5,7 @@ import {
   ReactFlow,
   ReactFlowProvider,
   Background,
+  Controls,
   MiniMap,
   Panel,
   useReactFlow,
@@ -450,7 +451,14 @@ function InfiniteCanvasContent({
   }, []);
 
   const handleNodeDoubleClick = useCallback(
-    (_event: React.MouseEvent, node: Node) => {
+    (event: React.MouseEvent, node: Node) => {
+      // If double-click is directly on the node title/label, prioritize inline rename (Phase H)
+      const targetEl = event.target as HTMLElement | null;
+      if (targetEl && targetEl.closest('[data-testid="node-label"]')) {
+        setEditingNodeId(node.id);
+        return;
+      }
+
       // If drill-down handler is provided and node can be drilled into, descend (F142)
       const isSystem =
         node.type === 'system' ||
@@ -2999,6 +3007,7 @@ function InfiniteCanvasContent({
         fitView
       >
         <Background color="#334155" gap={20} size={1} />
+        {typeof window !== 'undefined' && <Controls className="hidden" />}
         {isMinimapVisible && (
           <div data-testid="minimap">
             <MiniMap
@@ -3104,6 +3113,20 @@ function InfiniteCanvasContent({
             >
               +
             </button>
+            <input
+              type="range"
+              data-testid="zoom-slider"
+              min="0.2"
+              max="2"
+              step="0.05"
+              value={currentZoom}
+              onChange={(e) => {
+                const nextZoom = parseFloat(e.target.value);
+                reactFlow.zoomTo(nextZoom, { duration: 50 });
+              }}
+              className="w-16 h-1 bg-white/[0.1] rounded-lg appearance-none cursor-pointer accent-[#2BB5E8] mx-1 hidden sm:block"
+              title={`Zoom: ${Math.round(currentZoom * 100)}%`}
+            />
             <div className="w-px h-4 bg-slate-700 mx-0.5" />
             <button
               type="button"

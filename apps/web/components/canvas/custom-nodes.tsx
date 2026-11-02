@@ -1,5 +1,7 @@
 import React from 'react';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { type NodeProps } from '@xyflow/react';
+import { getTechnologyIconPath } from '../../lib/icons';
+import { IcePanelNodeShell } from './icepanel-node-shell';
 import { C4ContextNode } from './c4-context-node';
 import { C4ContainerNode } from './c4-container-node';
 import { C4SystemBoundaryNode } from './c4-system-boundary-node';
@@ -12,8 +14,6 @@ import { ComponentNode } from './component-node';
 import { DatabaseNode } from './database-node';
 import { QueueNode } from './queue-node';
 import { GroupNode } from './group-node';
-import { EditableNodeLabel } from './editable-node-label';
-import { DiagramNodeResizer } from './diagram-node-resizer';
 import { useDynamicNodeDimensions } from './node-dimension-utils';
 
 export { C4ContextNode } from './c4-context-node';
@@ -40,33 +40,19 @@ export interface CustomNodeData {
   [key: string]: unknown;
 }
 
-function StoreIcon(): JSX.Element {
-  return (
-    <svg
-      className="w-4 h-4 text-purple-400 flex-shrink-0"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <ellipse cx="12" cy="5" rx="9" ry="3" />
-      <path d="M3 5V19A9 3 0 0 0 21 19V5" />
-      <path d="M3 12A9 3 0 0 0 21 12" />
-    </svg>
-  );
-}
-
 /**
- * Database / storage node with cylinder icon, label, and kind.
+ * Store / storage node — IcePanel cylinder "Store" object.
  */
 export function StoreNode({ id, data, selected }: NodeProps): JSX.Element {
   const nodeData = (data ?? {}) as unknown as CustomNodeData;
-  const label = typeof nodeData.label === 'string' ? nodeData.label : 'Storage Node';
+  const label = typeof nodeData.label === 'string' ? nodeData.label : 'Store';
   const kind = typeof nodeData.kind === 'string' ? nodeData.kind : 'store';
+  const technology = typeof (nodeData as Record<string, unknown>).technology === 'string'
+    ? ((nodeData as Record<string, unknown>).technology as string)
+    : undefined;
   const description = typeof nodeData.description === 'string' ? nodeData.description : undefined;
+  const status = nodeData.status as string | undefined;
+  const brandIcon = ((nodeData as Record<string, unknown>).icon as string) || getTechnologyIconPath(technology || label);
 
   const fontSize =
     (nodeData.fontSize as number) ||
@@ -74,77 +60,31 @@ export function StoreNode({ id, data, selected }: NodeProps): JSX.Element {
     ((nodeData.style as Record<string, unknown>)?.fontSize as number);
 
   const { cardRef, minHeight, minWidth } = useDynamicNodeDimensions(
-    {
-      label,
-      description,
-      kind,
-      fontSize,
-      hasHeader: true,
-      hasFooter: false,
-      paddingY: 24,
-    },
+    { label, description, kind, fontSize, hasHeader: true, hasFooter: true, paddingY: 28 },
     'store',
     id,
   );
 
+  const subtitle = technology ? `Store: ${technology}` : 'Store';
+
   return (
-    <div
-      ref={cardRef}
-      data-testid="store-node"
-      style={{
-        minHeight: `${minHeight}px`,
-        minWidth: `${minWidth}px`,
-        ...(nodeData.style as React.CSSProperties),
-      }}
-      className={`group w-full h-full min-w-[180px] min-h-[70px] rounded-lg p-3 shadow-lg bg-slate-900/95 border transition-all ${
-        selected
-          ? 'border-purple-500 ring-2 ring-purple-500/30 shadow-purple-500/20'
-          : 'border-purple-500/40 hover:border-purple-400'
-      }`}
-    >
-      <DiagramNodeResizer isVisible={selected} minWidth={minWidth} minHeight={minHeight} color="#c084fc" />
-      <Handle type="target" position={Position.Top} id="top-target" className="!w-2 !h-2 !bg-purple-400" />
-      <Handle type="source" position={Position.Top} id="top-source" className="!w-2 !h-2 !bg-purple-400" />
-      <Handle type="target" position={Position.Bottom} id="bottom-target" className="!w-2 !h-2 !bg-purple-400" />
-      <Handle type="source" position={Position.Bottom} id="bottom-source" className="!w-2 !h-2 !bg-purple-400" />
-      <Handle type="target" position={Position.Left} id="left-target" className="!w-2 !h-2 !bg-purple-400" />
-      <Handle type="source" position={Position.Left} id="left-source" className="!w-2 !h-2 !bg-purple-400" />
-      <Handle type="target" position={Position.Right} id="right-target" className="!w-2 !h-2 !bg-purple-400" />
-      <Handle type="source" position={Position.Right} id="right-source" className="!w-2 !h-2 !bg-purple-400" />
-
-      <div className="flex items-center justify-between gap-2 mb-1.5">
-        <div className="flex items-center gap-1.5">
-          <div className="p-1 rounded bg-purple-500/10 border border-purple-500/20">
-            <StoreIcon />
-          </div>
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-purple-400 font-mono">
-            Data Store
-          </span>
-        </div>
-        <span className="px-1.5 py-0.5 text-[10px] font-mono rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
-          {kind}
-        </span>
-      </div>
-
-      <EditableNodeLabel
-        nodeId={id}
-        label={label}
-        isEditing={Boolean(nodeData.isEditing)}
-        onCommit={(newLabel) => {
-          if (typeof nodeData.onRename === 'function') {
-            (nodeData.onRename as (val: string) => void)(newLabel);
-          }
-        }}
-        style={fontSize ? { fontSize: `${fontSize}px` } : undefined}
-        className="text-sm font-semibold text-slate-100 truncate"
-      />
-
-      {description && (
-        <div className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">
-          {description}
-        </div>
-      )}
-    </div>
+    <IcePanelNodeShell
+      nodeId={id}
+      testId="store-node"
+      variant="cylinder"
+      title={label}
+      subtitle={subtitle}
+      iconPath={brandIcon || undefined}
+      selected={selected}
+      isEditing={Boolean(nodeData.isEditing)}
+      onRename={(next) => (typeof nodeData.onRename === 'function' ? (nodeData.onRename as (v: string) => void)(next) : undefined)}
+      status={status}
+      minWidth={minWidth}
+      minHeight={minHeight}
+      cardRef={cardRef}
+      style={nodeData.style as React.CSSProperties}
+      fontSize={fontSize}
+    />
   );
 }
 

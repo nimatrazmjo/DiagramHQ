@@ -35,7 +35,7 @@ export function EditableNodeLabel({
   const [draftValue, setDraftValue] = useState(label);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const isEditing = controlledIsEditing ?? isLocalEditing;
+  const isEditing = Boolean(controlledIsEditing || isLocalEditing);
 
   useEffect(() => {
     setDraftValue(label);

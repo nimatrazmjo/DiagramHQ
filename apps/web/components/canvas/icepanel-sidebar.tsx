@@ -26,6 +26,8 @@ export interface IcePanelSidebarProps {
   allModelObjects?: ModelObject[];
   onAddObjectToActiveView?: (objectId: string) => void;
   onRemoveObjectFromActiveView?: (objectId: string) => void;
+  activeTab?: 'diagrams' | 'model';
+  onTabChange?: (tab: 'diagrams' | 'model') => void;
 }
 
 export type ModelCategory = 'actor' | 'system' | 'application' | 'database' | 'queue' | 'component';
@@ -107,8 +109,16 @@ export function IcePanelSidebar({
   allModelObjects,
   onAddObjectToActiveView,
   onRemoveObjectFromActiveView,
+  activeTab,
+  onTabChange,
 }: IcePanelSidebarProps): JSX.Element {
-  const [sidebarTab, setSidebarTab] = useState<'diagrams' | 'model'>('model');
+  const [internalSidebarTab, setInternalSidebarTab] = useState<'diagrams' | 'model'>('model');
+  const sidebarTab = activeTab ?? internalSidebarTab;
+
+  const handleSelectTab = (tab: 'diagrams' | 'model') => {
+    setInternalSidebarTab(tab);
+    onTabChange?.(tab);
+  };
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
     actor: true,
@@ -267,7 +277,7 @@ export function IcePanelSidebar({
           <button
             type="button"
             data-testid="sidebar-model-tab"
-            onClick={() => setSidebarTab('model')}
+            onClick={() => handleSelectTab('model')}
             className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
               sidebarTab === 'model'
                 ? 'bg-blue-600 text-white shadow-sm'
@@ -280,7 +290,7 @@ export function IcePanelSidebar({
           <button
             type="button"
             data-testid="sidebar-diagrams-tab"
-            onClick={() => setSidebarTab('diagrams')}
+            onClick={() => handleSelectTab('diagrams')}
             className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
               sidebarTab === 'diagrams'
                 ? 'bg-blue-600 text-white shadow-sm'
@@ -319,6 +329,7 @@ export function IcePanelSidebar({
               {searchQuery && (
                 <button
                   type="button"
+                  aria-label="Clear search"
                   onClick={() => setSearchQuery('')}
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 hover:text-white"
                 >
@@ -347,6 +358,7 @@ export function IcePanelSidebar({
                   <span>New Model Object</span>
                   <button
                     type="button"
+                    aria-label="Cancel creating object"
                     onClick={() => setIsCreatingObject(false)}
                     className="text-slate-400 hover:text-white"
                   >
@@ -506,6 +518,7 @@ export function IcePanelSidebar({
                                     {onRemoveObjectFromActiveView && (
                                       <button
                                         type="button"
+                                        aria-label={`Remove ${label} from view`}
                                         data-testid={`remove-from-view-${item.id}`}
                                         title="Remove from this view (keeps in model)"
                                         onClick={(e) => {
