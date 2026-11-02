@@ -174,6 +174,15 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
   const [newHistoryNote, setNewHistoryNote] = useState('');
   const [manualHistory, setManualHistory] = useState<HistoryEntry[]>([]);
 
+  // Technology choices overlay state
+  const [isTechChoicesOpen, setIsTechChoicesOpen] = useState(false);
+  const [techSearchQuery, setTechSearchQuery] = useState('');
+  const filteredTechChoices = useMemo(() => {
+    if (!techSearchQuery.trim()) return COMMON_TECH_CHOICES;
+    const q = techSearchQuery.toLowerCase();
+    return COMMON_TECH_CHOICES.filter((c) => c.toLowerCase().includes(q));
+  }, [techSearchQuery]);
+
   const handleFieldChange = (field: string, value: unknown) => {
     if (onMetadataChange) {
       onMetadataChange(field, value);
@@ -219,6 +228,10 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
     if (!trimmed || currentTechList.includes(trimmed)) return;
     const nextList = [...currentTechList, trimmed];
     handleFieldChange('technology', nextList.join(', '));
+    const autoIcon = getTechnologyIconPath(trimmed);
+    if (autoIcon && !metadata.icon) {
+      handleFieldChange('icon', autoIcon);
+    }
     setTechInput('');
   };
 
@@ -1114,19 +1127,109 @@ export function InspectorPanel(props: InspectorPanelProps): JSX.Element {
                   </div>
 
                   {/* 12. Technology (dropdown w/ logo + choices) */}
-                  <div className="py-1 border-b border-white/[0.04]">
+                  <div className="py-1 border-b border-white/[0.04] relative">
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-[#8b9196] font-medium">Technology</span>
-                      {onOpenIconPicker && (
+                      <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={onOpenIconPicker}
-                          className="text-[11px] text-[#2BB5E8] hover:underline"
+                          data-testid="open-tech-choices-btn"
+                          onClick={() => setIsTechChoicesOpen((v) => !v)}
+                          className="text-[11px] text-[#2BB5E8] hover:underline flex items-center gap-1 font-medium"
                         >
-                          Pick brand icon 🎨
+                          <span>Choices</span>
+                          <span className="text-[9px]">▾</span>
                         </button>
-                      )}
+                        {onOpenIconPicker && (
+                          <button
+                            type="button"
+                            onClick={onOpenIconPicker}
+                            className="text-[11px] text-[#8b9196] hover:text-[#2BB5E8] hover:underline"
+                          >
+                            Icons 🎨
+                          </button>
+                        )}
+                      </div>
                     </div>
+
+                    {/* Technology Choices Searchable Overlay (IcePanel Parity) */}
+                    {isTechChoicesOpen && (
+                      <div
+                        data-testid="tech-choices-overlay"
+                        className="mb-2 p-2 rounded-xl bg-[#121518] border border-white/[0.12] shadow-2xl space-y-2 animate-in fade-in zoom-in-95 z-20"
+                      >
+                        <div className="relative">
+                          <input
+                            type="text"
+                            data-testid="tech-choices-search"
+                            placeholder="Search or create technology..."
+                            value={techSearchQuery}
+                            onChange={(e) => setTechSearchQuery(e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-lg bg-[#1b1f24] border border-white/[0.1] text-xs text-white placeholder-[#8b9196] focus:outline-none focus:border-[#2BB5E8]"
+                            autoFocus
+                          />
+                        </div>
+
+                        <div className="max-h-48 overflow-y-auto space-y-0.5">
+                          {filteredTechChoices.map((choice) => {
+                            const iconPath = getTechnologyIconPath(choice);
+                            const isSelected = currentTechList.includes(choice);
+                            return (
+                              <button
+                                key={choice}
+                                type="button"
+                                data-testid={`tech-choice-item-${choice.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
+                                onClick={() => {
+                                  handleAddTech(choice);
+                                  setIsTechChoicesOpen(false);
+                                }}
+                                className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs text-left transition-colors ${
+                                  isSelected
+                                    ? 'bg-blue-600/20 text-[#2BB5E8] font-medium'
+                                    : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 truncate">
+                                  {iconPath ? (
+                                    <img src={iconPath} alt="" className="w-4 h-4 object-contain" />
+                                  ) : (
+                                    <span className="w-4 h-4 rounded bg-white/[0.08] flex items-center justify-center text-[9px] font-mono font-bold">
+                                      {choice.slice(0, 2).toUpperCase()}
+                                    </span>
+                                  )}
+                                  <span className="truncate">{choice}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 text-slate-500">
+                                  <span title="Visible on diagram">👁</span>
+                                  <span title="Options">…</span>
+                                </div>
+                              </button>
+                            );
+                          })}
+
+                          {techSearchQuery.trim() &&
+                            !filteredTechChoices.some(
+                              (c) => c.toLowerCase() === techSearchQuery.trim().toLowerCase(),
+                            ) && (
+                              <button
+                                type="button"
+                                data-testid="tech-create-it-btn"
+                                onClick={() => {
+                                  handleAddTech(techSearchQuery.trim());
+                                  setTechSearchQuery('');
+                                  setIsTechChoicesOpen(false);
+                                }}
+                                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-[#2BB5E8] text-xs font-medium border border-blue-500/30 transition-colors"
+                              >
+                                <span>+ Create &quot;{techSearchQuery.trim()}&quot;</span>
+                                <span className="text-[10px] bg-blue-500/30 px-1.5 py-0.5 rounded font-mono">
+                                  Create it
+                                </span>
+                              </button>
+                            )}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="flex flex-wrap gap-1 mb-1.5">
                       {currentTechList.map((tech) => (

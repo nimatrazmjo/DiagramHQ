@@ -2187,11 +2187,27 @@ export default function StudioPage(): JSX.Element {
     selectedFilterTeam,
   ]);
 
-  // Edges filtered to only connect currently visible nodes
+  // Edges filtered to only connect currently visible nodes (with animated flow step highlight during playback)
   const displayEdges = useMemo(() => {
     const visibleNodeIds = new Set(displayNodes.map((n) => n.id));
-    return filterEdgesByVisibleNodes(currentEdges, visibleNodeIds);
-  }, [displayNodes, currentEdges]);
+    const edges = filterEdgesByVisibleNodes(currentEdges, visibleNodeIds);
+    if (!isFlowPlaybackActive || edges.length === 0) return edges;
+
+    const activeIndex = playbackState.currentStepIndex % edges.length;
+    return edges.map((edge, idx) => {
+      if (idx === activeIndex) {
+        return {
+          ...edge,
+          animated: true,
+          data: {
+            ...edge.data,
+            isActiveFlowStep: true,
+          },
+        };
+      }
+      return edge;
+    });
+  }, [displayNodes, currentEdges, isFlowPlaybackActive, playbackState.currentStepIndex]);
 
   const isDrillDownEmpty = activeParentId !== null && displayNodes.length === 0;
 
@@ -3108,7 +3124,10 @@ export default function StudioPage(): JSX.Element {
 
           {/* Floating Toast Notification Banner */}
           {toastMessage && (
-            <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-200">
+            <div
+              data-testid="studio-toast"
+              className="absolute bottom-14 left-1/2 -translate-x-1/2 z-50 pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-200"
+            >
               <div className="pointer-events-auto px-4 py-2 rounded-xl bg-[#15181c] border border-white/[0.15] shadow-2xl text-xs text-[#e7e9ea] flex items-center gap-2 backdrop-blur-md">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]" />
                 <span className="font-medium">{toastMessage}</span>
